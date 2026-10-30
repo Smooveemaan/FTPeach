@@ -121,9 +121,8 @@ async fn move_to_bin(target: PathBuf) -> CommandResult<()> {
 /// on Linux moves the item to the home Trash, which across volumes copies it
 /// whole and deletes the original; that is refused, as with no Trash at all,
 /// so the interface warns that a delete would be for good. The per-volume
-/// folder is made here, as the crate would make it.
-// shortcut: a bind mount of the home volume, or a volume Trash the crate then
-// cannot write to, still falls back to that copy; refuse those too if reported.
+/// folder and the two folders the crate writes to are made and checked here:
+/// a permission failure there would otherwise trigger the same home fallback.
 #[cfg(all(unix, not(target_os = "macos")))]
 fn has_trash(target: &Path) -> bool {
     use std::os::unix::fs::MetadataExt;
@@ -142,12 +141,67 @@ fn has_trash(target: &Path) -> bool {
     while let Some(parent) = top.parent().filter(|parent| device(parent) == Some(volume)) {
         top = parent;
     }
+    prepare_volume_trash(top, volume)
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+fn prepare_volume_trash(top: &Path, volume: u64) -> bool {
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
     // SAFETY: getuid has no preconditions and cannot fail.
     let uid = unsafe { libc::getuid() };
-    match std::fs::create_dir(top.join(format!(".Trash-{uid}"))) {
-        Ok(()) => true,
-        Err(error) => error.kind() == std::io::ErrorKind::AlreadyExists,
+    let shared_root = top.join(".Trash");
+    let shared_root_is_valid = std::fs::symlink_metadata(&shared_root).is_ok_and(|metadata| {
+        metadata.file_type().is_dir()
+            && metadata.dev() == volume
+            && metadata.permissions().mode() & 0o1000 != 0
+    });
+    let shared = shared_root.join(uid.to_string());
+    if shared_root_is_valid && shared.is_dir() {
+        return prepare_trash_directory(&shared, volume);
     }
+    let trash = top.join(format!(".Trash-{uid}"));
+    if let Err(error) = std::fs::create_dir(&trash)
+        && error.kind() != std::io::ErrorKind::AlreadyExists
+    {
+        return false;
+    }
+    prepare_trash_directory(&trash, volume)
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+fn prepare_trash_directory(trash: &Path, volume: u64) -> bool {
+    usable_trash_directory(trash, volume)
+        && ["files", "info"].iter().all(|name| {
+            let directory = trash.join(name);
+            if let Err(error) = std::fs::create_dir(&directory)
+                && error.kind() != std::io::ErrorKind::AlreadyExists
+            {
+                return false;
+            }
+            usable_trash_directory(&directory, volume)
+        })
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+fn usable_trash_directory(path: &Path, volume: u64) -> bool {
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
+    let Ok(metadata) = std::fs::symlink_metadata(path) else {
+        return false;
+    };
+    if !metadata.file_type().is_dir()
+        || metadata.dev() != volume
+        || metadata.permissions().mode() & 0o222 == 0
+        || metadata.permissions().mode() & 0o111 == 0
+    {
+        return false;
+    }
+    let Ok(path) = CString::new(path.as_os_str().as_bytes()) else {
+        return false;
+    };
+    // SAFETY: `path` is NUL-terminated and remains alive for the call.
+    unsafe { libc::access(path.as_ptr(), libc::W_OK | libc::X_OK) == 0 }
 }
 
 /// Whether the item's volume has a Trash (a share or a disk image may have
@@ -269,6 +323,96 @@ mod tests {
     #[test]
     fn a_volume_whose_trash_cannot_be_made_has_none() {
         assert!(!has_trash(Path::new("/proc/self/status")));
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    fn test_volume() -> (PathBuf, u64, u32) {
+        use std::os::unix::fs::MetadataExt;
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-trash-test-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&root).unwrap();
+        let volume = std::fs::metadata(&root).unwrap().dev();
+        // SAFETY: getuid has no preconditions and cannot fail.
+        (root, volume, unsafe { libc::getuid() })
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    #[test]
+    fn unwritable_volume_trash_directories_are_refused() {
+        use std::os::unix::fs::PermissionsExt;
+        for subdirectory in ["", "files"] {
+            let (root, volume, uid) = test_volume();
+            let directory = root.join(format!(".Trash-{uid}")).join(subdirectory);
+            std::fs::create_dir_all(&directory).unwrap();
+            std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o555)).unwrap();
+
+            let result = prepare_volume_trash(&root, volume);
+
+            std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).unwrap();
+            std::fs::remove_dir_all(root).unwrap();
+            assert!(!result, "{subdirectory}");
+        }
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    #[test]
+    fn a_volume_trash_symlink_is_refused() {
+        use std::os::unix::fs::symlink;
+        let (root, volume, uid) = test_volume();
+        let elsewhere = root.join("elsewhere");
+        std::fs::create_dir(&elsewhere).unwrap();
+        symlink(&elsewhere, root.join(format!(".Trash-{uid}"))).unwrap();
+
+        let result = prepare_volume_trash(&root, volume);
+
+        std::fs::remove_dir_all(root).unwrap();
+        assert!(!result);
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    #[test]
+    fn a_shared_volume_trash_is_used_only_with_a_sticky_parent() {
+        use std::os::unix::fs::PermissionsExt;
+        for sticky in [false, true] {
+            let (root, volume, uid) = test_volume();
+            let shared_root = root.join(".Trash");
+            let shared = shared_root.join(uid.to_string());
+            std::fs::create_dir_all(&shared).unwrap();
+            std::fs::set_permissions(
+                &shared_root,
+                std::fs::Permissions::from_mode(if sticky { 0o1777 } else { 0o755 }),
+            )
+            .unwrap();
+
+            let result = prepare_volume_trash(&root, volume);
+            let shared_is_ready = shared.join("files").is_dir() && shared.join("info").is_dir();
+            let direct = root.join(format!(".Trash-{uid}"));
+            let direct_is_ready = direct.join("files").is_dir() && direct.join("info").is_dir();
+
+            std::fs::remove_dir_all(root).unwrap();
+            assert!(result);
+            assert_eq!(shared_is_ready, sticky);
+            assert_eq!(direct_is_ready, !sticky);
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn a_trash_directory_on_another_device_is_refused() {
+        use std::os::unix::fs::MetadataExt;
+        let volume = std::fs::metadata("/tmp").unwrap().dev();
+        let trash =
+            Path::new("/dev/shm").join(format!("ftpeach-trash-test-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&trash).unwrap();
+        if std::fs::metadata(&trash).unwrap().dev() == volume {
+            std::fs::remove_dir(&trash).unwrap();
+            return;
+        }
+
+        let result = usable_trash_directory(&trash, volume);
+
+        std::fs::remove_dir(&trash).unwrap();
+        assert!(!result);
     }
 
     #[cfg(windows)]

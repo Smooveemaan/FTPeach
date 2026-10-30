@@ -70,8 +70,8 @@ pub enum ErrorCode {
     /// A local path runs through a junction, symbolic link or other reparse
     /// point, which FTPeach does not follow.
     LinkNotFollowed,
-    /// A delete to the Recycle Bin where Windows keeps none (a network share,
-    /// a removable drive): nothing was deleted.
+    /// The item's location has no usable Recycle Bin or Trash; nothing was
+    /// deleted.
     NoRecycleBin,
     /// A file of FTPeach's own data was saved by a newer version, so it is
     /// not written over.

@@ -162,8 +162,8 @@ test('use groups, aliases and re-exports each name what they import', async () =
 
   const { errors } = runRustBoundaryCheck(root);
   assert.deepEqual(errors.sort(), [
-    'store/mod.rs: store may not name commands::fs (allowed: domain, ipc, protocol, security)',
-    'store/mod.rs: store may not name commands::settings (allowed: domain, ipc, protocol, security)',
+    'store/mod.rs: store may not name commands::fs (allowed: app_config, domain, ipc, protocol, security)',
+    'store/mod.rs: store may not name commands::settings (allowed: app_config, domain, ipc, protocol, security)',
   ]);
 });
 

@@ -100,6 +100,7 @@ platform before release.
 | Zone | Owns |
 | --- | --- |
 | `lib.rs` | Plugins, managed state and the command registry. Wiring only. |
+| `app_config.rs` | Build-time application identity shared by storage and filesystem guards. |
 | `commands/` | Tauri commands: deserialize arguments, authorize, call a service, shape the response. No business rules. |
 | `application/` | Use cases that span zones: opening and closing sessions (`session_service`), single transfers (`transfer_service`), resumable uploads, and recursive copy/move (`recursive_transfer/`). |
 | `session.rs` | `Sessions`: one slot per renderer-chosen `connectionId`, holding the browse connection and that connection's transfer pool. |

@@ -54,7 +54,7 @@ impl Store {
     pub fn default_dir() -> Result<PathBuf> {
         let data =
             dirs::data_dir().context("the user's data folder is unknown ($HOME is not set)")?;
-        Ok(data.join("com.smooveemaan.ftpeach"))
+        Ok(data.join(crate::app_config::identifier()))
     }
 
     pub fn new_at(dir: PathBuf) -> Self {

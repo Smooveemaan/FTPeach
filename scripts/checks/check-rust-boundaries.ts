@@ -40,6 +40,8 @@ import { codeOnly, isTestFile, splitInlineTests } from './rust-source.ts';
  * anything. Adding an edge is a design decision: write the reason beside it.
  */
 export const ALLOWED: Record<string, readonly string[]> = {
+  // Build-time configuration is a leaf shared by storage and filesystem guards.
+  app_config: [],
   // The Tauri command layer: the one zone that may call into all the others.
   commands: [
     'application',
@@ -74,7 +76,7 @@ export const ALLOWED: Record<string, readonly string[]> = {
   // one process-wide switch, not a way into the runtime.
   transfer: ['ipc', 'protocol', 'runtime::sleep_guard'],
   protocol: ['domain', 'ipc', 'local_fs', 'security', 'store', 'transfer'],
-  store: ['domain', 'ipc', 'protocol', 'security'],
+  store: ['app_config', 'domain', 'ipc', 'protocol', 'security'],
   // Security decides and asks; `runtime::confirmation_window` is how the
   // question is put on screen.
   // `domain` gives a bookmark's server the way a connect reads it.

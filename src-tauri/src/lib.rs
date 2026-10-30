@@ -1,3 +1,5 @@
+#[cfg(not(windows))]
+mod app_config;
 #[cfg(not(feature = "test-utils"))]
 mod application;
 #[cfg(feature = "test-utils")]

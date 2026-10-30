@@ -2163,11 +2163,11 @@ fn generated_stores_round_trip_their_envelope_and_a_newer_schema_stays_refused()
 
 #[cfg(not(windows))]
 #[test]
-fn outside_windows_the_store_is_tauris_app_data_folder() {
-    let config: Value = serde_json::from_str(include_str!("../../tauri.conf.json")).unwrap();
-    let identifier = config["identifier"].as_str().unwrap();
+fn outside_windows_the_store_uses_the_active_tauri_identifier() {
     assert_eq!(
         Store::new().unwrap().data_dir(),
-        dirs::data_dir().unwrap().join(identifier)
+        dirs::data_dir()
+            .unwrap()
+            .join(crate::app_config::identifier())
     );
 }

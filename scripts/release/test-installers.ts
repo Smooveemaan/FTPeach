@@ -23,7 +23,7 @@ const KEY_PASSWORD = 'ftpeach installer tests';
 const out = path.resolve('.tools', 'installer-test');
 const releaseDir = path.join(process.env.CARGO_TARGET_DIR ?? 'src-tauri/target', 'release');
 const tauri = (...args: string[]) =>
-  execFileSync(process.execPath, ['node_modules/@tauri-apps/cli/tauri.js', ...args], {
+  execFileSync(process.execPath, [process.env.npm_execpath!, 'run', 'tauri', '--', ...args], {
     stdio: 'inherit',
     env: {
       ...process.env,

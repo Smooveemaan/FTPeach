@@ -26,7 +26,7 @@ npm ci
 Start the desktop app with hot reload:
 
 ```powershell
-npm run dev
+npm run tauri -- dev --config src-tauri/tauri.dev.conf.json
 ```
 
 The npm commands below are plain Cargo and Tauri commands; a few that need their own target directory or more than one step go through [scripts/cargo.ts](../scripts/cargo.ts).
@@ -37,7 +37,7 @@ Run these from the repository root:
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Run the desktop app with hot reload. |
+| `npm run tauri -- dev --config src-tauri/tauri.dev.conf.json` | Run the desktop app with hot reload. |
 | `npm run dev:renderer` | Start Vite for browser-only interface work; native operations require the desktop app. |
 | `npm test` | Run TypeScript unit tests and React component tests. |
 | `npm run lint` | Check lint rules, feature boundaries, and TypeScript types. |

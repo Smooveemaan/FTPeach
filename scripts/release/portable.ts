@@ -4,8 +4,8 @@
 //   portable.ts build [releaseDir]   assemble the folder and zip it
 //   portable.ts feed <latest.json> <zipUrl>   add the signed zip to the update feed
 //
-// Signing happens between the two, with `tauri signer sign`, so the private
-// key is only ever handled by the Tauri CLI.
+// Signing happens between the two, with `npm run tauri -- signer sign`, so the
+// private key is only ever handled by the Tauri CLI.
 import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

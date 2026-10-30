@@ -21,7 +21,7 @@ not point the production configuration at `spike.key.pub`.
 To create a new local throwaway keypair, run from the repository root:
 
 ```powershell
-npm.cmd exec tauri signer generate -- --write-keys test/fixtures/updater/spike.key
+npm run tauri -- signer generate --write-keys test/fixtures/updater/spike.key
 ```
 
 `spike.key` is ignored by Git. Re-sign the fixture and update `spike.key.pub`

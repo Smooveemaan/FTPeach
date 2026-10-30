@@ -26,8 +26,8 @@ function run(program: string, args: string[], env: Record<string, string> = {}):
     stdio: 'inherit',
     cwd: root,
     env: { ...process.env, ...env },
-    // npm and npx are batch files on Windows.
-    shell: process.platform === 'win32' && (program === 'npm' || program === 'npx'),
+    // npm is a batch file on Windows.
+    shell: process.platform === 'win32' && program === 'npm',
   };
   const result = spawnSync(program, args, options);
   if (result.error) throw result.error;
@@ -53,20 +53,21 @@ function main(): number {
     }
     case 'dev-simulate-dpapi-failure':
       return run(
-        process.execPath,
-        [
-          'node_modules/@tauri-apps/cli/tauri.js',
-          'dev',
-          '--config',
-          'src-tauri/tauri.dev.conf.json',
-        ],
-        { FTPEACH_SIMULATE_DPAPI_FAILURE: '1' },
+        'npm',
+        ['run', 'tauri', '--', 'dev', '--config', 'src-tauri/tauri.dev.conf.json'],
+        {
+          FTPEACH_SIMULATE_DPAPI_FAILURE: '1',
+        },
       );
     case 'smoke-build': {
       const env = { CARGO_TARGET_DIR: path.join(root, '.tools', 'smoke-target') };
       return (
         run('npm', ['run', 'build']) ||
-        run('npx', ['tauri', 'build', '--debug', '--no-bundle', '--features', 'smoke-test'], env)
+        run(
+          'npm',
+          ['run', 'tauri', '--', 'build', '--debug', '--no-bundle', '--features', 'smoke-test'],
+          env,
+        )
       );
     }
     case 'test-installers': {

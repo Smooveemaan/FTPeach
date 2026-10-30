@@ -39,7 +39,7 @@ native installation and restart still need acceptance on each target OS.
 Generating a pair is needed only to rotate the key; follow the rotation order in [release-trust.md](release-trust.md#the-updater-private-key), because installations accept only updates signed for the public key they already have:
 
 ```powershell
-npm.cmd exec tauri signer generate -- --write-keys C:\secure\ftpeach-updater.key
+npm run tauri -- signer generate --write-keys C:\secure\ftpeach-updater.key
 ```
 
 The command creates a private file and a public file with a `.pub` suffix. Put the `.pub` contents in `plugins.updater.pubkey`; store the private file in a secret manager and separate secure backup. Keys under `test/fixtures/updater/` are test-only and must never sign releases.

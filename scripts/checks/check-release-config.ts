@@ -217,7 +217,7 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [
     releaseWorkflow,
     'release.yml',
-    'npx tauri signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
+    'npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
   ],
   [
     releaseWorkflow,
@@ -254,7 +254,7 @@ for (const [workflow, workflowName, requiredWorkflowEntry] of requiredWorkflowEn
 // Signed before the step that verifies every signature, so the zip cannot
 // reach the feed with a signature nothing checked.
 const releaseOrder = [
-  'npx tauri signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
+  'npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
   'Verify every generated updater signature',
   'scripts/release/portable.ts feed release/latest.json',
 ].map((step) => releaseWorkflow.indexOf(step));

@@ -433,7 +433,7 @@ export function sign(file: string): string {
   const { key, keyPassword } = testBuild();
   execFileSync(
     process.execPath,
-    ['node_modules/@tauri-apps/cli/tauri.js', 'signer', 'sign', file],
+    [process.env.npm_execpath!, 'run', 'tauri', '--', 'signer', 'sign', file],
     {
       cwd: root,
       stdio: 'pipe',

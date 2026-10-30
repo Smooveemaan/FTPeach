@@ -16,7 +16,10 @@ function workspace(): string {
 test('clean removes output and keeps .local and node_modules', () => {
   const root = workspace();
   try {
-    clean(cleanTargets(root, undefined), { artifactsOnly: false, dryRun: false });
+    clean(cleanTargets(root, path.join(root, 'local-app-data')), {
+      artifactsOnly: false,
+      dryRun: false,
+    });
     assert.equal(existsSync(path.join(root, 'src-tauri/target')), false);
     assert.equal(existsSync(path.join(root, 'dist')), false);
     assert.equal(existsSync(path.join(root, 'coverage')), false);
@@ -30,9 +33,15 @@ test('clean removes output and keeps .local and node_modules', () => {
 test('--artifacts-only keeps the Cargo caches and --dry-run removes nothing', () => {
   const root = workspace();
   try {
-    clean(cleanTargets(root, undefined), { artifactsOnly: false, dryRun: true });
+    clean(cleanTargets(root, path.join(root, 'local-app-data')), {
+      artifactsOnly: false,
+      dryRun: true,
+    });
     assert.equal(existsSync(path.join(root, 'dist')), true);
-    clean(cleanTargets(root, undefined), { artifactsOnly: true, dryRun: false });
+    clean(cleanTargets(root, path.join(root, 'local-app-data')), {
+      artifactsOnly: true,
+      dryRun: false,
+    });
     assert.equal(existsSync(path.join(root, 'src-tauri/target/debug')), true);
     assert.equal(existsSync(path.join(root, 'dist')), false);
   } finally {
@@ -47,7 +56,11 @@ test('clean refuses a target that is a link', () => {
     rmSync(path.join(root, 'dist'), { recursive: true });
     symlinkSync(outside, path.join(root, 'dist'), 'junction');
     assert.throws(
-      () => clean(cleanTargets(root, undefined), { artifactsOnly: true, dryRun: false }),
+      () =>
+        clean(cleanTargets(root, path.join(root, 'local-app-data')), {
+          artifactsOnly: true,
+          dryRun: false,
+        }),
       /symbolic link or junction/,
     );
     assert.equal(existsSync(outside), true);

@@ -107,7 +107,7 @@ fn path_is_within(path: &Path, base: &Path) -> bool {
     if path_starts_with(path, base) {
         return true;
     }
-    #[cfg(windows)]
+    #[cfg(any(windows, unix))]
     {
         let Some((base_ancestor, identity)) = base
             .ancestors()
@@ -127,6 +127,13 @@ fn path_is_within(path: &Path, base: &Path) -> bool {
         }
     }
     false
+}
+
+#[cfg(unix)]
+fn file_identity(path: &Path) -> Option<(u64, u64)> {
+    use std::os::unix::fs::MetadataExt;
+    let metadata = std::fs::metadata(path).ok()?;
+    Some((metadata.dev(), metadata.ino()))
 }
 
 #[cfg(windows)]
@@ -159,6 +166,18 @@ fn file_identity(path: &Path) -> Option<(u32, u32, u32)> {
 /// missing suffix. Reparse components are rejected before identity is used.
 pub(crate) fn resolved_path(path: &Path) -> anyhow::Result<PathBuf> {
     ensure_path_no_reparse_points_now(path)?;
+    resolve_existing_ancestors(path)
+}
+
+/// Trusted Unix application roots may themselves contain links, such as a linked
+/// XDG data folder. Windows retains the user-target guard for these paths.
+fn resolved_trusted_path(path: &Path) -> anyhow::Result<PathBuf> {
+    #[cfg(windows)]
+    ensure_path_no_reparse_points_now(path)?;
+    resolve_existing_ancestors(path)
+}
+
+fn resolve_existing_ancestors(path: &Path) -> anyhow::Result<PathBuf> {
     let absolute = absolute_lexical(path).context("path cannot be made absolute")?;
     let mut ancestor = absolute.as_path();
     let mut suffix = Vec::new();
@@ -231,7 +250,7 @@ fn protected_paths() -> &'static [PathBuf] {
 /// like deleting the profile. `/` is a filesystem root and refused as such.
 #[cfg(not(windows))]
 const SYSTEM_DIRS: &[&str] = &[
-    "/System", "/usr", "/bin", "/etc", "/Library", "/proc", "/sys", "/dev",
+    "/System", "/usr", "/bin", "/etc", "/var", "/Library", "/proc", "/sys", "/dev",
 ];
 #[cfg(windows)]
 const SYSTEM_DIRS: &[&str] = &[];
@@ -242,7 +261,7 @@ fn resolve_protected_paths() -> Vec<PathBuf> {
         .into_iter()
         .flatten()
         .chain(SYSTEM_DIRS.iter().map(PathBuf::from))
-        .map(|path| resolved_path(&path).unwrap_or(path))
+        .map(|path| resolved_trusted_path(&path).unwrap_or(path))
         .collect()
 }
 
@@ -252,7 +271,7 @@ fn data_dir() -> Option<PathBuf> {
     #[cfg(windows)]
     let dir = PathBuf::from(std::env::var_os("APPDATA")?).join("FTPeach");
     #[cfg(not(windows))]
-    let dir = dirs::data_dir()?.join("com.smooveemaan.ftpeach");
+    let dir = dirs::data_dir()?.join(crate::app_config::identifier());
     absolute_lexical(dir)
 }
 
@@ -295,7 +314,7 @@ fn app_owned_paths_for(
         .into_iter()
         .flatten()
         .filter_map(absolute_lexical)
-        .map(|path| resolved_path(&path).unwrap_or(path))
+        .map(|path| resolved_trusted_path(&path).unwrap_or(path))
         .collect()
 }
 
@@ -324,7 +343,7 @@ fn working_local_dir_for(portable_root: Option<&Path>) -> Option<PathBuf> {
         Some(root) => super::portable::local_dir(root),
         None => data_dir().filter(|_| !cfg!(windows))?,
     };
-    Some(resolved_path(&local).unwrap_or(local))
+    Some(resolved_trusted_path(&local).unwrap_or(local))
 }
 
 /// Editor copies are downloaded, edited and uploaded like any other file, so
@@ -665,6 +684,24 @@ mod tests {
         assert_eq!(paths, vec![protected]);
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn protected_data_paths_resolve_links_and_compare_filesystem_identities() {
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-linked-data-{}", uuid::Uuid::new_v4()));
+        let real = root.join("real");
+        let link = root.join("link");
+        std::fs::create_dir_all(&real).unwrap();
+        std::os::unix::fs::symlink(&real, &link).unwrap();
+        let expected = std::fs::canonicalize(&real).unwrap().join("app");
+
+        let paths = app_owned_paths_for(Some(link.join("app")), None, None);
+
+        assert_eq!(paths, vec![expected.clone()]);
+        assert!(path_is_within(&expected.join("secret"), &link.join("app")));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn the_update_staging_folder_is_protected_but_not_the_rest_of_local_data() {
         let local = std::env::temp_dir().join(format!("ftpeach-local-{}", uuid::Uuid::new_v4()));
@@ -708,8 +745,14 @@ mod tests {
     #[cfg(not(windows))]
     #[tokio::test]
     async fn system_folders_and_the_home_folder_are_not_deleted() {
-        // Not `/etc`: on macOS it is a link and refused as one.
-        for folder in ["/usr", "/dev"]
+        let folders = [
+            "/usr",
+            "/dev",
+            "/var",
+            #[cfg(target_os = "macos")]
+            "/private/var",
+        ];
+        for folder in folders
             .into_iter()
             .map(PathBuf::from)
             .chain(std::env::var_os("HOME").map(PathBuf::from))

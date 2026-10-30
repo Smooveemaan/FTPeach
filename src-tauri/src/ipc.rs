@@ -353,7 +353,7 @@ impl CommandError {
             _ => {}
         }
         // getaddrinfo's failures carry no OS code there, only its text for
-        // EAI_NONAME (glibc, then macOS) and EAI_NODATA.
+        // EAI_NONAME (glibc, then macOS), EAI_NODATA and EAI_AGAIN.
         #[cfg(unix)]
         if error.raw_os_error().is_none() {
             let text = error.to_string();
@@ -361,6 +361,7 @@ impl CommandError {
                 "Name or service not known",
                 "nodename nor servname provided",
                 "No address associated with hostname",
+                "Temporary failure in name resolution",
             ]
             .iter()
             .any(|known| text.contains(known))
@@ -774,6 +775,18 @@ mod tests {
         // to match inside "os error 32".
         let text = anyhow::anyhow!("{}", std::io::Error::from_raw_os_error(32));
         assert_eq!(CommandError::from_anyhow(&text).code, ErrorCode::Internal);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_temporary_resolver_failure_is_reported_as_an_unresolvable_host() {
+        let error = std::io::Error::other(
+            "failed to lookup address information: Temporary failure in name resolution",
+        );
+        assert_eq!(
+            CommandError::from_anyhow(&anyhow::Error::from(error)).code,
+            ErrorCode::HostNotFound
+        );
     }
 
     /// A name that does not resolve, as the system's resolver really reports it.

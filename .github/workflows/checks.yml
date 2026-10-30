@@ -276,15 +276,14 @@ jobs:
       - name: Verify valid and damaged updater fixtures independently
         run: npm run test:updater-fixtures
 
-  # The macOS and Linux port: the same tests outside Windows. Advisory until
-  # the tests that assume Windows are fixed (todo A-2); every target runs so
-  # one failing target does not hide the next.
+  # The macOS and Linux port: the same tests outside Windows. Only the tests
+  # are advisory until the Windows assumptions are fixed; build and Clippy
+  # failures stay blocking. Every target runs so one failure does not hide the next.
   rust-test-unix:
     permissions:
       contents: read
     needs: changes
     if: needs.changes.outputs.rust == 'true'
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -309,6 +308,7 @@ jobs:
         run: cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
       - name: Test
         if: ${{ always() }}
+        continue-on-error: true
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml --features test-utils --all-targets --no-fail-fast
 
   rust-coverage:

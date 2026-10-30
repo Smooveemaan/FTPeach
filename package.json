@@ -65,7 +65,7 @@
     "site:social": "node --experimental-strip-types scripts/site/social.ts",
     "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts",
     "check:supply-chain": "npm audit --audit-level=high && cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses",
-    "check:sast": "docker run --rm -v \"%cd%:/src\" -w /src semgrep/semgrep:1.176.1 semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src"
+    "check:sast": "node --experimental-strip-types scripts/checks/sast.ts"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

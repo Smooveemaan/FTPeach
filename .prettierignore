@@ -1,24 +1,17 @@
 node_modules/
 .tools/
 dist/
-/release/
 vendor/
-.claude/
-.codex/
 .agents/
-.cursor/
-.windsurf/
-.aider/
-.taste-skill/
-.vs/
 # Files as an earlier FTPeach wrote them, kept byte for byte.
 src-tauri/src/security/testdata/
-.tmp/
 .local/
 target/
 src-tauri/gen/
 test-results/
-playwright-report/
+coverage/
+dist-site/
+duplication-report/
 *.md
 *.html
 *.hbs

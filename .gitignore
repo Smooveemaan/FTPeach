@@ -22,13 +22,8 @@ id_ed25519.*
 !*.pub
 
 # Local AI-assistant metadata must never enter the public repository.
-.claude/
-.codex/
 .agents/
-.windsurf/
-.aider/
 AGENTS.md
-CLAUDE.md
 .tmp/
 .local/
 test-results/

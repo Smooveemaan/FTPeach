@@ -1,20 +1,8 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Vite dev server injects an inline <script> for the React Fast Refresh
-// preamble, which the shipped app's strict `script-src 'self'` CSP would
-// block. That preamble never reaches production builds, so relax CSP only
-// for `vite dev` and leave the built dist/index.html untouched.
-const relaxCspForDev: Plugin = {
-  name: 'relax-csp-for-dev',
-  apply: 'serve',
-  transformIndexHtml(html: string) {
-    return html.replace("script-src 'self';", "script-src 'self' 'unsafe-inline';");
-  },
-};
-
 export default defineConfig({
-  plugins: [react(), relaxCspForDev],
+  plugins: [react()],
   base: './',
   build: {
     outDir: 'dist',

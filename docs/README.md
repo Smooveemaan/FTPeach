@@ -2,6 +2,7 @@
 
 ## Code and development
 
+- [Development setup](development.md): prerequisites, build commands, tests and cleanup.
 - [Architecture](architecture.md): processes, ownership, IPC, connections, transfers, persistence and security boundaries.
 - [Frontend architecture](frontend-architecture.md): feature ownership and import rules.
 - [Frontend performance](frontend-performance.md): measurements and reproducible benchmarks.

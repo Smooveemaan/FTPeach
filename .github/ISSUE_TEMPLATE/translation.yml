@@ -1,17 +1,17 @@
 name: Translation problem
-description: Wrong, missing, cut-off or awkward text in one of the interface languages
+description: Report wrong, missing, cut-off or awkward text in any interface language
 title: '[Translation]: '
 labels: [translation]
 body:
   - type: markdown
     attributes:
       value: |
-        FTPeach is translated by hand into 27 languages, and native speakers' feedback is very welcome.
+        Thanks for helping improve the translations. Feedback from people who use FTPeach in any of its 27 languages is welcome.
         New text may appear in English first until it is translated; you can still report it so it gets translated sooner.
   - type: dropdown
     id: language
     attributes:
-      label: Language
+      label: Which language is affected?
       options:
         - Arabic
         - Chinese (Simplified)
@@ -45,7 +45,7 @@ body:
   - type: dropdown
     id: kind
     attributes:
-      label: Kind of problem
+      label: What kind of problem is it?
       multiple: true
       options:
         - Wrong or misleading translation
@@ -61,34 +61,32 @@ body:
     id: location
     attributes:
       label: Where does the text appear?
-      description: The window, dialog, menu or setting that shows it.
-      placeholder: Settings → Logging, the hint under "Write log to file"
+      description: Name the window, dialog, menu or setting that shows it.
+      placeholder: Settings > Logging, the hint under "Write log to file"
     validations:
       required: true
   - type: textarea
     id: current
     attributes:
-      label: Current text
-      description: Copy the text exactly as shown, or attach a screenshot below.
+      label: What does it say now? (optional)
+      description: Copy the text exactly as shown if you can, or attach a screenshot below.
       render: text
-    validations:
-      required: true
   - type: textarea
     id: suggested
     attributes:
-      label: Suggested text
-      description: What it should say instead, and why if it is not obvious (for example, the usual term in other file managers).
+      label: What should it say instead? (optional)
+      description: Suggest a better translation and, if helpful, explain why. For example, mention the term other file managers use.
       render: text
   - type: input
     id: ftpeach-version
     attributes:
       label: FTPeach version
-      description: Shown in **Help → About**.
-      placeholder: 0.3.0
+      description: Shown in **Help > About**.
+      placeholder: 0.6.0
     validations:
       required: true
   - type: textarea
     id: screenshot
     attributes:
-      label: Screenshot
+      label: Screenshot (optional)
       description: Especially helpful for cut-off or overlapping text. Please hide server names and private paths.

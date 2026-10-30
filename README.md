@@ -1,4 +1,4 @@
-# <img src="assets/images/icon.png" width="24" height="24" alt=""> FTPeach
+# <img src="assets/images/icon.png" width="32" height="32" alt=""> FTPeach
 
 A desktop file transfer client for Windows.
 
@@ -10,8 +10,9 @@ Browse local and remote folders side by side, copy files between servers, and ke
 
 **[Download for Windows](https://github.com/Smooveemaan/ftpeach/releases/latest)** · [Website](https://ftpeach.com/) · [Release notes](CHANGELOG.md) · [Documentation](docs/README.md) · [Report a bug](https://github.com/Smooveemaan/ftpeach/issues)
 
-> **Made with AI, use at your own risk!**  
-> I made FTPeach with a lot of help from AI. I’ve tested it carefully, but please back up files that matter to you.
+> **Made with AI. Use at your own risk!**<br>
+> I made FTPeach with a lot of help from AI, and the project is in pre-release.<br>
+> I’ve tested it carefully, but please back up files that matter to you.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/images/ftpeach-dark.png">
@@ -23,23 +24,21 @@ Support FTPeach:&emsp;<a href="https://ko-fi.com/smooveemaan"><picture><source m
 
 ## Get started
 
-FTPeach supports **Windows 10 and 11, x64**.
+FTPeach supports **Windows 10 and 11, x64**. Versions for macOS and Linux are coming soon.
 
 1. Download the installer from the [latest release](https://github.com/Smooveemaan/ftpeach/releases/latest) and run it.
 2. Open FTPeach and enter your server's connection details.
 3. Browse your folders and drag files to the destination pane. Follow their progress in the transfer queue.
 
-To run FTPeach without installing it, download `FTPeach_<version>_x64-portable.zip` from the same page, unpack it and start `FTPeach.exe`. Settings, bookmarks and saved passwords stay in the `data` folder beside the program, so moving the folder moves everything; set a master password in Settings if saved passwords should work on another computer. What a portable copy leaves on a computer is listed under [portable mode](docs/storage.md#portable-mode).
-
 You can save connections for your next session. With automatic updates enabled, FTPeach checks for updates at startup and daily, downloads them in the background, and installs them on the next launch or when you choose to restart. Update signatures are verified before installation.
 
-The project is in pre-release; see the [changelog](CHANGELOG.md) for changes between versions. macOS and Linux are not currently supported.
+To run FTPeach without installing it, download `FTPeach_<version>_x64-portable.zip` from the same page, unpack it and start `FTPeach.exe`. Settings, bookmarks, and saved passwords stay in the `data` folder beside the program, so moving the folder moves everything. Set a master password in Settings if saved passwords should work on another computer. What a portable copy leaves on a computer is listed under [portable mode](docs/storage.md#portable-mode).
 
 ## Made for everyday file transfers
 
 - **Work side by side.** Two independent file panes with tabs, search, and sorting help you find and organize files.
 - **Move files where you need them.** Upload, download, or copy between servers through FTPeach, with drag and drop for everyday operations.
-- **Stay in control.** Run concurrent transfers, pause or cancel jobs, and set speed limits from the transfer queue.
+- **Stay in control.** Run concurrent transfers, pause or cancel transfers, and set speed limits from the transfer queue.
 - **Use your own editor.** Open remote files in an external application and upload your changes back to the server.
 - **Make it comfortable.** Choose from 20 color schemes in light or dark mode, and use the interface in any of 27 languages.
 - **Keep connections handy.** Save server details, protect stored passwords, and optionally add a master password.
@@ -82,102 +81,16 @@ Saved passwords and SSH-key passphrases follow the protection mode selected in s
 
 Keep the master password safe: it cannot be recovered, and it remains the recovery method if Windows Hello becomes unavailable.
 
-For SFTP, the default settings require you to confirm the server's key before the first connection can authenticate. Verify the displayed fingerprint with your server administrator before trusting it. FTPeach remembers the approved key and blocks subsequent connections if it changes, pending a new confirmation.
+For SFTP, the default settings require you to confirm the server's host key before the first connection can authenticate. Verify the displayed fingerprint with your server administrator before trusting it. FTPeach remembers the approved key and blocks subsequent connections if it changes, pending a new confirmation.
 
 For implementation details, see the [security design](docs/security.md). To report a vulnerability privately, follow the [security policy](.github/SECURITY.md).
-
-## Development
-
-FTPeach uses **React and TypeScript** for the interface and **Rust with Tauri** for the desktop application.
-
-### Prerequisites
-
-Use Windows 10/11 x64 with:
-
-- Node.js 24 and npm;
-- Rust installed through rustup, using the pinned MSVC toolchain in [rust-toolchain.toml](rust-toolchain.toml);
-- Visual Studio Build Tools with the C++ build tools and Windows SDK;
-- the WebView2 Runtime.
-
-The pinned Rust toolchain includes `clippy`, `rustfmt`, and `rust-analyzer`, keeping editor tooling and pull-request checks consistent.
-
-### Set up and run
-
-Clone the repository and install JavaScript dependencies:
-
-```powershell
-git clone https://github.com/Smooveemaan/ftpeach.git
-cd ftpeach
-npm ci
-```
-
-Start the desktop app with hot reload:
-
-```powershell
-npm run dev
-```
-
-The npm commands below are plain Cargo and Tauri commands; a few that need their own target directory or more than one step go through [scripts/cargo.ts](scripts/cargo.ts).
-
-### Everyday commands
-
-Run these from the repository root:
-
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | Run the desktop app with hot reload. |
-| `npm run dev:renderer` | Start Vite for browser-only interface work; native operations require the desktop app. |
-| `npm test` | Run TypeScript unit tests and React component tests. |
-| `npm run lint` | Check lint rules, feature boundaries, and TypeScript types. |
-| `npm run format:check` | Check formatting without changing files. |
-| `npm run build` | Build the renderer and check bundle size budgets. |
-| `npm run rust:check` | Lint the backend as it ships, without running tests; a warning fails it. |
-| `npm run rust:test` | Run the Rust tests; ignored ones, such as those that need Docker or live servers, do not run. |
-| `npm run rust:build:release` | Build the native release executable without packaging an installer. |
-| `npm run build:tauri` | Build the production installer and signed update artifacts; requires updater signing credentials. |
-| `npm run check` | Run every check CI runs, including coverage, browser tests, Clippy, licenses, and build checks. |
-| `npm run clean` | Remove generated output, reports, and native build caches; see [cleanup options](#clean-up-build-output). |
-
-For a local release executable, run `npm run build` followed by `npm run rust:build:release`. Installer builds require the signing setup described in [updater signing](docs/updater-signing.md); their output is under `%LOCALAPPDATA%\FTPeachBuild\target\release\bundle\nsis`.
-
-### Visual tests and validation
-
-Install the pinned Chromium and WebKit browsers before running visual tests or the full check suite:
-
-```powershell
-npx playwright install chromium webkit
-npm run test:visual
-```
-
-Visual tests use a deterministic application fixture with checked-in snapshots for the workspace and dialogs. Review intentional visual changes before updating snapshots with `npm run test:visual:update`.
-
-To check a change locally, run:
-
-```powershell
-npm run check
-```
-
-`npm run check` runs every step of the CI checks, comparing coverage with `origin/master` as
-CI does: Rust coverage, Semgrep, `npm audit`, `cargo deny`, the Linux build (in Docker), the
-language layout audit and packaged smoke included. A whole run takes about an hour. The
-installer tests run separately. The end-to-end and live-server suites are closed and run
-before each release; see [how releases are verified](docs/release-trust.md#how-releases-are-verified).
-
-See the [test guide](test/README.md) for individual suites and the [contribution guide](.github/CONTRIBUTING.md) for review expectations.
-
-### Clean up build output
-
-Preview the cleanup targets with `npm run clean -- --dry-run`. Use `npm run clean -- --artifacts-only` to remove renderer and website output, coverage and duplication reports, browser test results, the signed test installers, and generated Tauri files while retaining native build caches.
-
-`npm run clean` also removes native and fuzz build caches, those of packaged smoke and the installer tests among them, including `%LOCALAPPDATA%\FTPeachBuild` outside the repository on Windows. The next build recreates removed output. Both modes preserve `node_modules/` and private working materials in `.local/`.
-
-See the [script guide](scripts/README.md) for benchmarks, release tooling, and cleanup details.
 
 ## Explore the project
 
 | If you want to… | Start here |
 | --- | --- |
 | Connect, transfer and edit files, or solve a common problem | [User guide](docs/guide/index.md) |
+| Build from source | [Development setup](docs/development.md) |
 | Understand the code structure | [Architecture](docs/architecture.md) and [frontend architecture](docs/frontend-architecture.md) |
 | Understand connections and transfers | [Protocol support](docs/protocol-support.md), [networking](docs/networking.md), and [transfer safety](docs/transfer-safety.md) |
 | Learn how settings and credentials are handled | [Storage](docs/storage.md) and [security design](docs/security.md) |
@@ -188,9 +101,9 @@ The [documentation index](docs/README.md) includes validation reports, IPC permi
 
 ## Help and contributions
 
-Found a bug or have an idea? [Open an issue](https://github.com/Smooveemaan/ftpeach/issues). For bug reports, include your FTPeach version, Windows version, protocol, and steps to reproduce the problem. Remove passwords and private connection details from logs and screenshots before sharing them.
+Found a bug, have an idea, or want to report a translation problem? [Open an issue](https://github.com/Smooveemaan/ftpeach/issues). For bug reports, include your FTPeach version, Windows version, protocol, and steps to reproduce the problem. Remove passwords and private connection details from logs and screenshots before sharing them.
 
-Bug reports, ideas and translation problems are welcome as issues. FTPeach does not accept pull requests: part of the tests a change has to pass are closed, so a pull request could not be checked here. See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+FTPeach does not accept pull requests: part of the tests a change has to pass are closed, so a pull request could not be checked here. See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
 

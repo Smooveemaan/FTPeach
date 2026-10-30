@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in FTPeach does not work as it should (not a security vulnerability)
+description: Report something that does not work as expected (not a security vulnerability)
 title: '[Bug]: '
 labels: [bug]
 body:
@@ -10,48 +10,32 @@ body:
 
         **Found a security vulnerability?** Do not open a public issue; report it privately as described in [SECURITY.md](https://github.com/Smooveemaan/ftpeach/blob/master/.github/SECURITY.md).
 
-        Before posting, please remove passwords, private keys, server addresses, user names and private paths from everything you paste or attach.
+        Please remove passwords, private keys, server addresses, user names and private paths from anything you paste or attach.
   - type: checkboxes
     id: preflight
     attributes:
       label: Before you start
       options:
-        - label: I searched [existing issues](https://github.com/Smooveemaan/ftpeach/issues?q=is%3Aissue) and this has not been reported yet.
-          required: true
-        - label: I can reproduce this in the [latest release](https://github.com/Smooveemaan/ftpeach/releases/latest), or I explain below why I cannot update.
+        - label: I searched [existing issues](https://github.com/Smooveemaan/ftpeach/issues?q=is%3Aissue) and did not find this problem.
           required: true
   - type: textarea
     id: summary
     attributes:
       label: What happened?
-      description: A short, clear description of the problem.
-      placeholder: Uploading a folder over SFTP stops at 99% and the transfer never finishes.
+      description: Tell us what you expected and what happened instead. Include the exact text of any error message.
+      placeholder: |
+        I tried to upload a folder over SFTP. I expected all the files to upload, but the transfer stopped at 99% and the last file stayed "Waiting".
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
-      description: The exact steps that make the problem appear, starting from a fresh launch if possible.
+      label: How can we reproduce it?
+      description: List the steps that make the problem appear, starting from a fresh launch if possible.
       placeholder: |
         1. Connect to an SFTP server.
         2. Drag a folder with 500 small files to the remote pane.
         3. Watch the transfer queue.
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected behavior
-      placeholder: All files are uploaded and the job is marked as complete.
-    validations:
-      required: true
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual behavior
-      description: What you saw instead, including the exact text of any error message.
-      placeholder: The job stays at 99% and the last file is shown as "Waiting".
     validations:
       required: true
   - type: dropdown
@@ -68,8 +52,8 @@ body:
     id: ftpeach-version
     attributes:
       label: FTPeach version
-      description: Shown in **Help → About**.
-      placeholder: 0.3.0
+      description: Shown in **Help > About**.
+      placeholder: 0.6.0
     validations:
       required: true
   - type: input
@@ -81,26 +65,9 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: area
-    attributes:
-      label: Area
-      description: Where in FTPeach the problem shows up.
-      options:
-        - Connecting or signing in
-        - File panes, tabs or navigation
-        - Transfers and the transfer queue
-        - Editing files in another program
-        - Saved connections, passwords or the vault
-        - Settings, import or export
-        - Updates or installation
-        - Interface, layout or translation
-        - Other
-    validations:
-      required: true
-  - type: dropdown
     id: protocol
     attributes:
-      label: Protocol
+      label: Which protocol does it involve?
       multiple: true
       options:
         - Not applicable
@@ -113,27 +80,26 @@ body:
   - type: input
     id: server
     attributes:
-      label: Server software
-      description: If the problem involves a server, which software and version runs on it (for example vsftpd 3.0.5, OpenSSH 9.6, FileZilla Server 1.8, Nextcloud 29). Do not include its address.
+      label: Server software (optional)
+      description: If you know it, give the software and version, such as OpenSSH 9.6 or Nextcloud 29. Do not include the server address.
       placeholder: OpenSSH 9.6
   - type: textarea
     id: logs
     attributes:
-      label: Log
+      label: Relevant log lines (optional)
       description: |
-        Copy the relevant lines from the log panel, or enable **Settings → Logging → Write log to file** and use **Open log folder** there.
-        By default, logs are under `%APPDATA%\FTPeach\logs` for an installed copy or `data\logs` beside a portable copy; a custom log folder overrides that location.
-        Passwords and tokens are redacted automatically, but server names, IP addresses and paths are not: please review before posting.
+        Copy only the lines related to the problem. You can enable logging under **Settings > Logging > Write log to file** and use **Open log folder** there.
+        Passwords and tokens are redacted automatically, but server names, IP addresses and paths are not. Please review the lines before posting.
       render: text
   - type: textarea
     id: attachments
     attributes:
-      label: Screenshots and diagnostic bundle
+      label: Screenshots or diagnostic information (optional)
       description: |
-        Drag screenshots or a screen recording here if they help to show the problem.
-        For hard-to-reproduce problems, attach a bundle from **Settings → Logging → Export diagnostic bundle** after reviewing its contents.
+        Drag screenshots or a screen recording here if they help show the problem.
+        For a problem that is hard to reproduce, you can attach a bundle from **Settings > Logging > Export diagnostic bundle** after reviewing its contents.
   - type: textarea
     id: context
     attributes:
-      label: Anything else?
-      description: Workarounds you found, when it started happening, proxy or VPN in use, antivirus, and so on.
+      label: Anything else? (optional)
+      description: For example, when the problem started, a workaround you found, or whether you use a proxy, VPN or antivirus.

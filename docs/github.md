@@ -25,8 +25,8 @@ These settings live on GitHub and must be verified separately; committed workflo
 files do not establish that they are enabled.
 
 - Protect `master` and the `v*` release tags with the rulesets in
-  [`.github/rulesets/`](../.github/rulesets/): on GitHub, open **Settings → Rules →
-  Rulesets → New ruleset → Import a ruleset** and import each file.
+  [`.github/rulesets/`](../.github/rulesets/): on GitHub, open **Settings > Rules >
+  Rulesets > New ruleset > Import a ruleset** and import each file.
   - `master.json` blocks deletion and force pushes, requires linear history and a
     pull request merged by squash or rebase, with resolved review threads, and
     requires every job of `checks.yml` as reported by `ci.yml` (`checks / <job>`),
@@ -42,7 +42,7 @@ files do not establish that they are enabled.
   is available. Enable secret scanning and push protection where available.
 - Configure the protected `release` environment and its signing secrets as
   described in [updater signing](updater-signing.md).
-- Set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**
+- Set **Settings > Pages > Build and deployment > Source** to **GitHub Actions**
   so `pages.yml` can publish the website, and set the repository's website to
   <https://ftpeach.com/>.
 - Verify the repository description, default branch and issue labels.

@@ -4,7 +4,7 @@ Bug reports, feature requests and translation problems are welcome as [issues](h
 
 The rules below are how changes to FTPeach are made.
 
-Follow the [development setup](../README.md#development) for prerequisites, dependency installation, and the build commands. Keep changes focused and add regression tests for behavior changes. Never commit credentials, private keys, server URLs, or user JSON/vault files.
+Follow the [development setup](../docs/development.md) for prerequisites, dependency installation, and the build commands. Keep changes focused and add regression tests for behavior changes. Never commit credentials, private keys, server URLs, or user JSON/vault files.
 
 ## Checks before a change
 

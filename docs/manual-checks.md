@@ -16,7 +16,7 @@ requires to match a heading on this page.
 
 When: before each release, on a computer with Windows Hello set up.
 
-1. Settings → Security: protect saved passwords with a master password, then
+1. Settings > Security: protect saved passwords with a master password, then
    turn on **Allow system unlock**.
    Expected: Windows creates the Hello key (up to a minute) and the switch
    stays on.
@@ -38,7 +38,7 @@ When: before each release.
 
 1. With saved passwords protected by a master password, unlock the vault,
    start a long download, press Win+L and sign back in.
-   Expected: Settings → Security shows the vault locked, showing a saved
+   Expected: Settings > Security shows the vault locked, showing a saved
    password asks to unlock, and the download is still running.
 
 ### Window resize and monitor scaling
@@ -91,8 +91,8 @@ but the shell may hold its banner back (Do not disturb, a full-screen window),
 and the notification center is out of reach of UI Automation, so the click is
 made by hand.
 
-1. Turn on Settings → Transfers → **Notify when transfers finish** and
-   Settings → Interface → **Close to tray**. Start an upload of a few large files, then close the
+1. Turn on Settings > Transfers > **Notify when transfers finish** and
+   Settings > Interface > **Close to tray**. Start an upload of a few large files, then close the
    window to the tray.
    Expected: when the uploads finish, one notification from FTPeach says how
    many files were transferred.
@@ -107,7 +107,7 @@ made by hand.
 When: before each release, under a Windows account FTPeach has never run in.
 
 1. Unpack the portable zip on a USB drive, start it, finish an upload with
-   Settings → Transfers → **Notify when transfers finish** on, and quit.
+   Settings > Transfers > **Notify when transfers finish** on, and quit.
    Expected: the notification names FTPeach with its icon; `%APPDATA%`,
    `%LOCALAPPDATA%` and `HKCU\Software` have nothing of FTPeach.
 2. Make the copy's `data` folder read-only and start it.
@@ -120,8 +120,8 @@ When: right after publishing a release.
 
 1. Install the previous release and add a bookmark with a saved password;
    unpack the previous portable zip and do the same there.
-2. In each copy: Help → Check for Updates, install the update.
-   Expected: Help → About shows the new version; bookmarks, settings and the
+2. In each copy: Help > Check for Updates, install the update.
+   Expected: Help > About shows the new version; bookmarks, settings and the
    saved password are still there; the portable copy's `data\` is unchanged.
 
 ## Recorded runs

@@ -804,12 +804,11 @@ body.column-reorder-active .col-resize-handle:hover::after {
 }
 
 
-/* both-edges, not plain stable: the connect state is a centred card, and a
-   gutter reserved on the end edge alone would re-centre it half a scrollbar
-   to the side the moment the list starts scrolling. */
+/* The start padding and permanent end scrollbar keep equal room on both
+   edges, so the centred card does not move when the list starts scrolling. */
 .pane-list.pane-list-empty.pane-list-empty-scrollable {
-  overflow-y: auto;
-  scrollbar-gutter: stable both-edges;
+  overflow-y: scroll;
+  padding-inline-start: 8px;
 }
 
 

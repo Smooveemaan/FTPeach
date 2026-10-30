@@ -22,7 +22,7 @@ async function openRtlHarness(page: Page) {
   await page.evaluate(() => document.fonts.ready);
 }
 
-test('desktop workspace', async ({ page }) => {
+test('desktop workspace @snapshot', async ({ page }) => {
   await openHarness(page);
   await expect(page.locator('.pane-path .crumb[data-drop-path="/var/www"]')).toHaveCSS(
     'font-variant-ligatures',
@@ -49,7 +49,7 @@ test('startup defers optional dialogs until they are opened', async ({ page }) =
   expect(scripts.filter((url) => !atStart.has(url)).length).toBeGreaterThan(0);
 });
 
-test('narrow workspace', async ({ page }) => {
+test('narrow workspace @snapshot', async ({ page }) => {
   await page.setViewportSize({ width: 900, height: 720 });
   await openHarness(page);
   await expect(page).toHaveScreenshot('workspace-narrow.png');
@@ -98,12 +98,12 @@ for (const log of [false, true]) {
    rendered that branch at all. They also stand in for the CSS that has no
    other test: the truncation masks and the transfer columns' alignment, both
    of which read the wrong edge if they slip back to a physical direction. */
-test('rtl workspace', async ({ page }) => {
+test('rtl workspace @snapshot', async ({ page }) => {
   await openRtlHarness(page);
   await expect(page).toHaveScreenshot('workspace-rtl.png');
 });
 
-test('rtl narrow workspace', async ({ page }) => {
+test('rtl narrow workspace @snapshot', async ({ page }) => {
   // Narrow enough that the transfer queue's own columns truncate, which is
   // what puts the fade masks and their direction into the frame.
   await page.setViewportSize({ width: 900, height: 720 });
@@ -158,7 +158,7 @@ test('pressed pane toolbar button stays inside the toolbar clip', async ({ page 
   expect(geometry.buttonBottom).toBeLessThanOrEqual(geometry.clipBottom);
 });
 
-test('settings dialog', async ({ page }) => {
+test('settings dialog @snapshot', async ({ page }) => {
   await openHarness(page);
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   await page.getByRole('menuitem', { name: 'Settings…' }).click();
@@ -166,7 +166,7 @@ test('settings dialog', async ({ page }) => {
   await expect(page).toHaveScreenshot('settings-dialog.png');
 });
 
-test('site manager dialog', async ({ page }) => {
+test('site manager dialog @snapshot', async ({ page }) => {
   await openHarness(page);
   await page.getByRole('menuitem', { name: 'Bookmarks' }).click();
   await page.getByRole('menuitem', { name: 'Manage Bookmarks…' }).click();

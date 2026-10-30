@@ -11,7 +11,8 @@
   --app-viewport-w: 100vw;
   --app-viewport-h: 100vh;
   --font-ui: 'Segoe UI', Inter, -apple-system, system-ui, sans-serif;
-  --font-mono: 'Mono Arabic', 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  --font-mono: 'Mono Arabic', 'Cascadia Code', 'JetBrains Mono', ui-monospace, Menlo,
+    'DejaVu Sans Mono', Consolas, 'Courier New', monospace;
 
   --radius-sm: 4px;
   --radius-md: 7px;

@@ -367,7 +367,7 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npx playwright install chromium
+      - run: npx playwright install chromium webkit
       - run: npm run test:visual
       # The layout audit in a sample of languages: the pseudo-locale, the most
       # text (Greek), long words (Dutch), right to left (Arabic) and Japanese.

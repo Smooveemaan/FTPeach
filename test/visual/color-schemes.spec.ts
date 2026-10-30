@@ -25,7 +25,7 @@ const PALETTES = [
 
 for (const theme of ['dark', 'light'] as const) {
   for (const [scheme, label] of PALETTES) {
-    test(label + ' palette in ' + theme + ' mode', async ({ page }) => {
+    test(label + ' palette in ' + theme + ' mode @snapshot', async ({ page }) => {
       await page.goto('/test/visual/visual.html');
       await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
       await page.getByRole('menuitem', { name: 'Settings…' }).click();

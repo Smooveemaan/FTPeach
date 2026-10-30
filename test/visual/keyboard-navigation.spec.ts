@@ -3,8 +3,10 @@ import { expect, test } from '@playwright/test';
 test('search input keeps native select, copy, paste and cut shortcuts', async ({
   page,
   context,
+  browserName,
 }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  if (browserName === 'chromium')
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/test/visual/visual.html');
   const pane = page.locator('.pane').first();
   await pane.locator('.pane-search-toggle').click();

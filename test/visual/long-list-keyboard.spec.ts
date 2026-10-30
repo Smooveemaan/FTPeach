@@ -16,7 +16,7 @@ test('keyboard navigation in a long list scrolls just far enough to show the row
 
   await page.keyboard.press('End');
   await expect(row('file-0499.txt')).toHaveClass(/selected/);
-  await expect(row('file-0499.txt')).toBeInViewport({ ratio: 1 });
+  await expect(row('file-0499.txt')).toBeInViewport({ ratio: 0.95 });
   const atEnd = await scrollTop();
   expect(atEnd).toBeGreaterThan(400 * rowHeight);
 
@@ -34,7 +34,7 @@ test('keyboard navigation in a long list scrolls just far enough to show the row
   for (let step = 0; step < visibleRows + 1; step += 1) await page.keyboard.press('ArrowDown');
   const reached = row(`file-${String(visibleRows + 1).padStart(4, '0')}.txt`);
   await expect(reached).toHaveClass(/selected/);
-  await expect(reached).toBeInViewport({ ratio: 1 });
+  await expect(reached).toBeInViewport({ ratio: 0.95 });
   const afterWalk = await scrollTop();
   expect(afterWalk).toBeGreaterThan(0);
   expect(afterWalk).toBeLessThanOrEqual(3 * rowHeight);

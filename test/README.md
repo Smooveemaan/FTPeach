@@ -123,7 +123,7 @@ harness together rather than splitting a suite solely because it is long.
 ## Visual snapshots and updater fixtures
 
 `visual/main.tsx` renders the production application against `visual/visualTestApi.ts`.
-Snapshots in `visual/*.spec.ts-snapshots/` are Windows baselines, matching CI. Run `npm run test:visual:update` only after an intentional UI change, and inspect
+Snapshots in `visual/*.spec.ts-snapshots/` are Windows Chromium baselines, matching CI; their tests are tagged `@snapshot`, and the WebKit project runs the application's other functional checks. Run `npm run test:visual:update` only after an intentional UI change, and inspect
 the resulting images before committing them.
 
 The harness accepts `?lang=<code>`. RTL scenarios wait for the application's

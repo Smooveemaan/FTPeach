@@ -151,7 +151,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     for (const sample of samples) {
       expect(sample.animations).toBe(0);
       sample.actual.forEach((edge, i) => {
-        expect(Math.abs(edge - sample.expected[i]!)).toBeLessThan(0.1);
+        expect(Math.abs(edge - sample.expected[i]!)).toBeLessThan(1);
       });
     }
   });

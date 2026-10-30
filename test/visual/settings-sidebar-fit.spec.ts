@@ -51,9 +51,22 @@ for (const language of languages) {
     for (let index = 0; index < (await categories.count()); index += 1) {
       await categories.nth(index).click();
       const panel = page.locator('.settings-panel');
-      const overflow = await panel.evaluate((element) => element.scrollWidth - element.clientWidth);
-      if (overflow > 0)
-        panels.push(`"${await categories.nth(index).textContent()}" by ${overflow}px`);
+      const overflow = await panel.evaluate((element: HTMLElement) => {
+        const bounds = element.getBoundingClientRect();
+        const scrollbar = element.offsetWidth - element.clientWidth;
+        const rtl = getComputedStyle(element).direction === 'rtl';
+        const left = bounds.left + (rtl ? scrollbar : 0);
+        const right = bounds.right - (rtl ? 0 : scrollbar);
+        return Math.max(
+          0,
+          ...[...element.querySelectorAll('*')].flatMap((child) => {
+            const box = child.getBoundingClientRect();
+            return [left - box.left, box.right - right];
+          }),
+        );
+      });
+      if (overflow > 0.5)
+        panels.push(`"${await categories.nth(index).textContent()}" by ${Math.ceil(overflow)}px`);
     }
     expect(panels, 'panels overflowing horizontally').toEqual([]);
   });

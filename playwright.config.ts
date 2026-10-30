@@ -44,5 +44,11 @@ export default defineConfig({
       name: 'chromium-desktop',
       use: { browserName: 'chromium', viewport: { width: 1440, height: 900 } },
     },
+    {
+      name: 'webkit',
+      grepInvert: /@snapshot/,
+      testIgnore: '**/website-*.spec.ts',
+      use: { browserName: 'webkit', viewport: { width: 1440, height: 900 } },
+    },
   ],
 });

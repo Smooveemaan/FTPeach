@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('quitting with transfers running asks, then waits in the status bar', async ({ page }) => {
+test('quitting with transfers running asks, then waits in the status bar @snapshot', async ({
+  page,
+}) => {
   await page.goto('/test/visual/visual.html?tray=quitRequested');
   const dialog = page.locator('.modal-confirm');
   await expect(dialog).toBeVisible();

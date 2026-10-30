@@ -142,10 +142,10 @@ For a local release executable, run `npm run build` followed by `npm run rust:bu
 
 ### Visual tests and validation
 
-Install the pinned Chromium browser before running visual tests or the full check suite:
+Install the pinned Chromium and WebKit browsers before running visual tests or the full check suite:
 
 ```powershell
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run test:visual
 ```
 

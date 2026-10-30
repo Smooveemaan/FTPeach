@@ -23,6 +23,9 @@ for (const lang of ['en', 'ar'])
     await page.mouse.move(a.x + a.width / 2, y);
     await page.mouse.down();
     await page.mouse.move(b.x + b.width / 2 + (b.x > a.x ? 20 : -20), y, { steps: 12 });
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { firstLeft?: number }).firstLeft))
+      .toBeDefined();
     await page.mouse.up();
     const firstLeft = await page.evaluate(
       () => (window as unknown as { firstLeft?: number }).firstLeft,

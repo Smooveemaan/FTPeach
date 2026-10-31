@@ -9,9 +9,11 @@ import { readFile } from 'node:fs/promises';
 
 const packagePath = new URL('../../package.json', import.meta.url);
 const workflowPath = new URL('../../.github/workflows/checks.yml', import.meta.url);
+const sastPath = new URL('./sast.ts', import.meta.url);
 
 const scripts: Record<string, string> = JSON.parse(await readFile(packagePath, 'utf8')).scripts;
 const workflow = await readFile(workflowPath, 'utf8');
+const sast = await readFile(sastPath, 'utf8');
 
 const entryPoint = 'check';
 
@@ -48,6 +50,13 @@ assert.equal(
   0,
   `Local check suite is out of step with checks.yml:\n${problems.map((problem) => `- ${problem}`).join('\n')}`,
 );
+
+const imagePattern = /semgrep\/semgrep@sha256:[0-9a-f]{64}/g;
+const workflowImage = workflow.match(imagePattern);
+const localImage = sast.match(imagePattern);
+assert.equal(workflowImage?.length, 1, 'checks.yml must pin one Semgrep image digest');
+assert.equal(localImage?.length, 1, 'sast.ts must pin one Semgrep image digest');
+assert.equal(localImage[0], workflowImage[0], 'Local and CI Semgrep image digests differ');
 
 const covered = [...workflowScripts].filter((name) => reachable.has(name)).length;
 console.log(`Local suite covers ${covered} of checks.yml's ${workflowScripts.size} npm steps`);

@@ -8,13 +8,19 @@ rules:
       - patterns:
           - pattern-inside: |
               #[tauri::command]
-              async fn $FUNC(..., $INPUT: String, ...) { ... }
+              async fn $FUNC(..., $INPUT: $TYPE, ...) { ... }
           - focus-metavariable: $INPUT
+          - metavariable-regex:
+              metavariable: $TYPE
+              regex: '^(?!(?:tauri::)?(?:State|AppHandle|WebviewWindow)(?:<|$)).*$'
       - patterns:
           - pattern-inside: |
               #[tauri::command]
-              fn $FUNC(..., $INPUT: String, ...) { ... }
+              fn $FUNC(..., $INPUT: $TYPE, ...) { ... }
           - focus-metavariable: $INPUT
+          - metavariable-regex:
+              metavariable: $TYPE
+              regex: '^(?!(?:tauri::)?(?:State|AppHandle|WebviewWindow)(?:<|$)).*$'
     pattern-sinks:
       - patterns:
           - pattern-either:
@@ -22,16 +28,49 @@ rules:
               - pattern: std::fs::read_to_string($PATH)
               - pattern: std::fs::write($PATH, ...)
               - pattern: std::fs::remove_file($PATH)
+              - pattern: std::fs::copy($PATH, ...)
+              - pattern: std::fs::copy(..., $PATH)
+              - pattern: std::fs::rename($PATH, ...)
+              - pattern: std::fs::rename(..., $PATH)
+              - pattern: std::fs::File::open($PATH)
+              - pattern: std::fs::File::create($PATH)
+              - pattern: std::fs::read_dir($PATH)
+              - pattern: std::fs::remove_dir_all($PATH)
+              - pattern: std::fs::hard_link($PATH, ...)
+              - pattern: std::fs::hard_link(..., $PATH)
+              - pattern: std::os::unix::fs::symlink($PATH, ...)
+              - pattern: std::os::unix::fs::symlink(..., $PATH)
+              - pattern: std::os::windows::fs::symlink_file($PATH, ...)
+              - pattern: std::os::windows::fs::symlink_file(..., $PATH)
+              - pattern: std::os::windows::fs::symlink_dir($PATH, ...)
+              - pattern: std::os::windows::fs::symlink_dir(..., $PATH)
               - pattern: tokio::fs::read($PATH)
               - pattern: tokio::fs::read_to_string($PATH)
               - pattern: tokio::fs::write($PATH, ...)
               - pattern: tokio::fs::remove_file($PATH)
+              - pattern: tokio::fs::copy($PATH, ...)
+              - pattern: tokio::fs::copy(..., $PATH)
+              - pattern: tokio::fs::rename($PATH, ...)
+              - pattern: tokio::fs::rename(..., $PATH)
+              - pattern: tokio::fs::File::open($PATH)
+              - pattern: tokio::fs::File::create($PATH)
+              - pattern: tokio::fs::read_dir($PATH)
+              - pattern: tokio::fs::remove_dir_all($PATH)
+              - pattern: tokio::fs::hard_link($PATH, ...)
+              - pattern: tokio::fs::hard_link(..., $PATH)
+              - pattern: tokio::fs::symlink($PATH, ...)
+              - pattern: tokio::fs::symlink(..., $PATH)
+              - pattern: tokio::fs::symlink_file($PATH, ...)
+              - pattern: tokio::fs::symlink_file(..., $PATH)
+              - pattern: tokio::fs::symlink_dir($PATH, ...)
+              - pattern: tokio::fs::symlink_dir(..., $PATH)
+              - pattern: $OPTIONS.open($PATH)
           - focus-metavariable: $PATH
     pattern-sanitizers:
       # security/connection_guard.rs replaces separators and unsafe components.
       - pattern: safe_temp_name(...)
-      # security/open_with_intent.rs derives local_name with safe_temp_name.
-      - pattern: OpenWithIntent::resolve(...)
+      # OpenWithIntent derives only local_name with safe_temp_name.
+      - pattern: $INTENT.local_name
   - id: rust-disabled-tls-verification
     languages: [rust]
     severity: ERROR
@@ -46,6 +85,10 @@ rules:
     pattern-either:
       - pattern: eval(...)
       - pattern: new Function(...)
+      - pattern: Function(...)
+      - pattern: window.eval(...)
+      - pattern: globalThis.eval(...)
+      - pattern: (0, eval)(...)
   - id: typescript-html-injection
     languages: [typescript, javascript]
     severity: ERROR
@@ -54,28 +97,34 @@ rules:
       - pattern: $ELEMENT.innerHTML = $VALUE
       - pattern: $ELEMENT.outerHTML = $VALUE
       - pattern: $ELEMENT.insertAdjacentHTML(...)
+      - pattern: document.write(...)
+      - pattern: document.writeln(...)
       - pattern: <$TAG ... dangerouslySetInnerHTML={$VALUE} ... />
+      - pattern: '<$TAG ... {...{ dangerouslySetInnerHTML: $VALUE }} ... />'
   - id: rust-credential-debug
     languages: [rust]
     severity: ERROR
-    message: A derived Debug prints this credential in the clear; hold it in SensitiveString, which formats as [REDACTED] (CWE-532).
-    patterns:
-      - pattern-either:
-          - pattern: |
-              #[derive(..., Debug, ...)]
-              struct $STRUCT { ..., $FIELD: $TYPE, ... }
-          - pattern: |
-              #[derive(..., Debug, ...)]
-              pub struct $STRUCT { ..., $FIELD: $TYPE, ... }
-          - pattern: |
-              #[derive(..., Debug, ...)]
-              pub(crate) struct $STRUCT { ..., $FIELD: $TYPE, ... }
-      - metavariable-regex:
-          metavariable: $FIELD
-          regex: (?i).*(password|passphrase|secret|token|private_key).*
-      - metavariable-regex:
-          metavariable: $TYPE
-          regex: ^(String|Option<String>|Vec<u8>|Option<Vec<u8>>)$
+    message: A derived Debug prints these credentials in the clear; use SensitiveString for one string or a redacted wrapper for collections and binary secrets (CWE-532).
+    pattern-either:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  #[derive(..., Debug, ...)]
+                  struct $STRUCT { ..., $FIELD: $TYPE, ... }
+              - pattern: |
+                  #[derive(..., Debug, ...)]
+                  pub struct $STRUCT { ..., $FIELD: $TYPE, ... }
+              - pattern: |
+                  #[derive(..., Debug, ...)]
+                  pub(crate) struct $STRUCT { ..., $FIELD: $TYPE, ... }
+          - metavariable-regex:
+              metavariable: $FIELD
+              regex: (?i).*(password|passphrase|secret|token|private_key).*
+          - metavariable-regex:
+              metavariable: $TYPE
+              regex: ^(String|Option<String>|Vec<String>|Vec<u8>|Option<Vec<u8>>)$
+      # Semgrep 1.176.1 cannot parse ellipses between enum variants.
+      - pattern-regex: '(?ms)^[ \t]*#\[derive\([^\]]*\bDebug\b[^\]]*\)\]\s*(?:pub(?:\(crate\))?\s+)?enum\s+[A-Za-z_][A-Za-z0-9_]*[^{]*\{(?:(?!^\}).)*?\b[A-Za-z0-9_]*(?i:password|passphrase|secret|token|private_key)[A-Za-z0-9_]*\s*:\s*(?:String|Option<String>|Vec<String>|Vec<u8>|Option<Vec<u8>>)(?=\s*[,}])'
   - id: rust-unbounded-channel
     languages: [rust]
     severity: ERROR

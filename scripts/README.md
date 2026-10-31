@@ -23,6 +23,10 @@ Release generators write artifacts, and the advisory report uses Cargo and
 public network services. Cleanup removes generated directories; it is not part
 of validation.
 
+`npm run docs:generate` updates Markdown only between `generated:` markers from
+machine-readable sources. `npm run check:docs` performs the same work without
+writing and fails when a block is stale. Do not edit generated blocks by hand.
+
 Use `npm run clean -- --dry-run` to preview cleanup paths. Use
 `npm run clean -- --artifacts-only` to remove generated frontend and website output,
 reports, the signed test installers and Tauri schemas/permissions while keeping native

@@ -35,9 +35,10 @@ The npm commands below are plain Cargo and Tauri commands; a few that need their
 
 Run these from the repository root:
 
+<!-- generated:development-commands -->
 | Command | What it does |
 | --- | --- |
-| `npm run tauri -- dev --config src-tauri/tauri.dev.conf.json` | Run the desktop app with hot reload. |
+| `npm run dev` | Run the desktop app with hot reload. |
 | `npm run dev:renderer` | Start Vite for browser-only interface work; native operations require the desktop app. |
 | `npm test` | Run TypeScript unit tests and React component tests. |
 | `npm run lint` | Check lint rules, feature boundaries, and TypeScript types. |
@@ -49,6 +50,7 @@ Run these from the repository root:
 | `npm run build:tauri` | Build the production installer and signed update artifacts; requires updater signing credentials. |
 | `npm run check` | Run every check CI runs, including coverage, browser tests, Clippy, licenses, and build checks. |
 | `npm run clean` | Remove generated output, reports, and native build caches; see [cleanup options](#clean-up-build-output). |
+<!-- /generated:development-commands -->
 
 For a local release executable, run `npm run build` followed by `npm run rust:build:release`. Installer builds require the signing setup described in [updater signing](updater-signing.md); their output is under `%LOCALAPPDATA%\FTPeachBuild\target\release\bundle\nsis`.
 

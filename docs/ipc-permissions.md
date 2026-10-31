@@ -28,14 +28,124 @@ decides which window class may call it. The packaged smoke test then asks a live
 confirmation window which commands it can still reach, and fails if it reaches
 any. It also checks that the confirmation stays enabled while the main window
 is disabled, and that closing the confirmation restores the main window's input.
-Application commands are grouped as follows:
+The generated table is the complete application-command inventory. The notes
+that follow explain security behavior rather than repeat command groupings.
 
-- Read: `fs_list`, `fs_cancel_list`, `fs_validate_copy`, `fs_homedir`, `fs_drives`, `fs_is_dir`, `fs_is_executable`, `sites_list`,
-  `sites_has_legacy_secret`, `sites_has_plaintext_secret`, `settings_get`, `tabs_get`,
-  `vault_status`, `app_version`, `app_double_click_time`, `app_system_hour_cycle`, `session_list`, `log_recent`,
-  `updater_status`, `updater_check`.
+<!-- generated:ipc-command-inventory -->
+| Command | Kind | Main | Confirmation |
+| --- | --- | --- | --- |
+| `app_double_click_time` | app | Yes | No |
+| `app_export_settings` | sensitive | Yes | No |
+| `app_import_apply` | sensitive | Yes | No |
+| `app_import_discard` | sensitive | Yes | No |
+| `app_import_preview` | sensitive | Yes | No |
+| `app_open_external` | app | Yes | No |
+| `app_quit` | app | Yes | No |
+| `app_reset_layout` | app | Yes | No |
+| `app_set_drop_allowed` | app | Yes | No |
+| `app_set_interface_scale` | app | Yes | No |
+| `app_set_window_border` | app | Yes | No |
+| `app_show_system_menu` | app | Yes | No |
+| `app_state_flushed` | app | Yes | No |
+| `app_system_hour_cycle` | app | Yes | No |
+| `app_version` | app | Yes | No |
+| `authorize_sensitive` | sensitive | Yes | No |
+| `debug_open_devtools` | app | Yes | No |
+| `dialog_select_application` | app | Yes | No |
+| `dialog_select_ca_cert_file` | app | Yes | No |
+| `dialog_select_key_file` | app | Yes | No |
+| `dialog_select_local_dir` | app | Yes | No |
+| `drag_out_start` | app | Yes | No |
+| `drag_out_start_local` | app | Yes | No |
+| `fs_cancel_list` | app | Yes | No |
+| `fs_copy_file` | app | Yes | No |
+| `fs_create_file` | app | Yes | No |
+| `fs_delete` | sensitive | Yes | No |
+| `fs_drives` | app | Yes | No |
+| `fs_execute_path` | sensitive | Yes | No |
+| `fs_homedir` | app | Yes | No |
+| `fs_is_dir` | app | Yes | No |
+| `fs_is_executable` | app | Yes | No |
+| `fs_list` | app | Yes | No |
+| `fs_mkdir` | app | Yes | No |
+| `fs_open_document` | sensitive | Yes | No |
+| `fs_rename` | app | Yes | No |
+| `fs_reveal_path` | sensitive | Yes | No |
+| `fs_validate_copy` | app | Yes | No |
+| `log_export_diagnostics` | app | Yes | No |
+| `log_open_folder` | app | Yes | No |
+| `log_recent` | app | Yes | No |
+| `log_save` | app | Yes | No |
+| `notifications_transfers_complete` | app | Yes | No |
+| `open_with_discard_recovered_edits` | app | Yes | No |
+| `open_with_mark_synced` | app | Yes | No |
+| `open_with_recovered_edits` | app | Yes | No |
+| `open_with_reveal_recovered_edits` | app | Yes | No |
+| `open_with_start` | sensitive | Yes | No |
+| `open_with_stop` | app | Yes | No |
+| `proxy_test` | app | Yes | No |
+| `respond_sensitive_confirmation` | sensitive | No | Yes |
+| `sensitive_confirmation_prompt` | sensitive | No | Yes |
+| `sensitive_confirmation_ready` | sensitive | No | Yes |
+| `session_cancel_connect` | app | Yes | No |
+| `session_chmod` | app | Yes | No |
+| `session_connect` | app | Yes | No |
+| `session_create_file` | app | Yes | No |
+| `session_delete` | app | Yes | No |
+| `session_disconnect` | app | Yes | No |
+| `session_list` | app | Yes | No |
+| `session_mkdir` | app | Yes | No |
+| `session_rename` | app | Yes | No |
+| `session_trust_host_key` | sensitive | Yes | No |
+| `settings_get` | app | Yes | No |
+| `settings_reveal_proxy_password` | sensitive | Yes | No |
+| `settings_set` | app | Yes | No |
+| `settings_set_security` | sensitive | Yes | No |
+| `sites_apply_layout` | app | Yes | No |
+| `sites_delete` | app | Yes | No |
+| `sites_delete_folder` | app | Yes | No |
+| `sites_has_legacy_secret` | app | Yes | No |
+| `sites_has_plaintext_secret` | app | Yes | No |
+| `sites_list` | app | Yes | No |
+| `sites_reveal_secret` | sensitive | Yes | No |
+| `sites_save` | sensitive | Yes | No |
+| `sites_save_folder` | app | Yes | No |
+| `smoke_backend_checks` | app | Yes | No |
+| `smoke_finish` | app | Yes | No |
+| `smoke_probe_confirmation_acl` | app | Yes | No |
+| `tabs_clear` | app | Yes | No |
+| `tabs_get` | app | Yes | No |
+| `tabs_set` | app | Yes | No |
+| `transfer_cancel` | app | Yes | No |
+| `transfer_cancel_recursive` | app | Yes | No |
+| `transfer_cancel_remote_copy` | app | Yes | No |
+| `transfer_discard_recursive` | app | Yes | No |
+| `transfer_download` | app | Yes | No |
+| `transfer_recursive` | app | Yes | No |
+| `transfer_remote_copy` | app | Yes | No |
+| `transfer_upload` | app | Yes | No |
+| `transfer_validate_remote_copy` | app | Yes | No |
+| `tray_hide_window` | app | Yes | No |
+| `tray_set_model` | app | Yes | No |
+| `updater_check` | app | Yes | No |
+| `updater_download` | app | Yes | No |
+| `updater_install` | app | Yes | No |
+| `updater_status` | app | Yes | No |
+| `vault_change_password` | app | Yes | No |
+| `vault_disable_system_unlock` | app | Yes | No |
+| `vault_enable_system_unlock` | app | Yes | No |
+| `vault_lock` | app | Yes | No |
+| `vault_note_activity` | app | Yes | No |
+| `vault_reset` | sensitive | Yes | No |
+| `vault_setup` | app | Yes | No |
+| `vault_status` | app | Yes | No |
+| `vault_unlock` | app | Yes | No |
+| `vault_unlock_system` | app | Yes | No |
+| `vault_use_system_protection` | sensitive | Yes | No |
+<!-- /generated:ipc-command-inventory -->
+
 - Window and shell: `app_set_interface_scale`, `app_set_window_border`, `app_show_system_menu`, which opens the window's own Windows system menu at the pointer, `app_set_drop_allowed`, which only sets the cursor shown over the window during a file drag from another app, `app_reset_layout`, `app_open_external`, which
-  opens only an `https://` URL, `log_open_folder`, which opens the log folder typed in Settings (FTPeach's own when it is empty), a folder that saving the setting could point the log at anyway, and `debug_open_devtools`, which does nothing in a release build.
+  opens only an `https://` URL, `log_open_folder`, which opens the log folder typed in Settings (FTPeach's own when it is empty), a folder that saving the setting could point the log at anyway, and `debug_open_devtools`, which does nothing in a release build. `app_quit` quits without asking about running transfers and without hiding to the tray; the window calls it for File > Exit when nothing is running, or once it has asked.
 - Native pickers: `dialog_select_local_dir`, `dialog_select_key_file`,
   `dialog_select_ca_cert_file` and `dialog_select_application`. A network share or a program picked
   there is approved for later commands.
@@ -43,12 +153,6 @@ Application commands are grouped as follows:
   the mouse button is still down.
 - Updater: `updater_download` and `updater_install`; the staged installer is verified again
   before it runs, as described in [security](security.md#updater-endpoint-and-application).
-- Write: `fs_mkdir`, `fs_rename`, `fs_copy_file`, `fs_create_file`, `sites_save`,
-  `sites_save_folder`, `sites_apply_layout`, `settings_set`, `tabs_set`, `proxy_test`,
-  session/transfer commands, logging, notifications, `tray_set_model`, `tray_hide_window`
-  and `app_quit`, which quits without asking about running transfers and without hiding to
-  the tray; the window calls it for File > Exit when nothing is running, or once it has
-  asked.
 - Events to the renderer: `tray:action` goes only to the `main` window when a tray menu item
   is clicked. The backend maps the item ID to an action through its copy of the last
   `tray_set_model` model, so the payload never carries text read from the menu; the renderer
@@ -58,7 +162,6 @@ Application commands are grouped as follows:
   also sends `quitRequested` when a quit from the tray or the window close button finds
   transfers running; if no model saying the question is open arrives within 10 seconds,
   it quits anyway, so a renderer that cannot answer never makes quitting impossible.
-- Delete: `sites_delete`, `sites_delete_folder`, `tabs_clear`, `session_delete`.
 - Vault management: `vault_setup`, `vault_unlock`, `vault_lock`, system-unlock commands,
   `vault_change_password`. `vault_use_system_protection` lives in the `sensitive` plugin and
   needs a token issued only after the confirmation window verified the master password.

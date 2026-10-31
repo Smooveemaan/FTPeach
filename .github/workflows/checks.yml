@@ -144,6 +144,7 @@ jobs:
       - run: npm run check:rust-boundaries
       - run: npm run check:command-acl
       - run: npm run check:ignored-tests
+      - run: npm run check:docs
       # A behavior change must reach its document and the changelog, or its
       # commit message must say why not (scripts/checks/check-doc-impact.ts).
       - run: npm run check:docs-impact

@@ -5,7 +5,7 @@ kind: `vulnerability`, `unmaintained`, `unsound` or `notice`, or `yanked` for a 
 version ignored by name. CI rejects
 missing, expired, or longer-than-120-day reviews and unknown kinds; the weekly
 audit also fails when a kind disagrees with RustSec's own classification.
-CODEOWNERS requires the security owner to review changes. Weekly CI runs
+CODEOWNERS assigns changes to this policy to the security owner. Weekly CI runs
 `cargo deny check advisories licenses`.
 
 Each `src-tauri/deny.toml` reason repeats the review deadline; the policy check rejects

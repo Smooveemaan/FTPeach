@@ -19,7 +19,7 @@
 - Pin third-party actions to full commit SHAs with version comments, and container images to digests.
 - Declare permissions per job and disable persisted checkout credentials.
 - `dependabot.yml` checks npm, Cargo and GitHub Actions monthly. npm and Cargo minor/patch updates are grouped; major updates are ignored for manual review.
-- `CODEOWNERS` assigns GitHub configuration and security-sensitive files to the repository security owner. Required owner approval is configured in repository rules.
+- `CODEOWNERS` assigns GitHub configuration and security-sensitive files to the repository security owner.
 
 ## Contributions
 

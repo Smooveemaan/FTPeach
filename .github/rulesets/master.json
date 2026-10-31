@@ -63,7 +63,19 @@
             "integration_id": 15368
           },
           {
+            "context": "checks / rust-linux",
+            "integration_id": 15368
+          },
+          {
             "context": "checks / rust-test",
+            "integration_id": 15368
+          },
+          {
+            "context": "checks / rust-test-unix (ubuntu-22.04)",
+            "integration_id": 15368
+          },
+          {
+            "context": "checks / rust-test-unix (macos-15)",
             "integration_id": 15368
           },
           {

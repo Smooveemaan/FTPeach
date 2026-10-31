@@ -31,6 +31,17 @@ updates:
       # that the patched copy in src-tauri/vendor/ no longer replaces.
       - dependency-name: 'tauri'
         update-types: [version-update:semver-minor]
+  - package-ecosystem: cargo
+    directory: /src-tauri/fuzz
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      cargo-fuzz-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:

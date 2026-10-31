@@ -88,6 +88,21 @@ test('sizes the window in physical pixels at the page scale, no larger than the 
   expect(height).toBeLessThanOrEqual(150);
 });
 
+test('a hidden WebKit window with zero height gets a valid initial size', async () => {
+  vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(0);
+  vi.spyOn(window.screen, 'availHeight', 'get').mockReturnValue(768);
+  await open();
+  expect(mocks.setSize.mock.calls[0]?.[0].height).toBeGreaterThan(0);
+});
+
+test('a hidden window reports ready without waiting for an animation frame', async () => {
+  vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
+  await open();
+  expect(mocks.invoke).toHaveBeenCalledWith(`${prefix}sensitive_confirmation_ready`, {
+    requestId: 'request-1',
+  });
+});
+
 test('a missing prompt closes the window without authorizing anything', async () => {
   mocks.invoke.mockRejectedValue(new Error('expired request'));
   render(<SecurityConfirmation requestId="expired" />);

@@ -147,11 +147,12 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
       const availableWidth = Math.max(440, availWidth - 48);
       const messageWidth = message?.scrollWidth ?? 0;
       const width = Math.ceil(Math.min(720, availableWidth, Math.max(440, messageWidth + 28)));
-      await getCurrentWindow().setSize(size(width, window.innerHeight));
+      await getCurrentWindow().setSize(size(width, Math.max(170, window.innerHeight)));
       // Set by this effect's cleanup, which the compiler does not model.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (cancelled) return;
-      requestAnimationFrame(() => {
+      // Hidden WebKit windows suspend animation frames before the confirmation is shown.
+      setTimeout(() => {
         void (async () => {
           const currentContent = contentRef.current;
           if (!currentContent || cancelled) return;

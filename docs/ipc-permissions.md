@@ -26,9 +26,10 @@ permission to call it.
 lists and both capability files, so a new command cannot ship until someone
 decides which window class may call it. The packaged smoke test then asks a live
 confirmation window which commands it can still reach, and fails if it reaches
-any. It also checks that the confirmation stays enabled while the main window
-is disabled, and that closing the confirmation restores the main window's input.
-The generated table is the complete application-command inventory. The notes
+any. Where native window disabling is supported, it also checks that the
+confirmation stays enabled while the main window is disabled, and that closing
+the confirmation restores the main window's input. The generated table is the
+complete application-command inventory. The notes
 that follow explain security behavior rather than repeat command groupings.
 
 <!-- generated:ipc-command-inventory -->

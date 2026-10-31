@@ -395,8 +395,12 @@ jobs:
     needs: changes
     # The packaged application includes both Rust and frontend changes.
     if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.frontend == 'true'
-    runs-on: windows-latest
-    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     env:
       # Share compiler results with the Rust test job.
       SCCACHE_GHA_ENABLED: 'true'
@@ -411,6 +415,11 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Install Linux smoke dependencies
+        if: runner.os == 'Linux'
+        run: >-
+          sudo apt-get update && sudo apt-get install --yes
+          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev xvfb
       - name: Install pinned Rust toolchain
         run: rustup show
 
@@ -424,4 +433,9 @@ jobs:
 
       - run: npm ci
       - run: npm run build:packaged-smoke
-      - run: npm run test:packaged-smoke
+      - name: Run packaged smoke under Xvfb
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:packaged-smoke
+      - name: Run packaged smoke
+        if: runner.os != 'Linux'
+        run: npm run test:packaged-smoke

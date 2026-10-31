@@ -106,8 +106,8 @@ release's notes. A `manual` row links to its steps.
 | Cell | Lane | How |
 | --- | --- | --- |
 | Default Rust, Node, component and visual suites | ci | `checks.yml` |
-| Packaged WebView2 smoke: shutdown flush, editor recovery, vault lock | ci | `packaged-smoke` |
-| Portable copy keeps its data beside the program and none in the profile folders | ci | `packaged-smoke`, second run |
+| Packaged native smoke on Windows, macOS and Linux: shutdown flush, editor recovery, vault lock | ci | `packaged-smoke` matrix |
+| Portable Windows copy keeps its data beside the program and none in the profile folders | ci | `packaged-smoke`, second run on Windows |
 | Clean install, upgrade from the previous release, uninstall, the updater, portable update | ci | `installer` |
 | Desktop end-to-end, server matrix and protocol compatibility suites | ci | the `private-suites` status of the tagged commit |
 | Native desktop checks: Explorer drag and drop, file dialogs, the tray and its notifications | local | run by the maintainer before the release |

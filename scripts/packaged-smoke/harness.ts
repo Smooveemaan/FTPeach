@@ -16,7 +16,45 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(scriptDirectory, '..', '..');
-const APP_PATH = path.join(REPO_ROOT, '.tools', 'smoke-target', 'debug', 'app.exe');
+
+/** The debug executable produced by `npm run build:packaged-smoke`. */
+export function smokeAppPath(platform = process.platform) {
+  return path.join(
+    REPO_ROOT,
+    '.tools',
+    'smoke-target',
+    'debug',
+    platform === 'win32' ? 'app.exe' : 'app',
+  );
+}
+
+const APP_PATH = smokeAppPath();
+
+/** Environment that keeps the smoke profile out of the user's real folders. */
+export function smokeProfileEnvironment(
+  profile: string,
+  platform = process.platform,
+  portable = false,
+) {
+  if (platform !== 'win32') {
+    return {
+      HOME: profile,
+      // The smoke edit-recovery override reads LOCALAPPDATA on every OS.
+      LOCALAPPDATA: profile,
+      XDG_CONFIG_HOME: path.join(profile, 'config'),
+      XDG_DATA_HOME: path.join(profile, 'data'),
+      XDG_CACHE_HOME: path.join(profile, 'cache'),
+      XDG_STATE_HOME: path.join(profile, 'state'),
+    };
+  }
+  return {
+    APPDATA: profile,
+    LOCALAPPDATA: profile,
+    // An installed copy's WebView2 profile would otherwise go to the real
+    // one; a portable copy names its own, which this would override.
+    ...(portable ? {} : { WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'webview2') }),
+  };
+}
 
 /** What a portable copy must have put beside the program by the time it exits. */
 const PORTABLE_DATA = ['settings.json', 'tabs.json', 'local', 'webview'];
@@ -80,11 +118,7 @@ export async function runPackagedSmoke({ portable = false, timeoutMs = 30_000 } 
     cwd: REPO_ROOT,
     env: {
       ...process.env,
-      APPDATA: profile,
-      LOCALAPPDATA: profile,
-      // An installed copy's WebView2 profile would otherwise go to the real
-      // one; a portable copy names its own, which this would override.
-      ...(portable ? {} : { WEBVIEW2_USER_DATA_FOLDER: path.join(profile, 'webview2') }),
+      ...smokeProfileEnvironment(profile, process.platform, portable),
       FTPEACH_SMOKE_TEST: '1',
       FTPEACH_SMOKE_RESULT: resultPath,
     },

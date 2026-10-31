@@ -78,8 +78,9 @@ pub fn record_acl_probe(result: &str) {
 /// Asks a live confirmation window which application commands it can still
 /// call. The window class is the point of the test: its capability file grants
 /// it only the three confirmation commands, so everything else has to be
-/// rejected by the ACL before it reaches any backend code. Also verifies that
-/// the visible confirmation blocks its parent and closing it restores input.
+/// rejected by the ACL before it reaches any backend code. Also verifies
+/// visibility and closing; where native `set_enabled` exists, it verifies that
+/// the confirmation blocks its parent and closing restores input.
 #[tauri::command]
 pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<String, String> {
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_none() {
@@ -97,12 +98,15 @@ pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<Strin
     .await
     .ok_or("no confirmation window opened")?;
     let main = app.get_webview_window("main").ok_or("no main window")?;
+    // tao's Linux backend does not implement set_enabled; visibility and ACL still run.
+    let parent_can_be_disabled = !cfg!(target_os = "linux");
     let result = async {
         wait_for(Duration::from_secs(10), || {
-            (window.is_visible().ok()? && !main.is_enabled().ok()?).then_some(())
+            (window.is_visible().ok()? && (!parent_can_be_disabled || !main.is_enabled().ok()?))
+                .then_some(())
         })
         .await
-        .ok_or("confirmation did not appear and block the main window")?;
+        .ok_or("confirmation did not appear with the expected parent state")?;
         if !window.is_enabled().map_err(|error| error.to_string())? {
             return Err("confirmation itself is disabled".to_string());
         }

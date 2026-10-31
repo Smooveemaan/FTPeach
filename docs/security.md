@@ -28,11 +28,13 @@ Sensitive file, reset, secret-reveal, and import/export operations are registere
 The production CSP is defined only in `tauri.conf.json`. Scripts are restricted to `self`, without `unsafe-eval` or external script sources. `npm run check:release-config` rejects broad `*:default` permissions, a duplicate HTML CSP, or a weakened script policy.
 
 Confirmation windows require the main window as their native parent (an owner
-on Windows, a child relationship on macOS, a transient parent on Linux). Before
-showing a confirmation, the backend disables the main window's input through
-Tauri; it restores input when the last confirmation closes or is destroyed.
-Repeated readiness notifications do not disable an already disabled window
-again, since macOS implements this through an attached blocking sheet.
+on Windows, a child relationship on macOS, a transient parent on Linux). On
+Windows and macOS, the backend disables the main window's input through Tauri
+before showing a confirmation and restores input when the last confirmation
+closes or is destroyed. Repeated readiness notifications do not disable an
+already disabled window again, since macOS implements this through an attached
+blocking sheet. Tao's Linux backend does not implement `set_enabled`, so the
+transient confirmation currently does not block main-window input there.
 This controls native interaction, not IPC authorization: the main renderer's
 permissions remain as described above.
 

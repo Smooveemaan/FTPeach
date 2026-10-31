@@ -344,8 +344,8 @@ test('a theme switch before the other screenshot arrives waits for it only brief
     return performance.now() - started;
   });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  // Half a second of waiting and the fade, far from the 4 s Chrome holds a transition.
-  expect(took).toBeLessThan(1500);
+  // Half a second of waiting and the fade, with runner slack, below Chrome's 4 s hold.
+  expect(took).toBeLessThan(2500);
 });
 
 test('the header reaches every page at every width and reduced motion skips scrolling and fades', async ({

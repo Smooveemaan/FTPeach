@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useLayoutEffect, useId, useRef } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTruncated } from '../hooks/useTruncated.ts';
@@ -107,14 +107,14 @@ export default function Modal({
 }: ModalProps) {
   const { t } = useTranslation();
   const stackToken = useRef({}).current;
-  useEffect(() => {
+  useLayoutEffect(() => {
     openModals.push(stackToken);
     return () => {
       openModals.splice(openModals.indexOf(stackToken), 1);
     };
   }, [stackToken]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !closeDisabled && openModals.at(-1) === stackToken) onClose();
     };
@@ -126,14 +126,14 @@ export default function Modal({
   // but the window border is outside the webview and no rule reaches it. Every
   // dialog in the app is this component, so holding the scrim for as long as
   // one is mounted covers all of them, nesting included.
-  useEffect(() => holdDialogScrim(), []);
+  useLayoutEffect(() => holdDialogScrim(), []);
 
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const [titleRef, titleTruncated] = useTruncated<HTMLSpanElement>([title]);
   const previouslyFocusedRef = useRef(document.activeElement);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const previouslyFocused = previouslyFocusedRef.current;
     const focusableSelector =
       'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';

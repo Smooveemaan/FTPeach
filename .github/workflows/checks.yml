@@ -28,7 +28,7 @@ jobs:
           # The git diff below needs the base commit, which a shallow clone lacks.
           fetch-depth: 0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
 
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -132,7 +132,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -155,7 +155,7 @@ jobs:
       - run: npm run check:duplicates
       - name: Keep the duplication report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: duplication-report
           path: duplication-report/
@@ -166,7 +166,7 @@ jobs:
       - run: npm run coverage
       - name: Keep the coverage report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-frontend
           path: coverage/
@@ -174,7 +174,7 @@ jobs:
       - run: npm run build
       - name: Keep the startup bundle report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bundle-report
           path: dist/bundle-report.json
@@ -193,7 +193,7 @@ jobs:
           persist-credentials: false
       - name: Install pinned Rust toolchain
         run: rustup show
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri/fuzz
       - name: Replay saved parser regression inputs
@@ -217,7 +217,7 @@ jobs:
           libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev dosfstools
       - name: Install pinned Rust toolchain
         run: rustup show
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri
       - run: cargo check --locked --all-targets --manifest-path src-tauri/Cargo.toml
@@ -252,7 +252,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
 
@@ -261,7 +261,7 @@ jobs:
 
       - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
 
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri
 
@@ -302,7 +302,7 @@ jobs:
           libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
       - name: Install pinned Rust toolchain
         run: rustup component add clippy
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri
       - name: Clippy
@@ -330,7 +330,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
 
@@ -344,7 +344,7 @@ jobs:
       - run: npm run rust:coverage
       - name: Keep the Rust coverage report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-rust
           path: coverage/
@@ -362,7 +362,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -370,22 +370,48 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium webkit
       - run: npm run test:visual
+      # Traces, screenshots and diffs of failed attempts, including a test that
+      # passed only on a retry: a pass after a retry is not proof.
+      - name: Keep the visual test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: visual-results
+          path: test-results/visual/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  i18n-audit-sample:
+    permissions:
+      contents: read
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install chromium
       # The layout audit in a sample of languages: the pseudo-locale, the most
       # text (Greek), long words (Dutch), right to left (Arabic) and Japanese.
       # i18n-audit.yml runs every language weekly.
       - run: npm run i18n:audit
         env:
           I18N_AUDIT_LANGS: pseudo,el,nl,ar,ja
-      # Traces, screenshots and diffs of failed attempts, including a test that
-      # passed only on a retry: a pass after a retry is not proof.
-      - name: Keep the visual test results
+      - name: Keep the i18n audit results
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: visual-results
-          path: |
-            test-results/visual/
-            test-results/i18n-audit/
+          name: i18n-audit-results
+          path: test-results/i18n-audit/
           if-no-files-found: ignore
           retention-days: 14
 
@@ -410,7 +436,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -419,13 +445,13 @@ jobs:
         if: runner.os == 'Linux'
         run: >-
           sudo apt-get update && sudo apt-get install --yes
-          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev xvfb
+          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev xvfb dbus-x11
       - name: Install pinned Rust toolchain
         run: rustup show
 
       - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
 
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri
           # smoke-build writes to this target directory instead of src-tauri/target.
@@ -435,7 +461,9 @@ jobs:
       - run: npm run build:packaged-smoke
       - name: Run packaged smoke under Xvfb
         if: runner.os == 'Linux'
-        run: xvfb-run -a npm run test:packaged-smoke
+        env:
+          TAURI_DRIVER_DEBUG: '1'
+        run: dbus-run-session -- xvfb-run -a npm run test:packaged-smoke
       - name: Run packaged smoke
         if: runner.os != 'Linux'
         run: npm run test:packaged-smoke

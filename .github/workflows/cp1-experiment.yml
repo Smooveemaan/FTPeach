@@ -47,12 +47,39 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  i18n-audit:
+  i18n-audit-sequential:
+    if: ${{ !inputs.parallel-i18n }}
     permissions:
       contents: read
-    # An empty dependency list starts the job immediately; otherwise it preserves
-    # the existing sequential Visual -> i18n order for the baseline measurement.
-    needs: ${{ github.event.inputs.parallel-i18n == 'true' && fromJSON('[]') || fromJSON('["visual-regression"]') }}
+    needs: visual-regression
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run i18n:audit
+        env:
+          I18N_AUDIT_LANGS: pseudo,el,nl,ar,ja
+      - name: Keep the i18n audit results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cp1-i18n-audit-results
+          path: test-results/i18n-audit/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  i18n-audit-parallel:
+    if: ${{ inputs.parallel-i18n }}
+    permissions:
+      contents: read
     runs-on: windows-latest
     timeout-minutes: 30
     steps:

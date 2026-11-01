@@ -52,7 +52,7 @@ jobs:
       contents: read
     # An empty dependency list starts the job immediately; otherwise it preserves
     # the existing sequential Visual -> i18n order for the baseline measurement.
-    needs: ${{ inputs.parallel-i18n && fromJSON('[]') || fromJSON('["visual-regression"]') }}
+    needs: ${{ github.event.inputs.parallel-i18n == 'true' && fromJSON('[]') || fromJSON('["visual-regression"]') }}
     runs-on: windows-latest
     timeout-minutes: 30
     steps:

@@ -542,7 +542,9 @@ export const test = base.extend<{
     const app = await launchApp(
       appSettings,
       appStore,
-      (page) => page.context().tracing.start({ screenshots: true, snapshots: true }),
+      async (page) => {
+        await page.context().tracing.start({ screenshots: true, snapshots: true });
+      },
       appPortable,
       appRealDialogs,
       (page) =>

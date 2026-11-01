@@ -445,7 +445,7 @@ jobs:
         if: runner.os == 'Linux'
         run: >-
           sudo apt-get update && sudo apt-get install --yes
-          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev xvfb
+          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev xvfb dbus-x11
       - name: Install pinned Rust toolchain
         run: rustup show
 
@@ -461,7 +461,9 @@ jobs:
       - run: npm run build:packaged-smoke
       - name: Run packaged smoke under Xvfb
         if: runner.os == 'Linux'
-        run: xvfb-run -a npm run test:packaged-smoke
+        env:
+          TAURI_DRIVER_DEBUG: '1'
+        run: dbus-run-session -- xvfb-run -a npm run test:packaged-smoke
       - name: Run packaged smoke
         if: runner.os != 'Linux'
         run: npm run test:packaged-smoke

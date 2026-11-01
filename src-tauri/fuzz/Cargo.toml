@@ -19,7 +19,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 reqwest = { version = "0.13.4", default-features = false }
 quick-xml = "0.42.0"
 percent-encoding = "2.3.2"
-suppaftp = { version = "=12.1.1", default-features = false, features = ["tokio"] }
+suppaftp = { version = "=12.2.1", default-features = false, features = ["tokio"] }
 tokio = { version = "1.53.1", features = ["rt", "net", "io-util", "time", "macros"] }
 russh-sftp = "=3.0.1"
 # runtime/update_staging.rs

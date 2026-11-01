@@ -155,7 +155,7 @@ jobs:
       - run: npm run check:duplicates
       - name: Keep the duplication report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: duplication-report
           path: duplication-report/
@@ -166,7 +166,7 @@ jobs:
       - run: npm run coverage
       - name: Keep the coverage report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-frontend
           path: coverage/
@@ -174,7 +174,7 @@ jobs:
       - run: npm run build
       - name: Keep the startup bundle report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bundle-report
           path: dist/bundle-report.json
@@ -344,7 +344,7 @@ jobs:
       - run: npm run rust:coverage
       - name: Keep the Rust coverage report
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-rust
           path: coverage/
@@ -374,7 +374,7 @@ jobs:
       # passed only on a retry: a pass after a retry is not proof.
       - name: Keep the visual test results
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: visual-results
           path: test-results/visual/
@@ -408,7 +408,7 @@ jobs:
           I18N_AUDIT_LANGS: pseudo,el,nl,ar,ja
       - name: Keep the i18n audit results
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: i18n-audit-results
           path: test-results/i18n-audit/

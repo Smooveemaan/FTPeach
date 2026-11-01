@@ -370,12 +370,6 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium webkit
       - run: npm run test:visual
-      # The layout audit in a sample of languages: the pseudo-locale, the most
-      # text (Greek), long words (Dutch), right to left (Arabic) and Japanese.
-      # i18n-audit.yml runs every language weekly.
-      - run: npm run i18n:audit
-        env:
-          I18N_AUDIT_LANGS: pseudo,el,nl,ar,ja
       # Traces, screenshots and diffs of failed attempts, including a test that
       # passed only on a retry: a pass after a retry is not proof.
       - name: Keep the visual test results
@@ -383,9 +377,41 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: visual-results
-          path: |
-            test-results/visual/
-            test-results/i18n-audit/
+          path: test-results/visual/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  i18n-audit-sample:
+    permissions:
+      contents: read
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install chromium
+      # The layout audit in a sample of languages: the pseudo-locale, the most
+      # text (Greek), long words (Dutch), right to left (Arabic) and Japanese.
+      # i18n-audit.yml runs every language weekly.
+      - run: npm run i18n:audit
+        env:
+          I18N_AUDIT_LANGS: pseudo,el,nl,ar,ja
+      - name: Keep the i18n audit results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: i18n-audit-results
+          path: test-results/i18n-audit/
           if-no-files-found: ignore
           retention-days: 14
 

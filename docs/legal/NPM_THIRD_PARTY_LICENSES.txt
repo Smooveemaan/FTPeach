@@ -2,7 +2,7 @@ FTPeach npm runtime dependency licenses
 ========================================
 
 Generated from package-lock.json. Do not edit manually.
-package-lock.json SHA-256: 84efeb0e1010992628a451cbeae5efa48b76107ae96ec5cb209daf77a06cd893
+package-lock.json SHA-256: 280dc4f1f30ef375e709a8038e8bab1435a677c132be4b77d7c703e658fdcf01
 
 @babel/runtime 7.29.7
 =====================
@@ -155,7 +155,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-@tauri-apps/api 2.12.1
+@tauri-apps/api 2.12.4
 ======================
 Declared license: Apache-2.0 OR MIT
 Source: git+https://github.com/tauri-apps/tauri.git
@@ -418,8 +418,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-i18next 26.4.2
-==============
+i18next 26.5.11
+===============
 Declared license: MIT
 Source: https://github.com/i18next/i18next.git
 
@@ -448,7 +448,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react 19.3.0
+react 19.3.1
 ============
 Declared license: MIT
 Source: https://github.com/react/react.git
@@ -478,7 +478,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react-dom 19.3.0
+react-dom 19.3.1
 ================
 Declared license: MIT
 Source: https://github.com/react/react.git
@@ -508,8 +508,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react-i18next 17.0.15
-=====================
+react-i18next 17.1.9
+====================
 Declared license: MIT
 Source: https://github.com/i18next/react-i18next.git
 
@@ -538,7 +538,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-react-window 2.3.3
+react-window 2.5.1
 ==================
 Declared license: MIT
 Source: https://github.com/bvaughn/react-window.git

@@ -4,6 +4,7 @@ pub(crate) mod model;
 use menu::{LiveMenu, MenuCommand};
 use model::{TrayAction, TrayModel};
 use std::sync::{Mutex, MutexGuard, PoisonError};
+use std::time::{Duration, Instant};
 use tauri::{
     AppHandle, Emitter, Manager, WebviewWindow,
     image::Image,
@@ -14,6 +15,7 @@ use tauri::{
 
 const TRAY_ID: &str = "main";
 const ACTION_EVENT: &str = "tray:action";
+const MENU_CALLBACK_SETTLE: Duration = Duration::from_millis(100);
 
 /// The tray icon only exists while the main window is hidden to the tray, so
 /// it is created and removed at runtime; this keeps what it needs in between.
@@ -32,6 +34,7 @@ struct TrayInner {
     /// Whether the window is hidden to the tray. The icon is removed on a
     /// later turn of the event loop, and a hide landing in between keeps it.
     hidden: bool,
+    last_menu_event: Option<Instant>,
 }
 
 impl TrayInner {
@@ -49,32 +52,49 @@ impl TrayState {
 /// Stores the renderer's model for an icon created later and applies it to
 /// the current one.
 pub fn set_model(app: &AppHandle, model: TrayModel) {
-    let has_icon = {
+    let (has_icon, defer) = {
         let state = app.state::<TrayState>();
         let mut inner = state.lock();
         inner.model = Some(model);
         inner.generation += 1;
-        inner.live.is_some()
+        (
+            inner.live.is_some(),
+            inner
+                .last_menu_event
+                .is_some_and(|at| at.elapsed() < MENU_CALLBACK_SETTLE),
+        )
     };
     if !has_icon {
         return;
     }
-    // On the main thread, like every other change to the icon: the item
-    // setters wait for it, and it may be holding this lock right now.
-    let handle = app.clone();
-    let result = app.run_on_main_thread(move || {
-        let state = handle.state::<TrayState>();
-        let mut inner = state.lock();
-        let model = inner.model();
-        let (Some(live), Some(tray)) = (inner.live.as_mut(), handle.tray_by_id(TRAY_ID)) else {
-            return;
-        };
-        if let Err(error) = live.apply(&handle, &tray, &model) {
+    let app = app.clone();
+    let update = move || {
+        // On the main thread, like every other change to the icon: the item
+        // setters wait for it, and it may be holding this lock right now.
+        let handle = app.clone();
+        let result = app.run_on_main_thread(move || {
+            let state = handle.state::<TrayState>();
+            let mut inner = state.lock();
+            let model = inner.model();
+            let (Some(live), Some(tray)) = (inner.live.as_mut(), handle.tray_by_id(TRAY_ID)) else {
+                return;
+            };
+            if let Err(error) = live.apply(&handle, &tray, &model) {
+                log::warn!("could not update the tray menu: {error}");
+            }
+        });
+        if let Err(error) = result {
             log::warn!("could not update the tray menu: {error}");
         }
-    });
-    if let Err(error) = result {
-        log::warn!("could not update the tray menu: {error}");
+    };
+    if defer {
+        // Replacing the menu inside its native invocation can leave it open.
+        tauri::async_runtime::spawn(async move {
+            tokio::time::sleep(MENU_CALLBACK_SETTLE).await;
+            update();
+        });
+    } else {
+        update();
     }
 }
 
@@ -132,6 +152,7 @@ pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
             generation: 0,
             live: None,
             hidden: false,
+            last_menu_event: None,
         }),
     });
     // Once, here: a menu handler given to the tray builder is added to a
@@ -145,7 +166,8 @@ pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
         // from the item's text.
         let command = {
             let state = app.state::<TrayState>();
-            let inner = state.lock();
+            let mut inner = state.lock();
+            inner.last_menu_event = Some(Instant::now());
             // Menu events arrive on the main thread, where the setters this
             // calls take effect at once.
             if let Some(live) = &inner.live
@@ -211,10 +233,11 @@ pub fn hide_to_tray(window: WebviewWindow) {
 pub fn restore(app: &AppHandle) {
     app.state::<TrayState>().lock().hidden = false;
     show_and_focus(app);
-    // Removed on a later turn of the event loop: this usually runs inside the
-    // icon's own click or menu handler.
+    // Removing the icon from inside its native menu callback can strand that
+    // menu on screen; let Windows finish the invocation first.
     let handle = app.clone();
     tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(MENU_CALLBACK_SETTLE).await;
         let app = handle.clone();
         let result = app.run_on_main_thread(move || {
             let state = handle.state::<TrayState>();

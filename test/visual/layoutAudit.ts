@@ -41,7 +41,7 @@ export function auditLayout({ keys, pseudo, data }: LayoutAuditOptions): LayoutP
   const CONTROL =
     'button, [role="button"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="option"], .btn, .segmented-control label';
   const LAYER =
-    '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], .menu-dropdown, .context-menu, .tooltip';
+    '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], .menu-dropdown, .context-menu, .tooltip, .floating-tooltip';
   const view = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
   type Box = { left: number; top: number; right: number; bottom: number };
 

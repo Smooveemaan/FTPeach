@@ -1365,7 +1365,15 @@ async fn a_stopped_single_download_leaves_nothing_behind() {
             ..Server::default()
         });
         let (sessions, connection_id) = serve(&server).await;
-        let progress = ProgressEmitter::for_tests(|_| {});
+        let started = Arc::new(tokio::sync::Notify::new());
+        let progress = ProgressEmitter::for_tests({
+            let started = started.clone();
+            move |payload| {
+                if payload.status == "progress" && payload.bytes.is_some_and(|bytes| bytes > 0) {
+                    started.notify_one();
+                }
+            }
+        });
         let id = uuid::Uuid::new_v4().to_string();
         let download = transfer_download(
             &sessions,
@@ -1378,7 +1386,7 @@ async fn a_stopped_single_download_leaves_nothing_behind() {
             None,
         );
         let cancelling = async {
-            tokio::time::sleep(Duration::from_millis(50)).await;
+            started.notified().await;
             let how = if pause_first {
                 CancelIntent::Pause
             } else {

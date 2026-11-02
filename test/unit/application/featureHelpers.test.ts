@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { mergeLogBatch } from '../../../src/features/logs/logBuffer.ts';
 import { collectLiveConnectionIds } from '../../../src/features/open-with/useOpenWithLifecycle.ts';
 import {
   pendingSecurityNotices,
@@ -273,23 +272,6 @@ test('pendingSecurityNotices skips checks already acknowledged on disk', () => {
     }),
     { legacy: false, plaintext: true },
   );
-});
-
-test('mergeLogBatch retains the newest lines in sequence order', () => {
-  const result = mergeLogBatch(
-    [{ message: 'old', seq: 1 }],
-    [
-      { message: 'first', seq: 2 },
-      { message: 'second', seq: 3 },
-    ],
-    1,
-    2,
-  );
-
-  assert.deepEqual(result, [
-    { message: 'first', seq: 2 },
-    { message: 'second', seq: 3 },
-  ]);
 });
 
 test('collectLiveConnectionIds includes connected remote panes across all tabs', () => {

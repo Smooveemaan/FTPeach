@@ -16,13 +16,11 @@ test('byte retention bounds large records even below the entry limit', () => {
   );
 });
 
-test('a large batch keeps only the newest entries, without copying the rest', () => {
-  const batch = Array.from({ length: 10000 }, (_, n) => ({ seq: n + 1 }));
-  assert.deepEqual(mergeLogBatch([{ seq: 0 }], batch, 0, 3), [
-    { seq: 9998 },
-    { seq: 9999 },
-    { seq: 10000 },
-  ]);
+test('a batch beyond the limit keeps only its newest entries, without copying them', () => {
+  const batch = Array.from({ length: 4 }, (_, n) => ({ seq: n + 1 }));
+  const result = mergeLogBatch([{ seq: 0 }], batch, 0, 3);
+  assert.deepEqual(result, [{ seq: 2 }, { seq: 3 }, { seq: 4 }]);
+  for (const [index, entry] of result.entries()) assert.equal(entry, batch[index + 1]);
 });
 
 test('entries the history already returned, or the user cleared, are dropped', () => {

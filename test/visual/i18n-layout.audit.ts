@@ -13,6 +13,25 @@ import type { LayoutProblem } from './layoutAudit.ts';
 import { PSEUDO_CLOSE, PSEUDO_OPEN, pseudoLocalize } from './pseudoLocale.ts';
 import { PROMPTS } from './securityConfirmationHarness.ts';
 
+const pageErrors = new WeakMap<Page, string[]>();
+
+test.beforeEach(({ page }) => {
+  const errors: string[] = [];
+  pageErrors.set(page, errors);
+  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  if (testInfo.status === testInfo.expectedStatus) return;
+  await testInfo.attach('page-and-app-errors.txt', {
+    body: (pageErrors.get(page) ?? []).join('\n') || 'No page or app errors captured.',
+    contentType: 'text/plain',
+  });
+});
+
 type Strings = { [key: string]: string | Strings };
 
 const localesDir = new URL('../../src/i18n/locales/', import.meta.url);

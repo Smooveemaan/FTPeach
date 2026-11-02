@@ -19,6 +19,7 @@ export default [
   {
     ignores: [
       '.tools/**',
+      '.local/**',
       'dist/**',
       'release/**',
       'node_modules/**',

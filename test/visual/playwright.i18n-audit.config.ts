@@ -11,5 +11,5 @@ export default defineConfig({
   reporter: 'dot',
   projects: base.projects!.filter((project) => project.name === 'chromium-desktop'),
   globalSetup: './i18nAuditSummary.ts',
-  use: { ...base.use, trace: 'off' },
+  use: { ...base.use, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
 });

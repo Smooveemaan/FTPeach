@@ -63,11 +63,13 @@ test('a selection reports what each file did, not just that it finished', async 
 test('a transfer the user paused, stopped or skipped is not reported as failed', async () => {
   window.api = tauriApi;
   const runUpload = vi.fn(async (_id, _protocol, source: string) =>
-    source.endsWith('paused.txt')
-      ? { ok: false, errorCode: 'cancelled' as const, cancelled: true }
-      : source.endsWith('queued.txt')
-        ? { ok: false, alreadyRunning: true }
-        : { ok: false, skipped: true },
+    source.endsWith('sent.txt')
+      ? { ok: true }
+      : source.endsWith('paused.txt')
+        ? { ok: false, errorCode: 'cancelled' as const, cancelled: true }
+        : source.endsWith('queued.txt')
+          ? { ok: false, alreadyRunning: true }
+          : { ok: false, skipped: true },
   );
   const setError = vi.fn();
   const routing = createTransferRouting(
@@ -84,13 +86,25 @@ test('a transfer the user paused, stopped or skipped is not reported as failed',
   );
 
   const result = await routing.copyEntries({
-    sourcePane: localPane(['paused.txt', 'queued.txt', 'kept.txt']),
+    sourcePane: localPane(['sent.txt', 'paused.txt', 'queued.txt', 'kept.txt']),
     targetPane: remotePane(),
-    names: ['paused.txt', 'queued.txt', 'kept.txt'],
+    names: ['sent.txt', 'paused.txt', 'queued.txt', 'kept.txt'],
     move: false,
   });
 
-  expect(result).toMatchObject({ ok: true, failed: 0, skipped: 3 });
+  expect(result.items).toEqual([
+    { name: 'sent.txt', outcome: 'copied', sourceRetained: false },
+    { name: 'paused.txt', outcome: 'skipped', sourceRetained: false },
+    { name: 'queued.txt', outcome: 'skipped', sourceRetained: false },
+    { name: 'kept.txt', outcome: 'skipped', sourceRetained: false },
+  ]);
+  expect(result).toMatchObject({
+    ok: true,
+    copied: 1,
+    failed: 0,
+    skipped: 3,
+    sourceRetained: false,
+  });
   expect(setError).not.toHaveBeenCalled();
 });
 

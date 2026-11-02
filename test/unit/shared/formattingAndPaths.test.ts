@@ -87,43 +87,23 @@ test('formatting supports a secondary Unicode locale', async () => {
   );
 });
 
-test('every supported locale translates the secret persistence warning', async () => {
-  for (const { value: locale } of SUPPORTED_LANGUAGES) {
-    await loadLanguage(locale);
-    const message = i18n.getResource(locale, 'translation', 'secretNotPersistedNotice.message');
-    assert.equal(typeof message, 'string', `${locale} is missing the warning translation`);
-    assert.notEqual(message.trim(), '', `${locale} has an empty warning translation`);
-  }
-});
-
-test('every supported locale resolves the transferred column', async () => {
-  for (const { value: locale } of SUPPORTED_LANGUAGES) {
-    await loadLanguage(locale);
-    const label = i18n.getFixedT(locale)('transferQueue.columns.transferred');
-    assert.equal(typeof label, 'string', `${locale} cannot resolve the transferred column`);
-    assert.notEqual(label.trim(), '', `${locale} has an empty transferred column`);
-    assert.notEqual(label, 'transferQueue.columns.transferred', `${locale} returns the key`);
-  }
-});
-
-test('every supported locale translates the About links', async () => {
-  const keys = ['legalInformation', 'sourceCode', 'reportIssue'];
+test('every supported locale resolves the transfer, About and support resources', async () => {
+  const keys = [
+    'secretNotPersistedNotice.message',
+    'transferQueue.columns.transferred',
+    'aboutDialog.legalInformation',
+    'aboutDialog.sourceCode',
+    'aboutDialog.reportIssue',
+    'menu.help.supportProject',
+  ];
   for (const { value: locale } of SUPPORTED_LANGUAGES) {
     await loadLanguage(locale);
     for (const key of keys) {
-      const label = i18n.getResource(locale, 'translation', `aboutDialog.${key}`);
-      assert.equal(typeof label, 'string', `${locale} is missing aboutDialog.${key}`);
-      assert.notEqual(label.trim(), '', `${locale} has an empty aboutDialog.${key}`);
+      const label = i18n.getFixedT(locale)(key);
+      assert.equal(typeof label, 'string', `${locale} cannot resolve ${key}`);
+      assert.notEqual(label.trim(), '', `${locale} has an empty ${key}`);
+      assert.notEqual(label, key, `${locale} returns ${key}`);
     }
-  }
-});
-
-test('every supported locale translates the project support menu item', async () => {
-  for (const { value: locale } of SUPPORTED_LANGUAGES) {
-    await loadLanguage(locale);
-    const label = i18n.getResource(locale, 'translation', 'menu.help.supportProject');
-    assert.equal(typeof label, 'string', `${locale} is missing menu.help.supportProject`);
-    assert.notEqual(label.trim(), '', `${locale} has an empty menu.help.supportProject`);
   }
 });
 

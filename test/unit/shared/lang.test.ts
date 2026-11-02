@@ -108,21 +108,29 @@ test('settled mapping can continue past a failure and report every item', async 
   );
 });
 
-test('concurrency never exceeds the limit or drops below it while work remains', async () => {
-  let active = 0;
-  let peak = 0;
-  const outcomes = await mapSettled(
+test('concurrency fills eight slots, admits the ninth only after a release and preserves order', async () => {
+  const releases = new Map<number, () => void>();
+  const started: number[] = [];
+  const batch = mapSettled(
     Array.from({ length: 200 }, (_, index) => index),
     8,
-    async () => {
-      active += 1;
-      peak = Math.max(peak, active);
-      await Promise.resolve();
-      active -= 1;
-      return true;
+    async (item) => {
+      started.push(item);
+      if (item < 9) await new Promise<void>((resolve) => releases.set(item, resolve));
+      return item;
     },
   );
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.deepEqual(started, [0, 1, 2, 3, 4, 5, 6, 7]);
 
-  assert.equal(outcomes.length, 200);
-  assert.equal(peak <= 8, true, `peak was ${peak}`);
+  releases.get(7)!();
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.deepEqual(started, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+  for (const release of releases.values()) release();
+
+  const outcomes = await batch;
+  assert.deepEqual(
+    outcomes.map((outcome) => (outcome.status === 'fulfilled' ? outcome.value : outcome.status)),
+    Array.from({ length: 200 }, (_, index) => index),
+  );
 });

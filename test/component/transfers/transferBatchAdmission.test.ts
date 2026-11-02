@@ -24,13 +24,12 @@ const remotePane = () => ({
 
 test('a large selection is admitted in bounded batches instead of all at once', async () => {
   window.api = tauriApi;
-  let active = 0;
-  let peak = 0;
-  const runUpload = vi.fn(async () => {
-    active += 1;
-    peak = Math.max(peak, active);
-    await Promise.resolve();
-    active -= 1;
+  const releases = new Map<number, () => void>();
+  const started: number[] = [];
+  const runUpload = vi.fn(async (_id, _protocol, source: string) => {
+    const index = Number(/file-(\d+)/.exec(source)![1]);
+    started.push(index);
+    if (index < 65) await new Promise<void>((resolve) => releases.set(index, resolve));
     return { ok: true };
   });
   const routing = createTransferRouting(
@@ -47,15 +46,25 @@ test('a large selection is admitted in bounded batches instead of all at once', 
   );
   const names = Array.from({ length: 500 }, (_, index) => `file-${index}.txt`);
 
-  await routing.copyEntries({
+  const batch = routing.copyEntries({
     sourcePane: localPane(names),
     targetPane: remotePane(),
     names,
     move: false,
   });
+  await vi.waitFor(() => expect(started).toHaveLength(64));
+  expect(started).toEqual(Array.from({ length: 64 }, (_, index) => index));
 
+  releases.get(63)!();
+  await vi.waitFor(() => expect(started).toHaveLength(65));
+  expect(started[64]).toBe(64);
+  for (const release of releases.values()) release();
+
+  const result = await batch;
   expect(runUpload).toHaveBeenCalledTimes(500);
-  expect(peak).toBeLessThanOrEqual(64);
+  expect(result.items.map((item) => item.outcome)).toEqual(
+    Array.from({ length: 500 }, () => 'copied'),
+  );
 });
 
 test('a failed copy does not end the batch while another copy is still running', async () => {

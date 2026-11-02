@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Dialogs reliably respond to the first Escape or Enter key press.
 - On Windows, sleep prevention is released when transfers finish or the setting is turned off.
+- Show FTPeach reliably closes the tray menu and restores the window.
 
 ## [0.6.0] - 2026-10-25
 

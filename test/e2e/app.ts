@@ -18,6 +18,7 @@ import {
 import { createServer, connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { performance } from 'node:perf_hooks';
 import { chromium, test as base, type Browser, type Page } from '@playwright/test';
 import { confirmationsShown } from './windows.ts';
 
@@ -151,6 +152,17 @@ interface Run {
   browser?: Browser;
 }
 
+type PhaseTimings = Record<string, number>;
+
+async function timed<T>(timings: PhaseTimings, phase: string, run: () => Promise<T>): Promise<T> {
+  const started = performance.now();
+  try {
+    return await run();
+  } finally {
+    timings[phase] = (timings[phase] ?? 0) + performance.now() - started;
+  }
+}
+
 /**
  * Starts the application on a prepared profile, or with `null` on the
  * profile of the account running the test, as an installed copy runs. `run`
@@ -165,6 +177,7 @@ async function start(
   pickFile: string,
   realDialogs: boolean,
   run: Partial<Run>,
+  timings: PhaseTimings = {},
 ): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
   // over and the test would drive the wrong profile.
@@ -178,6 +191,7 @@ async function start(
   // The smoke build runs its self-test whenever this variable exists, even empty.
   const env = { ...process.env };
   delete env.FTPEACH_SMOKE_TEST;
+  const spawnedAt = performance.now();
   const child = spawn(exe, [], {
     cwd: workDir,
     stdio: 'ignore',
@@ -201,9 +215,12 @@ async function start(
       ...(realDialogs ? {} : { FTPEACH_E2E_SAVE_DIR: savedDir, FTPEACH_E2E_PICK_FILE: pickFile }),
     },
   });
+  timings.processSpawnMs = (timings.processSpawnMs ?? 0) + performance.now() - spawnedAt;
   Object.assign(run, { child, cdpPort });
   try {
-    await waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60);
+    await timed(timings, 'debuggingPortMs', () =>
+      waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60),
+    );
   } catch (error) {
     const logs = profile
       ? path.dirname(profile)
@@ -212,8 +229,12 @@ async function start(
         : path.join(process.env.APPDATA!, 'FTPeach');
     throw new Error(`${(error as Error).message}\n${diagnose(child, logs)}`);
   }
-  run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-  return mainWindow(run.browser, startLanguage(exe, profile));
+  await timed(timings, 'cdpConnectMs', async () => {
+    run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+  });
+  return timed(timings, 'mainWindowMs', () =>
+    mainWindow(run.browser!, startLanguage(exe, profile)),
+  );
 }
 
 /**
@@ -336,10 +357,12 @@ export async function launchApp(
   portable = false,
   realDialogs = false,
   onPhaseEnd: (_page: Page) => Promise<void> = async () => {},
+  timings: PhaseTimings = {},
 ): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
   }
+  const profileStarted = performance.now();
   const base = mkdtempSync(path.join(tmpdir(), 'ftpeach-e2e-'));
   const profile = path.join(base, 'profile');
   const workDir = path.join(base, 'work');
@@ -375,6 +398,7 @@ export async function launchApp(
         : JSON.stringify({ schemaVersion: 1, data }),
     );
   }
+  timings.profileSetupMs = performance.now() - profileStarted;
 
   let run: Partial<Run> = {};
   /** Waits for the process and its debugging port to be gone, killing it if `force`. */
@@ -466,6 +490,7 @@ export async function launchApp(
         pickFile,
         realDialogs,
         run,
+        timings,
       );
       await onStart(app.page);
     },
@@ -480,7 +505,7 @@ export async function launchApp(
     },
   };
   try {
-    app.page = await start(exe, profile, workDir, savedDir, pickFile, realDialogs, run);
+    app.page = await start(exe, profile, workDir, savedDir, pickFile, realDialogs, run, timings);
     await onStart(app.page);
     return app;
   } catch (error) {
@@ -535,9 +560,7 @@ export const test = base.extend<{
   appPortable: [false, { option: true }],
   appRealDialogs: [false, { option: true }],
   app: async ({ appSettings, appStore, appPortable, appRealDialogs }, use, testInfo) => {
-    // Each run records a trace. One the test ends itself (quit, kill) is
-    // saved as trace-phase-N.zip first; a run that exits any other way takes
-    // its trace along. The last run's is trace.zip.
+    const timings: PhaseTimings = {};
     let phase = 0;
     const app = await launchApp(
       appSettings,
@@ -548,35 +571,49 @@ export const test = base.extend<{
       appPortable,
       appRealDialogs,
       (page) =>
-        page.context().tracing.stop({ path: testInfo.outputPath(`trace-phase-${++phase}.zip`) }),
+        timed(timings, 'tracingStopMs', () =>
+          page.context().tracing.stop({ path: testInfo.outputPath(`trace-phase-${++phase}.zip`) }),
+        ),
+      timings,
     );
     let held: string[] = [];
     try {
-      await use(app);
+      await timed(timings, 'scenarioMs', () => use(app));
     } finally {
-      const failed = testInfo.status !== testInfo.expectedStatus;
-      if (failed) {
-        await testInfo.attach('window', {
-          body: await app.page.screenshot().catch(() => Buffer.alloc(0)),
-          contentType: 'image/png',
-        });
+      try {
+        const failed = testInfo.status !== testInfo.expectedStatus;
+        if (failed) {
+          await testInfo.attach('window', {
+            body: await app.page.screenshot().catch(() => Buffer.alloc(0)),
+            contentType: 'image/png',
+          });
+        }
+        await timed(timings, 'tracingStopMs', () =>
+          app.page
+            .context()
+            .tracing.stop({ path: testInfo.outputPath('trace.zip') })
+            .catch(() => {}),
+        );
+        // What the run left on disk, before close removes it.
+        if (failed) {
+          writeFileSync(testInfo.outputPath('files.txt'), inventory(path.dirname(app.profileDir)));
+          await testInfo.attach('files.txt', { path: testInfo.outputPath('files.txt') });
+        }
+        const logs = await timed(timings, 'cleanupMs', () => app.close());
+        // A file, so the CI artifact of test results carries it too.
+        if (failed) {
+          writeFileSync(testInfo.outputPath('app.log'), logs);
+          await testInfo.attach('app.log', { path: testInfo.outputPath('app.log') });
+        }
+        held = logs
+          .split('\n')
+          .filter((line) => line.includes(HELD_BACK) && !expectedHeld.has(line));
+      } finally {
+        writeFileSync(
+          testInfo.outputPath('timings.json'),
+          JSON.stringify({ test: testInfo.title, ...timings }, null, 2),
+        );
       }
-      await app.page
-        ?.context()
-        .tracing.stop({ path: testInfo.outputPath('trace.zip') })
-        .catch(() => {});
-      // What the run left on disk, before close removes it.
-      if (failed) {
-        writeFileSync(testInfo.outputPath('files.txt'), inventory(path.dirname(app.profileDir)));
-        await testInfo.attach('files.txt', { path: testInfo.outputPath('files.txt') });
-      }
-      const logs = await app.close();
-      // A file, so the CI artifact of test results carries it too.
-      if (failed) {
-        writeFileSync(testInfo.outputPath('app.log'), logs);
-        await testInfo.attach('app.log', { path: testInfo.outputPath('app.log') });
-      }
-      held = logs.split('\n').filter((line) => line.includes(HELD_BACK) && !expectedHeld.has(line));
     }
     // The test build holds back a program, Explorer or Windows' Open with
     // chooser that would come up on the screen; a test that set one off, say

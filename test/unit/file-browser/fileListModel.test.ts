@@ -54,7 +54,6 @@ test('file pane model filters case-insensitively and keeps folders first while s
 test('large directories keep the virtualized list boundary', () => {
   assert.equal(shouldVirtualize(200), false);
   assert.equal(shouldVirtualize(201), true);
-  assert.equal(shouldVirtualize(10_000), true);
 });
 
 test('name sorting cycles through default, explicit ascending and descending states', () => {

@@ -2249,10 +2249,17 @@ test('stopping everything also stops the part of a selection not yet admitted', 
     await act(async () => {
       batch = getApi().handleOsDropFiles(remoteDropTarget, dropFiles(150));
     });
+    let settled = false;
+    void batch.then(() => {
+      settled = true;
+    });
     const admitted = calls.upload.length;
     assert.ok(admitted > 0 && admitted < 150);
     await act(async () => {
       getApi().stopAllTransfers();
+    });
+    assert.equal(settled, false);
+    await act(async () => {
       mockApi._nextUpload.resolve({ ok: false, error: 'Cancelled', errorCode: 'cancelled' });
       await batch;
     });

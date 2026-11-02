@@ -89,7 +89,8 @@ test('site form validation switches its required address by protocol', () => {
 test('site form validation rejects ports outside the TCP range', () => {
   const valid = { ...createSiteForm(), name: 'FTP', host: 'example.test' };
   assert.equal(canSubmitSiteForm({ ...valid, port: '' }), true);
-  assert.equal(canSubmitSiteForm({ ...valid, port: '22' }), true);
+  assert.equal(canSubmitSiteForm({ ...valid, port: '1' }), true);
+  assert.equal(canSubmitSiteForm({ ...valid, port: '65535' }), true);
   assert.equal(canSubmitSiteForm({ ...valid, port: '0' }), false);
   assert.equal(canSubmitSiteForm({ ...valid, port: '65536' }), false);
   assert.equal(canSubmitSiteForm({ ...valid, port: 'abc' }), false);

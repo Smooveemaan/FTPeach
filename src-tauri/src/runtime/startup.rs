@@ -12,6 +12,10 @@ use crate::transfer::progress::ProgressEmitter;
 use tauri::{Emitter, Manager};
 
 pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(feature = "smoke-test")]
+    if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
+        commands::smoke::report_phase("setup-started");
+    }
     // Declared in tauri.conf.json with `create: false` and built here, so a
     // portable copy can keep the WebView2 profile beside the program. Left to
     // Tauri, the profile and its folder go under %LOCALAPPDATA%.
@@ -25,6 +29,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
         main_window = main_window.additional_browser_args(&args);
     }
     main_window.build()?;
+    #[cfg(feature = "smoke-test")]
+    if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
+        commands::smoke::report_phase("window-built");
+    }
     let data_dir = local_fs::edit_recovery::data_dir(app.handle())
         .ok_or_else(|| std::io::Error::other("No local application data directory"))?;
     let open_with_session = OpenWithSession::under(&data_dir);

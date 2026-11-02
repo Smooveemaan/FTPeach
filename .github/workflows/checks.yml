@@ -466,4 +466,6 @@ jobs:
         run: dbus-run-session -- xvfb-run -a npm run test:packaged-smoke
       - name: Run packaged smoke
         if: runner.os != 'Linux'
+        env:
+          TAURI_DRIVER_DEBUG: '1'
         run: npm run test:packaged-smoke

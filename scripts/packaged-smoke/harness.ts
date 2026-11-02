@@ -134,7 +134,7 @@ export async function runPackagedSmoke({ portable = false, timeoutMs = 30_000 } 
         const result = readFileSync(resultPath, 'utf8');
         lastPhase = result;
         if (result === 'ok') successReported = true;
-        if (result === 'backend-ready') {
+        if (['setup-started', 'window-built', 'backend-ready'].includes(result)) {
           await new Promise((resolve) => setTimeout(resolve, 100));
           continue;
         }

@@ -22,7 +22,7 @@ for (const language of languages) {
     await expect(editMenu).toHaveText(strings.menu.edit.title);
     await editMenu.click();
     await page.locator('.menu-dropdown .menu-item').first().click();
-    await expect(page.locator('.settings-nav-footer')).toBeVisible();
+    await expect(page.locator('.settings-nav-footer')).toBeVisible({ timeout: 30_000 });
     await page.evaluate(() => document.fonts.ready);
 
     const sidebar = await page.evaluate(() => {

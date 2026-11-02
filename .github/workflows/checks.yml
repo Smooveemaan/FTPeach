@@ -459,6 +459,26 @@ jobs:
 
       - run: npm ci
       - run: npm run build:packaged-smoke
+      - name: Select a fixed WebView2 runtime
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $evergreen = Get-ItemProperty -ErrorAction SilentlyContinue 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          "Evergreen WebView2: $($evergreen.pv)"
+          $cab = Join-Path $env:RUNNER_TEMP 'Microsoft.WebView2.FixedVersionRuntime.156.0.4314.58.x64.cab'
+          $runtime = Join-Path $env:RUNNER_TEMP 'ftpeach-webview2-156.0.4314.58'
+          Invoke-WebRequest -Uri 'https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/b7919cc9-680d-4253-bf32-732988e68aa6/Microsoft.WebView2.FixedVersionRuntime.156.0.4314.58.x64.cab' -OutFile $cab
+          $hash = (Get-FileHash -Algorithm SHA256 $cab).Hash.ToLowerInvariant()
+          if ($hash -ne '857dcfd6f7035508a29645fa2978c3a6a841f220df77cc366d318894e19f4792') {
+            throw "Unexpected WebView2 runtime SHA256: $hash"
+          }
+          New-Item -ItemType Directory -Path $runtime | Out-Null
+          & "$env:WINDIR\System32\expand.exe" -F:* $cab $runtime | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "WebView2 extraction failed: $LASTEXITCODE" }
+          $executable = Get-ChildItem -Path $runtime -Filter msedgewebview2.exe -Recurse | Select-Object -First 1
+          if (-not $executable) { throw 'WebView2 executable is missing from the verified package' }
+          "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER=$($executable.DirectoryName)" >> $env:GITHUB_ENV
+          $executable.VersionInfo.ProductVersion
       - name: Run packaged smoke under Xvfb
         if: runner.os == 'Linux'
         env:

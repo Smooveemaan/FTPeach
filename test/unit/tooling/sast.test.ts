@@ -14,16 +14,9 @@ test('SAST passes the repository path to Docker without shell expansion', () => 
     '-w',
     '/src',
     image,
-    'semgrep',
-    'scan',
-    '--config',
-    '.semgrep/security.yml',
-    '--error',
-    '--strict',
-    '--metrics=off',
-    '--disable-version-check',
-    'src-tauri/src',
-    'src',
+    'sh',
+    '-c',
+    'mkdir -p /tmp/ftpeach-sast/src-tauri && cp -a /src/.git /src/.gitignore /src/.semgrep /src/src /tmp/ftpeach-sast/ && cp -a /src/src-tauri/src /tmp/ftpeach-sast/src-tauri/ && cd /tmp/ftpeach-sast && exec semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src',
   ]);
 
   const windowsArgs = sastDockerArgs('C:\\work space\\FTPeach');

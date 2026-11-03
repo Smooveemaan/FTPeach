@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      rust: ${{ steps.classify.outputs.rust }}
-      frontend: ${{ steps.classify.outputs.frontend }}
+      rust: ${{ steps.evidence.outputs.reuse == 'true' && 'false' || steps.classify.outputs.rust }}
+      frontend: ${{ steps.evidence.outputs.reuse == 'true' && 'false' || steps.classify.outputs.frontend }}
       risk: ${{ steps.classify.outputs.risk }}
       required-gates: ${{ steps.classify.outputs.required-gates }}
       optional-gates: ${{ steps.classify.outputs.optional-gates }}
@@ -55,12 +55,6 @@ jobs:
           HEAD_SHA: ${{ github.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node --experimental-strip-types scripts/checks/equivalent-tree-evidence.ts
-
-      - id: reuse-outputs
-        if: steps.evidence.outputs.reuse == 'true'
-        run: |
-          echo "rust=false" >>"$GITHUB_OUTPUT"
-          echo "frontend=false" >>"$GITHUB_OUTPUT"
 
   supply-chain:
     permissions:

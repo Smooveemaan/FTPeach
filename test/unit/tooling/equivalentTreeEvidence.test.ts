@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   evaluateEquivalentTree,
@@ -94,4 +95,16 @@ test('matrix evidence names every required operating system', () => {
     'checks / rust-test-unix (ubuntu-22.04)',
     'checks / rust-test-unix (macos-15)',
   ]);
+});
+
+test('the changes job selects its compatibility outputs from the evidence decision', () => {
+  const workflow = readFileSync('.github/workflows/checks.yml', 'utf8');
+  for (const output of ['rust', 'frontend']) {
+    assert.ok(
+      workflow.includes(
+        `${output}: \${{ steps.evidence.outputs.reuse == 'true' && 'false' || steps.classify.outputs.${output} }}`,
+      ),
+      `${output} must become false when equivalent-tree evidence is reused`,
+    );
+  }
 });

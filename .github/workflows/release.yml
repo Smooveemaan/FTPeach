@@ -24,7 +24,9 @@ jobs:
   # Releases run the full shared suite without path filtering.
   gates:
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     uses: ./.github/workflows/checks.yml
     with:
       force-all: true

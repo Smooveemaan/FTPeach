@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import ToolbarOverflowMenu from '../../../src/components/ToolbarOverflowMenu.tsx';
+import MenuBar from '../../../src/components/MenuBar.tsx';
 import { placeBelowAnchor, useMenuPosition } from '../../../src/hooks/useMenuPosition.ts';
 
 vi.mock('../../../src/platform/interfaceScale.ts', () => ({ getInterfaceScale: () => scale }));
@@ -152,5 +153,27 @@ describe('toolbar overflow menu', () => {
     expect(
       document.querySelector<HTMLElement>('.toolbar-overflow-menu')?.style.insetInlineStart,
     ).toBe('192px');
+  });
+});
+
+describe('application menu bar', () => {
+  test('keeps a wide localized dropdown inside the viewport', () => {
+    render(<MenuBar menus={[{ label: 'Bookmarks', items: [{ label: 'Manage bookmarks' }] }]} />);
+    const trigger = screen.getByRole('menuitem', { name: 'Bookmarks' });
+    vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue({
+      left: 350,
+      right: 380,
+      bottom: 40,
+    } as DOMRect);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 200,
+      height: 60,
+    } as DOMRect);
+    vi.stubGlobal('innerWidth', 400);
+    vi.stubGlobal('innerHeight', 600);
+    fireEvent.click(trigger);
+    expect(document.querySelector<HTMLElement>('.menu-dropdown')?.style.insetInlineStart).toBe(
+      '192px',
+    );
   });
 });

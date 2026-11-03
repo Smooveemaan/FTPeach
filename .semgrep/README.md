@@ -15,6 +15,12 @@ semgrep scan --test --config .semgrep/security.yml .semgrep/security.tsx --metri
 semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src
 ```
 
+The local application scan copies `.git`, `.gitignore`, `.semgrep`, `src` and
+`src-tauri/src` from the Docker bind mount into the container's temporary
+filesystem before running the same command. This preserves Git-based target
+selection while avoiding slow repeated reads through Docker Desktop's Windows
+bind mount. Fixtures still run directly from `/src`.
+
 Fixtures run one file at a time. Given the `.semgrep` directory, this Semgrep
 version answers "No unit tests found" and exits 0; with several targets it
 refuses to test at all. Both local and CI runs therefore require "All tests

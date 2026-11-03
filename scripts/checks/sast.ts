@@ -34,18 +34,15 @@ export function sastFixtureDockerArgs(root: string, fixture: string): string[] {
 
 /** Build Docker's arguments without relying on shell-specific path expansion. */
 export function sastDockerArgs(root: string): string[] {
-  return dockerArgs(root, [
-    'semgrep',
-    'scan',
-    '--config',
-    '.semgrep/security.yml',
-    '--error',
-    '--strict',
-    '--metrics=off',
-    '--disable-version-check',
-    'src-tauri/src',
-    'src',
-  ]);
+  // workaround: repeated reads through Docker Desktop's Windows bind mount are very slow.
+  const command = [
+    'mkdir -p /tmp/ftpeach-sast/src-tauri',
+    'cp -a /src/.git /src/.gitignore /src/.semgrep /src/src /tmp/ftpeach-sast/',
+    'cp -a /src/src-tauri/src /tmp/ftpeach-sast/src-tauri/',
+    'cd /tmp/ftpeach-sast',
+    'exec semgrep scan --config .semgrep/security.yml --error --strict --metrics=off --disable-version-check src-tauri/src src',
+  ].join(' && ');
+  return dockerArgs(root, ['sh', '-c', command]);
 }
 
 export function runSast(root: string, run: RunDocker = spawnSync): number {

@@ -13,7 +13,7 @@
 ## Maintenance
 
 - Keep shared verification steps in `checks.yml`; keep `npm run check` aligned with `npm run check:ci-parity`.
-- Which changed paths select which jobs is decided by `scripts/checks/classify-changes.ts`, covered by `test/unit/tooling/classifyChanges.test.ts`. Files one side compiles from the other — the JSON under `src/` that the Rust crate includes — are listed there and select both.
+- Which changed paths select which jobs is decided by `scripts/checks/classify-changes.ts`, covered by `test/unit/tooling/classifyChanges.test.ts`. Its stable result includes risk, concrete gate IDs, platforms and reasons; the `rust`/`frontend` outputs remain for the current job conditions. Rust `include_str!`/`include_bytes!` dependencies are discovered from the crate, so cross-language files such as the JSON under `src/` select both sides.
 - `lint-test-build` runs `check:docs-impact` over the pushed range: code linked to a document in `scripts/checks/check-doc-impact.ts`, and any change to the app, must come with that document and a changelog line, or with `Docs-Impact:` / `Changelog:` trailers giving the reason. `check:verified-by` validates the guide's references to runnable tests or recorded manual checks.
 - Preserve workflow and job identifiers when editing: branch protection can reference their check names.
 - Pin third-party actions to full commit SHAs with version comments, and container images to digests.

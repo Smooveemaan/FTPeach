@@ -171,7 +171,9 @@ test('unknown paths and classifier edits independently force the full public sui
   for (const file of [
     'unmapped/file.dat',
     'scripts/checks/classify-changes.ts',
+    'scripts/checks/equivalent-tree-evidence.ts',
     'test/unit/tooling/classifyChanges.test.ts',
+    'test/unit/tooling/equivalentTreeEvidence.test.ts',
   ]) {
     const result = classify([file]);
     assert.equal(result.risk, '4', file);

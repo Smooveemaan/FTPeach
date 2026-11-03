@@ -113,7 +113,9 @@ export const CROSS_LANGUAGE_SOURCES: readonly string[] = [
 
 const CLASSIFIER_FILES = new Set([
   'scripts/checks/classify-changes.ts',
+  'scripts/checks/equivalent-tree-evidence.ts',
   'test/unit/tooling/classifyChanges.test.ts',
+  'test/unit/tooling/equivalentTreeEvidence.test.ts',
 ]);
 const INSTALLER_OR_UPDATER =
   /^(?:src-tauri\/installer\/|src-tauri\/src\/(?:runtime\/(?:updater|update_staging)|commands\/updater)|scripts\/release\/(?:test-installers|.*updater)|test\/e2e\/install)/;
@@ -147,11 +149,16 @@ function normalizePath(raw: string): string {
 
 function classifyPath(file: string, rustIncludes: ReadonlySet<string>): PathImpact {
   if (CLASSIFIER_FILES.has(file)) {
-    return impact('4', ['ci', 'classifier'], 'the classifier needs independent full confirmation', {
-      full: true,
-      legacyRust: true,
-      legacyFrontend: true,
-    });
+    return impact(
+      '4',
+      ['ci', 'classifier'],
+      'CI selection or evidence reuse needs independent full confirmation',
+      {
+        full: true,
+        legacyRust: true,
+        legacyFrontend: true,
+      },
+    );
   }
   if (file.startsWith('scripts/packaged-smoke/')) {
     return impact('4', ['ci', 'packaged-smoke'], 'Windows packaged smoke tooling changed', {

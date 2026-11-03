@@ -18,5 +18,7 @@ jobs:
   # The suite itself lives in checks.yml, shared with release.yml.
   checks:
     permissions:
+      actions: read
       contents: read
+      pull-requests: read
     uses: ./.github/workflows/checks.yml

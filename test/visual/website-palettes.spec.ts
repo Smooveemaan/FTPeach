@@ -113,6 +113,8 @@ test('the header switch and the preview switch both change the whole site', asyn
       'src',
       'palettes/black-' + appearance + '.webp',
     );
+    // The new DOM appears before the view-transition overlay stops intercepting clicks.
+    await expect(page.locator('html')).not.toHaveClass(/theme-switch/);
     // The preview offers only the other appearance, as the header does.
     await expect(page.locator('.palette-modes [data-mode="' + appearance + '"]')).toBeHidden();
     await page.locator('.palette-modes [data-mode="' + opposite + '"]').click();
@@ -121,11 +123,13 @@ test('the header switch and the preview switch both change the whole site', asyn
       'src',
       'palettes/black-' + opposite + '.webp',
     );
+    await expect(page.locator('html')).not.toHaveClass(/theme-switch/);
     await expect(
       page.getByRole('button', { name: 'Switch to ' + appearance + ' theme' }),
     ).toBeVisible();
     await page.locator('.palette-modes [data-mode="' + appearance + '"]').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', appearance);
+    await expect(page.locator('html')).not.toHaveClass(/theme-switch/);
   }
   await expect(page.locator('#palette-name')).toHaveText('Onyx');
 });

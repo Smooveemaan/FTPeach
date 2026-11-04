@@ -13,16 +13,95 @@ on:
 # A newer push to a pull request replaces its older run; every push to master runs
 # to the end, so a later push never hides an earlier one's results.
 concurrency:
-  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
+  mode:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      full: ${{ steps.mode.outputs.full }}
+      release: ${{ steps.mode.outputs.release }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - id: mode
+        run: node --experimental-strip-types scripts/release/check-mode.ts
+
   # The suite itself lives in checks.yml, shared with release.yml.
   checks:
+    needs: mode
     permissions:
       actions: read
       contents: read
       pull-requests: read
     uses: ./.github/workflows/checks.yml
     with:
-      force-all: ${{ github.event_name == 'workflow_dispatch' }}
+      force-all: ${{ needs.mode.outputs.full == 'true' }}
+
+  private-check:
+    needs: mode
+    if: needs.mode.outputs.release == 'true'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 310
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Launch or reconnect to the closed check
+        env:
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+        run: node --experimental-strip-types scripts/release/private-check.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: private-check-${{ github.run_attempt }}
+          path: private-check.json
+          if-no-files-found: error
+          retention-days: 30
+
+  release-ready:
+    needs: [mode, checks, private-check]
+    if: always() && needs.mode.outputs.release == 'true'
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Download the retained private-check result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" --jq '[.artifacts[] | select(.expired == false and (.name | startswith("private-check-")))] | sort_by(.id) | last | .name // empty')
+          test -n "$artifact"
+          gh run download "$GITHUB_RUN_ID" --name "$artifact" --dir .
+      - name: Require public and closed results
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: node --experimental-strip-types scripts/release/check-readiness.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-readiness-${{ github.run_attempt }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30

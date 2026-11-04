@@ -101,6 +101,11 @@
     "newFile": "新しいファイル…",
     "refresh": "更新",
     "open": "開く",
+    "revealLocation": {
+      "windows": "エクスプローラーで表示",
+      "macos": "Finder で表示",
+      "linux": "項目を含むフォルダーを開く"
+    },
     "uploadToOtherPane": "もう一方のペインにアップロード",
     "copyToOtherPane": "もう一方のペインにコピー",
     "downloadToOtherPane": "もう一方のペインにダウンロード",

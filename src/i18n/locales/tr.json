@@ -101,6 +101,11 @@
     "newFile": "Yeni Dosya…",
     "refresh": "Yenile",
     "open": "Aç",
+    "revealLocation": {
+      "windows": "Dosya Gezgini'nde Göster",
+      "macos": "Finder'da Göster",
+      "linux": "İçeren Klasörü Aç"
+    },
     "uploadToOtherPane": "Diğer bölmeye yükle",
     "copyToOtherPane": "Diğer bölmeye kopyala",
     "downloadToOtherPane": "Diğer bölmeye indir",

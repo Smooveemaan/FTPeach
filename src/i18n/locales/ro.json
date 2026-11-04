@@ -101,6 +101,11 @@
     "newFile": "Fișier nou…",
     "refresh": "Reîmprospătează",
     "open": "Deschide",
+    "revealLocation": {
+      "windows": "Afișează în Explorer",
+      "macos": "Afișează în Finder",
+      "linux": "Deschide folderul care conține elementul"
+    },
     "uploadToOtherPane": "Încarcă în celălalt panou",
     "copyToOtherPane": "Copiază în celălalt panou",
     "downloadToOtherPane": "Descarcă în celălalt panou",

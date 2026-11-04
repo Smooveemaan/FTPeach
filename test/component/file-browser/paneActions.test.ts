@@ -1,4 +1,7 @@
 import { expect, test, vi } from 'vitest';
+import i18next from 'i18next';
+import en from '../../../src/i18n/locales/en.json';
+import ru from '../../../src/i18n/locales/ru.json';
 import { usePaneActions } from '../../../src/features/file-browser/usePaneActions.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { paneJoin } from '../../../src/features/file-browser/panes/paneBackend.ts';
@@ -33,6 +36,7 @@ function mocks(tab: ReturnType<typeof makeTab>) {
     setMoveToTarget: vi.fn(),
     setChmodTarget: vi.fn(),
     setOpenWithTarget: vi.fn(),
+    reportError: vi.fn(),
     clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     fileClipboard: {
       copyToClipboard: vi.fn(),
@@ -78,7 +82,7 @@ function actions(
       },
       transfers: { copyEntries: options.copyEntries, handleOsDropFiles: vi.fn() },
       openWith: { setTarget: options.setOpenWithTarget },
-      reportError: vi.fn(),
+      reportError: options.reportError,
     },
     clipboard,
     fileClipboard: options.fileClipboard,
@@ -113,6 +117,7 @@ test('the menus follow the order of the Explorer menu', () => {
   ]);
   expect(shape(menu('a')({ name: 'folder', isDirectory: true }, { rename }))).toEqual([
     'paneMenu.open',
+    'paneMenu.revealLocation.windows',
     '-',
     'paneMenu.uploadToOtherPane',
     'paneMenu.moveTo',
@@ -129,6 +134,7 @@ test('the menus follow the order of the Explorer menu', () => {
   // A pane that cannot rename gets no Rename.
   expect(shape(menu('a')(file))).toEqual([
     'paneMenu.open',
+    'paneMenu.revealLocation.windows',
     '-',
     'paneMenu.uploadToOtherPane',
     'paneMenu.moveTo',
@@ -205,6 +211,69 @@ test('Open on a file of this computer opens it as a double click does', async ()
   window.api = { fsLocal: { openPath } } as unknown as Window['api'];
   menu('a')(file).find((item) => item.label === 'paneMenu.open')!.onClick!();
   await vi.waitFor(() => expect(openPath).toHaveBeenCalledWith('C:\\source\\file.txt'));
+});
+
+test('Reveal location targets only the clicked local file or folder', async () => {
+  for (const entry of [file, { name: 'folder', isDirectory: true }]) {
+    const { tab, options, menu } = setup();
+    const revealPath = vi.fn().mockResolvedValue({ ok: true });
+    window.api = { fsLocal: { revealPath } } as unknown as Window['api'];
+    for (const selected of [['another.txt'], [entry.name, 'another.txt']]) {
+      tab.panes.a.selected = new Set(selected);
+      const items = menu('a')(entry);
+      const reveal = items.find((item) => item.label === 'paneMenu.revealLocation.windows')!;
+      expect(items.indexOf(reveal)).toBe(1);
+      await reveal.onClick!();
+      expect(revealPath).toHaveBeenLastCalledWith(`C:\\source\\${entry.name}`);
+    }
+    expect(revealPath).toHaveBeenCalledTimes(2);
+    expect(options.reportError).not.toHaveBeenCalled();
+    expect(menu('b')(entry).some((item) => item.label === 'paneMenu.revealLocation.windows')).toBe(
+      false,
+    );
+    expect(menu('a')(null).some((item) => item.label === 'paneMenu.revealLocation.windows')).toBe(
+      false,
+    );
+  }
+});
+
+test.each(['permission_denied', 'cancelled'])(
+  'Reveal location reports failures except cancellation: %s',
+  async (errorCode) => {
+    const { options, menu } = setup();
+    const revealPath = vi.fn().mockResolvedValue({ ok: false, errorCode, error: 'Cannot reveal' });
+    window.api = { fsLocal: { revealPath } } as unknown as Window['api'];
+    await menu('a')(file).find((item) => item.label === 'paneMenu.revealLocation.windows')!
+      .onClick!();
+    if (errorCode === 'cancelled') expect(options.reportError).not.toHaveBeenCalled();
+    else
+      expect(options.reportError).toHaveBeenCalledExactlyOnceWith({
+        code: errorCode,
+        message: 'Cannot reveal',
+      });
+  },
+);
+
+test.each([
+  ['Windows NT 10.0', 'Show in File Explorer', ru.paneMenu.revealLocation.windows],
+  ['Macintosh; Intel Mac OS X', 'Show in Finder', ru.paneMenu.revealLocation.macos],
+  ['X11; Linux x86_64', 'Open containing folder', ru.paneMenu.revealLocation.linux],
+])('the location menu label follows the host OS: %s', async (agent, english, russian) => {
+  const userAgent = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(agent);
+  try {
+    const { options } = setup();
+    const translator = i18next.createInstance();
+    await translator.init({
+      lng: 'en',
+      resources: { en: { translation: en }, ru: { translation: ru } },
+    });
+    options.t = (key) => translator.t(key);
+    expect(actions(options).buildPaneMenu('a')(file)[1]!.label).toBe(english);
+    await translator.changeLanguage('ru');
+    expect(actions(options).buildPaneMenu('a')(file)[1]!.label).toBe(russian);
+  } finally {
+    userAgent.mockRestore();
+  }
 });
 
 test('Rename in the menu starts the rename the pane handed over', () => {

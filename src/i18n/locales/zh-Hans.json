@@ -101,6 +101,11 @@
     "newFile": "新建文件…",
     "refresh": "刷新",
     "open": "打开",
+    "revealLocation": {
+      "windows": "在文件资源管理器中显示",
+      "macos": "在访达中显示",
+      "linux": "打开所在文件夹"
+    },
     "uploadToOtherPane": "上传到另一个窗格",
     "copyToOtherPane": "复制到另一个窗格",
     "downloadToOtherPane": "下载到另一个窗格",

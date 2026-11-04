@@ -66,6 +66,9 @@ can drag to.
    Expected: the file appears on the desktop with the server's contents.
 2. Double-click a text file in the Computer pane.
    Expected: it opens in the program Windows uses for the type.
+   Right-click a file, then a folder, and choose **Show in File Explorer** for each.
+   Expected: Explorer opens the containing folder and selects the clicked entry,
+   including when that entry belongs to a multiple selection.
 3. In Windows mouse settings set the double-click speed to the slowest, then
    double-click a folder in a pane slowly.
    Expected: the folder opens; at the fastest speed the same slow clicks only

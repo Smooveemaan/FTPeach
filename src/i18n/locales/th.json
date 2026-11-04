@@ -101,6 +101,11 @@
     "newFile": "ไฟล์ใหม่…",
     "refresh": "รีเฟรช",
     "open": "เปิด",
+    "revealLocation": {
+      "windows": "แสดงใน File Explorer",
+      "macos": "แสดงใน Finder",
+      "linux": "เปิดโฟลเดอร์ที่มีรายการนี้"
+    },
     "uploadToOtherPane": "อัปโหลดไปยังแผงอีกฝั่ง",
     "copyToOtherPane": "คัดลอกไปยังแผงอีกฝั่ง",
     "downloadToOtherPane": "ดาวน์โหลดไปยังแผงอีกฝั่ง",

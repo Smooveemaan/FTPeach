@@ -101,6 +101,11 @@
     "newFile": "Νέο αρχείο…",
     "refresh": "Ανανέωση",
     "open": "Άνοιγμα",
+    "revealLocation": {
+      "windows": "Εμφάνιση στην Εξερεύνηση αρχείων",
+      "macos": "Εμφάνιση στο Finder",
+      "linux": "Άνοιγμα φακέλου που το περιέχει"
+    },
     "uploadToOtherPane": "Μεταφόρτωση στο άλλο πλαίσιο",
     "copyToOtherPane": "Αντιγραφή στο άλλο πλαίσιο",
     "downloadToOtherPane": "Λήψη στο άλλο πλαίσιο",

@@ -101,6 +101,11 @@
     "newFile": "नई फ़ाइल…",
     "refresh": "ताज़ा करें",
     "open": "खोलें",
+    "revealLocation": {
+      "windows": "फ़ाइल एक्सप्लोरर में दिखाएँ",
+      "macos": "Finder में दिखाएँ",
+      "linux": "आइटम वाला फ़ोल्डर खोलें"
+    },
     "uploadToOtherPane": "अन्य फलक पर अपलोड करें",
     "copyToOtherPane": "अन्य फलक पर कॉपी करें",
     "downloadToOtherPane": "अन्य फलक पर डाउनलोड करें",

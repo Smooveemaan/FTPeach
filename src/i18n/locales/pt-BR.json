@@ -101,6 +101,11 @@
     "newFile": "Novo arquivo…",
     "refresh": "Atualizar",
     "open": "Abrir",
+    "revealLocation": {
+      "windows": "Mostrar no Explorador de Arquivos",
+      "macos": "Mostrar no Finder",
+      "linux": "Abrir pasta que contém o item"
+    },
     "uploadToOtherPane": "Enviar para o outro painel",
     "copyToOtherPane": "Copiar para o outro painel",
     "downloadToOtherPane": "Baixar para o outro painel",

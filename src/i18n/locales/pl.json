@@ -101,6 +101,11 @@
     "newFile": "Nowy plik…",
     "refresh": "Odśwież",
     "open": "Otwórz",
+    "revealLocation": {
+      "windows": "Pokaż w Eksploratorze plików",
+      "macos": "Pokaż w Finderze",
+      "linux": "Otwórz folder zawierający element"
+    },
     "uploadToOtherPane": "Prześlij do drugiego panelu",
     "copyToOtherPane": "Skopiuj do drugiego panelu",
     "downloadToOtherPane": "Pobierz do drugiego panelu",

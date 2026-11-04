@@ -101,6 +101,11 @@
     "newFile": "Nouveau fichier…",
     "refresh": "Actualiser",
     "open": "Ouvrir",
+    "revealLocation": {
+      "windows": "Afficher dans l'Explorateur de fichiers",
+      "macos": "Afficher dans le Finder",
+      "linux": "Ouvrir le dossier contenant l'élément"
+    },
     "uploadToOtherPane": "Téléverser dans l'autre volet",
     "copyToOtherPane": "Copier dans l'autre volet",
     "downloadToOtherPane": "Télécharger dans l'autre volet",

@@ -101,6 +101,11 @@
     "newFile": "Neue Datei…",
     "refresh": "Aktualisieren",
     "open": "Öffnen",
+    "revealLocation": {
+      "windows": "Im Explorer anzeigen",
+      "macos": "Im Finder anzeigen",
+      "linux": "Übergeordneten Ordner öffnen"
+    },
     "uploadToOtherPane": "In den anderen Bereich hochladen",
     "copyToOtherPane": "In den anderen Bereich kopieren",
     "downloadToOtherPane": "In den anderen Bereich herunterladen",

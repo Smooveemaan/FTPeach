@@ -34,6 +34,14 @@ current list; use it after opening the folder you want to search.
 
 ## Selecting files
 
+In a **Computer** pane, right-click a file or folder and choose **Show in File Explorer**
+(Windows), **Show in Finder** (macOS), or **Open containing folder** (Linux),
+next to **Open**, to show it in the system file manager. The command uses only the
+entry you right-clicked, even when several entries are selected. Server panes
+do not have this command.
+
+<!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Reveal location targets only the clicked local file or folder -->
+
 Click a file to select it. **Ctrl+click** adds or removes individual files from
 the selection; **Ctrl+A** selects the list. Right-click a file for the actions
 available there, or right-click empty space for folder actions such as **Refresh**

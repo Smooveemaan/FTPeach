@@ -101,6 +101,11 @@
     "newFile": "Új fájl…",
     "refresh": "Frissítés",
     "open": "Megnyitás",
+    "revealLocation": {
+      "windows": "Megjelenítés a Fájlkezelőben",
+      "macos": "Megjelenítés a Finderben",
+      "linux": "Tartalmazó mappa megnyitása"
+    },
     "uploadToOtherPane": "Feltöltés a másik panelre",
     "copyToOtherPane": "Másolás a másik panelre",
     "downloadToOtherPane": "Letöltés a másik panelre",

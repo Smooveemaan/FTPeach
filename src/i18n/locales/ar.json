@@ -101,6 +101,11 @@
     "newFile": "ملف جديد…",
     "refresh": "تحديث",
     "open": "فتح",
+    "revealLocation": {
+      "windows": "إظهار في مستكشف الملفات",
+      "macos": "إظهار في Finder",
+      "linux": "فتح المجلد الحاوي"
+    },
     "uploadToOtherPane": "رفع إلى الجزء الآخر",
     "copyToOtherPane": "نسخ إلى الجزء الآخر",
     "downloadToOtherPane": "التنزيل إلى الجزء الآخر",

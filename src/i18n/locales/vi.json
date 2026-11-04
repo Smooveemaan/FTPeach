@@ -101,6 +101,11 @@
     "newFile": "Tệp mới…",
     "refresh": "Làm mới",
     "open": "Mở",
+    "revealLocation": {
+      "windows": "Hiển thị trong File Explorer",
+      "macos": "Hiển thị trong Finder",
+      "linux": "Mở thư mục chứa mục này"
+    },
     "uploadToOtherPane": "Tải lên khung còn lại",
     "copyToOtherPane": "Sao chép sang khung còn lại",
     "downloadToOtherPane": "Tải xuống vào khung còn lại",

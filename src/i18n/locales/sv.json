@@ -101,6 +101,11 @@
     "newFile": "Ny fil…",
     "refresh": "Uppdatera",
     "open": "Öppna",
+    "revealLocation": {
+      "windows": "Visa i Utforskaren",
+      "macos": "Visa i Finder",
+      "linux": "Öppna innehållande mapp"
+    },
     "uploadToOtherPane": "Ladda upp till den andra panelen",
     "copyToOtherPane": "Kopiera till den andra panelen",
     "downloadToOtherPane": "Ladda ner till den andra panelen",

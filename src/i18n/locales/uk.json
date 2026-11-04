@@ -101,6 +101,11 @@
     "newFile": "Новий файл…",
     "refresh": "Оновити",
     "open": "Відкрити",
+    "revealLocation": {
+      "windows": "Показати у Провіднику",
+      "macos": "Показати у Finder",
+      "linux": "Відкрити папку з елементом"
+    },
     "uploadToOtherPane": "Вивантажити в іншу панель",
     "copyToOtherPane": "Скопіювати в іншу панель",
     "downloadToOtherPane": "Завантажити в іншу панель",

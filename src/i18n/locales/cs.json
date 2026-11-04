@@ -101,6 +101,11 @@
     "newFile": "Nový soubor…",
     "refresh": "Obnovit",
     "open": "Otevřít",
+    "revealLocation": {
+      "windows": "Zobrazit v Průzkumníku souborů",
+      "macos": "Zobrazit ve Finderu",
+      "linux": "Otevřít nadřazenou složku"
+    },
     "uploadToOtherPane": "Nahrát do druhého panelu",
     "copyToOtherPane": "Kopírovat do druhého panelu",
     "downloadToOtherPane": "Stáhnout do druhého panelu",

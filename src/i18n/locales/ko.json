@@ -101,6 +101,11 @@
     "newFile": "새 파일…",
     "refresh": "새로 고침",
     "open": "열기",
+    "revealLocation": {
+      "windows": "파일 탐색기에서 표시",
+      "macos": "Finder에서 표시",
+      "linux": "항목이 있는 폴더 열기"
+    },
     "uploadToOtherPane": "다른 창에 업로드",
     "copyToOtherPane": "다른 창에 복사",
     "downloadToOtherPane": "다른 창으로 다운로드",

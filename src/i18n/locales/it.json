@@ -101,6 +101,11 @@
     "newFile": "Nuovo file…",
     "refresh": "Aggiorna",
     "open": "Apri",
+    "revealLocation": {
+      "windows": "Mostra in Esplora file",
+      "macos": "Mostra nel Finder",
+      "linux": "Apri cartella contenente l'elemento"
+    },
     "uploadToOtherPane": "Carica nell'altro riquadro",
     "copyToOtherPane": "Copia nell'altro riquadro",
     "downloadToOtherPane": "Scarica nell'altro riquadro",

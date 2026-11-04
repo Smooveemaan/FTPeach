@@ -101,6 +101,11 @@
     "newFile": "Ny fil…",
     "refresh": "Opdater",
     "open": "Åbn",
+    "revealLocation": {
+      "windows": "Vis i Stifinder",
+      "macos": "Vis i Finder",
+      "linux": "Åbn den indeholdende mappe"
+    },
     "uploadToOtherPane": "Upload til den anden rude",
     "copyToOtherPane": "Kopiér til den anden rude",
     "downloadToOtherPane": "Download til den anden rude",

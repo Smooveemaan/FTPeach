@@ -101,6 +101,11 @@
     "newFile": "新增檔案…",
     "refresh": "重新整理",
     "open": "開啟",
+    "revealLocation": {
+      "windows": "在檔案總管中顯示",
+      "macos": "在 Finder 中顯示",
+      "linux": "開啟所在資料夾"
+    },
     "uploadToOtherPane": "上傳到另一個窗格",
     "copyToOtherPane": "複製到另一個窗格",
     "downloadToOtherPane": "下載到另一個窗格",

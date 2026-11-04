@@ -101,6 +101,11 @@
     "newFile": "קובץ חדש…",
     "refresh": "רענן",
     "open": "פתח",
+    "revealLocation": {
+      "windows": "הצג בסייר הקבצים",
+      "macos": "הצג ב-Finder",
+      "linux": "פתח את התיקייה המכילה"
+    },
     "uploadToOtherPane": "העלה לחלונית השנייה",
     "copyToOtherPane": "העתק לחלונית השנייה",
     "downloadToOtherPane": "הורד לחלונית השנייה",

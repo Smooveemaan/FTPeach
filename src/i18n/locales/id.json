@@ -101,6 +101,11 @@
     "newFile": "File Baru…",
     "refresh": "Segarkan",
     "open": "Buka",
+    "revealLocation": {
+      "windows": "Tampilkan di File Explorer",
+      "macos": "Tampilkan di Finder",
+      "linux": "Buka folder yang memuat item"
+    },
     "uploadToOtherPane": "Unggah ke panel satunya",
     "copyToOtherPane": "Salin ke panel satunya",
     "downloadToOtherPane": "Unduh ke panel satunya",

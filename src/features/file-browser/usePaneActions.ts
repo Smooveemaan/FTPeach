@@ -2,6 +2,7 @@ import type { MouseEvent as ReactMouseEvent } from 'react';
 import { currentLocalRoot } from '../../shared/paths.ts';
 import type { MenuItem as ShellMenuItem } from '../../components/MenuItems.tsx';
 import { api } from '../../platform/api/index.ts';
+import { hostPlatform } from '../../platform/os.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
@@ -260,6 +261,17 @@ export function usePaneActions({
               tabId: activeTabId,
             });
           },
+        });
+      }
+
+      if (pane.kind === 'local') {
+        open.push({
+          label: t(`paneMenu.revealLocation.${hostPlatform()}`),
+          onClick: () =>
+            api.fsLocal.revealPath(paneJoin(pane, entry.name)).then((result) => {
+              if (!result.ok && result.errorCode !== 'cancelled')
+                shell.reportError(commandResultError(result));
+            }),
         });
       }
 

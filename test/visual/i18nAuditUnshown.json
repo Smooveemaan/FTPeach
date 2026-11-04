@@ -92,6 +92,8 @@
     "paneConnectEmptyState.quicklistLabel",
     "paneMenu.deleteSelected",
     "paneMenu.deleteSelectedPermanently",
+    "paneMenu.revealLocation.linux",
+    "paneMenu.revealLocation.macos",
     "paneSide.bottom",
     "paneSide.labelWithSide",
     "paneSide.labelWithTab",

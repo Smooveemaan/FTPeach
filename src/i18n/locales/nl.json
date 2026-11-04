@@ -101,6 +101,11 @@
     "newFile": "Nieuw bestand…",
     "refresh": "Vernieuwen",
     "open": "Openen",
+    "revealLocation": {
+      "windows": "Weergeven in Verkenner",
+      "macos": "Weergeven in Finder",
+      "linux": "Bovenliggende map openen"
+    },
     "uploadToOtherPane": "Uploaden naar het andere paneel",
     "copyToOtherPane": "Naar het andere paneel kopiëren",
     "downloadToOtherPane": "Naar het andere paneel downloaden",

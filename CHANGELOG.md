@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Name conflicts can now create a numbered copy, with separate decisions for each file or one choice for all remaining conflicts.
+- The Computer pane's right-click menu shows the clicked file or folder in File Explorer
+  (Windows), Finder (macOS), or its containing folder (Linux).
 
 ### Changed
 

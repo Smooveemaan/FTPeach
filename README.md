@@ -50,7 +50,7 @@ Make FTPeach your own with 20 color schemes, from warm Peach and leafy greens to
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/images/ftpeach-palettes-dark.webp">
   <source media="(prefers-color-scheme: light)" srcset="assets/images/ftpeach-palettes-light.webp">
-  <img alt="All 20 FTPeach color schemes, starting with Peach." src="assets/images/ftpeach-palettes-dark.webp">
+  <img alt="FTPeach in Peach, Onyx, Sand, Grass, Lagoon, Bluebell and Burgundy, shown in diagonal strips." src="assets/images/ftpeach-palettes-light.webp">
 </picture>
 
 [Try the color schemes on the website](https://ftpeach.com/#themes).

@@ -20,14 +20,14 @@ above. The screenshots are captured from the running application by the
 maintainer's capture tool, which also draws their window frame and shadow; they contain no
 third-party artwork beyond the interface icons noted above.
 
-The same tool also captures every color scheme from
-the same application state and produces `assets/images/ftpeach-palettes-dark.webp`
-and `assets/images/ftpeach-palettes-light.webp`. These looping README animations
-retain the transparent frame and shadow and show each scheme's name and a color
-marker in a themed pill below the window, aligned with its left edge. Each scheme takes one second, including a 350 ms crossfade into the next;
-the last scheme fades back to Peach. They use the same artwork and palette notices as the application.
-It also exports unlabelled WebP previews with the palette-specific window border, and their names and colors to
-`assets/images/palettes/` for the website's on-demand theme picker.
+The same tool also captures every color scheme from the same application state.
+It exports unlabelled WebP previews with the palette-specific window border,
+and their names and colors to `assets/images/palettes/` for the website's
+on-demand theme picker. The static README images `assets/images/ftpeach-palettes-dark.webp`
+and `assets/images/ftpeach-palettes-light.webp` each combine seven selected previews
+in diagonal strips across one window, using the website's top crop and fading
+bottom edge. They use the same artwork and palette
+notices as the application.
 
 `assets/images/kofi-*.png` and `assets/images/patreon-*.png` are the Ko-fi logo
 from Ko-fi's official press kit and the horizontal Patreon logo from Patreon's

@@ -4,6 +4,7 @@ import { usePaneRefresh } from '../../../src/features/file-browser/panes/usePane
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { PaneState } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { friendlyError } from '../../../src/shared/errorMessages.ts';
+import { useApplicationError } from '../../../src/app/useApplicationError.ts';
 import {
   markConnectionDead,
   resetTransfersStoreForTests,
@@ -31,7 +32,6 @@ test.each(['connecting', 'connected'] as const)(
         activeTabId: tab.id,
         updatePane: vi.fn(),
         reportError,
-        setErrorMessage: vi.fn(),
         defaultLocalPath: '',
       }),
     );
@@ -67,7 +67,6 @@ test('a lost connection puts the pane in error, unless the user closed it', asyn
       activeTabId: tab.id,
       updatePane,
       reportError,
-      setErrorMessage: vi.fn(),
       defaultLocalPath: '',
     }),
   );
@@ -123,7 +122,6 @@ test('a successful late reply cannot repopulate a closed remote pane', async () 
       activeTabId: tab.id,
       updatePane,
       reportError: vi.fn(),
-      setErrorMessage: vi.fn(),
       defaultLocalPath: '',
     }),
   );
@@ -159,7 +157,6 @@ test('local navigation and unmount abort obsolete listings without publishing th
       activeTabId: tab.id,
       updatePane,
       reportError: vi.fn(),
-      setErrorMessage: vi.fn(),
       defaultLocalPath: '',
     }),
   );
@@ -214,7 +211,6 @@ test('switching a pane back to local keeps the listing it just started', async (
         activeTabId: remoteTab.id,
         updatePane,
         reportError: vi.fn(),
-        setErrorMessage: vi.fn(),
         defaultLocalPath: '',
       }),
     { initialProps: { panes: remoteTab.panes } },
@@ -258,7 +254,6 @@ test('switching a pane away from local aborts its listing and clears the spinner
         activeTabId: tab.id,
         updatePane,
         reportError: vi.fn(),
-        setErrorMessage: vi.fn(),
         defaultLocalPath: '',
       }),
     { initialProps: { panes: tab.panes } },
@@ -297,7 +292,6 @@ test('a transfer refresh leaves a pane the user browsed away from, and keeps the
         activeTabId: tab.id,
         updatePane,
         reportError: vi.fn(),
-        setErrorMessage: vi.fn(),
         defaultLocalPath: '',
       }),
     { initialProps: { panes: tab.panes } },
@@ -327,34 +321,33 @@ test('a listing that works clears only the error a failed listing put up', async
   const failure = { ok: false, errorCode: 'invalidInput', error: 'Invalid URL', entries: [] };
   const list = vi.fn().mockResolvedValue({ ok: true, entries: [] });
   window.api = { session: { list } } as unknown as Window['api'];
-  let message = 'Could not delete folder';
-  const setErrorMessage = (next: string | ((_current: string) => string)) => {
-    message = typeof next === 'function' ? next(message) : next;
-  };
-  const { result } = renderHook(() =>
-    usePaneRefresh({
+  const { result } = renderHook(() => {
+    const errors = useApplicationError();
+    const refresh = usePaneRefresh({
       panes: tab.panes,
       activeTabId: tab.id,
       updatePane: vi.fn(),
-      reportError: (error) => setErrorMessage(friendlyError(error) ?? ''),
-      setErrorMessage,
+      reportError: errors.reportError,
+      withdrawError: errors.withdrawError,
       defaultLocalPath: '',
-    }),
-  );
-  await act(async () => {
-    await result.current.refreshPane('b', '/');
+    });
+    return { errors, refresh };
   });
-  expect(message, 'a delete error survives the refresh after it').toBe('Could not delete folder');
+  act(() => result.current.errors.setErrorMessage('Could not delete folder'));
+  await act(async () => {
+    await result.current.refresh.refreshPane('b', '/');
+  });
+  expect(result.current.errors.errorMessage).toBe('Could not delete folder');
 
   list.mockResolvedValueOnce(failure);
   await act(async () => {
-    await result.current.refreshPane('b', '/');
+    await result.current.refresh.refreshPane('b', '/');
   });
-  expect(message).not.toBe('Could not delete folder');
+  expect(result.current.errors.errorMessage).toBe('An unexpected error occurred.');
   await act(async () => {
-    await result.current.refreshPane('b', '/');
+    await result.current.refresh.refreshPane('b', '/');
   });
-  expect(message).toBe('');
+  expect(result.current.errors.errorMessage).toBe('Could not delete folder');
 });
 
 test('a selection made while the folder is listed again is the one kept', async () => {
@@ -372,7 +365,6 @@ test('a selection made while the folder is listed again is the one kept', async 
       activeTabId: tab.id,
       updatePane,
       reportError: vi.fn(),
-      setErrorMessage: vi.fn(),
       defaultLocalPath: '',
     }),
   );
@@ -407,7 +399,6 @@ test('a refresh asked while the folder is being listed lists it again afterwards
       activeTabId: tab.id,
       updatePane,
       reportError: vi.fn(),
-      setErrorMessage: vi.fn(),
       defaultLocalPath: '',
     }),
   );

@@ -30,8 +30,8 @@ interface TransferAttemptsOptions {
   cancelIntentRef: MutableRefObject<Record<string, TransferStatus>>;
   /** What each row put in the error banner, taken back if a retry succeeds. */
   shownErrors: MutableRefObject<Map<string, string>>;
-  setErrorMessage: (message?: string) => unknown;
-  withdrawErrorMessage: (message: string) => void;
+  setErrorMessage: (message: string | undefined, owner: string) => unknown;
+  withdrawErrorMessage: (message: string, owner: string) => void;
 }
 
 /**
@@ -119,13 +119,13 @@ export function createTransferAttempts({
       ? undefined
       : (notice ?? (friendlyError(commandResultError(result)) || undefined));
     if (!result.ok && !intent && result.errorCode !== 'cancelled') {
-      setErrorMessage(message);
+      setErrorMessage(message, `transfer:${id}`);
       if (message) shownErrors.current.set(id, message);
     }
     const shown = shownErrors.current.get(id);
     if (result.ok && shown !== undefined) {
       shownErrors.current.delete(id);
-      withdrawErrorMessage(shown);
+      withdrawErrorMessage(shown, `transfer:${id}`);
     }
     setTransfersStore((previous) =>
       previous[id]?.attemptId === attemptId

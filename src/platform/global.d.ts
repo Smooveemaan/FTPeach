@@ -71,7 +71,7 @@ declare global {
           failed: number;
           title: string;
           body: string;
-        }) => Promise<unknown>;
+        }) => Promise<CommandResult>;
       };
       shortcuts: {
         onKeyDown: (callback: (event: KeyboardEvent) => void) => () => void;

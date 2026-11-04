@@ -2036,16 +2036,15 @@ test('OS notification separates errors from the final successful tally', () =>
       setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
       assert.equal(calls.notifyTransfersComplete.length, 0, 'queue still has an active transfer');
 
-      // Second (and last) file lands — queue just drained, single notify
-      // tallying both outcomes.
       setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'error') }));
       assert.equal(calls.notifyTransfersComplete.length, 0, 'the queue has not stayed idle yet');
       settle();
-      assert.equal(calls.notifyTransfersComplete.length, 1);
-      // title/body are pre-translated by i18next before reaching window.api —
-      // this test only cares about the tally, not the wording.
-      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 1);
+      assert.equal(calls.notifyTransfersComplete.length, 2);
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 0);
       assert.equal(calls.notifyTransfersComplete[0]?.failed, 1);
+      assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
+      assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+      assert.equal(calls.notifyTransfersComplete[1]?.title, 'Transfer Error');
 
       // A later, independent transfer draining on its own must not re-tally
       // rows already reported in the previous drain.
@@ -2055,9 +2054,46 @@ test('OS notification separates errors from the final successful tally', () =>
       }));
       setSnapshot((prev) => ({ ...prev, c: withStatus(prev.c, 'done') }));
       settle();
-      assert.equal(calls.notifyTransfersComplete.length, 2);
-      assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
-      assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+      assert.equal(calls.notifyTransfersComplete.length, 3);
+      assert.equal(calls.notifyTransfersComplete[2]?.succeeded, 1);
+      assert.equal(calls.notifyTransfersComplete[2]?.failed, 0);
+    }),
+  ));
+
+test('notification delivery failures are reported once without replacing the transfer error', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, getSnapshot, mockApi }) => {
+      const reported: unknown[] = [];
+      let deliveries = 0;
+      const release = setAsyncFailureSink((error) => reported.push(error));
+      const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      try {
+        for (const rejected of [false, true]) {
+          mockApi.notifications.transfersComplete = () => {
+            deliveries++;
+            return rejected
+              ? Promise.reject(new Error('IPC unavailable'))
+              : Promise.resolve({ ok: false, error: 'Notification unavailable' });
+          };
+          setSnapshot(() => ({
+            a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+          }));
+          setSnapshot((previous) => ({
+            a: { ...withStatus(previous.a, 'error'), errorMessage: 'Original transfer failure' },
+          }));
+          settle();
+          await act(async () => Promise.resolve());
+          assert.equal(getSnapshot().a?.errorMessage, 'Original transfer failure');
+        }
+        assert.deepEqual(reported, [
+          'Could not show the system notification.',
+          'Could not show the system notification.',
+        ]);
+        assert.equal(deliveries, 2, 'each queue is delivered once, without an automatic retry');
+        warning.mockRestore();
+      } finally {
+        release();
+      }
     }),
   ));
 
@@ -2161,9 +2197,55 @@ test('a folder that failed part way counts what it delivered and one failure', (
         empty: { ...withStatus(prev.empty, 'done'), files: 0 },
       }));
       settle();
-      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 99);
+      assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 0);
       assert.equal(calls.notifyTransfersComplete[0]?.failed, 1);
-      assert.equal(calls.notifyTransfersComplete[0]?.title, 'Transfer Error');
+      assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 99);
+      assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+      assert.equal(calls.notifyTransfersComplete[1]?.title, 'Transfer Error');
+      assert.equal(calls.notifyTransfersComplete[1]?.body, '99 files transferred');
+    }),
+  ));
+
+test('close errors arrive together during a long transfer and are not repeated in its final tally', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+        long: makeTransferRow({ id: 'long', status: 'progress', direction: 'up', name: 'long' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'error') }));
+      setSnapshot((prev) => ({ ...prev, b: withStatus(prev.b, 'error') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      assert.equal(calls.notifyTransfersComplete[0]?.failed, 2);
+      setSnapshot((prev) => ({ ...prev, long: withStatus(prev.long, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 2);
+      assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 1);
+      assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+      assert.equal(calls.notifyTransfersComplete[1]?.title, 'Transfer Error');
+    }),
+  ));
+
+test('a retry after an announced error replaces it instead of announcing it again', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        long: makeTransferRow({ id: 'long', status: 'progress', direction: 'up', name: 'long' }),
+      }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'error') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 1);
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'queued') }));
+      setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'done') }));
+      setSnapshot((prev) => ({ ...prev, long: withStatus(prev.long, 'done') }));
+      settle();
+      assert.equal(calls.notifyTransfersComplete.length, 2);
+      assert.equal(calls.notifyTransfersComplete[1]?.succeeded, 2);
+      assert.equal(calls.notifyTransfersComplete[1]?.failed, 0);
+      assert.equal(calls.notifyTransfersComplete[1]?.title, 'Transfer Complete');
     }),
   ));
 
@@ -2181,6 +2263,40 @@ test('a failure that a retry fixed counts only as the success', () =>
       settle();
       assert.equal(calls.notifyTransfersComplete[0]?.succeeded, 2);
       assert.equal(calls.notifyTransfersComplete[0]?.failed, 0);
+    }),
+  ));
+
+test('a retry discards the old result before pausing or stopping', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      for (const status of ['paused', 'stopped'] as const) {
+        setSnapshot(() => ({
+          a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        }));
+        setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'error') }));
+        setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'queued') }));
+        setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, status) }));
+        settle();
+        assert.equal(calls.notifyTransfersComplete.length, 0);
+        setSnapshot(() => ({}));
+      }
+    }),
+  ));
+
+test('only the latest retry result reaches the notification', () =>
+  withSettlingTimers((settle) =>
+    withHarness(async ({ setSnapshot, calls }) => {
+      for (const status of ['done', 'error'] as const) {
+        setSnapshot(() => ({
+          a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+        }));
+        setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'error') }));
+        setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, 'queued') }));
+        setSnapshot((prev) => ({ ...prev, a: withStatus(prev.a, status) }));
+        settle();
+        assert.equal(calls.notifyTransfersComplete.at(-1)?.succeeded, status === 'done' ? 1 : 0);
+        assert.equal(calls.notifyTransfersComplete.at(-1)?.failed, status === 'error' ? 1 : 0);
+      }
     }),
   ));
 

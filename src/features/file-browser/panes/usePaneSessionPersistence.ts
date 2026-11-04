@@ -85,7 +85,7 @@ export function usePaneSessionPersistence({
     const signature = failureSignature(error);
     if (reportedFailureRef.current?.signature === signature) return;
     reportedFailureRef.current = { signature, error };
-    reportAsyncFailure(error);
+    reportAsyncFailure(error, 'session-persistence');
   }, []);
 
   const writeSession = useCallback(
@@ -107,7 +107,8 @@ export function usePaneSessionPersistence({
           savedSnapshotRef.current = snapshot;
           writeFailedRef.current = false;
           // Saved again: the refusal on screen is no longer true.
-          if (reportedFailureRef.current) withdrawAsyncFailure(reportedFailureRef.current.error);
+          if (reportedFailureRef.current)
+            withdrawAsyncFailure(reportedFailureRef.current.error, 'session-persistence');
           reportedFailureRef.current = null;
         } catch (error) {
           writeFailedRef.current = true;

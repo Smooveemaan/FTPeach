@@ -63,7 +63,7 @@ write pixel dimensions back into inherited root custom properties from JavaScrip
   Folder merges require their own explicit consent, separate from sibling file replacements.
   Local file copies use lifecycle rows as well; their native copy command has no pause or
   cancellation support. File operation and connection errors use the shell's dismissible
-  error banner. Same-pane
+  error banners. Same-pane
   Move to uses native rename. Skipped batch names remain in the result so a partially moved cut
   stays on the clipboard. `TransferQueue` owns queue layout and scrolling; `components/TransferItemRow` renders
   one transfer; `transferColumns` and `transferPresentation` define column and label contracts;

@@ -224,6 +224,35 @@ test('palette arrows wrap around in both directions', async ({ page }) => {
 });
 
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  test('homepage scroll effects work with ' + reducedMotion, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.emulateMedia({ reducedMotion });
+    await openSite(page);
+    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+    const lift = () =>
+      page.locator('#features').evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m42);
+    if (reducedMotion === 'no-preference') {
+      await expect.poll(lift).toBeLessThan(0);
+      await page.locator('#features').evaluate((el) => el.scrollIntoView({ behavior: 'instant' }));
+      await expect.poll(lift).toBe(0);
+      await expect
+        .poll(() =>
+          page.locator('#support').evaluate((el) => Number(el.style.getPropertyValue('--shut'))),
+        )
+        .toBe(1);
+      await page.locator('#support').evaluate((el) => el.scrollIntoView({ behavior: 'instant' }));
+      await expect
+        .poll(() =>
+          page.locator('#support').evaluate((el) => Number(el.style.getPropertyValue('--shut'))),
+        )
+        .toBeLessThan(1);
+    } else {
+      expect(await lift()).toBe(0);
+    }
+    expect(errors).toEqual([]);
+  });
+
   test('palette and mode cross-fades work with ' + reducedMotion, async ({ page }) => {
     await page.emulateMedia({ reducedMotion });
     await openSite(page);

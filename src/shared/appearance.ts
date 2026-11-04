@@ -7,7 +7,7 @@ export const COLOR_SCHEMES = [
   'linen',
   'sand',
   'cocoa',
-  'ember',
+  'amber',
   'clay',
   'leaves',
   'forest',

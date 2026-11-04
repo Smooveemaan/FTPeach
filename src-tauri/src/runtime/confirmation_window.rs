@@ -228,7 +228,7 @@ pub(crate) enum ColorScheme {
     Leaves,
     Midnight,
     Plum,
-    Ember,
+    Amber,
     Clay,
     Cocoa,
     Linen,
@@ -406,7 +406,7 @@ mod appearance_tests {
             "leaves",
             "midnight",
             "plum",
-            "ember",
+            "amber",
             "clay",
             "cocoa",
             "linen",
@@ -421,6 +421,7 @@ mod appearance_tests {
         }
         for value in [
             serde_json::json!({"light": true, "colorScheme": "unknown", "background": [0,0,0]}),
+            serde_json::json!({"light": true, "colorScheme": "ember", "background": [0,0,0]}),
             serde_json::json!({"light": true, "colorScheme": "peach", "background": [256,0,0]}),
             serde_json::json!({"light": "light", "colorScheme": "peach", "background": [0,0,0]}),
         ] {

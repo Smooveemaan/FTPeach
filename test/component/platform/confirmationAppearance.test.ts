@@ -27,7 +27,7 @@ test('confirmations apply the initial snapshot and follow preview and rollback',
 });
 
 test('old or unknown settings use Peach and valid palettes survive hydration', () => {
-  for (const colorScheme of [undefined, null, 3, 'missing']) {
+  for (const colorScheme of [undefined, null, 3, 'missing', 'ember']) {
     expect(normalizeSettings({ colorScheme }).interface.colorScheme).toBe('peach');
   }
   for (const colorScheme of [
@@ -46,7 +46,7 @@ test('old or unknown settings use Peach and valid palettes survive hydration', (
     'leaves',
     'midnight',
     'plum',
-    'ember',
+    'amber',
     'clay',
     'cocoa',
     'linen',
@@ -56,7 +56,7 @@ test('old or unknown settings use Peach and valid palettes survive hydration', (
   }
 });
 
-test('palette names follow color order without changing stored identifiers', () => {
+test('palette names follow color order and use valid stored identifiers', () => {
   expect(COLOR_SCHEMES.map((id) => en.settings.colorSchemes[id])).toEqual([
     'Peach',
     'Onyx',
@@ -65,7 +65,7 @@ test('palette names follow color order without changing stored identifiers', () 
     'Linen',
     'Sand',
     'Cocoa',
-    'Ember',
+    'Amber',
     'Clay',
     'Grass',
     'Forest',

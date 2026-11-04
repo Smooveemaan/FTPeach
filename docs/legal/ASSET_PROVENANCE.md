@@ -52,6 +52,6 @@ Some surface, muted-text and accent shades are adjusted for readable file-manage
 controls. Status and file-type colors retain FTPeach semantics.
 
 Onyx (stored as `black`), Ash (stored as `gray`), Sand, Rose, Grass, Midnight,
-Plum, Ember, Clay, Cocoa, Linen and Burgundy are original FTPeach palettes under
+Plum, Amber, Clay, Cocoa, Linen and Burgundy are original FTPeach palettes under
 the project license. Onyx and Ash use achromatic surfaces, borders, text and primary controls; status
 and file-type colors keep their existing meanings.

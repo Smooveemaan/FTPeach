@@ -87,6 +87,7 @@ for (const mode of ['dark', 'light'] as const) {
     await openSite(page);
     for (const [index, id] of COLOR_SCHEMES.entries()) {
       if (index > 0) await page.getByRole('button', { name: 'Next color scheme' }).click();
+      if (id === 'amber') await expect(page.locator('#palette-name')).toHaveText('Amber');
       await expect(page.locator('.palette-preview > img').last()).toHaveAttribute(
         'src',
         `palettes/${id}-${mode}.webp`,

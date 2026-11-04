@@ -140,7 +140,7 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
                 "leaves",
                 "midnight",
                 "plum",
-                "ember",
+                "amber",
                 "clay",
                 "cocoa",
                 "linen",
@@ -268,7 +268,7 @@ mod tests {
                 "leaves",
                 "midnight",
                 "plum",
-                "ember",
+                "amber",
                 "clay",
                 "cocoa",
                 "linen",
@@ -288,6 +288,7 @@ mod tests {
                 serde_json::json!({"unknown":true}),
                 serde_json::json!({"theme":"invalid"}),
                 serde_json::json!({"colorScheme":"invalid"}),
+                serde_json::json!({"colorScheme":"ember"}),
                 serde_json::json!({"proxyPort":"21"}),
             ] {
                 assert!(

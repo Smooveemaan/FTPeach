@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The Ember color scheme is now called Amber; select it again if it was your saved scheme.
 - Transfer notifications report errors while other transfers continue, and up to three independent error messages can remain visible.
 - When a password cannot be saved, the message explains how to set up master-password protection.
 

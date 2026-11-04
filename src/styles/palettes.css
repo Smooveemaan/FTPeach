@@ -576,7 +576,7 @@
   --accent-fill-text: #ffffff;
 }
 
-[data-color-scheme='ember'] {
+[data-color-scheme='amber'] {
   --bg-base: #201714;
   --bg-panel: #2b1e18;
   --bg-panel-alt: #38271e;
@@ -592,8 +592,8 @@
   --accent-fill-text: #2e190d;
 }
 
-[data-theme='light'][data-color-scheme='ember'],
-[data-theme='light'] [data-color-scheme='ember'] {
+[data-theme='light'][data-color-scheme='amber'],
+[data-theme='light'] [data-color-scheme='amber'] {
   --bg-base: #f3e7dc;
   --bg-panel: #fff8f0;
   --bg-panel-alt: #edd8c5;

@@ -30,6 +30,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     }
     main_window.build()?;
     #[cfg(feature = "smoke-test")]
+    super::e2e_control::start(app.handle())?;
+    #[cfg(feature = "smoke-test")]
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
         commands::smoke::report_phase("window-built");
     }

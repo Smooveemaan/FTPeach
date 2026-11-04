@@ -1,20 +1,22 @@
-//! The desktop tests (test/e2e) attach to the test build over the DevTools
-//! protocol. Only a build with the `smoke-test` feature compiles this, and it
-//! listens only when the tests name a port.
+//! Desktop test overrides, compiled only with the `smoke-test` feature.
 
-/// The WebView2 arguments when `FTPEACH_E2E_CDP_PORT` names a port. They
+/// The WebView2 arguments for an automated run. They
 /// replace wry's defaults, which come first. Every window sharing the WebView2
 /// profile has to be created with the same arguments, the confirmation window
 /// too. The windows of a run sit off screen (`show_in_background`); without
 /// the occlusion switches the page would count as hidden and stop drawing.
 pub(crate) fn args() -> Option<String> {
-    let port: u16 = std::env::var("FTPEACH_E2E_CDP_PORT")
-        .ok()?
-        .parse()
-        .expect("FTPEACH_E2E_CDP_PORT must be a port number");
-    Some(format!(
-        "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,CalculateNativeWinOcclusion --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --autoplay-policy=no-user-gesture-required --remote-debugging-port={port}"
-    ))
+    if !active() {
+        return None;
+    }
+    let mut args = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,CalculateNativeWinOcclusion --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --autoplay-policy=no-user-gesture-required".to_owned();
+    if let Ok(port) = std::env::var("FTPEACH_E2E_CDP_PORT") {
+        let port: u16 = port
+            .parse()
+            .expect("FTPEACH_E2E_CDP_PORT must be a port number");
+        args.push_str(&format!(" --remote-debugging-port={port}"));
+    }
+    Some(args)
 }
 
 /// The folder a save dialog answers with while the desktop tests drive the run.
@@ -36,6 +38,7 @@ pub(crate) fn picked_path() -> Option<Option<String>> {
 /// Whether the desktop tests drive this run.
 pub(crate) fn active() -> bool {
     std::env::var_os("FTPEACH_E2E_CDP_PORT").is_some()
+        || std::env::var_os("FTPEACH_E2E_CONTROL_PORT").is_some()
 }
 
 /// Whether to hold back opening `what` outside FTPeach: a program, Explorer or

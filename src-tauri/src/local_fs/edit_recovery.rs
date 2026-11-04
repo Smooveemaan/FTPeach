@@ -95,12 +95,15 @@ pub fn data_dir<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> Option<PathBuf>
         return Some(super::portable::local_dir(root));
     }
     // Windows KnownFolder APIs do not necessarily honor the process's
-    // LOCALAPPDATA override. Smoke and the desktop tests (which name a
-    // DevTools port) must never use the interactive user's data.
+    // LOCALAPPDATA override. Automated runs must never use the interactive user's data.
     #[cfg(feature = "smoke-test")]
-    if ["FTPEACH_SMOKE_TEST", "FTPEACH_E2E_CDP_PORT"]
-        .iter()
-        .any(|name| std::env::var_os(name).is_some())
+    if [
+        "FTPEACH_SMOKE_TEST",
+        "FTPEACH_E2E_CDP_PORT",
+        "FTPEACH_E2E_CONTROL_PORT",
+    ]
+    .iter()
+    .any(|name| std::env::var_os(name).is_some())
     {
         return std::env::var_os("LOCALAPPDATA")
             .map(|path| PathBuf::from(path).join("com.smooveemaan.ftpeach"));

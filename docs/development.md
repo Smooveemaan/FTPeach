@@ -69,6 +69,15 @@ Visual tests use a deterministic application fixture with checked-in snapshots f
 
 See the [test guide](../test/README.md) for individual suites and the [contribution guide](../.github/CONTRIBUTING.md) for review expectations.
 
+The `smoke-test` build also supports desktop control through a loopback TCP
+channel. Set `FTPEACH_E2E_CONTROL_PORT` to a nonzero port and
+`FTPEACH_E2E_CONTROL_TOKEN` to a random token of at least 32 bytes. Each connection
+accepts one newline-terminated JSON request with `token`, `window` and `script`;
+the response contains `value` or `error`. Scripts are JavaScript expressions and
+may return a Promise. A window of `*` lists window labels. Requests and responses
+are limited to 1 MiB. This channel is absent from production builds. DOM events
+sent through it do not establish native keyboard, drag or OS dialog behavior.
+
 ## Clean up build output
 
 Preview the cleanup targets with `npm run clean -- --dry-run`. Use `npm run clean -- --artifacts-only` to remove generated output and reports while retaining native build caches.

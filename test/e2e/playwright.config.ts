@@ -12,5 +12,8 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
   // An install, a download and the installer's own run fit in no less.
-  projects: [{ name: 'vm', testMatch: '*.vm.ts', timeout: 600_000 }],
+  projects: [
+    { name: 'vm', testMatch: '*.vm.ts', timeout: 600_000 },
+    { name: 'release', testMatch: '*.final.ts', timeout: 600_000 },
+  ],
 });

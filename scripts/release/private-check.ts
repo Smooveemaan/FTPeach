@@ -34,6 +34,13 @@ export interface ParentCheck {
   runId: string;
   sha: string;
 }
+export interface PrivateEvidence {
+  runId: number;
+  attempt: number;
+  workflowId: number;
+  testSha: string;
+  requiredJobCount: number;
+}
 export type Api = (_route: string, _body?: unknown) => Promise<unknown>;
 
 export function checkTitle(parent: ParentCheck): string {
@@ -114,7 +121,18 @@ export async function findOrDispatch(
   return run;
 }
 
-export async function runPrivateCheck() {
+export async function runPrivateCheck(
+  options: { parent?: ParentCheck; expected?: PrivateEvidence } = {},
+) {
+  if (options.expected) {
+    for (const value of [
+      options.expected.runId,
+      options.expected.attempt,
+      options.expected.workflowId,
+    ]) {
+      assert.ok(Number.isSafeInteger(value) && value > 0, 'Invalid closed-check identity');
+    }
+  }
   assert.ok(process.env.PRIVATE_CHECK_TOKEN, 'PRIVATE_CHECK_TOKEN is required');
   const config = JSON.parse(process.env.PRIVATE_CHECK_CONFIG ?? '{}') as {
     repository: string;
@@ -124,7 +142,7 @@ export async function runPrivateCheck() {
   assert.match(config.repository ?? '', /^[\w.-]+\/[\w.-]+$/);
   assert.match(config.workflow ?? '', /^[\w.-]+\.ya?ml$/);
   assert.ok(config.ref);
-  const parent = {
+  const parent = options.parent ?? {
     repository: process.env.GITHUB_REPOSITORY!,
     runId: process.env.GITHUB_RUN_ID!,
     sha: process.env.GITHUB_SHA!,
@@ -146,8 +164,18 @@ export async function runPrivateCheck() {
     return response.json();
   };
   const workflow = (await api(`actions/workflows/${config.workflow}`)) as { id: number };
-  let run = await findOrDispatch(api, parent, config.workflow, config.ref);
+  let run = options.expected
+    ? ((await api(`actions/runs/${options.expected.runId}`)) as CheckRun)
+    : await findOrDispatch(api, parent, config.workflow, config.ref);
   assert.equal(run.head_branch, config.ref, 'Closed check did not run on the trusted ref');
+  if (options.expected) {
+    assert.equal(
+      run.run_attempt,
+      options.expected.attempt,
+      'The verified closed attempt was superseded',
+    );
+    assert.equal(run.status, 'completed');
+  }
   const deadline = Date.now() + 5 * 60 * 60 * 1000;
   while (run.status !== 'completed') {
     assert.ok(Date.now() < deadline, 'Closed check timed out; rerun this waiting job to reconnect');
@@ -203,11 +231,16 @@ export async function runPrivateCheck() {
   assert.equal(current.status, 'completed');
   assert.equal(current.conclusion, 'success');
   const evidence = validatePrivateCheck(parent, run, workflow.id, receipt, jobs);
+  if (options.expected) {
+    assert.deepEqual(evidence, options.expected);
+    return evidence;
+  }
   await writeFile('private-check.json', JSON.stringify(evidence, null, 2));
   await appendFile(
     process.env.GITHUB_STEP_SUMMARY!,
     `Closed checks passed: run ${run.id}, attempt ${run.run_attempt}, tests ${run.head_sha}.\n`,
   );
+  return evidence;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

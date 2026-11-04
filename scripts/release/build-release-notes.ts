@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { appendFile, readFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 
 const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
 const version = packageJson.version;
@@ -22,8 +22,8 @@ assert.ok(notes.length > 0, `CHANGELOG.md's "## [${version}]" section is empty`)
 
 const repository = process.env.GITHUB_REPOSITORY;
 assert.ok(repository, 'GITHUB_REPOSITORY must be set (this script runs as a GitHub Actions step)');
-const ref = process.env.GITHUB_REF_NAME;
-assert.ok(ref, 'GITHUB_REF_NAME must be set (this script runs as a GitHub Actions step)');
+const ref = process.env.RELEASE_SOURCE_SHA ?? process.env.GITHUB_REF_NAME;
+assert.ok(ref, 'RELEASE_SOURCE_SHA or GITHUB_REF_NAME must be set');
 const images = `https://raw.githubusercontent.com/${repository}/${ref}/assets/images`;
 // A logo for each theme: GitHub picks the one that matches the reader's.
 const logo = (href: string, name: string, alt: string) =>
@@ -35,6 +35,8 @@ assert.ok(
   githubOutputPath,
   'GITHUB_OUTPUT must be set (this script runs as a GitHub Actions step)',
 );
+await mkdir('release', { recursive: true });
+await writeFile('release/release-notes.md', `${body}\n`);
 
 const delimiter = `FTPEACH_RELEASE_NOTES_${Math.random().toString(36).slice(2)}`;
 assert.ok(!body.includes(delimiter), 'Generated delimiter collided with release notes content');

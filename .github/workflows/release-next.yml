@@ -1,0 +1,151 @@
+name: Release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      check-run-id:
+        description: Successful master push CI run with Release-Check true
+        type: string
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: release-candidate
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    permissions:
+      actions: read
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.verify.outputs.sha }}
+      version: ${{ steps.verify.outputs.version }}
+      proof-artifact: checked-candidate-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Pin the successful full check
+        id: verify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CHECK_RUN_ID: ${{ inputs.check-run-id }}
+        run: node --experimental-strip-types scripts/release/verify-readiness.ts
+      - name: Require approval protection for signing
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/check-release-environment.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: checked-candidate-${{ github.run_attempt }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
+
+  build-windows:
+    needs: candidate
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    environment: release
+    runs-on: windows-latest
+    timeout-minutes: 60
+    outputs:
+      artifact: ${{ steps.package.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.candidate.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ${{ needs.candidate.outputs.proof-artifact }}
+      - name: Install pinned Rust toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run check:release-config
+      - run: npm run licenses:check
+      - run: npm run sbom:generate
+      - name: Extract candidate release notes
+        env:
+          RELEASE_SOURCE_SHA: ${{ needs.candidate.outputs.sha }}
+        run: node --experimental-strip-types scripts/release/build-release-notes.ts
+      - name: Build and sign final NSIS and portable packages
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          npm run tauri -- build --bundles nsis
+          node --experimental-strip-types scripts/release/portable.ts build
+          npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip
+      - name: Verify every updater signature
+        shell: pwsh
+        run: |
+          $config = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
+          $signatures = @(Get-ChildItem -Recurse src-tauri/target/release/bundle -Filter '*.sig')
+          if ($signatures.Count -ne 2) { throw 'Expected the NSIS and portable updater signatures' }
+          foreach ($signature in $signatures) {
+            $artifact = $signature.FullName.Substring(0, $signature.FullName.Length - 4)
+            cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $config.plugins.updater.pubkey $artifact $signature.FullName
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Check final trust and absence of signing keys
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts
+      - name: Freeze candidate files and record source and tools
+        id: package
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.candidate.outputs.version }}
+        run: |
+          New-Item -ItemType Directory release-candidate | Out-Null
+          Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-candidate
+          Copy-Item -LiteralPath release/release-notes.md -Destination release-candidate
+          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md, release-readiness.json -DestinationPath release-candidate/release-audit.zip
+          node --experimental-strip-types scripts/release/candidate.ts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "artifact=release-candidate-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
+      - name: Attest the actual source and final package bytes
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            release-candidate/*-setup.exe
+            release-candidate/*-portable.zip
+          predicate-type: https://slsa.dev/provenance/v1
+          predicate-path: release/provenance.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.package.outputs.artifact }}
+          path: release-candidate/
+          if-no-files-found: error
+          retention-days: 30
+
+  acceptance:
+    needs: [candidate, build-windows]
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/installer.yml
+    with:
+      source-sha: ${{ needs.candidate.outputs.sha }}
+      candidate-artifact: ${{ needs.build-windows.outputs.artifact }}
+      production: true

@@ -119,12 +119,12 @@ async fn evaluate(app: &tauri::AppHandle, request: Request) -> Result<Value, Str
     )).map_err(|error| error.to_string())?;
     let result = tokio::time::timeout(Duration::from_secs(25), async {
         loop {
-            let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel();
+            let (sender, mut receiver) = tokio::sync::mpsc::channel(1);
             window
                 .eval_with_callback(
                     format!("window[{key}]?.done ? window[{key}].result : null"),
                     move |value| {
-                        let _ = sender.send(value);
+                        let _ = sender.try_send(value);
                     },
                 )
                 .map_err(|error| error.to_string())?;

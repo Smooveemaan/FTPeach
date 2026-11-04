@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Retried transfers no longer announce an old error, and folder failures no longer report a made-up number of failed files.
+- Transfers finished in the active window no longer trigger a notification when you minimize it.
 
 - Localized application menus stay inside narrow windows.
 - Dialogs reliably respond to the first Escape or Enter key press.

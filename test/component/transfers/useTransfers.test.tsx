@@ -2060,6 +2060,36 @@ test('OS notification separates errors from the final successful tally', () =>
     }),
   ));
 
+test.each(['done', 'error'] as const)(
+  'a transfer finishing as %s in the focused window is not announced after minimizing',
+  (status) =>
+    withSettlingTimers((settle) =>
+      withHarness(async ({ setSnapshot, calls }) => {
+        const focused = vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+        try {
+          setSnapshot(() => ({
+            a: makeTransferRow({ id: 'a', status: 'progress', direction: 'up', name: 'a' }),
+          }));
+          setSnapshot((prev) => ({ a: withStatus(prev.a, status) }));
+          focused.mockReturnValue(false);
+          settle();
+          assert.equal(calls.notifyTransfersComplete.length, 0);
+
+          setSnapshot(() => ({
+            b: makeTransferRow({ id: 'b', status: 'progress', direction: 'up', name: 'b' }),
+          }));
+          setSnapshot((prev) => ({ b: withStatus(prev.b, status) }));
+          settle();
+          assert.equal(calls.notifyTransfersComplete.length, 1);
+          assert.equal(calls.notifyTransfersComplete[0]?.succeeded, status === 'done' ? 1 : 0);
+          assert.equal(calls.notifyTransfersComplete[0]?.failed, status === 'error' ? 1 : 0);
+        } finally {
+          focused.mockRestore();
+        }
+      }),
+    ),
+);
+
 test('notification delivery failures are reported once without replacing the transfer error', () =>
   withSettlingTimers((settle) =>
     withHarness(async ({ setSnapshot, getSnapshot, mockApi }) => {

@@ -118,7 +118,8 @@ export function useTransferNotifications(t: Translate): void {
         }
         if (!finished || notifiedRef.current.get(item.id) === item.status) continue;
         notifiedRef.current.set(item.id, item.status);
-        pendingRef.current.set(item.id, tally(item));
+        // Results seen in the window must not surface after it loses focus during settling.
+        if (!document.hasFocus()) pendingRef.current.set(item.id, tally(item));
       }
       const active =
         hasOpenTransferBatches() ||

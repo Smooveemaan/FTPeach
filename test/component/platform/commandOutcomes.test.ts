@@ -179,6 +179,9 @@ const cases: Case[] = [
   voidCase('transfer.cancelRemoteCopy', 'transfer_cancel_remote_copy', () =>
     api.transfer.cancelRemoteCopy('c1', 'c2', 't'),
   ),
+  voidCase('notifications.transfersComplete', 'notifications_transfers_complete', () =>
+    api.notifications.transfersComplete({ succeeded: 1, failed: 0, title: 'Done', body: '1 file' }),
+  ),
   // Updater
   voidCase('updater.check', 'updater_check', () => api.updater.check()),
   voidCase('updater.download', 'updater_download', () => api.updater.download()),

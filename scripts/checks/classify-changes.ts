@@ -3,6 +3,10 @@ import { appendFile } from 'node:fs/promises';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
+import { GENERATED_DOC_LINKS, generatedBlockImpacts } from './check-generated-docs.ts';
+
+export const CHECKS = ['i18n:check', 'check:docs', 'check:verified-by', 'format:check'] as const;
 
 export const GATES = [
   'supply-chain',
@@ -31,6 +35,11 @@ export interface CollectedChanges {
   context: ClassificationContext;
 }
 export type GitRunner = (_args: string[], _cwd?: string) => string;
+type PackageManifest = Record<string, unknown> & { scripts?: Record<string, string> };
+export interface PackageChange {
+  before: PackageManifest;
+  after: PackageManifest;
+}
 
 export function discoverRustIncludes(
   root = fileURLToPath(new URL('../../', import.meta.url)),
@@ -60,6 +69,7 @@ export function classifyChangeSet(
   paths: Iterable<string>,
   context: ClassificationContext = { source: 'explicit', base: null, head: null },
   includes: readonly string[] = discoverRustIncludes(),
+  packageChange?: PackageChange,
 ) {
   const changedFiles = [
     ...new Set(
@@ -67,7 +77,11 @@ export function classifyChangeSet(
     ),
   ].sort();
   const selected = new Set<GateId>(['supply-chain']);
+  let application = false;
+  let site = false;
+  const tooling = () => selected.add('lint-test-build');
   const frontend = () => {
+    application = true;
     selected.add('lint-test-build');
     selected.add('sast');
   };
@@ -83,11 +97,51 @@ export function classifyChangeSet(
   for (const file of changedFiles) {
     if (includes.includes(file)) rust();
     if (
-      file === '.github/workflows/checks.yml' ||
-      file === '.github/workflows/ci.yml' ||
+      /^(?:site\/|scripts\/site\/|docs\/guide\/|assets\/images\/)/.test(file) ||
+      /^test\/unit\/tooling\/site.*\.test\.ts$/.test(file) ||
+      /^test\/visual\/(?:website-.*\.spec\.ts|playwright\.site\.config\.ts)$/.test(file) ||
+      ['public/favicon.ico', 'playwright.config.ts', '.github/workflows/pages.yml'].includes(file)
+    )
+      site = true;
+    if (file === 'package.json' && packageChange) {
+      const { scripts: before = {}, ...beforeFields } = packageChange.before;
+      const { scripts: after = {}, ...afterFields } = packageChange.after;
+      if (!isDeepStrictEqual(beforeFields, afterFields)) {
+        both();
+        site = true;
+      }
+      const changed = new Set(
+        [...Object.keys(before), ...Object.keys(after)].filter(
+          (name) => before[name] !== after[name],
+        ),
+      );
+      // A changed helper also affects scripts that invoke it, including build/site commands.
+      for (const name of changed) {
+        for (const [caller, command] of [...Object.entries(before), ...Object.entries(after)]) {
+          if (
+            [...command.matchAll(/npm (?:run ([\w:-]+)|(test))\b/g)].some(
+              (match) => (match[1] ?? match[2]) === name,
+            )
+          )
+            changed.add(caller);
+        }
+      }
+      for (const name of changed) {
+        if (/^(?:pre|post)?site:/.test(name)) site = true;
+        else if (
+          /^(?:check(?::|$)|lint$|typecheck$|format(?::|$)|test(?::|$)|coverage$|i18n:|licenses:)/.test(
+            name,
+          )
+        )
+          tooling();
+        else if (/^rust:(?:check|clippy|test|coverage)$/.test(name)) rust();
+        else both();
+      }
+    } else if (file === 'package.json' || file === 'package-lock.json') {
+      both();
+      site = true;
+    } else if (
       file === '.github/workflows/release.yml' ||
-      file === 'package.json' ||
-      file === 'package-lock.json' ||
       file.startsWith('src/platform/') ||
       file.startsWith('src-tauri/src/commands/')
     ) {
@@ -102,6 +156,20 @@ export function classifyChangeSet(
       rust();
     } else if (file.startsWith('.semgrep/')) {
       selected.add('sast');
+    } else if (
+      file.startsWith('scripts/site/') ||
+      /^test\/unit\/tooling\/site.*\.test\.ts$/.test(file) ||
+      /^test\/visual\/(?:website-.*\.spec\.ts|playwright\.site\.config\.ts)$/.test(file)
+    ) {
+      // Pages checks these inputs independently.
+    } else if (
+      (file.startsWith('scripts/checks/') && file !== 'scripts/checks/check-bundle-budget.ts') ||
+      file.startsWith('scripts/coverage/') ||
+      file.startsWith('test/unit/tooling/') ||
+      file === '.github/workflows/checks.yml' ||
+      file === '.github/workflows/ci.yml'
+    ) {
+      tooling();
     } else if (
       file.startsWith('src/') ||
       file.startsWith('public/') ||
@@ -129,11 +197,64 @@ export function classifyChangeSet(
       selected.add('parser-regressions');
     }
   }
+  const checkTooling = changedFiles.some(
+    (file) =>
+      /^package(?:-lock)?\.json$/.test(file) ||
+      file.startsWith('scripts/checks/') ||
+      file === '.github/workflows/checks.yml',
+  );
+  const requiredChecks = CHECKS.filter((check) => {
+    if (context.forceFull || checkTooling) return true;
+    switch (check) {
+      case 'i18n:check':
+        return changedFiles.some((file) => /^src\/.*(?:\.tsx?|\/locales\/[^/]+\.json)$/.test(file));
+      case 'check:docs':
+        return (
+          generatedBlockImpacts(changedFiles).length > 0 ||
+          changedFiles.some((file) => GENERATED_DOC_LINKS.some((link) => link.document === file))
+        );
+      case 'check:verified-by':
+        return changedFiles.some(
+          (file) =>
+            /^docs\/guide\/.*\.md$/.test(file) ||
+            file === 'docs/manual-checks.md' ||
+            /\.(?:rs|(?:test|spec)\.tsx?)$/.test(file),
+        );
+      case 'format:check':
+        return changedFiles.some(
+          (file) =>
+            /\.(?:[cm]?[jt]sx?|jsonc?|ya?ml)$/.test(file) ||
+            file.startsWith('.prettier') ||
+            file === '.editorconfig' ||
+            file === '.gitignore',
+        );
+    }
+  });
   return {
     ...context,
     changedFiles,
     requiredGates: GATES.filter((gate) => context.forceFull || selected.has(gate)),
+    requiredChecks,
+    toolingOnly: !context.forceFull && !application,
+    site,
   };
+}
+
+/** Compare manifest contents, so changing a check command does not rebuild its consumers. */
+export function collectPackageChange(
+  context: ClassificationContext,
+  run: GitRunner = runGit,
+  cwd?: string,
+): PackageChange | undefined {
+  if (!context.base || context.forceFull) return undefined;
+  const before = run(['show', `${context.base}:package.json`], cwd);
+  const after =
+    context.source === 'working-tree'
+      ? readFileSync(path.join(cwd ?? '.', 'package.json'), 'utf8')
+      : context.head
+        ? run(['show', `${context.head}:package.json`], cwd)
+        : null;
+  return after === null ? undefined : { before: JSON.parse(before), after: JSON.parse(after) };
 }
 
 /** Splits `git diff -z` output, which is NUL-separated, or plain lines. */
@@ -283,8 +404,16 @@ async function main() {
   if (option(args, 'force-all') === 'true' || args.includes('--force-all')) {
     collected = { paths: [], context: { ...collected.context, forceFull: true } };
   }
-  const result = classifyChangeSet(collected.paths, collected.context);
-  const outputs = { 'required-gates': JSON.stringify(result.requiredGates) };
+  const packageChange = collected.paths.includes('package.json')
+    ? collectPackageChange(collected.context)
+    : undefined;
+  const result = classifyChangeSet(collected.paths, collected.context, undefined, packageChange);
+  const outputs = {
+    'required-gates': JSON.stringify(result.requiredGates),
+    'required-checks': JSON.stringify(result.requiredChecks),
+    'tooling-only': String(result.toolingOnly),
+    site: String(result.site),
+  };
   const text = Object.entries(outputs)
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');

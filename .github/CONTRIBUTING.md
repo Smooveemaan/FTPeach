@@ -8,9 +8,12 @@ Follow the [development setup](../docs/development.md) for prerequisites, depend
 
 ## Making a change
 
-Work on `master`. Check the affected behavior locally, review the diff, then
-commit and push; CI checks the affected code. `npm run check` is an optional full
-local diagnostic, not a requirement before each commit or push.
+Work on `master`. Check the affected behavior locally and review the diff. Every
+commit and every push requires the owner's explicit approval for the prepared
+changes; assigning a task does not grant it. An explicit request to release a version
+authorizes the commits and pushes needed for that release. CI checks the affected
+code. `npm run check` is an optional full local diagnostic, not a requirement before
+each commit or push.
 
 Add a regression test for new logic or a behavior fix. Text, styling and moving
 an unchanged control do not require a new test. Preserve security and data-loss

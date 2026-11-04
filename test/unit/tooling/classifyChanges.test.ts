@@ -5,10 +5,12 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  CHECKS,
   GATES,
   classifyChangeSet,
   collectChangeSet,
   collectGitHubChangeSet,
+  collectPackageChange,
   discoverRustIncludes,
   splitPaths,
   type ClassificationContext,
@@ -17,6 +19,7 @@ import {
 } from '../../../scripts/checks/classify-changes.ts';
 
 const BASE: GateId[] = ['supply-chain'];
+const TOOLING: GateId[] = [...BASE, 'lint-test-build'];
 const RUST: GateId[] = [...BASE, 'sast', 'rust-test'];
 const FRONTEND: GateId[] = [...BASE, 'lint-test-build', 'sast'];
 const BOTH: GateId[] = [...FRONTEND, 'rust-test'];
@@ -49,8 +52,12 @@ test('ordinary changes select the affected code without release-only suites', ()
     ['src/main.tsx', FRONTEND],
     ['src/i18n/locales/de.json', FRONTEND],
     ['test/component/helpers/render.tsx', FRONTEND],
-    ['test/unit/tooling/classifyChanges.test.ts', FRONTEND],
-    ['scripts/checks/classify-changes.ts', FRONTEND],
+    ['test/unit/tooling/classifyChanges.test.ts', TOOLING],
+    ['scripts/checks/classify-changes.ts', TOOLING],
+    ['scripts/checks/check-bundle-budget.ts', FRONTEND],
+    ['scripts/site/build.ts', BASE],
+    ['test/unit/tooling/siteBuild.test.ts', BASE],
+    ['test/visual/website-guide.spec.ts', BASE],
     ['test/visual/helpers.ts', FRONTEND],
     ['playwright.config.ts', FRONTEND],
     ['tsconfig.json', FRONTEND],
@@ -64,14 +71,134 @@ test('ordinary changes select the affected code without release-only suites', ()
     ['src-tauri/src/commands/sites.rs', BOTH],
     ['package.json', BOTH],
     ['package-lock.json', BOTH],
-    ['.github/workflows/checks.yml', BOTH],
+    ['.github/workflows/checks.yml', TOOLING],
     ['.semgrep/security.yml', [...BASE, 'sast']],
-    ['scripts/checks/sast.ts', FRONTEND],
+    ['scripts/checks/sast.ts', TOOLING],
     ['src-tauri/src/protocol/ftp.rs', [...BASE, 'sast', 'parser-regressions', 'rust-test']],
     ['src-tauri/fuzz/src/list.rs', [...BASE, 'sast', 'parser-regressions', 'rust-test']],
     ['unmapped/file.dat', [...FRONTEND, 'parser-regressions', 'rust-test']],
   ];
   for (const [file, gates] of cases) assert.deepEqual(gateIds([file]), gates, file);
+});
+
+test('check tooling does not build the app, while mixed changes still do', () => {
+  assert.equal(classify(['scripts/checks/check-ci-parity.ts']).toolingOnly, true);
+  assert.equal(classify(['scripts/checks/check-ci-parity.ts']).site, false);
+  assert.equal(classify(['scripts/checks/check-ci-parity.ts', 'src/main.tsx']).toolingOnly, false);
+  assert.equal(
+    classify(['scripts/checks/check-ci-parity.ts'], { ...CONTEXT, forceFull: true }).toolingOnly,
+    false,
+  );
+});
+
+test('baseline quality checks follow their inputs and full runs retain every check', () => {
+  const cases: Array<[string, readonly string[]]> = [
+    ['README.md', []],
+    ['CHANGELOG.md', []],
+    ['site/styles.css', []],
+    ['docs/development.md', ['check:docs']],
+    ['docs/ipc-permissions.md', ['check:docs']],
+    ['docs/guide/transfers.md', ['check:verified-by']],
+    ['docs/manual-checks.md', ['check:verified-by']],
+    ['src/i18n/locales/de.json', ['i18n:check', 'format:check']],
+    ['src/features/sites/useSites.ts', ['i18n:check', 'format:check']],
+    ['src/shared/settingsDefaults.json', ['format:check']],
+    ['src-tauri/src/lib.rs', ['check:docs', 'check:verified-by']],
+    ['src-tauri/build.rs', ['check:docs', 'check:verified-by']],
+    ['src-tauri/src/runtime/sensitive_plugin.rs', ['check:docs', 'check:verified-by']],
+    ['src-tauri/capabilities/default.json', ['check:docs', 'format:check']],
+    ['src-tauri/src/protocol/ftp.rs', ['check:verified-by']],
+    ['test/unit/file-browser/paths.test.ts', ['check:verified-by', 'format:check']],
+    ['test/component/file-browser/panes.test.tsx', ['check:verified-by', 'format:check']],
+    ['test/visual/panes.spec.ts', ['check:verified-by', 'format:check']],
+    ['scripts/site/build.ts', ['format:check']],
+    ['.prettierignore', ['format:check']],
+    ['.prettierrc.json', ['format:check']],
+    ['.editorconfig', ['format:check']],
+    ['.gitignore', ['format:check']],
+    ['.github/workflows/pages.yml', ['format:check']],
+    ['scripts/checks/check-locales.ts', CHECKS],
+    ['scripts/checks/command-acl-source.ts', CHECKS],
+    ['.github/workflows/checks.yml', CHECKS],
+    ['package.json', CHECKS],
+    ['package-lock.json', CHECKS],
+  ];
+  for (const [file, expected] of cases) {
+    const result = classify([file]);
+    assert.deepEqual(result.requiredChecks, expected, file);
+    assert.ok(result.requiredGates.includes('supply-chain'), file);
+  }
+  assert.deepEqual(classify([]).requiredChecks, []);
+  assert.deepEqual(classify([], { ...CONTEXT, forceFull: true }).requiredChecks, CHECKS);
+  assert.deepEqual(
+    classify(['docs/development.md', 'src\\i18n\\locales\\de.json']).requiredChecks,
+    ['i18n:check', 'check:docs', 'format:check'],
+  );
+});
+
+test('manifest check commands are isolated, while builds, dependencies and site scripts reach their consumers', () => {
+  const before = {
+    dependencies: { react: '1' },
+    scripts: { check: 'old', build: 'vite build', 'site:test': 'old' },
+  };
+  const cases: Array<[typeof before, GateId[], boolean, boolean]> = [
+    [{ ...before, scripts: { ...before.scripts, check: 'new' } }, TOOLING, true, false],
+    [{ ...before, scripts: { ...before.scripts, build: 'new' } }, BOTH, false, false],
+    [{ ...before, scripts: { ...before.scripts, 'site:test': 'new' } }, BASE, true, true],
+    [{ ...before, dependencies: { react: '2' } }, BOTH, false, true],
+    [before, BASE, true, false],
+  ];
+  for (const [after, gates, toolingOnly, site] of cases) {
+    const result = classifyChangeSet(['package.json'], CONTEXT, [], { before, after });
+    assert.deepEqual(result.requiredGates, gates);
+    assert.equal(result.toolingOnly, toolingOnly);
+    assert.equal(result.site, site);
+  }
+  const deleted = { ...before.scripts };
+  delete (deleted as Partial<typeof deleted>).check;
+  assert.deepEqual(
+    classifyChangeSet(['package.json'], CONTEXT, [], {
+      before,
+      after: { ...before, scripts: deleted },
+    }).requiredGates,
+    TOOLING,
+  );
+  assert.equal(classify(['package.json']).site, true, 'missing comparison is conservative');
+  assert.equal(classify(['package-lock.json']).site, true);
+  assert.equal(
+    classify(['playwright.config.ts']).site,
+    true,
+    'shared browser config affects Pages',
+  );
+  const callers = {
+    scripts: {
+      'check:shared': 'old',
+      build: 'npm run check:shared',
+      'site:test': 'npm run check:shared',
+    },
+  };
+  const result = classifyChangeSet(['package.json'], CONTEXT, [], {
+    before: callers,
+    after: { scripts: { ...callers.scripts, 'check:shared': 'new' } },
+  });
+  assert.deepEqual(result.requiredGates, BOTH);
+  assert.equal(result.site, true, 'a check invoked by site:test still requires website checks');
+});
+
+test('manifest comparison reads both revisions and uses working contents locally', () => {
+  const before = { scripts: { check: 'old' } };
+  const after = { scripts: { check: 'new' } };
+  const { run } = fakeGit({
+    'show base-sha:package.json': JSON.stringify(before),
+    'show head-sha:package.json': JSON.stringify(after),
+  });
+  assert.deepEqual(collectPackageChange(CONTEXT, run), { before, after });
+  assert.equal(collectPackageChange({ ...CONTEXT, base: null }, run), undefined);
+  assert.deepEqual(
+    collectPackageChange({ ...CONTEXT, source: 'working-tree' }, run)?.after,
+    JSON.parse(readFileSync('package.json', 'utf8')),
+  );
+  assert.throws(() => collectPackageChange(CONTEXT, () => '{invalid'), SyntaxError);
 });
 
 test('mixed paths union their checks and normalize Windows paths without duplicates', () => {
@@ -137,8 +264,36 @@ test('every selected gate controls its actual workflow job', () => {
     );
   }
   assert.doesNotMatch(workflow, /outputs\.(?:rust|frontend|risk)/);
-  assert.match(workflow, /run: npm test\r?\n\s+if: \$\{\{ !inputs.force-all \}\}/);
+  assert.match(workflow, /run: npm test\r?\n\s+if: .*tooling-only != 'true'/);
+  assert.match(
+    workflow,
+    /run: npm run build\r?\n\s+if: needs.changes.outputs.tooling-only != 'true'/,
+  );
+  assert.match(
+    workflow,
+    /Test development tooling[\s\S]*?find test\/unit\/tooling.*! -name 'site\*\.test\.ts'/,
+  );
+  assert.match(workflow, /run: npm run check:duplicates/);
+  assert.doesNotMatch(jobs.get('lint-test-build')!, /continue-on-error: true/);
   assert.match(workflow, /run: npm run coverage\r?\n\s+if: inputs.force-all/);
+  const baseline = jobs.get('supply-chain')!.replaceAll('\r\n', '\n');
+  assert.match(baseline, /needs: changes\r?\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
+  for (const check of CHECKS) {
+    assert.ok(
+      baseline.includes(
+        `run: npm run ${check}\n        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), '${check}')`,
+      ),
+      check,
+    );
+  }
+  for (const check of ['check:tracked-secrets', 'check:command-acl', 'licenses:check']) {
+    assert.match(baseline, new RegExp(`run: npm run ${check}\\r?\\n      - `));
+  }
+  assert.ok(
+    readFileSync('.github/workflows/checks.yml', 'utf8').includes(
+      'required-checks: ${{ steps.classify.outputs.required-checks }}',
+    ),
+  );
 });
 
 test('working-tree collection unions staged, unstaged and untracked paths', () => {
@@ -293,8 +448,12 @@ test('the CLI writes the selected job IDs for GitHub and supports explicit full 
     );
     assert.equal(run.status, 0, run.stderr);
     assert.deepEqual(
-      JSON.parse(run.stdout.trim().replace(/^required-gates=/, '')),
+      JSON.parse(run.stdout.split(/\r?\n/)[0]!.replace(/^required-gates=/, '')),
       args.includes('--force-all') ? GATES : FRONTEND,
+    );
+    assert.deepEqual(
+      JSON.parse(run.stdout.split(/\r?\n/)[1]!.replace(/^required-checks=/, '')),
+      args.includes('--force-all') ? CHECKS : ['i18n:check', 'format:check'],
     );
   }
 });

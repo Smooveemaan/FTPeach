@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       required-gates: ${{ steps.classify.outputs.required-gates }}
+      required-checks: ${{ steps.classify.outputs.required-checks }}
+      tooling-only: ${{ steps.classify.outputs.tooling-only }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -43,6 +45,8 @@ jobs:
   supply-chain:
     permissions:
       contents: read
+    needs: changes
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -64,9 +68,13 @@ jobs:
       - run: npm run check:rust-advisories
       - run: npm run check:no-cyrillic
       - run: npm run i18n:check
+        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'i18n:check')
       - run: npm run check:docs
+        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'check:docs')
       - run: npm run check:verified-by
+        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'check:verified-by')
       - run: npm run format:check
+        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'format:check')
       - name: Install pinned Rust toolchain
         run: rustup show
       - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
@@ -131,7 +139,10 @@ jobs:
           if-no-files-found: ignore
       - run: npm run lint
       - run: npm test
-        if: ${{ !inputs.force-all }}
+        if: ${{ !inputs.force-all && needs.changes.outputs.tooling-only != 'true' }}
+      - name: Test development tooling
+        if: needs.changes.outputs.tooling-only == 'true'
+        run: node --experimental-strip-types --test $(find test/unit/tooling -name '*.test.ts' ! -name 'site*.test.ts')
       - run: npm run coverage
         if: inputs.force-all
       - name: Keep the coverage report
@@ -142,6 +153,7 @@ jobs:
           path: coverage/
           if-no-files-found: ignore
       - run: npm run build
+        if: needs.changes.outputs.tooling-only != 'true'
       - name: Keep the startup bundle report
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

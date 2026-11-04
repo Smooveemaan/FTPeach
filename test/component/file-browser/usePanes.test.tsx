@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { usePanes } from '../../../src/features/file-browser/usePanes.ts';
 import { initialForm } from '../../../src/features/file-browser/panes/paneModel.ts';
@@ -8,6 +8,7 @@ import {
 } from '../../../src/features/transfers/transferStore.ts';
 import type { CommandResult } from '../../../src/platform/ipcContracts.ts';
 import type { FileEntry } from '../../../src/shared/paneContracts.ts';
+import { persistSetting } from '../../../src/platform/persistSetting.ts';
 
 vi.mock('react-i18next', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-i18next')>()),
@@ -62,7 +63,12 @@ beforeEach(() => {
   client = backend();
   window.api = client as unknown as Window['api'];
 });
-afterEach(resetTransfersStoreForTests);
+afterEach(async () => {
+  cleanup();
+  // The shared teardown removes window.api after this hook.
+  await persistSetting.flush();
+  resetTransfersStoreForTests();
+});
 
 async function open() {
   const options = {
@@ -82,6 +88,31 @@ async function open() {
   return { ...hook, options };
 }
 const file = (name: string, isDirectory = false): FileEntry => ({ name, isDirectory });
+
+test('teardown saves pending recent sites before removing the test API', async ({
+  onTestFinished,
+}) => {
+  const { result, unmount } = await open();
+  const settings = client.settings;
+  vi.useFakeTimers();
+  onTestFinished(async () => {
+    try {
+      await vi.runAllTimersAsync();
+      expect(persistSetting.status()).toEqual({ pending: false, writing: false });
+      expect(settings.set).toHaveBeenCalledExactlyOnceWith({ recentSiteIds: ['pending-site'] });
+      expect(window.api).toBeUndefined();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  await act(async () =>
+    result.current.connectSavedSite({ id: 'pending-site', name: 'Pending', host: 'example' }),
+  );
+  unmount();
+  expect(persistSetting.status()).toEqual({ pending: true, writing: false });
+  expect(settings.set).not.toHaveBeenCalled();
+});
 
 test('navigation commits successful history and preserves it when a listing fails', async () => {
   const { result, options } = await open();

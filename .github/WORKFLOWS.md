@@ -14,6 +14,8 @@
 
 - Keep shared verification steps in `checks.yml`; keep `npm run check` aligned with `npm run check:ci-parity`.
 - `scripts/checks/classify-changes.ts` selects job IDs directly; every conditional job consumes that list. Tests in `test/unit/tooling/classifyChanges.test.ts` cover path selection and workflow wiring. Rust `include_str!`/`include_bytes!` inputs select Rust checks alongside their other consumers. Unknown paths select all ordinary code checks. Website publishing and installer verification remain in their own workflows.
+- Inside `supply-chain`, locale validation, generated docs, guide test links and formatting run only when their inputs change. Security checks always run. Full runs include all four checks; if classification fails, all four run as a fallback.
+- Changes to check tooling run its unit tests, lint and the existing blocking checks, without application tests or a build. The `lint-test-build` job keeps its identifier for branch protection. Script-only `package.json` changes select their consumers; other manifest changes and lockfile changes still check the application and website. Pages classifies push contents before installing dependencies or browsers.
 - To run the full suite manually, use **Actions → CI → Run workflow**. Releases pass `force-all: true` to the same shared workflow.
 - Documents and changelogs are updated when behavior changes; commit exemption trailers are not required. `check:verified-by` validates optional guide links.
 - Preserve workflow and job identifiers when editing: branch protection can reference their check names.

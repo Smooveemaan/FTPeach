@@ -14,4 +14,9 @@ test('Pages checks the website before building and uploading the deployment arti
   assert.match(workflow, /ref: master/);
   assert.match(workflow, /needs: build/);
   assert.doesNotMatch(workflow, /continue-on-error: true/);
+  assert.match(
+    workflow,
+    /build:\r?\n\s+needs: changes\r?\n\s+if: github.event_name != 'push' \|\| needs.changes.outputs.site == 'true'/,
+  );
+  assert.match(workflow, /scripts\/checks\/classify-changes.ts --source=github/);
 });

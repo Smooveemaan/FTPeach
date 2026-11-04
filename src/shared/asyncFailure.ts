@@ -11,11 +11,11 @@
  * through as a parameter, because the alternative is passing a callback down
  * through hooks that have no other reason to know about error reporting
  * (`useSectionResize` is eight layers from the error banner). There is exactly
- * one error banner in the app, so a single registration point matches reality.
+ * one error-banner owner in the app, so a single registration point matches reality.
  * This is not application state — nothing re-renders because of it — so it does
  * not reopen the deliberate no-Context decision about state flow.
  */
-type FailureSink = (error: unknown) => void;
+type FailureSink = (error: unknown, owner?: string) => void;
 
 let sink: FailureSink | null = null;
 let withdrawSink: FailureSink | null = null;
@@ -40,13 +40,15 @@ export function setAsyncFailureSink(next: FailureSink, withdraw?: FailureSink): 
  * Takes back a failure reported earlier, once whatever failed has worked: the
  * banner clears only if it still shows that failure.
  */
-export function withdrawAsyncFailure(error: unknown): void {
-  withdrawSink?.(error);
+export function withdrawAsyncFailure(error: unknown, owner?: string): void {
+  if (owner === undefined) withdrawSink?.(error);
+  else withdrawSink?.(error, owner);
 }
 
-export function reportAsyncFailure(error: unknown): void {
+export function reportAsyncFailure(error: unknown, owner?: string): void {
   if (sink) {
-    sink(error);
+    if (owner === undefined) sink(error);
+    else sink(error, owner);
     return;
   }
   // Before the app mounts, and in unit tests that render a hook in isolation,

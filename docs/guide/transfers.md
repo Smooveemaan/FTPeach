@@ -73,6 +73,13 @@ If a transfer reports an error, read it before retrying: wrong permissions,
 insufficient space or a changed source need attention first. See
 [Troubleshooting](troubleshooting.md#my-transfer-did-not-finish).
 
+With **Edit > Settings > Transfers > Notify when transfers finish** enabled,
+FTPeach reports errors while other transfers continue and shows the successful
+total when the queue finishes. These system notifications appear only while the
+window is not focused.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::close errors arrive together during a long transfer and are not repeated in its final tally -->
+
 A paused FTP, FTPS or SFTP upload resumes when FTPeach confirms that neither the source nor the part already
 on the server has changed; otherwise it starts again. WebDAV uploads, including folder uploads, do not
 offer Pause because they cannot continue a partly uploaded file.

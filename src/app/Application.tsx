@@ -53,7 +53,7 @@ import type { PaneId } from '../shared/paneContracts.ts';
 export default function Application() {
   const { t } = useTranslation();
 
-  const { errorMessage, setErrorMessage, reportError, withdrawError, dismissError } =
+  const { errorMessages, setErrorMessage, reportError, withdrawError, dismissError } =
     useApplicationError();
   const dialogs = useAppDialogs();
   // Only the names Application itself reads; the whole object goes to the
@@ -206,6 +206,7 @@ export default function Application() {
   // render: the settings dialog previews them before they are saved.
   const browser = usePanes({
     reportError,
+    withdrawError,
     setErrorMessage,
     requestConfirm,
     connectTimeout: settings.connection.connectTimeout,
@@ -547,7 +548,7 @@ export default function Application() {
       />
 
       <AppBanners
-        errorMessage={errorMessage}
+        errorMessages={errorMessages}
         onDismissError={dismissError}
         legacyPasswordNotice={legacyPasswordNotice}
         onDismissLegacyPasswordNotice={() => setLegacyPasswordNotice(false)}

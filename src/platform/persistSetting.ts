@@ -13,8 +13,8 @@ interface SettingPersister {
 // persist after a newer revision. Commands never run inside React updaters.
 export function createSettingPersister({
   write = (patch) => api.settings.set(patch),
-  report = reportAsyncFailure,
-  withdraw = withdrawAsyncFailure,
+  report = (error) => reportAsyncFailure(error, 'settings-persistence'),
+  withdraw = (error) => withdrawAsyncFailure(error, 'settings-persistence'),
   schedule = (callback) => setTimeout(callback, 75),
   cancel = (timer) => clearTimeout(timer),
 }: {

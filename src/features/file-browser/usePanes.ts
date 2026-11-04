@@ -35,7 +35,8 @@ interface ConfirmOptions {
   danger?: boolean;
 }
 interface UsePanesOptions {
-  reportError: (error: FriendlyErrorInput) => unknown;
+  reportError: (error: FriendlyErrorInput, owner?: string) => unknown;
+  withdrawError?: (error: FriendlyErrorInput, owner: string) => unknown;
   setErrorMessage: Dispatch<SetStateAction<string>>;
   requestConfirm: (message: string, onConfirm: () => unknown, options?: ConfirmOptions) => unknown;
   connectTimeout: number;
@@ -123,6 +124,7 @@ export interface PanesModel {
 
 export function usePanes({
   reportError,
+  withdrawError = () => undefined,
   setErrorMessage,
   requestConfirm,
   connectTimeout,
@@ -160,7 +162,7 @@ export function usePanes({
       activeTabId,
       updatePane,
       reportError,
-      setErrorMessage,
+      withdrawError,
       defaultLocalPath,
     });
 

@@ -109,10 +109,10 @@ export interface TransferLifecycleModel {
 type Settled = { cancelled?: boolean };
 
 export function useTransferLifecycle(
-  setErrorMessage: (message?: string) => unknown,
+  setErrorMessage: (message: string | undefined, owner: string) => unknown,
   approveTarget: OverwriteApproval = (target) =>
     Promise.resolve({ path: target.path, overwrite: false }),
-  withdrawErrorMessage: (message: string) => void = () => undefined,
+  withdrawErrorMessage: (message: string, owner: string) => void = () => undefined,
 ): TransferLifecycleModel {
   const { t } = useTranslation();
   // What each row put in the error banner, taken back if a retry succeeds.
@@ -124,6 +124,8 @@ export function useTransferLifecycle(
       subscribeTransferStructure(() => {
         for (const id of Object.keys(cancelIntentRef.current))
           if (!getTransferRow(id)) delete cancelIntentRef.current[id];
+        for (const id of shownErrors.current.keys())
+          if (!getTransferRow(id)) shownErrors.current.delete(id);
       }),
     [],
   );

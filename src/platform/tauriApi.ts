@@ -461,8 +461,7 @@ export const tauriApi: Window['api'] = {
     quit: (preserveEdits = false) => invoke('app_quit', { preserveEdits }),
   },
   notifications: {
-    transfersComplete: (summary: Record<string, unknown>) =>
-      invoke('notifications_transfers_complete', { summary }),
+    transfersComplete: (summary) => invoke('notifications_transfers_complete', { summary }),
   },
   tray: createTrayApi(invoke, onEvent),
 };

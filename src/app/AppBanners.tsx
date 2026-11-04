@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.tsx';
+import type { ApplicationErrorMessage } from './useApplicationError.ts';
 
 interface AppBannersProps {
-  errorMessage: string;
-  onDismissError: () => void;
+  errorMessages: ApplicationErrorMessage[];
+  onDismissError: (id: number) => void;
   legacyPasswordNotice: boolean;
   onDismissLegacyPasswordNotice: () => void;
   plaintextSecretNotice: boolean;
@@ -13,7 +14,7 @@ interface AppBannersProps {
 }
 
 export default function AppBanners({
-  errorMessage,
+  errorMessages,
   onDismissError,
   legacyPasswordNotice,
   onDismissLegacyPasswordNotice,
@@ -26,20 +27,20 @@ export default function AppBanners({
 
   return (
     <>
-      {errorMessage && (
-        <div className="app-error-bar" role="alert" aria-live="assertive">
-          <span className="conn-error">{errorMessage}</span>
+      {errorMessages.map((error) => (
+        <div key={error.id} className="app-error-bar" role="alert" aria-live="assertive">
+          <span className="conn-error">{error.text}</span>
           <button
             type="button"
             className="app-error-bar-close"
             aria-label={t('common.close')}
             data-tooltip={t('common.close')}
-            onClick={onDismissError}
+            onClick={() => onDismissError(error.id)}
           >
             <Icon name="windowClose" size={12} />
           </button>
         </div>
-      )}
+      ))}
 
       {legacyPasswordNotice && (
         <div className="app-error-bar" role="status" aria-live="polite">

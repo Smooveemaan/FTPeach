@@ -10,10 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Transfer notifications report errors while other transfers continue, and up to three independent error messages can remain visible.
 - When a password cannot be saved, the message explains how to set up master-password protection.
 
 ### Fixed
 
+- Retried transfers no longer announce an old error, and folder failures no longer report a made-up number of failed files.
 
 - Localized application menus stay inside narrow windows.
 - Dialogs reliably respond to the first Escape or Enter key press.

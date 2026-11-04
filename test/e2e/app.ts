@@ -239,7 +239,7 @@ async function start(
         ? path.dirname(exe)
         : path.join(process.env.APPDATA!, 'FTPeach');
     throw new Error(
-      `${(error as Error).message}\nStartup timings: ${JSON.stringify(timings)}\n${diagnose(child, logs)}`,
+      `${(error as Error).message}\nLaunch: pid=${child.pid}, port=${cdpPort}, profile=${profile ?? logs}\nBrowser version: ${run.browser?.version() ?? '(not connected)'}\nStartup timings: ${JSON.stringify(timings)}\n${diagnose(child, logs)}`,
       { cause: error },
     );
   }
@@ -574,6 +574,10 @@ export const test = base.extend<{
       appSettings,
       appStore,
       async (page) => {
+        testInfo.annotations.push({
+          type: 'browser-version',
+          description: page.context().browser()!.version(),
+        });
         await page.context().tracing.start({ screenshots: true, snapshots: true });
       },
       appPortable,

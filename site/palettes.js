@@ -21,10 +21,14 @@ function fetchPreview(id, appearance) {
     image.src = src;
     fetched.set(
       src,
-      image.decode().catch((error) => {
-        fetched.delete(src);
-        throw error;
-      }),
+      // Keep the decoded image alive so WebKit can reuse it on a theme switch.
+      image
+        .decode()
+        .then(() => image)
+        .catch((error) => {
+          fetched.delete(src);
+          throw error;
+        }),
     );
   }
   return fetched.get(src);

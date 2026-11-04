@@ -15,9 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The Ember color scheme is now called Amber; select it again if it was your saved scheme.
 - Transfer notifications report errors while other transfers continue, and up to three independent error messages can remain visible.
 - When a password cannot be saved, the message explains how to set up master-password protection.
+- Security and file-deletion messages use the names of the host operating system's services.
 
 ### Fixed
 
+- Password-vault read and save errors are translated in every interface language.
 - Downloading to the root of a Windows drive checks the correct folder for existing files.
 - Retried transfers no longer announce an old error, and folder failures no longer report a made-up number of failed files.
 - Transfers finished in the active window no longer trigger a notification when you minimize it.

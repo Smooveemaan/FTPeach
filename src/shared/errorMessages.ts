@@ -1,6 +1,7 @@
 import i18n from '../i18n/index.ts';
 import type { CommandErrorCode } from '../platform/ipcContracts.ts';
 import { lookupByUnknownKey } from './lang.ts';
+import { hostPlatform } from '../platform/os.ts';
 
 const ERROR_CODE_KEYS = {
   authFailed: 'errors.loginIncorrect',
@@ -87,8 +88,8 @@ export function friendlyError(raw: FriendlyErrorInput): string | null | undefine
   if (typeof raw === 'object') {
     const key = lookupByUnknownKey(ERROR_CODE_KEYS, raw.code);
     const data = lookupByUnknownKey(ERROR_CODE_DATA, raw.code);
-    if (key && data) return i18n.t(key, { [data]: raw.message });
-    return key ? i18n.t(key) : raw.message || raw.code;
+    if (key && data) return i18n.t(key, { [data]: raw.message, context: hostPlatform() });
+    return key ? i18n.t(key, { context: hostPlatform() }) : raw.message || raw.code;
   }
   return raw;
 }

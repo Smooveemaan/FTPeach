@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { hostPlatform } from '../../../platform/os.ts';
 import Icon from '../../../components/Icon.tsx';
 import PasswordInput from '../../../components/PasswordInput.tsx';
 import { masterPasswordStrength, type useVaultSettings } from '../hooks/useVaultSettings.ts';
@@ -84,7 +85,7 @@ export default function SecuritySettings({
             />
             <span>
               <strong>{t('settings.security.systemMode')}</strong>
-              <small>{t('settings.security.systemModeHint')}</small>
+              <small>{t('settings.security.systemModeHint', { context: hostPlatform() })}</small>
             </span>
           </label>
           <label className="security-mode-option">
@@ -339,13 +340,13 @@ export default function SecuritySettings({
           >
             {enablingSystemUnlock ? (
               <>
-                {t('settings.security.systemUnlockEnabling')}
+                {t('settings.security.systemUnlockEnabling', { context: hostPlatform() })}
                 <svg className="settings-spinner" viewBox="0 0 16 16" aria-hidden="true">
                   <circle cx="8" cy="8" r="6" />
                 </svg>
               </>
             ) : vaultStatus.systemUnlockAvailable ? (
-              t('settings.security.systemUnlockHint')
+              t('settings.security.systemUnlockHint', { context: hostPlatform() })
             ) : (
               t('settings.security.systemUnavailable')
             )}
@@ -364,7 +365,9 @@ export default function SecuritySettings({
               onChange={setVaultAutoLockValue}
             />
           </label>
-          <p className="settings-hint">{t('settings.security.autoLockHint')}</p>
+          <p className="settings-hint">
+            {t('settings.security.autoLockHint', { context: hostPlatform() })}
+          </p>
         </div>
       )}
       {vaultStatus?.configured && (

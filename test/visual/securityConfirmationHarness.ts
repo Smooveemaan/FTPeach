@@ -24,6 +24,7 @@ export const PROMPTS = {
     },
   },
   vaultReset: { kind: 'vaultReset', confirmationPhrase: 'RESET' },
+  useSystemProtection: { kind: 'useSystemProtection' },
   vaultStartOver: { kind: 'vaultStartOver', confirmationPhrase: 'RESET' },
   weakenSecuritySettings: {
     kind: 'weakenSecuritySettings',

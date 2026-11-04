@@ -172,7 +172,7 @@ test('with Windows Hello on, Hello is asked alone and the password is the fallba
       useSystemUnlock: true,
     }),
   );
-  await screen.findByText('securityConfirmation.systemUnlockFailed');
+  await screen.findByText(/^securityConfirmation.systemUnlockFailed/);
   // The window showed only once Hello did not confirm.
   const commands = mocks.invoke.mock.calls.map(([command]) => command as string);
   expect(commands.indexOf(`${prefix}respond_sensitive_confirmation`)).toBeLessThan(

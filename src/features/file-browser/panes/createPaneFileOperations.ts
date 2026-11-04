@@ -7,6 +7,7 @@ import { backendFor, paneJoin } from './paneBackend.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId, PaneState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
+import { hostPlatform } from '../../../platform/os.ts';
 
 const DELETE_CONCURRENCY_LIMIT = 8;
 
@@ -63,8 +64,9 @@ export function createPaneFileOperations({
     );
     refreshPane(id, pane.path, undefined, tabId);
     if (unrecyclable.length > 0) {
-      requestConfirm(t('confirm.noRecycleBin', { count: unrecyclable.length }), () =>
-        removeEntries(id, pane, tabId, unrecyclable, true),
+      requestConfirm(
+        t('confirm.noRecycleBin', { count: unrecyclable.length, context: hostPlatform() }),
+        () => removeEntries(id, pane, tabId, unrecyclable, true),
       );
     }
   };
@@ -83,6 +85,7 @@ export function createPaneFileOperations({
           : 'confirm.deleteRemoteSelected',
         {
           count: pane.selected.size,
+          context: hostPlatform(),
         },
       ),
       () =>
@@ -112,6 +115,7 @@ export function createPaneFileOperations({
           : 'confirm.deleteRemoteEntry',
         {
           name: isolate(entry.name),
+          context: hostPlatform(),
         },
       ),
       () => removeEntries(id, pane, tabId, [entry], permanent),

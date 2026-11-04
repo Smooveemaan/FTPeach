@@ -26,6 +26,8 @@
   },
   "securityConfirmation": {
     "systemUnlockFailed": "Windows Hello did not confirm. Enter the master password.",
+    "systemUnlockFailed_macos": "Touch ID or your Mac password did not confirm. Enter the master password.",
+    "systemUnlockFailed_linux": "System unlock is unavailable on Linux. Enter the master password.",
     "title": "FTPeach security confirmation",
     "allow": "Allow",
     "typeToConfirm": "Type {{phrase}} to confirm",
@@ -60,6 +62,8 @@
       },
       "useSystemProtection": {
         "message": "Turn off enhanced protection? Saved passwords will be protected by your Windows account instead of the master password.",
+        "message_macos": "Turn off enhanced protection? Saved passwords will be protected by macOS Keychain instead of the master password.",
+        "message_linux": "Turn off enhanced protection? Saved passwords will be protected by Secret Service instead of the master password.",
         "approve": "Turn off"
       },
       "transferSecret": {
@@ -174,7 +178,9 @@
     "message": "Passwords for some saved servers couldn't be read — please re-enter them in Manage Bookmarks."
   },
   "plaintextSecretNotice": {
-    "message": "A bookmark's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead."
+    "message": "A bookmark's password or passphrase couldn't be encrypted because Windows' data protection is unavailable, and was stored in plain text instead.",
+    "message_macos": "A bookmark's password or passphrase couldn't be encrypted because macOS Keychain is unavailable, and was stored in plain text instead.",
+    "message_linux": "A bookmark's password or passphrase couldn't be encrypted because Secret Service is unavailable, and was stored in plain text instead."
   },
   "secretNotPersistedNotice": {
     "message": "The password or key passphrase couldn't be encrypted and was not saved. An existing connection can continue until it is disconnected; otherwise, enter the secret again next time. To save passwords, set up a master password in Settings > Security."
@@ -244,10 +250,16 @@
     "deleteSelected": "Delete the selected items ({{count}})? This action cannot be undone.",
     "deleteEntry": "Delete \"{{name}}\"? This action cannot be undone.",
     "recycleSelected": "Move the selected items ({{count}}) to the Recycle Bin?",
+    "recycleSelected_macos": "Move the selected items ({{count}}) to the Trash?",
+    "recycleSelected_linux": "Move the selected items ({{count}}) to the Trash?",
     "recycleEntry": "Move \"{{name}}\" to the Recycle Bin?",
+    "recycleEntry_macos": "Move \"{{name}}\" to the Trash?",
+    "recycleEntry_linux": "Move \"{{name}}\" to the Trash?",
     "deletePermanentSelected": "Permanently delete the selected items ({{count}})? This action cannot be undone.",
     "deletePermanentEntry": "Permanently delete \"{{name}}\"? This action cannot be undone.",
     "noRecycleBin": "This location has no Recycle Bin. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin_macos": "This location has no Trash. Permanently delete the items ({{count}})? This action cannot be undone.",
+    "noRecycleBin_linux": "This location has no Trash. Permanently delete the items ({{count}})? This action cannot be undone.",
     "deleteRemoteSelected": "Permanently delete the selected remote items ({{count}})? This action cannot be undone.",
     "deleteRemoteEntry": "Permanently delete the remote item \"{{name}}\"? This action cannot be undone.",
     "mergeFolder": "Merge into the existing folder \"{{name}}\"? Files with matching names inside it will be replaced. Other existing files will be kept.",
@@ -348,6 +360,8 @@
     "activeModeFailed": "The server couldn't connect back in active FTP mode. Try passive mode.",
     "linkNotFollowed": "The path goes through a link (a junction or symbolic link). Links aren't followed.",
     "noRecycleBin": "This location has no Recycle Bin, so nothing was deleted.",
+    "noRecycleBin_macos": "This location has no Trash, so nothing was deleted.",
+    "noRecycleBin_linux": "This location has no Trash, so nothing was deleted.",
     "storeNewer": "This data was saved by a newer version of FTPeach, so the change can't be saved.",
     "storeUnreadable": "The file that keeps this data can't be read, so the change can't be saved.",
     "sourceChanged": "The file changed while it was uploading, so the file on the server wasn't changed. Upload it again.",
@@ -361,6 +375,8 @@
     "savedSecretUnreadable": "A saved password can't be read on this computer. Enter it again in the bookmark or in the proxy settings.",
     "typeConflict": "Skipped {{name}}: a file and a folder can't replace each other.",
     "invalidFileName": "Windows doesn't allow the name \"{{name}}\".",
+    "invalidFileName_macos": "The name \"{{name}}\" is not allowed here.",
+    "invalidFileName_linux": "The name \"{{name}}\" is not allowed here.",
     "insideSource": "A folder can't be copied or moved into itself.",
     "webdavRedirect": "The server redirects to another address: {{address}}",
     "cleartextSignIn": "The server asks for a password over an unencrypted connection. Use https:// or allow unencrypted sign-in.",
@@ -445,6 +461,8 @@
       "title": "Password protection",
       "systemMode": "System protection",
       "systemModeHint": "Passwords are encrypted for your Windows account and can be viewed in connection settings.",
+      "systemModeHint_macos": "Passwords are protected by macOS Keychain and can be viewed in connection settings.",
+      "systemModeHint_linux": "Passwords are protected by Secret Service and can be viewed in connection settings.",
       "portableSystemModeHint": "Portable copy: passwords saved this way can be read only on this computer. With a master password they travel with the folder.",
       "strongholdMode": "Enhanced protection",
       "strongholdModeHint": "Requires a master password. Viewing a saved password requires master-password reauthentication.",
@@ -466,6 +484,8 @@
       "autoLock": "Auto-lock after, min",
       "autoLockDisabled": "Disabled",
       "autoLockHint": "Locks the vault after a period of inactivity, and also when Windows locks or the FTPeach window is hidden. 0 turns the timer off. Open connections keep running.",
+      "autoLockHint_macos": "Locks the vault after a period of inactivity, and also when your Mac locks or the FTPeach window is hidden. 0 turns the timer off. Open connections keep running.",
+      "autoLockHint_linux": "Locks the vault after a period of inactivity, and also when your session locks or the FTPeach window is hidden. 0 turns the timer off. Open connections keep running.",
       "lockScope": "Locking leaves open connections running, including new transfers they start. Saving or revealing a password asks you to unlock again.",
       "strictHostKey": "Confirm a new SSH server key",
       "strictHostKeyHint": "Asks before trusting an SSH server's key the first time, and shows its fingerprint. Without this, the first key any server offers is trusted silently.",
@@ -474,7 +494,11 @@
       "systemUnlock": "Allow system unlock",
       "systemUnlockLockedHint": "Unlock the vault to turn on system unlock.",
       "systemUnlockEnabling": "Windows is creating a Windows Hello key for FTPeach. This can take up to a minute.",
+      "systemUnlockEnabling_macos": "Setting up unlock with Touch ID or your Mac password for FTPeach.",
+      "systemUnlockEnabling_linux": "System unlock is unavailable on Linux.",
       "systemUnlockHint": "Uses Windows Hello (PIN, face, or fingerprint as configured by Windows). Your master password remains the recovery method.",
+      "systemUnlockHint_macos": "Uses Touch ID or your Mac password. Your master password remains the recovery method.",
+      "systemUnlockHint_linux": "System unlock is unavailable on Linux. Use your master password.",
       "unlockWithSystem": "Unlock with system authentication",
       "systemUnavailable": "System unlock is unavailable on this platform.",
       "noRecovery": "A forgotten master password cannot be recovered. Resetting the vault deletes all saved secrets.",

@@ -199,6 +199,7 @@ const SCREENS: Record<
     viewport?: [number, number];
     /** Opens the security confirmation window with this prompt instead of the app. */
     security?: keyof typeof PROMPTS;
+    platform?: 'macos' | 'linux';
     run: (_audit: Audit) => Promise<void>;
   }
 > = {
@@ -333,6 +334,43 @@ const SCREENS: Record<
       }
     },
   },
+  ...Object.fromEntries(
+    (['macos', 'linux'] as const).map((platform) => [
+      `settings-${platform}`,
+      {
+        platform,
+        run: async ({ page, t, snap }: Audit) => {
+          await page.evaluate(() => {
+            const status = window.api.vault.status;
+            window.api.vault.status = async () => ({
+              ...(await status()),
+              systemUnlockEnabled: false,
+            });
+            window.api.vault.enableSystemUnlock = () => new Promise(() => {});
+          });
+          await menuItem(page, MENU.edit, 0);
+          await page
+            .getByRole('button', { name: t('settings.categories.security'), exact: true })
+            .click();
+          await expect(dialog(page)).toContainText(
+            t(`settings.security.systemModeHint_${platform}`),
+          );
+          await expect(dialog(page)).toContainText(t(`settings.security.autoLockHint_${platform}`));
+          await expect(dialog(page)).toContainText(
+            t(`settings.security.systemUnlockHint_${platform}`),
+          );
+          await snap(`settings/${platform}`);
+          await page
+            .getByRole('checkbox', { name: t('settings.security.systemUnlock'), exact: true })
+            .click();
+          await expect(dialog(page)).toContainText(
+            t(`settings.security.systemUnlockEnabling_${platform}`),
+          );
+          await snap(`settings/${platform}-enabling`);
+        },
+      },
+    ]),
+  ),
   'settings-unsaved': {
     run: async ({ page, snap }) => {
       await menuItem(page, MENU.edit, 0);
@@ -573,6 +611,21 @@ const SCREENS: Record<
       { security: prompt, run: ({ snap }: Audit) => snap(`security/${prompt}`) },
     ]),
   ),
+  ...Object.fromEntries(
+    (['macos', 'linux'] as const).map((platform) => [
+      `security-useSystemProtection-${platform}`,
+      {
+        platform,
+        security: 'useSystemProtection' as const,
+        run: async ({ page, t, snap }: Audit) => {
+          await expect(page.locator('.security-confirmation')).toContainText(
+            t(`securityConfirmation.operations.useSystemProtection.message_${platform}`),
+          );
+          await snap(`security/useSystemProtection-${platform}`);
+        },
+      },
+    ]),
+  ),
   'update-available': { search: 'update=available', run: ({ snap }) => snap('update/available') },
   'update-downloading': {
     search: 'update=downloading&percent=42',
@@ -595,8 +648,15 @@ const outDir = new URL('../../test-results/i18n-audit/findings/', import.meta.ur
 
 for (const language of languages) {
   test.describe(language, () => {
-    for (const [screen, { search, viewport, security, run }] of Object.entries(SCREENS)) {
+    for (const [screen, { search, viewport, security, platform, run }] of Object.entries(SCREENS)) {
       test(screen, async ({ page }) => {
+        if (platform) {
+          await page.addInitScript((os) => {
+            Object.defineProperty(navigator, 'userAgent', {
+              value: os === 'macos' ? 'Macintosh; Mac OS X' : 'Linux',
+            });
+          }, platform);
+        }
         if (viewport) await page.setViewportSize({ width: viewport[0], height: viewport[1] });
         if (security) await openSecurity(page, language, security);
         else await open(page, language, search);

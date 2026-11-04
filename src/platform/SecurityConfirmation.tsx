@@ -8,6 +8,7 @@ import { useTruncated } from '../hooks/useTruncated.ts';
 import Icon from '../components/Icon.tsx';
 import { useTooltip } from '../hooks/useTooltip.ts';
 import { friendlyError } from '../shared/errorMessages.ts';
+import { hostPlatform } from './os.ts';
 import '../styles/security-confirmation.css';
 
 type ConfirmationKind =
@@ -267,7 +268,7 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
       </header>
       <section ref={contentRef} className="modal-body security-confirmation__content">
         <p>
-          {translationKey ? t(`${translationKey}.message`) : '…'}
+          {translationKey ? t(`${translationKey}.message`, { context: hostPlatform() }) : '…'}
           {prompt?.target && (
             <>
               <br />
@@ -414,7 +415,8 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
                 className="settings-hint settings-warning vault-unlock-error"
                 role="status"
               >
-                {authenticationError ?? t('securityConfirmation.systemUnlockFailed')}
+                {authenticationError ??
+                  t('securityConfirmation.systemUnlockFailed', { context: hostPlatform() })}
               </p>
             )}
           </div>

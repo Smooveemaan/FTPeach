@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.tsx';
+import { hostPlatform } from '../platform/os.ts';
 import type { ApplicationErrorMessage } from './useApplicationError.ts';
 
 interface AppBannersProps {
@@ -59,7 +60,7 @@ export default function AppBanners({
 
       {plaintextSecretNotice && (
         <div className="app-error-bar" role="status" aria-live="polite">
-          <span>{t('plaintextSecretNotice.message')}</span>
+          <span>{t('plaintextSecretNotice.message', { context: hostPlatform() })}</span>
           <button
             type="button"
             className="app-error-bar-close"

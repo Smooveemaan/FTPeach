@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../platform/api/index.ts';
 import type { CommandResult } from '../../../platform/ipcContracts.ts';
 import { commandResultError, friendlyError } from '../../../shared/errorMessages.ts';
+import { hostPlatform } from '../../../platform/os.ts';
 
 export type VaultStatus = Awaited<ReturnType<typeof api.vault.status>>;
 export type PasswordStrength = '' | 'tooShort' | 'strong' | 'acceptable';
@@ -169,7 +170,7 @@ export function useVaultSettings(onVaultReset?: () => unknown): VaultSettingsMod
   const unlockVaultWithSystem = async () => {
     const unlocked = await runVaultAction(() => api.vault.unlockSystem());
     if (!unlocked) {
-      setVaultMessage(t('securityConfirmation.systemUnlockFailed'));
+      setVaultMessage(t('securityConfirmation.systemUnlockFailed', { context: hostPlatform() }));
       masterPasswordRef.current?.focus();
     }
     return unlocked;

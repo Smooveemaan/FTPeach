@@ -6,6 +6,7 @@ import Icon from './Icon.tsx';
 import PasswordInput from './PasswordInput.tsx';
 import { reportRejection, handler } from '../shared/asyncFailure.ts';
 import { commandResultError, friendlyError } from '../shared/errorMessages.ts';
+import { hostPlatform } from '../platform/os.ts';
 
 interface VaultUnlockDialogProps {
   onUnlocked: () => void;
@@ -98,7 +99,7 @@ export default function VaultUnlockDialog({
     } finally {
       // Cancelled or refused alike: the master password is the way on.
       if (!unlocked) {
-        setError(t('securityConfirmation.systemUnlockFailed'));
+        setError(t('securityConfirmation.systemUnlockFailed', { context: hostPlatform() }));
         setShown(true);
       }
     }

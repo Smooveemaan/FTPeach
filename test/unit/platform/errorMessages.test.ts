@@ -38,6 +38,30 @@ test('a message without a code is shown as it is, never read for one', () => {
   }
 });
 
+test('local file errors use host OS terminology and preserve the file name', () => {
+  const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  try {
+    for (const [userAgent, bin, invalid] of [
+      ['Windows NT', 'Recycle Bin', 'Windows doesn\'t allow the name "a:b".'],
+      ['Macintosh; Mac OS X', 'Trash', 'The name "a:b" is not allowed here.'],
+      ['Linux', 'Trash', 'The name "a:b" is not allowed here.'],
+    ]) {
+      Object.defineProperty(globalThis, 'navigator', { value: { userAgent }, configurable: true });
+      assert.equal(
+        friendlyError({ code: 'noRecycleBin' }),
+        `This location has no ${bin}, so nothing was deleted.`,
+      );
+      assert.equal(friendlyError({ code: 'invalidFileName', message: 'a:b' }), invalid);
+      assert.equal(
+        friendlyError({ code: 'permissionDenied' }),
+        "You don't have permission for this operation.",
+      );
+    }
+  } finally {
+    if (navigatorDescriptor) Object.defineProperty(globalThis, 'navigator', navigatorDescriptor);
+  }
+});
+
 test('friendlyConnectError wraps an untranslated error, passes a translated one through', () => {
   assert.equal(
     friendlyConnectError({ code: 'hostNotFound', message: 'Server not found' }),

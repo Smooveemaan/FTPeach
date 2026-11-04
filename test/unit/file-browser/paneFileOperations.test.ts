@@ -3,8 +3,10 @@ import test from 'node:test';
 import { createPaneFileOperations } from '../../../src/features/file-browser/panes/createPaneFileOperations.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { paneClient } from '../helpers/paneClient.ts';
+import i18n from '../../../src/i18n/index.ts';
+import type { Translate } from '../../../src/features/file-browser/components/fileListModel.ts';
 
-function harness(reply?: Parameters<typeof paneClient>[0]) {
+function harness(reply?: Parameters<typeof paneClient>[0], t: Translate = (key) => key) {
   const h = paneClient(reply);
   const { panes } = makeTab('tab');
   panes.a.path = 'C:\\root';
@@ -30,7 +32,7 @@ function harness(reply?: Parameters<typeof paneClient>[0]) {
     navigatePane: (...args) => {
       navigations.push(args);
     },
-    t: (key) => key,
+    t,
   });
   return { ...h, panes, operations, confirmations, errors, refreshes, navigations };
 }
@@ -48,6 +50,37 @@ test('deletion waits for confirmation, ignores stale selections and refreshes th
   assert.equal(h.calls.length, 1);
   assert.equal(h.calls[0]!.args!.permanent, true);
   assert.deepEqual(h.refreshes, [['a', 'C:\\root', undefined, 'origin']]);
+});
+
+test('recycling confirmations use the host bin name, including the permanent-delete fallback', async () => {
+  const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  try {
+    for (const [userAgent, bin] of [
+      ['Windows NT', 'Recycle Bin'],
+      ['Macintosh; Mac OS X', 'Trash'],
+      ['Linux', 'Trash'],
+    ]) {
+      Object.defineProperty(globalThis, 'navigator', { value: { userAgent }, configurable: true });
+      const h = harness(() => ({ ok: false, errorCode: 'noRecycleBin' }), i18n.getFixedT('en'));
+      const entry = { name: 'notes.txt', isDirectory: false };
+      h.panes.a.entries = [entry];
+      h.panes.a.selected = new Set([entry.name]);
+      h.operations.deletePaneEntry('a', entry);
+      assert.ok(h.confirmations[0]!.key.includes(`to the ${bin}?`));
+      assert.ok(h.confirmations[0]!.key.includes('notes.txt'));
+      h.operations.deletePaneSelected('a');
+      assert.equal(h.confirmations[1]!.key, `Move the selected items (1) to the ${bin}?`);
+      await h.confirmations[1]!.run();
+      assert.equal(
+        h.confirmations[2]!.key,
+        `This location has no ${bin}. Permanently delete the items (1)? This action cannot be undone.`,
+      );
+      assert.equal(h.calls.length, 1);
+      assert.equal(h.calls[0]!.args!.permanent, false);
+    }
+  } finally {
+    if (navigatorDescriptor) Object.defineProperty(globalThis, 'navigator', navigatorDescriptor);
+  }
 });
 
 test('what has no Recycle Bin is offered for a permanent delete, the rest goes to the bin', async () => {

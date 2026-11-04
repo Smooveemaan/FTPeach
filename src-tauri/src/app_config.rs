@@ -26,6 +26,13 @@ mod tests {
     use super::identifier_from_merge;
 
     #[test]
+    fn release_and_platform_overrides_keep_the_existing_secret_namespace() {
+        for config in [None, Some(r#"{"bundle":{"targets":["app","dmg"]}}"#)] {
+            assert_eq!(identifier_from_merge(config), "com.smooveemaan.ftpeach");
+        }
+    }
+
+    #[test]
     fn development_config_changes_the_data_folder_identifier() {
         assert_eq!(
             identifier_from_merge(Some(include_str!("../tauri.dev.conf.json"))),

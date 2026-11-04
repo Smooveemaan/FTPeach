@@ -38,12 +38,14 @@ fn with_key<T>(create: bool, operation: impl FnOnce(&[u8]) -> Result<T>) -> Resu
     let _guard = ACCESS
         .lock()
         .map_err(|_| anyhow!("system protection unavailable"))?;
+    #[cfg(not(test))]
+    let identifier = crate::app_config::identifier();
     // Separate desktop sessions can bypass the application's single-instance lock.
     #[cfg(not(test))]
     let _account_lock = {
         let directory = dirs::data_dir()
             .context("system protection data directory unavailable")?
-            .join("com.smooveemaan.ftpeach");
+            .join(&identifier);
         std::fs::create_dir_all(&directory)?;
         let lock = std::fs::OpenOptions::new()
             .read(true)
@@ -56,7 +58,7 @@ fn with_key<T>(create: bool, operation: impl FnOnce(&[u8]) -> Result<T>) -> Resu
         lock
     };
     #[cfg(not(test))]
-    let entry = &keyring::Entry::new("com.smooveemaan.ftpeach", "system-protection-v1")?;
+    let entry = &keyring::Entry::new(&identifier, "system-protection-v1")?;
     // Unit tests must neither prompt nor change the signed-in user's keychain.
     #[cfg(test)]
     let entry = {

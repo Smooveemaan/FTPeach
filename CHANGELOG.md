@@ -4,26 +4,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-05
+
 ### Added
 
-- Name conflicts can now create a numbered copy, with separate decisions for each file or one choice for all remaining conflicts.
-- The Computer pane's right-click menu shows the clicked file or folder in File Explorer
-  (Windows), Finder (macOS), or its containing folder (Linux).
+- Name conflicts can now create a numbered copy, with separate decisions for each file or one
+  choice for all remaining conflicts.
+- The Computer pane's right-click menu shows the clicked file or folder in File Explorer.
 
 ### Changed
 
 - The Ember color scheme is now called Amber; select it again if it was your saved scheme.
-- Transfer notifications report errors while other transfers continue, and up to three independent error messages can remain visible.
+- Transfer notifications report errors while other transfers continue, and up to three independent
+  error messages can remain visible.
 - When a password cannot be saved, the message explains how to set up master-password protection.
-- Security and file-deletion messages use the names of the host operating system's services.
 
 ### Fixed
 
 - Password-vault read and save errors are translated in every interface language.
 - Downloading to the root of a Windows drive checks the correct folder for existing files.
-- Retried transfers no longer announce an old error, and folder failures no longer report a made-up number of failed files.
+- Retried transfers no longer announce an old error, and folder failures no longer report a made-up
+  number of failed files.
 - Transfers finished in the active window no longer trigger a notification when you minimize it.
-
 - Localized application menus stay inside narrow windows.
 - Dialogs reliably respond to the first Escape or Enter key press.
 - On Windows, sleep prevention is released when transfers finish or the setting is turned off.

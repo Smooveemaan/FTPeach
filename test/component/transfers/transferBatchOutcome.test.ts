@@ -170,7 +170,11 @@ test('a move that was refused says the originals are still in place', async () =
     targetPane: { ...makePane('b', 'local'), path: 'C:\\target' },
     names: ['moved.txt', 'locked.txt'],
     move: true,
-    overwriteApproved: true,
+    approval: {
+      names: ['moved.txt', 'locked.txt'],
+      overwrites: ['moved.txt', 'locked.txt'],
+      copies: {},
+    },
   });
 
   expect(result).toMatchObject({ ok: false, moved: 1, failed: 1, sourceRetained: true });
@@ -203,6 +207,8 @@ test('declining the overwrite question is a skip, not a failure', async () => {
     targetPane: { ...makePane('b', 'local'), path: 'C:\\target' },
     names: ['one.txt'],
     move: true,
+    approval: { names: [], overwrites: [], copies: {} },
+    settled: [{ name: 'one.txt', outcome: 'skipped', sourceRetained: true }],
   });
 
   expect(result).toMatchObject({ ok: true, skipped: 1, moved: 0, sourceRetained: true });

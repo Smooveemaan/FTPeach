@@ -392,6 +392,39 @@ const SCREENS: Record<
       await snap('reset-layout');
     },
   },
+  'name-conflict': {
+    run: async ({ page, t, snap }) => {
+      await page.evaluate(() => {
+        const list = window.api.session.list;
+        window.api.session.list = async (...args) => {
+          const result = await list(...args);
+          return {
+            ...result,
+            entries: [
+              ...result.entries,
+              { name: 'release-notes.md', isDirectory: false },
+              { name: 'ftpeach-backup.zip', isDirectory: false },
+            ],
+          };
+        };
+      });
+      const target = page.locator('.pane').nth(1);
+      await target.locator(ROW).first().press('F5');
+      await expect(target.getByText('release-notes.md', { exact: true })).toBeVisible();
+      const source = page.locator('.pane').first();
+      await source.locator(ROW).filter({ hasText: 'release-notes.md' }).click();
+      await source
+        .locator(ROW)
+        .filter({ hasText: 'ftpeach-backup.zip' })
+        .click({ modifiers: ['Shift'] });
+      const selected = source.locator(ROW).filter({ hasText: 'release-notes.md' });
+      await contextMenu(page, selected);
+      await page.getByRole('menuitem', { name: t('paneMenu.uploadToOtherPane') }).click();
+      await expect(dialog(page)).toBeVisible();
+      await expect(dialog(page).getByRole('checkbox')).toBeVisible();
+      await snap('name-conflict');
+    },
+  },
   about: {
     run: async ({ page, snap }) => {
       await menuItem(page, MENU.help, 4);

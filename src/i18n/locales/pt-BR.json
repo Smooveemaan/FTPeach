@@ -232,9 +232,10 @@
     "closeTabWithActiveTransfers": "Esta aba contém transferências ativas. Fechar a aba e interromper essas transferências?",
     "closeTabLabel": "Fechar aba",
     "overwriteSingleExists": "“{{name}}” já existe na pasta de destino. Deseja substituí-lo?",
-    "overwriteConflicts_one": "Já existe {{count}} item na pasta de destino. Deseja substituí-lo?",
-    "overwriteConflicts_other": "Já existem {{count}} itens na pasta de destino. Deseja substituí-los?",
     "overwriteLabel": "Substituir",
+    "createCopyLabel": "Criar uma cópia",
+    "skipLabel": "Ignorar",
+    "applyToAllRemaining": "Aplicar a todos os conflitos restantes",
     "replaceConnection": "Este painel já está conectado a “{{current}}”. Deseja substituir a conexão por “{{next}}”?",
     "replaceConnectionLabel": "Substituir",
     "newConnectionReplaces": "Este painel está conectado a “{{current}}”. Deseja desconectá-lo e começar uma nova conexão?",
@@ -248,8 +249,7 @@
     "deleteRemoteSelected": "Deseja excluir definitivamente os itens selecionados no servidor ({{count}})? Essa ação não pode ser desfeita.",
     "deleteRemoteEntry": "Deseja excluir definitivamente “{{name}}” no servidor? Essa ação não pode ser desfeita.",
     "mergeFolder": "Mesclar com a pasta existente “{{name}}”? Os arquivos com o mesmo nome dentro dela serão substituídos. Os demais arquivos existentes serão mantidos.",
-    "mergeLabel": "Mesclar e substituir",
-    "overwriteConflicts_many": "Já existem {{count}} itens na pasta de destino. Deseja substituí-los?"
+    "mergeLabel": "Mesclar e substituir"
   },
   "paneSide": {
     "top": "em cima",

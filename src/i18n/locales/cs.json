@@ -235,9 +235,10 @@
     "closeTabWithActiveTransfers": "Na této kartě probíhají přenosy. Zavřít kartu a přenosy zastavit?",
     "closeTabLabel": "Zavřít kartu",
     "overwriteSingleExists": "„{{name}}“ již v cílové složce existuje. Chcete položku přepsat?",
-    "overwriteConflicts_one": "{{count}} položka už v cílové složce existuje. Chcete ji přepsat?",
-    "overwriteConflicts_other": "{{count}} položek už v cílové složce existuje. Chcete je přepsat?",
     "overwriteLabel": "Přepsat",
+    "createCopyLabel": "Vytvořit kopii",
+    "skipLabel": "Přeskočit",
+    "applyToAllRemaining": "Použít na všechny zbývající konflikty",
     "replaceConnection": "Tento panel je již připojen k „{{current}}“. Nahradit připojení za „{{next}}“?",
     "replaceConnectionLabel": "Nahradit",
     "newConnectionReplaces": "Tento panel je připojen k „{{current}}“. Odpojit ho a začít nové připojení?",
@@ -251,9 +252,7 @@
     "deleteRemoteSelected": "Chcete trvale odstranit vybrané položky na serveru ({{count}})? Tuto akci nelze vrátit zpět.",
     "deleteRemoteEntry": "Chcete trvale odstranit „{{name}}“ na serveru? Tuto akci nelze vrátit zpět.",
     "mergeFolder": "Sloučit s existující složkou „{{name}}“? Soubory se stejnými názvy v ní budou nahrazeny. Ostatní existující soubory zůstanou zachovány.",
-    "mergeLabel": "Sloučit a nahradit",
-    "overwriteConflicts_few": "{{count}} položky už v cílové složce existují. Chcete je přepsat?",
-    "overwriteConflicts_many": "{{count}} položky už v cílové složce existuje. Chcete je přepsat?"
+    "mergeLabel": "Sloučit a nahradit"
   },
   "paneSide": {
     "top": "nahoře",

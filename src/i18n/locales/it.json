@@ -232,9 +232,10 @@
     "closeTabWithActiveTransfers": "Questa scheda contiene trasferimenti in corso. Chiudere la scheda e interromperli?",
     "closeTabLabel": "Chiudi scheda",
     "overwriteSingleExists": "\"{{name}}\" esiste già nella cartella di destinazione. Vuoi sovrascriverlo?",
-    "overwriteConflicts_one": "Esiste già {{count}} elemento nella cartella di destinazione. Vuoi sovrascriverlo?",
-    "overwriteConflicts_other": "Esistono già {{count}} elementi nella cartella di destinazione. Vuoi sovrascriverli?",
     "overwriteLabel": "Sovrascrivi",
+    "createCopyLabel": "Crea una copia",
+    "skipLabel": "Ignora",
+    "applyToAllRemaining": "Applica a tutti i conflitti rimanenti",
     "replaceConnection": "Questo riquadro è già connesso a \"{{current}}\". Sostituire la connessione con \"{{next}}\"?",
     "replaceConnectionLabel": "Sostituisci",
     "newConnectionReplaces": "Questo riquadro è connesso a \"{{current}}\". Disconnetterlo e iniziare una nuova connessione?",
@@ -248,8 +249,7 @@
     "deleteRemoteSelected": "Eliminare definitivamente gli elementi selezionati sul server ({{count}})? Questa operazione non può essere annullata.",
     "deleteRemoteEntry": "Eliminare definitivamente \"{{name}}\" sul server? Questa operazione non può essere annullata.",
     "mergeFolder": "Unire alla cartella esistente \"{{name}}\"? I file con lo stesso nome al suo interno verranno sostituiti. Gli altri file esistenti verranno mantenuti.",
-    "mergeLabel": "Unisci e sostituisci",
-    "overwriteConflicts_many": "Esistono già {{count}} elementi nella cartella di destinazione. Vuoi sovrascriverli?"
+    "mergeLabel": "Unisci e sostituisci"
   },
   "paneSide": {
     "top": "in alto",

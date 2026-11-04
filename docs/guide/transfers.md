@@ -45,8 +45,17 @@ Before sending files with names already at the destination, check
 question, and **Skip** leaves matching files alone. Start with **Ask** if you
 want to review replacements. See [Everyday settings](interface.md#everyday-settings) to change the policy.
 
+For each existing file, **Ask** offers **Overwrite**, **Create a copy** and **Skip**.
+Copies are named `file (copy).txt`, then `file (copy 2).txt` and so on, without
+replacing existing files. For several conflicts, **Apply to all remaining conflicts**
+reuses your choice; closing the question or pressing Escape skips only the current file.
+Files without a conflict transfer without a question.
+
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Ask confirms an existing file while Overwrite and Skip do not ask -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::one batch can copy, overwrite and skip different files without replacing a copy target -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::Apply to all reuses the copy decision and reserves every generated name -->
+<!-- verified-by: pr test/component/shared/nameConflictDialog.test.tsx::Escape skips only the current file and a single conflict has no apply-all checkbox -->
 
 ## Pausing, stopping and resuming transfers
 

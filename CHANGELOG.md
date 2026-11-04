@@ -4,11 +4,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Name conflicts can now create a numbered copy, with separate decisions for each file or one choice for all remaining conflicts.
+
 ### Changed
 
 - When a password cannot be saved, the message explains how to set up master-password protection.
 
 ### Fixed
+
 
 - Localized application menus stay inside narrow windows.
 - Dialogs reliably respond to the first Escape or Enter key press.

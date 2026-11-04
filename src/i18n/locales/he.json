@@ -232,9 +232,10 @@
     "closeTabWithActiveTransfers": "יש העברות פעילות בכרטיסייה זו. לסגור אותה ולעצור אותן?",
     "closeTabLabel": "סגור כרטיסייה",
     "overwriteSingleExists": "\"{{name}}\" כבר קיים בתיקיית היעד. האם ברצונך להחליף אותו?",
-    "overwriteConflicts_one": "{{count}} פריט כבר קיים בתיקיית היעד. להחליף אותו?",
-    "overwriteConflicts_other": "{{count}} פריטים כבר קיימים בתיקיית היעד. להחליף אותם?",
     "overwriteLabel": "החלפה",
+    "createCopyLabel": "צור עותק",
+    "skipLabel": "דלג",
+    "applyToAllRemaining": "החל על כל הקונפליקטים הנותרים",
     "replaceConnection": "חלונית זו כבר מחוברת ל-\"{{current}}\". האם להחליף את החיבור ל-\"{{next}}\"?",
     "replaceConnectionLabel": "החלפה",
     "newConnectionReplaces": "חלונית זו מחוברת ל-\"{{current}}\". לנתק אותה ולהתחיל חיבור חדש?",
@@ -248,8 +249,7 @@
     "deleteRemoteSelected": "למחוק לצמיתות את הפריטים שנבחרו בשרת ({{count}})? לא ניתן לבטל פעולה זו.",
     "deleteRemoteEntry": "למחוק לצמיתות את \"{{name}}\" בשרת? לא ניתן לבטל פעולה זו.",
     "mergeFolder": "למזג לתוך התיקייה הקיימת \"{{name}}\"? קבצים בעלי שמות זהים בתוכה יוחלפו. שאר הקבצים הקיימים יישמרו.",
-    "mergeLabel": "מזג והחלף",
-    "overwriteConflicts_two": "{{count}} פריטים כבר קיימים בתיקיית היעד. להחליף אותם?"
+    "mergeLabel": "מזג והחלף"
   },
   "paneSide": {
     "top": "למעלה",

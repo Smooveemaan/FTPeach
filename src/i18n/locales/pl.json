@@ -235,9 +235,10 @@
     "closeTabWithActiveTransfers": "Na tej karcie trwają transfery. Zamknąć kartę i je zatrzymać?",
     "closeTabLabel": "Zamknij kartę",
     "overwriteSingleExists": "„{{name}}” już istnieje w folderze docelowym. Czy chcesz to nadpisać?",
-    "overwriteConflicts_one": "{{count}} element już istnieje w folderze docelowym. Czy chcesz go nadpisać?",
-    "overwriteConflicts_other": "{{count}} elementu już istnieje w folderze docelowym. Czy chcesz je nadpisać?",
     "overwriteLabel": "Nadpisz",
+    "createCopyLabel": "Utwórz kopię",
+    "skipLabel": "Pomiń",
+    "applyToAllRemaining": "Zastosuj do wszystkich pozostałych konfliktów",
     "replaceConnection": "Ten panel jest już połączony z „{{current}}”. Zastąpić to połączenie połączeniem z „{{next}}”?",
     "replaceConnectionLabel": "Zastąp",
     "newConnectionReplaces": "Ten panel jest połączony z „{{current}}”. Rozłączyć go i rozpocząć nowe połączenie?",
@@ -251,9 +252,7 @@
     "deleteRemoteSelected": "Czy chcesz trwale usunąć zaznaczone elementy na serwerze ({{count}})? Tego działania nie można cofnąć.",
     "deleteRemoteEntry": "Czy chcesz trwale usunąć „{{name}}” na serwerze? Tego działania nie można cofnąć.",
     "mergeFolder": "Czy chcesz scalić z istniejącym folderem „{{name}}”? Pliki o tych samych nazwach w jego wnętrzu zostaną zastąpione. Pozostałe istniejące pliki zostaną zachowane.",
-    "mergeLabel": "Scal i zastąp",
-    "overwriteConflicts_few": "{{count}} elementy już istnieją w folderze docelowym. Czy chcesz je nadpisać?",
-    "overwriteConflicts_many": "{{count}} elementów już istnieje w folderze docelowym. Czy chcesz je nadpisać?"
+    "mergeLabel": "Scal i zastąp"
   },
   "paneSide": {
     "top": "u góry",

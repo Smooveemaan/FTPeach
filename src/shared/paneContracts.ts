@@ -3,6 +3,12 @@ export type PaneKind = 'local' | 'remote';
 export type PaneId = 'a' | 'b';
 export type PaneStatus = 'idle' | 'connecting' | 'connected' | 'error';
 
+export type NameConflictAction = 'overwrite' | 'copy' | 'skip';
+export interface NameConflictDecision {
+  action: NameConflictAction;
+  applyToAll?: boolean;
+}
+
 export interface FileEntry {
   name: string;
   isDirectory: boolean;

@@ -68,6 +68,7 @@ export default function Application() {
     vaultUnlockRetries,
     setVaultUnlockRetries,
     requestConfirm,
+    requestNameConflict,
   } = dialogs;
   // Settings arrive grouped by owner; each consumer below takes the group it
   // is about rather than a handful of loose fields.
@@ -176,28 +177,8 @@ export default function Application() {
         }),
       ),
     overwriteAction: settings.transfers.overwriteAction,
-    confirmOverwrite: (path) =>
-      new Promise<boolean>((resolve) =>
-        requestConfirm(t('confirm.overwriteSingleExists', { name: path }), () => resolve(true), {
-          confirmLabel: t('confirm.overwriteLabel'),
-          danger: true,
-          onCancel: () => resolve(false),
-        }),
-      ),
-    confirmOverwriteBatch: (names) =>
-      new Promise<boolean>((resolve) =>
-        requestConfirm(
-          names.length === 1
-            ? t('confirm.overwriteSingleExists', { name: isolate(names[0]!) })
-            : t('confirm.overwriteConflicts', { count: names.length }),
-          () => resolve(true),
-          {
-            confirmLabel: t('confirm.overwriteLabel'),
-            danger: true,
-            onCancel: () => resolve(false),
-          },
-        ),
-      ),
+    confirmOverwrite: (path, remaining) =>
+      new Promise((resolve) => requestNameConflict(path, remaining, resolve)),
   });
   const {
     runUpload,

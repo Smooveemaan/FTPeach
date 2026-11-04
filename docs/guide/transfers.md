@@ -73,13 +73,6 @@ If a transfer reports an error, read it before retrying: wrong permissions,
 insufficient space or a changed source need attention first. See
 [Troubleshooting](troubleshooting.md#my-transfer-did-not-finish).
 
-With **Edit > Settings > Transfers > Notify when transfers finish** enabled,
-FTPeach reports errors while other transfers continue and shows the successful
-total when the queue finishes. These system notifications appear only while the
-window is not focused.
-
-<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::close errors arrive together during a long transfer and are not repeated in its final tally -->
-
 A paused FTP, FTPS or SFTP upload resumes when FTPeach confirms that neither the source nor the part already
 on the server has changed; otherwise it starts again. WebDAV uploads, including folder uploads, do not
 offer Pause because they cannot continue a partly uploaded file.
@@ -144,6 +137,36 @@ cleanup or cannot be reached can leave that temporary file behind.
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::a_stopped_folder_upload_settles_at_once_and_keeps_what_landed -->
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::staging_the_server_will_not_delete_does_not_turn_a_stop_into_a_failure -->
 <!-- verified-by: pr src-tauri/src/application/recursive_transfer/tests.rs::stopping_a_paused_upload_keeps_what_landed_and_removes_only_its_own_staging -->
+
+## Transfer notifications
+
+Enable **Edit > Settings > Transfers > Notify when transfers finish** to receive
+system notifications while the FTPeach window is not focused.
+
+<!-- verified-by: pr src-tauri/src/commands/notifications.rs::switching_the_setting_off_silences_finished_transfers -->
+
+Errors are reported while other transfers continue; errors arriving close
+together share one notification. When the queue finishes, any successfully
+transferred files are counted in a separate notification. If errors remain, its title still
+indicates an error. Open **Transfers** to read the reason beside each failed job.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::close errors arrive together during a long transfer and are not repeated in its final tally -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a real (non-user-initiated) transfer failure reports the error and marks the row -->
+
+A retry replaces the previous attempt's result. If it succeeds, the final total
+counts that success without repeating the old error. Paused jobs hold the final
+total until they resume or are stopped; they do not hold back errors from other
+jobs.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a retry after an announced error replaces it instead of announcing it again -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a pause is not the end of the queue, so it sends no notification -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::an error is not held back by a paused row -->
+
+If a folder transfer fails part way through, the successful total still includes
+the files it delivered. The error notification does not claim a number of files
+that failed.
+
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a folder that failed part way counts what it delivered and one failure -->
 
 ## Interrupted downloads
 

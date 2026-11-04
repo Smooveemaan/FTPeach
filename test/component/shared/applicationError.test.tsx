@@ -4,26 +4,37 @@ import { test } from 'vitest';
 import AppBanners from '../../../src/app/AppBanners.tsx';
 import { useApplicationError } from '../../../src/app/useApplicationError.ts';
 
-test('automatic withdrawal removes only the operation that recovered', () => {
+test('automatic withdrawal distinguishes error objects with the same text', () => {
   const { result } = renderHook(() => useApplicationError());
   const first = { message: 'Same failure' };
   const second = { message: 'Same failure' };
   act(() => {
     result.current.reportError(first);
     result.current.reportError(second);
-    result.current.reportError('Same failure', 'pane:a');
-    result.current.reportError('Same failure', 'pane:b');
   });
-  assert.equal(result.current.errorMessages.length, 3);
-  act(() => {
-    result.current.withdrawError(first);
-    result.current.withdrawError('Same failure', 'pane:a');
-  });
-  assert.deepEqual(
-    result.current.errorMessages.map((item) => item.owner),
-    ['pane:b', undefined],
-  );
-  assert.equal(result.current.errorMessages[0]?.raw, 'Same failure');
+  assert.equal(result.current.errorMessages.length, 2);
+  act(() => result.current.withdrawError(first));
+  assert.equal(result.current.errorMessages.length, 1);
+  assert.equal(result.current.errorMessages[0]?.raw, second);
+  act(() => result.current.withdrawError(second));
+  assert.deepEqual(result.current.errorMessages, []);
+});
+
+test('automatic withdrawal removes only the operation that recovered', () => {
+  const { result } = renderHook(() => useApplicationError());
+  for (const second of ['Same failure', 'Different failure']) {
+    act(() => {
+      result.current.reportError('Same failure', 'pane:a');
+      result.current.reportError(second, 'pane:b');
+    });
+    assert.equal(result.current.errorMessages.length, 2);
+    act(() => result.current.withdrawError('Same failure', 'pane:a'));
+    assert.equal(result.current.errorMessages.length, 1);
+    assert.equal(result.current.errorMessages[0]?.owner, 'pane:b');
+    assert.equal(result.current.errorMessages[0]?.raw, second);
+    act(() => result.current.withdrawError(second, 'pane:b'));
+    assert.deepEqual(result.current.errorMessages, []);
+  }
 });
 
 test('one owner updates in place and the list keeps the newest three', () => {

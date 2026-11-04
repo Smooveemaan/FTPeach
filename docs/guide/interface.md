@@ -72,6 +72,22 @@ closes. See [Transfers and files](transfers.md) for pausing and recovery.
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::queue order puts running and paused rows first, newest within each status, and completed rows last -->
 <!-- verified-by: pr test/component/transfers/transferQueue.test.tsx::a transfer keeps naming its server after that connection closes -->
 
+## Read error messages
+
+FTPeach keeps up to three error messages visible, with the newest first. Another
+error from the same operation updates its message; when the list is full, a new
+message replaces the oldest. Close each message separately with its **Close**
+button. Password and secret warnings remain separate from these errors.
+
+<!-- verified-by: pr test/component/shared/applicationError.test.tsx::one owner updates in place and the list keeps the newest three -->
+<!-- verified-by: pr test/component/shared/applicationError.test.tsx::banners close independently of secret notices -->
+
+A successful transfer retry clears that transfer's error without hiding another
+operation's message, even when the two messages have the same text.
+
+<!-- verified-by: pr test/component/shared/applicationError.test.tsx::automatic withdrawal removes only the operation that recovered -->
+<!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::a failure a retry got through takes its message out of the banner -->
+
 ## Useful default shortcuts
 
 Use these with the file pane focused. If you have changed your keyboard

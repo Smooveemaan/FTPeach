@@ -75,10 +75,11 @@ export function placeBelowAnchor(
  * window: an estimate falls short once the interface is scaled up or the
  * labels are long.
  */
-function useAnchoredOverlay(
+export function useAnchoredOverlay(
   open: boolean,
   trigger: RefObject<HTMLElement | null>,
   panel: RefObject<HTMLElement | null>,
+  placementKey?: unknown,
 ): OverlayPlacement | null {
   const [placement, setPlacement] = useState<OverlayPlacement | null>(null);
   const placed = placement !== null;
@@ -103,7 +104,7 @@ function useAnchoredOverlay(
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, [open, placed, trigger, panel]);
+  }, [open, placed, trigger, panel, placementKey]);
   return open ? placement : null;
 }
 

@@ -3,6 +3,7 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import MenuItems from './MenuItems.tsx';
 import type { MenuItem } from './MenuItems.tsx';
 import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
+import { useAnchoredOverlay } from '../hooks/useMenuPosition.ts';
 
 export interface MenuBarEntry {
   label: ReactNode;
@@ -17,6 +18,10 @@ export default function MenuBar({ menus }: MenuBarProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const activeTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  activeTriggerRef.current = openIndex === null ? null : (triggerRefs.current[openIndex] ?? null);
+  const panelPos = useAnchoredOverlay(openIndex !== null, activeTriggerRef, panelRef, openIndex);
 
   const handleTriggerKeyDown = (i: number) => (e: KeyboardEvent<HTMLButtonElement>) => {
     const rtl = document.documentElement.dir === 'rtl';
@@ -66,7 +71,19 @@ export default function MenuBar({ menus }: MenuBarProps) {
             {menu.label}
           </button>
           {openIndex === i && (
-            <div className="menu-dropdown">
+            <div
+              className="menu-dropdown"
+              ref={panelRef}
+              style={
+                panelPos
+                  ? {
+                      position: 'fixed',
+                      top: panelPos.top,
+                      insetInlineStart: panelPos.inlineStart,
+                    }
+                  : undefined
+              }
+            >
               <MenuItems items={menu.items} onAction={() => closeMenu(i)} />
             </div>
           )}

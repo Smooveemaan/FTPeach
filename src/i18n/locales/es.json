@@ -232,9 +232,10 @@
     "closeTabWithActiveTransfers": "Esta pestaña contiene transferencias activas. ¿Cerrar la pestaña y detenerlas?",
     "closeTabLabel": "Cerrar pestaña",
     "overwriteSingleExists": "«{{name}}» ya existe en la carpeta de destino. ¿Deseas sobrescribirlo?",
-    "overwriteConflicts_one": "Ya existe {{count}} elemento en la carpeta de destino. ¿Deseas sobrescribirlo?",
-    "overwriteConflicts_other": "Ya existen {{count}} elementos en la carpeta de destino. ¿Deseas sobrescribirlos?",
     "overwriteLabel": "Sobrescribir",
+    "createCopyLabel": "Crear una copia",
+    "skipLabel": "Omitir",
+    "applyToAllRemaining": "Aplicar a todos los conflictos restantes",
     "replaceConnection": "Este panel ya está conectado a «{{current}}». ¿Deseas sustituir la conexión por «{{next}}»?",
     "replaceConnectionLabel": "Sustituir",
     "newConnectionReplaces": "Este panel está conectado a «{{current}}». ¿Quieres desconectarlo y empezar una conexión nueva?",
@@ -248,8 +249,7 @@
     "deleteRemoteSelected": "¿Deseas eliminar definitivamente los elementos seleccionados del servidor ({{count}})? Esta acción no se puede deshacer.",
     "deleteRemoteEntry": "¿Deseas eliminar definitivamente «{{name}}» del servidor? Esta acción no se puede deshacer.",
     "mergeFolder": "¿Combinar con la carpeta existente «{{name}}»? Los archivos con el mismo nombre que contiene se reemplazarán. Los demás archivos existentes se conservarán.",
-    "mergeLabel": "Combinar y reemplazar",
-    "overwriteConflicts_many": "Ya existen {{count}} elementos en la carpeta de destino. ¿Deseas sobrescribirlos?"
+    "mergeLabel": "Combinar y reemplazar"
   },
   "paneSide": {
     "top": "arriba",

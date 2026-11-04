@@ -108,7 +108,11 @@ test('a failed copy does not end the batch while another copy is still running',
     names: ['first.txt', 'second.txt'],
     move: false,
     refreshTarget,
-    overwriteApproved: true,
+    approval: {
+      names: ['first.txt', 'second.txt'],
+      overwrites: ['first.txt', 'second.txt'],
+      copies: {},
+    },
   });
   const settled = batch.then(() => 'done');
 
@@ -156,7 +160,7 @@ test('a copy the backend refuses before it starts is reported by its code, not t
     targetPane: { ...makePane('b', 'local'), path: 'C:\target' },
     names: ['link.txt'],
     move: false,
-    overwriteApproved: true,
+    approval: { names: ['link.txt'], overwrites: ['link.txt'], copies: {} },
   });
 
   expect(runLocalCopy).not.toHaveBeenCalled();

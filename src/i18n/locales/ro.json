@@ -232,9 +232,10 @@
     "closeTabWithActiveTransfers": "Această filă conține transferuri în curs. Doriți să închideți fila și să le opriți?",
     "closeTabLabel": "Închide fila",
     "overwriteSingleExists": "„{{name}}” există deja în folderul de destinație. Doriți să îl suprascrieți?",
-    "overwriteConflicts_one": "{{count}} element există deja în folderul de destinație. Doriți să îl suprascrieți?",
-    "overwriteConflicts_other": "{{count}} de elemente există deja în folderul de destinație. Doriți să le suprascrieți?",
     "overwriteLabel": "Suprascrie",
+    "createCopyLabel": "Creează o copie",
+    "skipLabel": "Omite",
+    "applyToAllRemaining": "Aplică pentru toate conflictele rămase",
     "replaceConnection": "Acest panou este deja conectat la „{{current}}”. Doriți să înlocuiți conexiunea cu „{{next}}”?",
     "replaceConnectionLabel": "Înlocuiește",
     "newConnectionReplaces": "Acest panou este conectat la „{{current}}”. Îl deconectați și începeți o conexiune nouă?",
@@ -248,8 +249,7 @@
     "deleteRemoteSelected": "Doriți să ștergeți definitiv elementele selectate de pe server ({{count}})? Această acțiune nu poate fi anulată.",
     "deleteRemoteEntry": "Doriți să ștergeți definitiv „{{name}}” de pe server? Această acțiune nu poate fi anulată.",
     "mergeFolder": "Doriți să combinați conținutul cu folderul existent „{{name}}”? Fișierele cu același nume din el vor fi înlocuite. Celelalte fișiere existente vor fi păstrate.",
-    "mergeLabel": "Combină și înlocuiește",
-    "overwriteConflicts_few": "{{count}} elemente există deja în folderul de destinație. Doriți să le suprascrieți?"
+    "mergeLabel": "Combină și înlocuiește"
   },
   "paneSide": {
     "top": "sus",

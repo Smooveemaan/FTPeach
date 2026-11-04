@@ -2,6 +2,7 @@ import { useCallback, useMemo, useReducer, useRef } from 'react';
 import type { MenuItem } from '../components/MenuItems.tsx';
 import type { FileEntry, PaneId } from '../shared/paneContracts.ts';
 import type { SiteForm } from '../features/sites/index.ts';
+import type { NameConflictDecision } from '../shared/paneContracts.ts';
 
 interface ConfirmState {
   message: string;
@@ -9,6 +10,11 @@ interface ConfirmState {
   onCancel?: (() => unknown) | undefined;
   confirmLabel?: string | undefined;
   danger?: boolean | undefined;
+}
+interface NameConflictState {
+  name: string;
+  remaining: number;
+  onDecision: (decision: NameConflictDecision) => unknown;
 }
 export interface MoveToTarget {
   id: PaneId;
@@ -40,6 +46,7 @@ export interface DialogState {
   chmodTarget: ChmodTarget | null;
   driveMenu: DriveMenu | null;
   confirmState: ConfirmState | null;
+  nameConflict: NameConflictState | null;
   vaultUnlockRetries: Array<() => unknown>;
 }
 type DialogValue<K extends keyof DialogState> =
@@ -65,6 +72,7 @@ export const INITIAL_DIALOG_STATE: DialogState = {
   chmodTarget: null,
   driveMenu: null,
   confirmState: null,
+  nameConflict: null,
   vaultUnlockRetries: [],
 };
 
@@ -93,6 +101,11 @@ export interface AppDialogs extends DialogState, DialogSetters {
     message: string,
     onConfirm: () => unknown,
     options?: { confirmLabel?: string; danger?: boolean; onCancel?: () => unknown },
+  ) => void;
+  requestNameConflict: (
+    name: string,
+    remaining: number,
+    onDecision: (decision: NameConflictDecision) => unknown,
   ) => void;
 }
 
@@ -129,6 +142,12 @@ export function useAppDialogs(): AppDialogs {
     },
     [],
   );
+  const requestNameConflict = useCallback(
+    (name: string, remaining: number, onDecision: (decision: NameConflictDecision) => unknown) => {
+      dispatch({ type: 'set', name: 'nameConflict', value: { name, remaining, onDecision } });
+    },
+    [],
+  );
 
-  return { ...state, ...setters, requestConfirm };
+  return { ...state, ...setters, requestConfirm, requestNameConflict };
 }

@@ -26,8 +26,6 @@
     "confirm.mergeLabel",
     "confirm.newConnectionReplaces",
     "confirm.noRecycleBin",
-    "confirm.overwriteConflicts",
-    "confirm.overwriteSingleExists",
     "confirm.recycleEntry",
     "confirm.recycleSelected",
     "confirm.replaceConnection",

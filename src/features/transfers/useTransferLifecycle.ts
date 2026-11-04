@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { TransferTarget } from './useOverwriteApproval.ts';
+import type { OverwriteApproval, TransferTarget } from './useOverwriteApproval.ts';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../platform/api/index.ts';
 import type { RecursiveIntent, RecursiveReport } from '../../platform/api/transfers.ts';
@@ -110,7 +110,8 @@ type Settled = { cancelled?: boolean };
 
 export function useTransferLifecycle(
   setErrorMessage: (message?: string) => unknown,
-  approveTarget: (target: TransferTarget) => Promise<boolean | null> = () => Promise.resolve(false),
+  approveTarget: OverwriteApproval = (target) =>
+    Promise.resolve({ path: target.path, overwrite: false }),
   withdrawErrorMessage: (message: string) => void = () => undefined,
 ): TransferLifecycleModel {
   const { t } = useTranslation();
@@ -194,18 +195,25 @@ export function useTransferLifecycle(
     run,
   }: {
     target: TransferTarget;
-    targetKey: string;
+    targetKey: (path: string) => string;
     overwriteApproved: boolean;
-    reuse?: (row: TransferRow) => boolean;
+    reuse?: (row: TransferRow, path: string) => boolean;
     keepBytes?: boolean;
-    start: () => string;
-    run: (attemptId: string, overwrite: boolean) => Promise<CommandResult>;
+    start: (path: string) => string;
+    run: (attemptId: string, overwrite: boolean, path: string) => Promise<CommandResult>;
   }) => {
-    if (activeTransferForTarget(targetKey)) return { ok: false, alreadyRunning: true };
-    const overwrite = overwriteApproved ? true : await approveTarget(target);
-    if (overwrite === null) return { ok: false, skipped: true };
+    if (activeTransferForTarget(targetKey(target.path))) return { ok: false, alreadyRunning: true };
+    const approval = overwriteApproved
+      ? { path: target.path, overwrite: true }
+      : await approveTarget(target);
+    if (approval === null) return { ok: false, skipped: true };
+    const approvedTarget = { ...target, path: approval.path };
+    if (activeTransferForTarget(targetKey(approval.path)))
+      return { ok: false, alreadyRunning: true };
     const existing = reuse
-      ? Object.values(getTransfersSnapshot()).find((row) => row.status !== 'done' && reuse(row))
+      ? Object.values(getTransfersSnapshot()).find(
+          (row) => row.status !== 'done' && reuse(row, approval.path),
+        )
       : undefined;
     if (
       existing?.status === 'progress' ||
@@ -215,12 +223,12 @@ export function useTransferLifecycle(
       // Keep the row attached to its running backend attempt.
       return { ok: false, alreadyRunning: true };
     }
-    const id = existing?.id || start();
+    const id = existing?.id || start(approval.path);
     const attemptId = existing
-      ? requeueAttempt(id, { keepBytes, overwrite })
-      : beginAttempt(id, overwrite);
-    const result = await run(attemptId, overwrite);
-    const cancelled = settleTransferResult(id, result, attemptId, target);
+      ? requeueAttempt(id, { keepBytes, overwrite: approval.overwrite })
+      : beginAttempt(id, approval.overwrite);
+    const result = await run(attemptId, approval.overwrite, approval.path);
+    const cancelled = settleTransferResult(id, result, attemptId, approvedTarget);
     return { ...result, cancelled };
   };
 
@@ -236,28 +244,28 @@ export function useTransferLifecycle(
     const remoteTarget = joinRemotePath(remoteTargetDir, name);
     return runFileTransfer({
       target: { kind: 'remote', connectionId, path: remoteTarget },
-      targetKey: `remote:${connectionId}:${remoteTarget}`,
+      targetKey: (path) => `remote:${connectionId}:${path}`,
       overwriteApproved,
-      reuse: (row) =>
+      reuse: (row, path) =>
         row.direction === 'up' &&
         row.connectionId === connectionId &&
         row.localFile === localFile &&
-        row.remoteTarget === remoteTarget,
-      start: () =>
+        row.remoteTarget === path,
+      start: (path) =>
         startTransfer({
           direction: 'up',
-          name,
+          name: path.split('/').pop()!,
           protocol,
           localFile,
-          remoteTarget,
+          remoteTarget: path,
           connectionId,
           total: localSize,
         }),
       // Starting an upload always stages fresh, superseding anything a
       // previous paused attempt left for this destination. Resuming is
       // retryTransfer's.
-      run: (attemptId, overwrite) =>
-        api.transfer.upload(connectionId, attemptId, localFile, remoteTarget, false, overwrite),
+      run: (attemptId, overwrite, path) =>
+        api.transfer.upload(connectionId, attemptId, localFile, path, false, overwrite),
     });
   };
 
@@ -274,20 +282,27 @@ export function useTransferLifecycle(
     const localTarget = joinLocalPath(localTargetDir, name);
     return runFileTransfer({
       target: { kind: 'local', path: localTarget },
-      targetKey: `local:${localTarget.replaceAll('/', '\\').toLowerCase()}`,
+      targetKey: (path) => `local:${path.replaceAll('/', '\\').toLowerCase()}`,
       overwriteApproved,
-      reuse: (row) =>
+      reuse: (row, path) =>
         row.direction === 'down' &&
         !row.dragOut &&
         row.connectionId === connectionId &&
         row.remoteFile === remoteFile &&
-        row.localTarget === localTarget,
+        row.localTarget === path,
       // A download carries on from its partial, so the bytes it has stay counted.
       keepBytes: true,
-      start: () =>
-        startTransfer({ direction: 'down', name, protocol, remoteFile, localTarget, connectionId }),
-      run: (attemptId, overwrite) =>
-        api.transfer.download(connectionId, attemptId, remoteFile, localTarget, resume, overwrite),
+      start: (path) =>
+        startTransfer({
+          direction: 'down',
+          name: path.split(/[\\/]/).pop()!,
+          protocol,
+          remoteFile,
+          localTarget: path,
+          connectionId,
+        }),
+      run: (attemptId, overwrite, path) =>
+        api.transfer.download(connectionId, attemptId, remoteFile, path, resume, overwrite),
     });
   };
 
@@ -303,25 +318,25 @@ export function useTransferLifecycle(
     const targetPath = joinRemotePath(targetTargetDir, name);
     return runFileTransfer({
       target: { kind: 'remote', connectionId: targetConnectionId, path: targetPath },
-      targetKey: `remote:${targetConnectionId}:${targetPath}`,
+      targetKey: (path) => `remote:${targetConnectionId}:${path}`,
       overwriteApproved,
-      start: () =>
+      start: (path) =>
         startTransfer({
           direction: 'copy',
-          name,
+          name: path.split('/').pop()!,
           protocol: targetProtocol,
           sourceConnectionId,
           sourcePath,
           targetConnectionId,
-          remoteTarget: targetPath,
+          remoteTarget: path,
         }),
-      run: (attemptId, overwrite) =>
+      run: (attemptId, overwrite, path) =>
         api.transfer.remoteCopy(
           sourceConnectionId,
           targetConnectionId,
           attemptId,
           sourcePath,
-          targetPath,
+          path,
           overwrite,
         ),
     });
@@ -454,17 +469,25 @@ export function useTransferLifecycle(
       const attemptId = requeueAttempt(id, { keepBytes: false });
       const target = { kind: 'local' as const, path: transfer.localTarget };
       try {
-        const overwrite = await approveTarget(target);
-        if (overwrite === null) {
+        const approval = await approveTarget(target);
+        if (approval === null) {
           setTransfersStore((previous) => ({
             ...previous,
             [id]: { ...previous[id]!, status: 'stopped' },
           }));
         } else {
+          setTransfersStore((previous) => ({
+            ...previous,
+            [id]: {
+              ...previous[id]!,
+              localTarget: approval.path,
+              name: approval.path.split(/[\\/]/).pop()!,
+            },
+          }));
           await runLocalCopy(
             transfer.localFile,
-            transfer.localTarget,
-            overwrite,
+            approval.path,
+            approval.overwrite,
             transfer.total,
             id,
           );
@@ -501,13 +524,16 @@ export function useTransferLifecycle(
           (transfer.status === 'error' && transfer.errorCode !== 'integrityMismatch')
         : transfer.direction === 'up' && canPauseTransfer(transfer) && transfer.status === 'paused';
     const attemptId = requeueAttempt(id, { keepBytes: resume });
-    let overwrite: boolean | null;
+    let approval;
     try {
       // A resumed pause carries on under the answer its first attempt got: the
       // file there may be what that attempt was allowed to replace.
-      overwrite =
+      approval =
         transfer.status === 'paused' && transfer.overwrite !== undefined
-          ? transfer.overwrite
+          ? {
+              path: transfer.direction === 'down' ? transfer.localTarget : transfer.remoteTarget,
+              overwrite: transfer.overwrite,
+            }
           : await approveTarget(
               transfer.direction === 'down'
                 ? { kind: 'local', path: transfer.localTarget }
@@ -532,16 +558,28 @@ export function useTransferLifecycle(
       );
       return;
     }
-    if (overwrite === null || cancelIntentRef.current[id]) {
+    if (approval === null || cancelIntentRef.current[id]) {
       setTransfersStore((previous) => ({
         ...previous,
         [id]: { ...previous[id]!, status: 'stopped' },
       }));
       return;
     }
+    const targetPath = approval.path;
+    const overwrite = approval.overwrite;
     setTransfersStore((previous) =>
       previous[id]?.attemptId === attemptId
-        ? { ...previous, [id]: { ...previous[id], overwrite } }
+        ? {
+            ...previous,
+            [id]: {
+              ...previous[id],
+              name: targetPath.split(/[\\/]/).pop()!,
+              overwrite,
+              ...(transfer.direction === 'down'
+                ? { localTarget: targetPath }
+                : { remoteTarget: targetPath }),
+            },
+          }
         : previous,
     );
     if (transfer.direction === 'up') {
@@ -549,14 +587,14 @@ export function useTransferLifecycle(
         transfer.connectionId,
         attemptId,
         transfer.localFile,
-        transfer.remoteTarget,
+        targetPath,
         resume,
         overwrite,
       );
       settleTransferResult(id, result, attemptId, {
         kind: 'remote',
         connectionId: transfer.connectionId,
-        path: transfer.remoteTarget,
+        path: targetPath,
       });
     } else if (transfer.direction === 'copy') {
       // Relay copies cannot be paused, so retries always start from scratch.
@@ -565,24 +603,24 @@ export function useTransferLifecycle(
         transfer.targetConnectionId,
         attemptId,
         transfer.sourcePath,
-        transfer.remoteTarget,
+        targetPath,
         overwrite,
       );
       settleTransferResult(id, result, attemptId, {
         kind: 'remote',
         connectionId: transfer.targetConnectionId,
-        path: transfer.remoteTarget,
+        path: targetPath,
       });
     } else {
       const result = await api.transfer.download(
         transfer.connectionId,
         attemptId,
         transfer.remoteFile,
-        transfer.localTarget,
+        targetPath,
         resume,
         overwrite,
       );
-      settleTransferResult(id, result, attemptId, { kind: 'local', path: transfer.localTarget });
+      settleTransferResult(id, result, attemptId, { kind: 'local', path: targetPath });
     }
     refreshTarget?.();
   };

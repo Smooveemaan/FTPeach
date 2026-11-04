@@ -97,6 +97,10 @@
   max-width: min(420px, calc(var(--app-viewport-w) - 40px));
 }
 
+.name-conflict-apply-all {
+  margin-inline-start: -8px;
+}
+
 .modal-export-settings {
   width: min(420px, calc(var(--app-viewport-w) - 40px));
 }

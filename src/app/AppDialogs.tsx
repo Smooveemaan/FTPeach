@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import ConfirmDialog from '../components/ConfirmDialog.tsx';
 import ContextMenu from '../components/ContextMenu.tsx';
 import MoveToFolderDialog from '../components/MoveToFolderDialog.tsx';
+import NameConflictDialog from '../components/NameConflictDialog.tsx';
 import PromptDialog from '../components/PromptDialog.tsx';
 import VaultUnlockDialog from '../components/VaultUnlockDialog.tsx';
 import { parentRemotePath } from '../features/file-browser/index.ts';
@@ -87,6 +88,8 @@ type DialogControls = Pick<
   | 'setDriveMenu'
   | 'confirmState'
   | 'setConfirmState'
+  | 'nameConflict'
+  | 'setNameConflict'
   | 'vaultUnlockRetries'
   | 'setVaultUnlockRetries'
 >;
@@ -432,6 +435,20 @@ export default function AppDialogs({ model }: AppDialogsProps) {
             if (target) paneActions.chmod(target, mode);
           }}
           onClose={() => dialogs.setChmodTarget(null)}
+        />
+      )}
+      {dialogs.nameConflict && (
+        <NameConflictDialog
+          name={dialogs.nameConflict.name}
+          remaining={dialogs.nameConflict.remaining}
+          onDecision={(decision) => {
+            dialogs.nameConflict?.onDecision(decision);
+            dialogs.setNameConflict(null);
+          }}
+          onClose={() => {
+            dialogs.nameConflict?.onDecision({ action: 'skip' });
+            dialogs.setNameConflict(null);
+          }}
         />
       )}
       {dialogs.confirmState && (

@@ -232,9 +232,10 @@
     "closeTabWithActiveTransfers": "Cet onglet a des transferts en cours. Fermer l'onglet et les arrêter ?",
     "closeTabLabel": "Fermer l'onglet",
     "overwriteSingleExists": "« {{name}} » existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
-    "overwriteConflicts_one": "{{count}} élément existe déjà dans le dossier de destination. Voulez-vous le remplacer ?",
-    "overwriteConflicts_other": "{{count}} éléments existent déjà dans le dossier de destination. Voulez-vous les remplacer ?",
     "overwriteLabel": "Remplacer",
+    "createCopyLabel": "Créer une copie",
+    "skipLabel": "Ignorer",
+    "applyToAllRemaining": "Appliquer à tous les conflits restants",
     "replaceConnection": "Ce volet est déjà connecté à « {{current}} ». Souhaitez-vous remplacer cette connexion par « {{next}} » ?",
     "replaceConnectionLabel": "Remplacer",
     "newConnectionReplaces": "Ce volet est connecté à « {{current}} ». Le déconnecter et commencer une nouvelle connexion ?",
@@ -248,8 +249,7 @@
     "deleteRemoteSelected": "Supprimer définitivement les éléments sélectionnés sur le serveur ({{count}}) ? Cette action ne peut pas être annulée.",
     "deleteRemoteEntry": "Supprimer définitivement « {{name}} » sur le serveur ? Cette action ne peut pas être annulée.",
     "mergeFolder": "Fusionner avec le dossier existant « {{name}} » ? Les fichiers portant le même nom à l'intérieur seront remplacés. Les autres fichiers existants seront conservés.",
-    "mergeLabel": "Fusionner et remplacer",
-    "overwriteConflicts_many": "{{count}} éléments existent déjà dans le dossier de destination. Voulez-vous les remplacer ?"
+    "mergeLabel": "Fusionner et remplacer"
   },
   "paneSide": {
     "top": "haut",

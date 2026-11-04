@@ -15,7 +15,11 @@ import { canMoveBetween } from '../../shared/movePolicy.ts';
 import { dropDestinationPath, joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
 import type { FileEntry, PaneKind, PaneStatus } from '../../shared/paneContracts.ts';
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
-import type { OverwriteApproval, TransferOverwriteOptions } from './useOverwriteApproval.ts';
+import type {
+  BatchApproval,
+  OverwriteApproval,
+  TransferOverwriteOptions,
+} from './useOverwriteApproval.ts';
 interface TransferPane {
   kind: PaneKind;
   status: PaneStatus;
@@ -33,7 +37,7 @@ interface CopyEntriesOptions {
   refreshSource?: RefreshCallback;
   refreshTarget?: RefreshCallback;
   /** Batch approval supplied internally by useTransfers. */
-  overwriteApproved?: boolean;
+  approval?: BatchApproval;
   /** Names the batch approval already settled, counted in the batch's result. */
   settled?: TransferItemResult[];
 }
@@ -80,7 +84,7 @@ export interface TransferRoutingModel {
     files: OsDropFile[],
     targetFolder?: string | null,
     refreshTarget?: RefreshCallback,
-    overwriteApproved?: boolean,
+    approval?: BatchApproval,
     settled?: TransferItemResult[],
   ) => Promise<TransferBatchResult>;
 }
@@ -112,7 +116,7 @@ export function createTransferRouting(
     const approved =
       overwriteAction === 'skip' &&
       !(moving && source.kind === 'remote' && target.kind === 'remote')
-        ? false
+        ? { path: targetPath, overwrite: false }
         : await approveTarget({
             kind: target.kind,
             path: targetPath,
@@ -132,7 +136,7 @@ export function createTransferRouting(
             ? { kind: 'local', path: targetPath }
             : { kind: 'remote', path: targetPath, connectionId: target.connectionId! },
         moving,
-        overwrite: approved,
+        overwrite: approved.overwrite,
         skipExisting: overwriteAction === 'skip',
       },
       undefined,
@@ -177,14 +181,10 @@ export function createTransferRouting(
   const copyLocalFile = async (
     source: string,
     destination: string,
-    overwriteApproved: boolean,
+    overwrite: boolean,
     size?: number,
   ): Promise<TransferItemOutcome> => {
     await requireSuccess(api.fsLocal.validateCopy(source, destination), destination);
-    const overwrite = overwriteApproved
-      ? true
-      : await approveTarget({ kind: 'local', path: destination });
-    if (overwrite === null) return 'skipped';
     const res = await runLocalCopy(source, destination, overwrite, size);
     return outcomeOf(res, 'copied');
   };
@@ -193,13 +193,13 @@ export function createTransferRouting(
     sourceDir: string,
     entry: FileEntry,
     targetDir: string,
-    overwriteApproved = false,
+    approval: BatchApproval,
   ): Promise<TransferItemOutcome> => {
     if (entry.isDirectory) throw new Error('Folders must use the recursive backend operation');
     return copyLocalFile(
       joinLocalPath(sourceDir, entry.name),
-      joinLocalPath(targetDir, entry.name),
-      overwriteApproved,
+      joinLocalPath(targetDir, approval.copies[entry.name] ?? entry.name),
+      approval.overwrites.includes(entry.name),
       entry.size,
     );
   };
@@ -260,7 +260,7 @@ export function createTransferRouting(
       move,
       refreshSource,
       refreshTarget,
-      overwriteApproved = false,
+      approval = { names, overwrites: [], copies: {} },
     }: CopyEntriesOptions,
     stopped: () => boolean,
   ): Promise<TransferItemResult[]> => {
@@ -292,7 +292,7 @@ export function createTransferRouting(
             ...(move === undefined ? {} : { move }),
             ...(refreshSource ? { refreshSource } : {}),
             ...(refreshTarget ? { refreshTarget } : {}),
-            overwriteApproved,
+            approval,
           },
           stopped,
         ),
@@ -332,13 +332,13 @@ export function createTransferRouting(
           results.push(
             ...(await runItems(names, RENDERER_FANOUT_LIMIT, true, stopped, async (name) => {
               if (!sourceEntriesByName.has(name)) return 'skipped';
-              const destination = joinLocalPath(targetDir, name);
-              const overwrite = overwriteApproved
-                ? true
-                : await approveTarget({ kind: 'local', path: destination });
-              if (overwrite === null) return 'skipped';
+              const destination = joinLocalPath(targetDir, approval.copies[name] ?? name);
               await requireSuccess(
-                api.fsLocal.rename(joinLocalPath(sourcePane.path, name), destination, overwrite),
+                api.fsLocal.rename(
+                  joinLocalPath(sourcePane.path, name),
+                  destination,
+                  approval.overwrites.includes(name),
+                ),
                 destination,
               );
               return 'moved';
@@ -354,7 +354,7 @@ export function createTransferRouting(
         ...(await runItems(names, RENDERER_FANOUT_LIMIT, false, stopped, async (name) => {
           const entry = sourceEntriesByName.get(name);
           if (!entry) return 'skipped';
-          return copyLocalEntry(sourcePane.path, entry, targetDir, overwriteApproved);
+          return copyLocalEntry(sourcePane.path, entry, targetDir, approval);
         })),
       );
       refreshTarget?.();
@@ -382,19 +382,16 @@ export function createTransferRouting(
           }
           if (sourcePane.connectionId === targetPane.connectionId && move) {
             const sourceFull = joinRemotePath(sourcePane.path, name);
-            const destFull = joinRemotePath(targetDir, name);
-            const overwrite = overwriteApproved
-              ? true
-              : await approveTarget({
-                  kind: 'remote',
-                  path: destFull,
-                  connectionId: sourcePane.connectionId!,
-                });
-            if (overwrite === null) return 'skipped';
+            const destFull = joinRemotePath(targetDir, approval.copies[name] ?? name);
             // Native rename lets the server enforce directory identity and
             // aliases without a recursive copy followed by destructive delete.
             await requireSuccess(
-              api.session.rename(sourcePane.connectionId!, sourceFull, destFull, overwrite),
+              api.session.rename(
+                sourcePane.connectionId!,
+                sourceFull,
+                destFull,
+                approval.overwrites.includes(name),
+              ),
               sourceFull,
             );
             return 'moved';
@@ -404,9 +401,9 @@ export function createTransferRouting(
             joinRemotePath(sourcePane.path, name),
             targetPane.connectionId!,
             targetPane.protocol!,
-            name,
+            approval.copies[name] ?? name,
             targetDir,
-            overwriteApproved,
+            approval.overwrites.includes(name),
           );
           return outcomeOf(copied, 'copied');
         })),
@@ -420,25 +417,27 @@ export function createTransferRouting(
       ...(await runItems(names, TRANSFER_ADMISSION_LIMIT, !!move, stopped, async (name) => {
         const entry = sourceEntriesByName.get(name);
         if (!entry) return 'skipped';
+        const destinationName = approval.copies[name] ?? name;
+        const overwrite = approval.overwrites.includes(name);
         const report =
           targetPane.kind === 'remote'
             ? await runUpload(
                 targetPane.connectionId!,
                 targetPane.protocol!,
                 joinLocalPath(sourcePane.path, name),
-                name,
+                destinationName,
                 targetDir,
                 entry.size,
-                overwriteApproved,
+                overwrite,
               )
             : await runDownload(
                 sourcePane.connectionId!,
                 sourcePane.protocol!,
                 joinRemotePath(sourcePane.path, name),
-                name,
+                destinationName,
                 targetDir,
                 true,
-                overwriteApproved,
+                overwrite,
               );
         return outcomeOf(report, 'copied');
       })),
@@ -454,7 +453,7 @@ export function createTransferRouting(
     files: OsDropFile[],
     targetFolder?: string | null,
     refreshTarget?: RefreshCallback,
-    overwriteApproved = false,
+    approval: BatchApproval = { names: [], overwrites: [], copies: {} },
   ): Promise<TransferItemResult[]> => {
     const targetDir = dropDestinationPath(targetPane.kind, targetPane.path, targetFolder);
     const names = files.map((file) => file.name);
@@ -466,7 +465,7 @@ export function createTransferRouting(
     if (targetPane.kind === 'local') {
       const results = await runItems(names, RENDERER_FANOUT_LIMIT, false, stopped, async (name) => {
         const file = fileByName.get(name)!;
-        const destination = joinLocalPath(targetDir, file.name);
+        const destination = joinLocalPath(targetDir, approval.copies[name] ?? file.name);
         return file.isDirectory
           ? recursiveFolder(
               localEndpoint(file.path),
@@ -476,7 +475,7 @@ export function createTransferRouting(
               false,
               refreshTarget,
             )
-          : copyLocalFile(file.path, destination, overwriteApproved, file.size);
+          : copyLocalFile(file.path, destination, approval.overwrites.includes(name), file.size);
       });
       refreshTarget?.();
       return results;
@@ -502,10 +501,10 @@ export function createTransferRouting(
           targetPane.connectionId!,
           targetPane.protocol!,
           file.path,
-          file.name,
+          approval.copies[name] ?? file.name,
           targetDir,
           file.size,
-          overwriteApproved,
+          approval.overwrites.includes(name),
         );
         return outcomeOf(report, 'copied');
       },
@@ -542,7 +541,11 @@ export function createTransferRouting(
     options.names.length === 0
       ? Promise.resolve(emptyBatch())
       : reportOperation(
-          (stopped) => copyEntriesUnchecked(options, stopped),
+          (stopped) =>
+            copyEntriesUnchecked(
+              { ...options, names: options.approval?.names ?? options.names },
+              stopped,
+            ),
           !!options.move,
           options.settled,
         );

@@ -104,7 +104,7 @@ async function runSequence(seed: number, steps: number) {
   };
   const { result, unmount } = renderHook(() =>
     useTransfers({
-      confirmOverwriteBatch: async () => true,
+      confirmOverwrite: async () => ({ action: 'overwrite' }),
       confirmMerge: async () => true,
       setErrorMessage: () => undefined,
     }),

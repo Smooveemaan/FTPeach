@@ -40,6 +40,34 @@ beforeEach(() => {
 
 const folderEntry = { name: 'folder', isDirectory: true, size: 0 };
 
+for (const [agent, destination, parent] of [
+  ['Linux', '/tmp/downloads/file.txt', '/tmp/downloads'],
+  ['Linux', '/file.txt', '/'],
+  ['Linux', '/tmp/downloads/file\\name.txt', '/tmp/downloads'],
+  ['Macintosh', '/Users/test/downloads/file.txt', '/Users/test/downloads'],
+  ['Windows', 'C:\\file.txt', 'C:\\'],
+  ['Windows', 'C:/downloads/file.txt', 'C:\\downloads'],
+] as const) {
+  test(`overwrite checks use host path separators for ${agent} ${destination}`, async () => {
+    const previousApi = window.api;
+    const userAgent = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(agent);
+    const list = vi.fn().mockResolvedValue({ ok: true, entries: [] });
+    window.api = { ...tauriApi, fsLocal: { ...tauriApi.fsLocal, list } };
+    const { result, unmount } = renderHook(() => useOverwriteApproval({}, vi.fn()));
+    try {
+      assert.deepEqual(await result.current.approveTarget({ kind: 'local', path: destination }), {
+        path: destination,
+        overwrite: false,
+      });
+      assert.deepEqual(list.mock.calls, [[parent]]);
+    } finally {
+      unmount();
+      window.api = previousApi;
+      userAgent.mockRestore();
+    }
+  });
+}
+
 test('Ask confirms an existing file while Overwrite and Skip do not ask', async () => {
   const previousApi = window.api;
   window.api = {

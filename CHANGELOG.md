@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Downloading to the root of a Windows drive checks the correct folder for existing files.
 - Retried transfers no longer announce an old error, and folder failures no longer report a made-up number of failed files.
 - Transfers finished in the active window no longer trigger a notification when you minimize it.
 

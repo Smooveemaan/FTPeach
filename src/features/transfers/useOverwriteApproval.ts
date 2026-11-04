@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { localSeparator } from '../../platform/os.ts';
 import { api } from '../../platform/api/index.ts';
 import { useTranslation } from 'react-i18next';
 import { isolate } from '../../shared/bidi.ts';
@@ -82,10 +83,11 @@ export function useOverwriteApproval(
     kind === 'local' ? left.toLowerCase() === right.toLowerCase() : left === right;
   const approveTarget: OverwriteApproval = async (target) => {
     if (overwriteAction === 'overwrite') return { path: target.path, overwrite: true };
-    const separator = target.kind === 'local' ? /[\\/]/ : /\//;
-    const parts = target.path.split(separator);
+    const separator = target.kind === 'local' ? localSeparator() : '/';
+    const parts = target.path.split(separator === '\\' ? /[\\/]/ : /\//);
     const name = parts.pop()!;
-    const parent = parts.join(target.kind === 'local' ? '\\' : '/') || '/';
+    let parent = parts.join(separator) || '/';
+    if (separator === '\\' && /^[a-z]:$/i.test(parent)) parent += separator;
     const listing = await list({ ...target, path: parent });
     if (!listing.ok)
       throw new Error(friendlyError(commandResultError(listing)) || 'Cannot check destination');

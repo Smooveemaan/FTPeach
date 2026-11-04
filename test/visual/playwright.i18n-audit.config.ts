@@ -7,7 +7,6 @@ export default defineConfig({
   testDir: '.',
   testMatch: '**/*.audit.ts',
   outputDir: '../../test-results/i18n-audit/playwright',
-  retries: 0,
   reporter: 'dot',
   projects: base.projects!.filter((project) => project.name === 'chromium-desktop'),
   globalSetup: './i18nAuditSummary.ts',

@@ -12,10 +12,9 @@ Two kinds of content can share a page:
   by a person. Tests and recorded manual checks support them but do not replace
   review of what the text says.
 
-The control column describes the current public mechanism. A path-to-document
-link requires a documentation change or an explained `Docs-Impact: none`; a
-`verified-by` marker names a test or recorded manual check. Neither proves that
-every sentence is correct.
+The control column lists supporting checks. Update prose when the behavior it
+describes changes; no commit exemption is required. Optional `verified-by` links
+name tests or manual checks and do not prove every sentence correct.
 
 ## User guide
 
@@ -23,15 +22,15 @@ every sentence is correct.
 | --- | --- | --- | --- |
 | [Getting started](guide/getting-started.md) | `src/`, connection and transfer code | B | `verified-by` |
 | [Interface](guide/interface.md) | `src/app/`, `src/features/`, `src/shared/` | B | `verified-by` |
-| [Connecting](guide/connecting.md) | `src/features/sites/`, `src-tauri/src/application/`, `src-tauri/src/protocol/` | B | `verified-by`; protocol doc-impact links |
-| [FTP](guide/ftp.md) | `src-tauri/src/protocol/ftp*` | B | `verified-by`; protocol doc-impact links |
-| [FTPS](guide/ftps.md) | `src-tauri/src/protocol/ftp*`, TLS configuration | B | `verified-by`; protocol doc-impact links |
-| [SFTP](guide/sftp.md) | `src-tauri/src/protocol/sftp*`, SSH configuration | B | `verified-by`; protocol doc-impact links |
-| [WebDAV](guide/webdav.md) | `src-tauri/src/protocol/webdav*` | B | `verified-by`; protocol doc-impact links |
-| [Transfers](guide/transfers.md) | `src/features/transfers/`, `src-tauri/src/transfer/`, `src-tauri/src/application/` | B | `verified-by`; transfer doc-impact links |
+| [Connecting](guide/connecting.md) | `src/features/sites/`, `src-tauri/src/application/`, `src-tauri/src/protocol/` | B | `verified-by` |
+| [FTP](guide/ftp.md) | `src-tauri/src/protocol/ftp*` | B | `verified-by` |
+| [FTPS](guide/ftps.md) | `src-tauri/src/protocol/ftp*`, TLS configuration | B | `verified-by` |
+| [SFTP](guide/sftp.md) | `src-tauri/src/protocol/sftp*`, SSH configuration | B | `verified-by` |
+| [WebDAV](guide/webdav.md) | `src-tauri/src/protocol/webdav*` | B | `verified-by` |
+| [Transfers](guide/transfers.md) | `src/features/transfers/`, `src-tauri/src/transfer/`, `src-tauri/src/application/` | B | `verified-by` |
 | [Editing](guide/editing.md) | `src/features/open-with/`, backend open-with code | B | `verified-by` |
-| [Portable](guide/portable.md) | `src-tauri/src/store/`, portable build and updater code | B | `verified-by`; storage doc-impact links |
-| [Passwords](guide/passwords.md) | `src-tauri/src/security/`, `src-tauri/src/store/` | B | `verified-by`; storage/security doc-impact links |
+| [Portable](guide/portable.md) | `src-tauri/src/store/`, portable build and updater code | B | `verified-by` |
+| [Passwords](guide/passwords.md) | `src-tauri/src/security/`, `src-tauri/src/store/` | B | `verified-by` |
 | [Protocol reference](guide/protocol-reference.md) | `src-tauri/src/protocol/` and protocol dependency defaults | B | `verified-by`; SSH algorithm parity test |
 | [Troubleshooting](guide/troubleshooting.md) | The behavior page that owns each symptom | B | `verified-by` |
 
@@ -41,11 +40,11 @@ every sentence is correct.
 | --- | --- | --- | --- |
 | [Architecture](architecture.md) | `src/`, `src-tauri/src/` ownership and IPC | B | Import, command-ACL and Rust-boundary checks; review |
 | [Frontend architecture](frontend-architecture.md) | `src/` | B | `check-feature-boundaries`; review |
-| [Storage](storage.md) | `src-tauri/src/store/`, `src/shared/settingsDefaults.json` | B | Storage tests; doc-impact links |
-| [Transfer safety](transfer-safety.md) | `src-tauri/src/transfer/`, `src-tauri/src/application/` | B | Transfer tests; doc-impact links |
+| [Storage](storage.md) | `src-tauri/src/store/`, `src/shared/settingsDefaults.json` | B | Storage tests |
+| [Transfer safety](transfer-safety.md) | `src-tauri/src/transfer/`, `src-tauri/src/application/` | B | Transfer tests |
 | [Resilience](resilience.md) | Transfer, session and resource-budget owners | B | Named Rust and frontend tests; review |
-| [Networking](networking.md) | `src-tauri/src/protocol/transport*`, `proxy*`, `webdav*` | B | Protocol tests; doc-impact links |
-| [Security design](security.md) | `src-tauri/src/security/`, capabilities, updater | B | Security tests; doc-impact links; manual release checks |
+| [Networking](networking.md) | `src-tauri/src/protocol/transport*`, `proxy*`, `webdav*` | B | Protocol tests |
+| [Security design](security.md) | `src-tauri/src/security/`, capabilities, updater | B | Security tests; manual release checks |
 | [IPC permissions](ipc-permissions.md) | Command registries, `build.rs`, capabilities | A/B | `check:docs`; `check-command-acl`; packaged smoke test |
 | [Glossary](CONTEXT.md) | Product terminology and `src/i18n/locales/en.json` | B | Terminology review |
 
@@ -61,7 +60,7 @@ every sentence is correct.
 | [Manual checks](manual-checks.md) | Recorded native and manual acceptance runs | B | Maintainer review of each recorded run |
 | [Dependency policy](dependency-policy.md) | Manifests, lockfiles, license and advisory checks | B | Supply-chain checks; dependency review |
 | [Rust advisories](rust-advisories.md) | `scripts/checks/check-rust-advisory-policy.ts` | B | `check:rust-advisories` |
-| [Updater signing](updater-signing.md) | Updater runtime, build and release configuration | B | Updater fixtures; doc-impact links; release checks |
+| [Updater signing](updater-signing.md) | Updater runtime, build and release configuration | B | Updater fixtures; release checks |
 | [Release trust](release-trust.md) | Release workflows and verification suites | B | Release tooling tests; recorded release runs |
 | [GitHub automation](github.md) | `.github/workflows/` | B | `check:ci-parity`; workflow review |
 | [Asset provenance](legal/ASSET_PROVENANCE.md) | Asset sources and licenses | B | Asset review |

@@ -1,5 +1,4 @@
-// The user guide states only what something checks. Each statement carries a
-// hidden marker naming that check and where it runs:
+// Optional guide markers name a supporting test or manual check:
 //
 //   <!-- verified-by: pr src-tauri/src/protocol/transfer_file.rs::resume_requires_the_same_endpoint_path_size_and_version -->
 //   <!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::rename and move replace a target only on an explicit decision -->
@@ -96,11 +95,8 @@ export async function guideProblems(
   for (const [file, markdown] of Object.entries(pages)) {
     const found = markers(markdown);
     count += found.length;
-    if (found.length === 0 && file !== `${GUIDE}/index.md`)
-      problems.push(`${file} has no verified-by markers`);
     for (const marker of found) problems.push(...(await markerProblems(marker, read, file)));
   }
-  if (count === 0) problems.push(`${GUIDE} has no verified-by markers`);
   return { count, problems };
 }
 

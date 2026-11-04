@@ -1,40 +1,39 @@
 # Contributing
 
-Bug reports, feature requests and translation problems are welcome as [issues](https://github.com/Smooveemaan/ftpeach/issues/new/choose). FTPeach does not accept pull requests: part of the tests every change has to pass are closed ([How releases are verified](../docs/release-trust.md#how-releases-are-verified)), so a pull request could not be checked here. Do not disclose vulnerabilities publicly; follow [SECURITY.md](SECURITY.md).
+Bug reports, feature requests and translation problems are welcome as [issues](https://github.com/Smooveemaan/ftpeach/issues/new/choose). FTPeach does not accept pull requests: the release verification includes closed test suites ([How releases are verified](../docs/release-trust.md#how-releases-are-verified)), so a pull request could not be checked here. Do not disclose vulnerabilities publicly; follow [SECURITY.md](SECURITY.md).
 
 The rules below are how changes to FTPeach are made.
 
 Follow the [development setup](../docs/development.md) for prerequisites, dependency installation, and the build commands. Keep changes focused and add regression tests for behavior changes. Never commit credentials, private keys, server URLs, or user JSON/vault files.
 
-## Checks before a change
+## Making a change
 
-```powershell
-npm run check
-```
+Work on `master`. Check the affected behavior locally, review the diff, then
+commit and push; CI runs the general checks. `npm run check` is an optional full
+local diagnostic, not a requirement before each commit or push.
 
-A change is done when:
+Add a regression test for new logic or a behavior fix. Text, styling and moving
+an unchanged control do not require a new test. Preserve security and data-loss
+checks. Update the document whose described behavior changed and add a short
+Unreleased changelog entry when users of the last release will notice the change.
+No exemption trailers are required when docs or the changelog need no change.
 
-1. **The behavior is tested.** A behavior change or bug fix comes with a test that fails without it, in the suite that owns the area ([test/README.md](../test/README.md); Rust tests sit next to their module).
-2. **The documents say what the code now does.** Update the page that describes the behavior in the same change: the [user guide](../docs/guide/index.md) for what users see, the matching page in [docs/](../docs/README.md) for design and limits. Remove statements that stopped being true. Give each fact one home and link to it rather than repeating it.
-3. **Users are told.** A change users will notice gets one line under `## [Unreleased]` in [CHANGELOG.md](../CHANGELOG.md): one short sentence about what they see, without protocol commands, internal terms or backstory. Released sections are not edited.
-4. **Every exception is explained.** When the documents or the changelog need no change, the commit message says why, one trailer each. `npm run check:docs-impact` requires this for code linked to a document in `scripts/checks/check-doc-impact.ts`, and for any change to the app itself:
-
-   ```text
-   Docs-Impact: none - internal refactor, behavior unchanged
-   Changelog: none - tests only
-   ```
-
-   A fix that restores behavior the guide already describes needs no guide change, but usually still deserves a changelog line.
+CI tests may retry once. A retry-pass is recorded as flaky; a second failure needs
+a fix. After a fix, repeat affected checks rather than every suite. Releases still
+verify the final build and installer, public CI and the closed suites.
 
 Deterministic tables between `<!-- generated:... -->` markers have a machine-readable source. After changing that source, run `npm run docs:generate`; do not edit the generated block by hand. `npm run check:docs` fails locally and in CI when the committed block is stale. Text outside the markers remains authored documentation.
 
-The [user guide](../docs/guide/index.md) states only behavior that something checks. Each statement carries a hidden marker, `<!-- verified-by: <gate> <file>::<test name> -->`: `pr` for the ordinary non-ignored suites (CI selects Rust and visual jobs by changed paths) and `manual` for a run recorded in [manual checks](../docs/manual-checks.md). `npm run check:verified-by` checks every topic page in `docs/guide/` and confirms that the named test or manual heading exists and that the declared test category matches its source. It does not execute the test, inspect every workflow path filter or prove that the check asserts what the sentence says; review that when writing the marker.
+The [user guide](../docs/guide/index.md) describes supported, verified behavior.
+Optional `<!-- verified-by: <gate> <file>::<test name> -->` markers link to tests
+(`pr`) or headings in [manual checks](../docs/manual-checks.md) (`manual`).
+`npm run check:verified-by` validates existing links; it does not prove the prose.
 
 UI text is translated by hand, with the context of a file manager in mind; machine translation is not used. New text may ship in English and Russian first, with the English text standing in for the other locales until they are translated. `npm run i18n:audit` opens every screen, menu and dialog the test harness reaches in each language and in a pseudo-locale (English made longer and bracketed), and lists text that is cut off, overlaps or never went through a translation in `test-results/i18n-audit/summary.md`, with screenshots. A problem not on its known list (`test/visual/i18nAuditSummary.ts`) fails the run; CI runs it in five languages when the interface changes and in every language weekly. A new screen or dialog gets a state in `test/visual/i18n-layout.audit.ts`, so the pseudo-locale reaches it too. The audit fails on a string of `en.json` that no state shows, unless `test/visual/i18nAuditUnshown.json` lists it with its prefix or by name.
 
-The website at <https://ftpeach.com/> uses `site/index.html`, shared styles in `site/styles.css`, and local fonts in `site/fonts/`. The user guide is written once in `docs/guide/` and rendered with Marked into `dist-site/guide/`; the same Markdown is readable on GitHub. `scripts/site/guide.ts` lists the published pages and their descriptions, generates their navigation and sitemap, and maps links to other repository documents to GitHub. Add a page there when adding a guide topic. The old `docs/user-guide.md` keeps links to the moved sections. `npm run site:build` writes it to `dist-site/` with the latest release's version and download links, and `pages.yml` publishes it when site inputs change, whenever a release is published and daily to refresh public counts, so a release needs no edit there. It shows `assets/images/ftpeach-dark.png` in the dark theme and `ftpeach-light.png` in the light one; after a visible UI change both are retaken from the running application, never edited by hand. Its link preview `assets/images/og.jpg` and the repository's social preview `github-social.jpg` are drawn by `npm run site:social` from the page's fonts and colours; redraw them after the headline or the icon changes, and upload the second one by hand in Settings > Social preview.
+The website at <https://ftpeach.com/> uses `site/index.html`, shared styles in `site/styles.css`, and local fonts in `site/fonts/`. The user guide is written once in `docs/guide/` and rendered with Marked into `dist-site/guide/`; the same Markdown is readable on GitHub. `scripts/site/guide.ts` lists the published pages and their descriptions, generates their navigation and sitemap, and maps links to other repository documents to GitHub. Add a page there when adding a guide topic. The old `docs/user-guide.md` keeps links to the moved sections. `npm run site:build` writes it to `dist-site/` with the latest release's version and download links, and `pages.yml` publishes it when site inputs change, whenever a release is published and daily to refresh public counts, so a release needs no edit there. It shows `assets/images/ftpeach-dark.png` in the dark theme and `ftpeach-light.png` in the light one; retake them from the running application when they noticeably differ from the interface, never edit them by hand. Its link preview `assets/images/og.jpg` and the repository's social preview `github-social.jpg` are drawn by `npm run site:social` from the page's fonts and colours; redraw them after the headline or the icon changes, and upload the second one by hand in Settings > Social preview.
 
-Guide illustrations live in `site/images/guide/` and are copied into the website build. Retake them with the closed screenshot tool after changing the pictured controls: it captures the real application components with example data in the visual harness, without a native profile or live server. Each one comes in both themes, `name.png` dark and `name-light.png` light; the website shows the reader's theme and its build fails when a light copy is missing. Inspect the images before committing; do not draw or retouch interface elements. Keep captions and alt text beside the task they illustrate, and link images to their full-size copies. The website enhances these links with a modal image viewer; direct image links remain the fallback without JavaScript.
+Guide illustrations live in `site/images/guide/` and are copied into the website build. Retake them with the closed screenshot tool when the pictured controls noticeably differ: it captures the real application components with example data in the visual harness, without a native profile or live server. Each one comes in both themes, `name.png` dark and `name-light.png` light; the website shows the reader's theme and its build fails when a light copy is missing. Inspect the images before committing; do not draw or retouch interface elements. Keep captions and alt text beside the task they illustrate, and link images to their full-size copies. The website enhances these links with a modal image viewer; direct image links remain the fallback without JavaScript.
 
 Before uploading a Pages artifact, `pages.yml` runs `npm run site:test`: the
 website unit tests and Chromium and WebKit checks for the landing page, guide and comparison.

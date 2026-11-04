@@ -85,7 +85,7 @@ function fakeGit(responses: Record<string, string>) {
 
 test('every risk level selects its documented concrete gates', () => {
   const cases: Array<[string, string, GateId[]]> = [
-    ['0', 'docs/security.md', BASE],
+    ['0', 'docs/security.md', ['supply-chain']],
     ['1', 'site/index.html', [...BASE, 'pages-build']],
     ['1T', 'test/unit/tooling/checkDocs.test.ts', BASE],
     ['1C', '.github/workflows/checks.yml', BASE],
@@ -171,9 +171,7 @@ test('unknown paths and classifier edits independently force the full public sui
   for (const file of [
     'unmapped/file.dat',
     'scripts/checks/classify-changes.ts',
-    'scripts/checks/equivalent-tree-evidence.ts',
     'test/unit/tooling/classifyChanges.test.ts',
-    'test/unit/tooling/equivalentTreeEvidence.test.ts',
   ]) {
     const result = classify([file]);
     assert.equal(result.risk, '4', file);
@@ -387,7 +385,11 @@ test('force-all and a new push base conservatively select every public check', (
     BASE_SHA: 'base',
     HEAD_SHA: 'head',
   });
-  assert.deepEqual(gateIds(forced.paths), BASE, 'the helper alone does not apply force-all');
+  assert.deepEqual(
+    gateIds(forced.paths),
+    ['supply-chain'],
+    'the helper alone does not apply force-all',
+  );
   const forcedResult = classifyChangeSet(forced.paths, forced.context, []);
   assert.equal(forcedResult.risk, '4');
   assert.deepEqual(
@@ -420,7 +422,7 @@ test('the JSON CLI preserves the stable contract and compatibility outputs', () 
   assert.deepEqual(result.changedFiles, ['docs/a.md']);
   assert.deepEqual(
     result.requiredGates.map((gate: { id: GateId }) => gate.id),
-    BASE,
+    ['supply-chain'],
   );
   assert.equal(result.rust, false);
   assert.equal(result.frontend, false);

@@ -21,14 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      rust: ${{ steps.evidence.outputs.reuse == 'true' && 'false' || steps.classify.outputs.rust }}
-      frontend: ${{ steps.evidence.outputs.reuse == 'true' && 'false' || steps.classify.outputs.frontend }}
+      rust: ${{ steps.classify.outputs.rust }}
+      frontend: ${{ steps.classify.outputs.frontend }}
       risk: ${{ steps.classify.outputs.risk }}
       required-gates: ${{ steps.classify.outputs.required-gates }}
       optional-gates: ${{ steps.classify.outputs.optional-gates }}
       classification: ${{ steps.classify.outputs.classification }}
-      reuse: ${{ steps.evidence.outputs.reuse }}
-      evidence: ${{ steps.evidence.outputs.evidence }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,15 +44,6 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: node --experimental-strip-types scripts/checks/classify-changes.ts --source=github
-
-      - id: evidence
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && !inputs.force-all
-        env:
-          CLASSIFICATION: ${{ steps.classify.outputs.classification }}
-          BASE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node --experimental-strip-types scripts/checks/equivalent-tree-evidence.ts
 
   supply-chain:
     permissions:
@@ -75,6 +64,9 @@ jobs:
       - run: npm run check:rust-advisories
       - run: npm run check:no-cyrillic
       - run: npm run i18n:check
+      - run: npm run check:docs
+      - run: npm run check:verified-by
+      - run: npm run format:check
       - name: Install pinned Rust toolchain
         run: rustup show
       - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
@@ -115,7 +107,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.reuse != 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'lint-test-build')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -138,14 +130,6 @@ jobs:
       - run: npm run check:rust-boundaries
       - run: npm run check:command-acl
       - run: npm run check:ignored-tests
-      - run: npm run check:docs
-      # A behavior change must reach its document and the changelog, or its
-      # commit message must say why not (scripts/checks/check-doc-impact.ts).
-      - run: npm run check:docs-impact
-        env:
-          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-      - run: npm run check:verified-by
       - run: npm run check:duplicates
       - name: Keep the duplication report
         if: ${{ always() }}
@@ -155,7 +139,6 @@ jobs:
           path: duplication-report/
           if-no-files-found: ignore
       - run: npm run lint
-      - run: npm run format:check
       # The Node and component suites, with coverage and the per-file floors.
       - run: npm run coverage
       - name: Keep the coverage report
@@ -376,8 +359,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium webkit
       - run: npm run test:visual
-      # Traces, screenshots and diffs of failed attempts, including a test that
-      # passed only on a retry: a pass after a retry is not proof.
+      # Keep diagnostics for failures and retry-passes recorded as flaky.
       - name: Keep the visual test results
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -111,7 +111,7 @@ async function waitFor<T>(what: string, probe: () => Promise<T | undefined>, sec
 }
 
 /**
- * What a launch that never opened its debugging port left to go on: whether
+ * What a failed launch left to go on: whether
  * the process is alive, what WebView2 was started with, and the app's log.
  */
 function diagnose(child: ChildProcess, profile: string): string {
@@ -120,7 +120,7 @@ function diagnose(child: ChildProcess, profile: string): string {
     [
       '-NoProfile',
       '-Command',
-      'Get-CimInstance Win32_Process -Filter "name=\'msedgewebview2.exe\'" | ForEach-Object { $_.CommandLine }',
+      'Get-CimInstance Win32_OperatingSystem | Format-List FreePhysicalMemory,TotalVisibleMemorySize; Get-CimInstance Win32_Process -Filter "name=\'msedgewebview2.exe\'" | ForEach-Object { "pid=$($_.ProcessId) parent=$($_.ParentProcessId) $($_.CommandLine)" }',
     ],
     { encoding: 'utf8' },
   ).stdout;
@@ -226,20 +226,23 @@ async function start(
     await timed(timings, 'debuggingPortMs', () =>
       waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60),
     );
+    await timed(timings, 'cdpConnectMs', async () => {
+      run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+    });
+    return await timed(timings, 'mainWindowMs', () =>
+      mainWindow(run.browser!, startLanguage(exe, profile)),
+    );
   } catch (error) {
     const logs = profile
       ? path.dirname(profile)
       : portable
         ? path.dirname(exe)
         : path.join(process.env.APPDATA!, 'FTPeach');
-    throw new Error(`${(error as Error).message}\n${diagnose(child, logs)}`);
+    throw new Error(
+      `${(error as Error).message}\nStartup timings: ${JSON.stringify(timings)}\n${diagnose(child, logs)}`,
+      { cause: error },
+    );
   }
-  await timed(timings, 'cdpConnectMs', async () => {
-    run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-  });
-  return timed(timings, 'mainWindowMs', () =>
-    mainWindow(run.browser!, startLanguage(exe, profile)),
-  );
 }
 
 /**

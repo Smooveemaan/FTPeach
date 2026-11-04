@@ -191,12 +191,17 @@ async function start(
   // The smoke build runs its self-test whenever this variable exists, even empty.
   const env = { ...process.env };
   delete env.FTPEACH_SMOKE_TEST;
+  const tempDir = path.join(path.dirname(savedDir), 'temp');
+  mkdirSync(tempDir, { recursive: true });
   const spawnedAt = performance.now();
   const child = spawn(exe, [], {
     cwd: workDir,
     stdio: 'ignore',
     env: {
       ...env,
+      TEMP: tempDir,
+      TMP: tempDir,
+      TMPDIR: tempDir,
       ...(profile && {
         APPDATA: path.join(profile, 'Roaming'),
         LOCALAPPDATA: path.join(profile, 'Local'),

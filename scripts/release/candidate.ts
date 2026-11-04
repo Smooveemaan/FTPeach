@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { appendFile, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Readiness } from './verify-readiness.ts';
@@ -102,6 +102,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const version = (JSON.parse(await readFile('package.json', 'utf8')) as { version: string })
       .version;
     assert.equal(version, readiness.version);
+    assert.match(
+      process.env.GITHUB_WORKFLOW_SHA ?? '',
+      /^[0-9a-f]{40}$/,
+      'The build workflow SHA is required',
+    );
     const files: Record<string, string> = {};
     for (const name of candidateNames(version))
       files[name] = sha256(await readFile(path.join(directory, name)));
@@ -121,7 +126,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       },
       files,
     };
-    await writeFile(path.join(directory, 'candidate.json'), JSON.stringify(candidate, null, 2));
+    const manifest = JSON.stringify(candidate, null, 2);
+    await writeFile(path.join(directory, 'candidate.json'), manifest);
+    await appendFile(
+      process.env.GITHUB_STEP_SUMMARY!,
+      `## Final candidate\n\nVersion ${version}, source ${source}.\nCandidate SHA-256: ${sha256(manifest)}.\nArtifacts are retained for 30 days; automatic acceptance evidence for 14 days.\n`,
+    );
     await writeFile(
       'release/provenance.json',
       JSON.stringify(provenance(candidate, process.env), null, 2),

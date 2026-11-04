@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   checkTitle,
+  assertCurrentSuccess,
   findOrDispatch,
   validatePrivateCheck,
   type Api,
@@ -34,6 +35,19 @@ const jobs = [
   { id: 2, name: 'suite', conclusion: 'success' },
   { id: 3, name: 'report', conclusion: 'success' },
 ];
+
+test('a successful later attempt preserves selected evidence; failures or in-progress retries block it', () => {
+  assertCurrentSuccess({ ...run, run_attempt: 3 }, run);
+  for (const patch of [
+    { run_attempt: 1 },
+    { head_sha: 'd'.repeat(40) },
+    { status: 'in_progress' },
+    { conclusion: 'failure' },
+    { conclusion: 'cancelled' },
+  ]) {
+    assert.throws(() => assertCurrentSuccess({ ...run, ...patch }, run));
+  }
+});
 
 test('a failed-job retry retains earlier successful results and binds exact identities', () => {
   assert.deepEqual(validatePrivateCheck(parent, run, 7, receipt, jobs), {

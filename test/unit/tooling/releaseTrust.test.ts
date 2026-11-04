@@ -140,7 +140,7 @@ test('a yanked crate is ignored by name and has its own register row', () => {
   assert.equal(rows.get('zip@4.6.1')?.kind, 'yanked');
 });
 
-test('only ci rows of the release matrix count as passed; the rest are not verified', () => {
+test('the matrix identifies required CI jobs without claiming acceptance already passed', () => {
   const doc = [
     '### Release matrix',
     '',
@@ -153,7 +153,7 @@ test('only ci rows of the release matrix count as passed; the rest are not verif
     '| Other | ci | x |',
   ].join('\n');
   assert.deepEqual(releaseMatrixLines(doc), [
-    '| Default suites | passed: required job, `checks.yml` |',
+    '| Default suites | required job, `checks.yml`; see the completed run |',
     '| Windows Hello unlock | **NOT VERIFIED** by this workflow: lock, unlock with Hello |',
   ]);
   assert.throws(() => releaseMatrixLines('# Nothing here'), /no release matrix/);
@@ -163,5 +163,6 @@ test('the release matrix in the repository parses', async () => {
   const { readFile } = await import('node:fs/promises');
   const lines = releaseMatrixLines(await readFile('docs/release-trust.md', 'utf8'));
   assert.ok(lines.some((line) => line.includes('NOT VERIFIED')));
-  assert.ok(lines.some((line) => line.includes('passed: required job')));
+  assert.ok(lines.some((line) => line.includes('required job,')));
+  assert.ok(lines.every((line) => !line.includes('passed:')));
 });

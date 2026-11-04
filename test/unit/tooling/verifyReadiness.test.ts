@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   validateReadiness,
+  requireUnusedVersion,
   WINDOWS_PACKAGES,
   type PublicRun,
   type Readiness,
@@ -35,6 +36,11 @@ const proof: Readiness = {
     requiredJobCount: 13,
   },
 };
+test('a version already taken by a tag or draft cannot start another packaging build', () => {
+  requireUnusedVersion(null, null);
+  assert.throws(() => requireUnusedVersion({ object: { sha: 'a'.repeat(40) } }, null));
+  assert.throws(() => requireUnusedVersion(null, { draft: true }));
+});
 test('packaging uses the checked source even after master advances', () => {
   assert.equal(validateReadiness('owner/app', '123', run, proof).sha, 'a'.repeat(40));
 });

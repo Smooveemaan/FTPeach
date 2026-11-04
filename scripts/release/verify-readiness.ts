@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { releaseCheck } from './check-mode.ts';
-import { runPrivateCheck, type PrivateEvidence } from './private-check.ts';
+import { assertCurrentSuccess, runPrivateCheck, type PrivateEvidence } from './private-check.ts';
 
 export interface Readiness {
   schema: number;
@@ -30,6 +30,15 @@ export interface PublicRun {
   head_repository: { full_name: string };
 }
 export const WINDOWS_PACKAGES = ['windows-x86_64-nsis', 'windows-x86_64-portable'];
+
+export function requireUnusedVersion(tag: unknown, release: unknown) {
+  assert.equal(
+    tag,
+    null,
+    'This version is already tagged; resume the accepted candidate instead of rebuilding',
+  );
+  assert.equal(release, null, 'This version already has a release or draft');
+}
 
 export function validateReadiness(
   repository: string,
@@ -69,7 +78,11 @@ export function validateReadiness(
   return proof;
 }
 
-export async function githubApi(route: string, body?: unknown): Promise<unknown> {
+export async function githubApi(
+  route: string,
+  body?: unknown,
+  allowMissing = false,
+): Promise<unknown> {
   assert.ok(process.env.GITHUB_TOKEN, 'GITHUB_TOKEN is required');
   const response = await fetch(
     `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/${route}`,
@@ -84,13 +97,19 @@ export async function githubApi(route: string, body?: unknown): Promise<unknown>
       signal: AbortSignal.timeout(30_000),
     },
   );
+  if (allowMissing && response.status === 404) return null;
   assert.ok(response.ok, `GitHub API request failed: HTTP ${response.status}`);
   return response.json();
 }
 
-export async function verifyReadiness(id: string): Promise<Readiness> {
+export async function verifyReadiness(id: string, expected?: Readiness): Promise<Readiness> {
   assert.match(id, /^[1-9][0-9]*$/);
-  const run = (await githubApi(`actions/runs/${id}`)) as PublicRun;
+  const currentAtStart = (await githubApi(`actions/runs/${id}`)) as PublicRun;
+  if (expected) assert.match(expected.attempt, /^[1-9][0-9]*$/);
+  const run = expected
+    ? ((await githubApi(`actions/runs/${id}/attempts/${expected.attempt}`)) as PublicRun)
+    : currentAtStart;
+  assertCurrentSuccess(currentAtStart, run);
   const directory = await mkdtemp(path.join(tmpdir(), 'release-readiness-'));
   execFileSync(
     'gh',
@@ -117,12 +136,13 @@ export async function verifyReadiness(id: string): Promise<Readiness> {
     run,
     JSON.parse(await readFile(path.join(directory, 'release-readiness.json'), 'utf8')) as Readiness,
   );
+  if (expected) assert.deepEqual(proof, expected);
   await runPrivateCheck({
     parent: { repository: proof.repository, runId: proof.runId, sha: proof.sha },
     expected: proof.privateCheck,
   });
   const current = (await githubApi(`actions/runs/${id}`)) as PublicRun;
-  validateReadiness(proof.repository, id, current, proof);
+  assertCurrentSuccess(current, run);
   return proof;
 }
 
@@ -133,6 +153,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     'Packaging can only be dispatched on master',
   );
   const proof = await verifyReadiness(process.env.CHECK_RUN_ID!);
+  if (!process.env.CANDIDATE_RUN_ID) {
+    requireUnusedVersion(
+      await githubApi(`git/ref/tags/v${proof.version}`, undefined, true),
+      await githubApi(`releases/tags/v${proof.version}`, undefined, true),
+    );
+  }
   await writeFile('release-readiness.json', JSON.stringify(proof, null, 2));
   await appendFile(process.env.GITHUB_OUTPUT!, `sha=${proof.sha}\nversion=${proof.version}\n`);
   await appendFile(

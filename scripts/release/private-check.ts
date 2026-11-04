@@ -43,6 +43,17 @@ export interface PrivateEvidence {
 }
 export type Api = (_route: string, _body?: unknown) => Promise<unknown>;
 
+export function assertCurrentSuccess(
+  current: Pick<CheckRun, 'id' | 'run_attempt' | 'head_sha' | 'status' | 'conclusion'>,
+  selected: Pick<CheckRun, 'id' | 'run_attempt' | 'head_sha'>,
+) {
+  assert.equal(current.id, selected.id);
+  assert.equal(current.head_sha, selected.head_sha);
+  assert.ok(current.run_attempt >= selected.run_attempt);
+  assert.equal(current.status, 'completed', 'A later attempt is still running');
+  assert.equal(current.conclusion, 'success', 'A later attempt invalidated readiness');
+}
+
 export function checkTitle(parent: ParentCheck): string {
   return `Release check ${parent.repository}/${parent.runId} ${parent.sha}`;
 }
@@ -168,13 +179,13 @@ export async function runPrivateCheck(
     ? ((await api(`actions/runs/${options.expected.runId}`)) as CheckRun)
     : await findOrDispatch(api, parent, config.workflow, config.ref);
   assert.equal(run.head_branch, config.ref, 'Closed check did not run on the trusted ref');
+  const latestAttempt = run.run_attempt;
   if (options.expected) {
-    assert.equal(
-      run.run_attempt,
-      options.expected.attempt,
-      'The verified closed attempt was superseded',
-    );
+    const current = run;
+    run = (await api(`actions/runs/${run.id}/attempts/${options.expected.attempt}`)) as CheckRun;
+    assert.equal(run.run_attempt, options.expected.attempt);
     assert.equal(run.status, 'completed');
+    assertCurrentSuccess(current, run);
   }
   const deadline = Date.now() + 5 * 60 * 60 * 1000;
   while (run.status !== 'completed') {
@@ -225,11 +236,10 @@ export async function runPrivateCheck(
   const current = (await api(`actions/runs/${run.id}`)) as CheckRun;
   assert.equal(
     current.run_attempt,
-    run.run_attempt,
+    options.expected ? latestAttempt : run.run_attempt,
     'Closed check was retried during verification',
   );
-  assert.equal(current.status, 'completed');
-  assert.equal(current.conclusion, 'success');
+  assertCurrentSuccess(current, run);
   const evidence = validatePrivateCheck(parent, run, workflow.id, receipt, jobs);
   if (options.expected) {
     assert.deepEqual(evidence, options.expected);

@@ -252,7 +252,16 @@ test('every selected gate controls its actual workflow job', () => {
       (match) => [match[1], match[2]],
     ),
   );
-  assert.deepEqual([...jobs.keys()].filter((id) => id !== 'changes').sort(), [...GATES].sort());
+  assert.deepEqual([...jobs.keys()].sort(), [...GATES, 'changes', 'full-result'].sort());
+  const aggregate = jobs.get('full-result')!;
+  const required = aggregate
+    .match(/needs:\s*\[([\s\S]*?)\]/)![1]!
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  assert.deepEqual(required.sort(), [...GATES, 'changes'].sort());
+  assert.ok(aggregate.includes('if: always() && inputs.force-all'));
+  assert.doesNotMatch(jobs.get('rust-test-unix')!, /continue-on-error/);
   for (const id of GATES) {
     if (id === 'supply-chain') continue;
     assert.ok(jobs.get(id)?.includes('needs: changes'), id);
@@ -415,12 +424,11 @@ test('releases and manual full runs select every shared check without a base dif
   }
   const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
   assert.match(ci, /workflow_dispatch:/);
-  assert.ok(ci.includes("force-all: ${{ github.event_name == 'workflow_dispatch' }}"));
-  const release = readFileSync('.github/workflows/release.yml', 'utf8');
-  assert.match(
-    release,
-    /uses: \.\/\.github\/workflows\/checks.yml\r?\n\s+with:\r?\n\s+force-all: true/,
-  );
+  assert.ok(ci.includes("force-all: ${{ needs.mode.outputs.full == 'true' }}"));
+  assert.ok(ci.includes('scripts/release/check-mode.ts'));
+  const release = readFileSync('.github/workflows/release-next.yml', 'utf8');
+  assert.match(release, /scripts\/release\/verify-readiness.ts/);
+  assert.doesNotMatch(release, /uses: \.\/\.github\/workflows\/checks.yml/);
   assert.throws(
     () => collectGitHubChangeSet({ GITHUB_EVENT_NAME: 'workflow_dispatch' }),
     /requires FORCE_ALL/,

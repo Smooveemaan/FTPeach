@@ -38,6 +38,7 @@ test.beforeEach(async () => {
   await verifyCandidate(directory);
 });
 test.afterEach(() => {
+  requireThrowawayMachine();
   stopProgramsIn(installDir);
   stopProgramsIn(portable);
 });

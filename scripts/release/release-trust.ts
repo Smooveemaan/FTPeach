@@ -167,9 +167,9 @@ export function privateKeyHits(contents: Buffer, secret: string | undefined): st
 }
 
 /**
- * The release matrix of `docs/release-trust.md` as report lines. A
- * `ci` row is proven by a job the publish job needs; every other row is
- * printed as not verified, because this workflow cannot have run it.
+ * The release matrix of `docs/release-trust.md` as report lines.
+ * Required CI jobs are identified without claiming that later acceptance
+ * has already passed; local and manual checks need their own evidence.
  */
 export function releaseMatrixLines(markdown: string): string[] {
   const section = markdown.split(/^### Release matrix$/m)[1]?.split(/^##+ /m)[0] ?? '';
@@ -183,7 +183,7 @@ export function releaseMatrixLines(markdown: string): string[] {
       .slice(1, 4)
       .map((column) => column.trim());
     return lane === 'ci'
-      ? `| ${cell} | passed: required job, ${how} |`
+      ? `| ${cell} | required job, ${how}; see the completed run |`
       : `| ${cell} | **NOT VERIFIED** by this workflow: ${how} |`;
   });
 }

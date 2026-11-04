@@ -7,6 +7,14 @@ on:
         description: Successful master push CI run with Release-Check true
         type: string
         required: true
+      candidate-run-id:
+        description: Accepted packaging run to finalize; leave empty to build packages
+        type: string
+        default: ''
+      manual-acceptance:
+        description: JSON acceptance record for the exact candidate (finalization only)
+        type: string
+        default: ''
 
 permissions: {}
 
@@ -39,6 +47,7 @@ jobs:
           PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
           PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
           CHECK_RUN_ID: ${{ inputs.check-run-id }}
+          CANDIDATE_RUN_ID: ${{ inputs.candidate-run-id }}
         run: node --experimental-strip-types scripts/release/verify-readiness.ts
       - name: Require approval protection for signing
         env:
@@ -53,6 +62,7 @@ jobs:
 
   build-windows:
     needs: candidate
+    if: inputs.candidate-run-id == ''
     permissions:
       contents: read
       id-token: write
@@ -149,3 +159,67 @@ jobs:
       source-sha: ${{ needs.candidate.outputs.sha }}
       candidate-artifact: ${{ needs.build-windows.outputs.artifact }}
       production: true
+
+  finalize-candidate:
+    needs: candidate
+    if: inputs.candidate-run-id != ''
+    permissions:
+      actions: read
+      contents: read
+      attestations: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      sha: ${{ steps.accept.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Validate all acceptance before requesting tag approval
+        id: accept
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CHECK_RUN_ID: ${{ inputs.check-run-id }}
+          CANDIDATE_RUN_ID: ${{ inputs.candidate-run-id }}
+          MANUAL_ACCEPTANCE: ${{ inputs.manual-acceptance }}
+        run: node --experimental-strip-types scripts/release/finalize.ts
+      - name: Check the separate tag approval protection
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
+
+  tag-and-draft:
+    needs: finalize-candidate
+    permissions:
+      actions: read
+      contents: write
+      attestations: read
+    environment: release-tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.finalize-candidate.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Recheck tag approval protection
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
+      - name: Revalidate, tag and resume the identical draft files
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CHECK_RUN_ID: ${{ inputs.check-run-id }}
+          CANDIDATE_RUN_ID: ${{ inputs.candidate-run-id }}
+          MANUAL_ACCEPTANCE: ${{ inputs.manual-acceptance }}
+        run: node --experimental-strip-types scripts/release/finalize.ts publish

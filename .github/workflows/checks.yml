@@ -8,7 +8,7 @@ on:
     inputs:
       force-all:
         description: >-
-          Run every job regardless of changed paths. Enabled for releases.
+          Run every job regardless of changed paths. Enabled for releases and manual CI.
         type: boolean
         default: false
 
@@ -21,12 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      rust: ${{ steps.classify.outputs.rust }}
-      frontend: ${{ steps.classify.outputs.frontend }}
-      risk: ${{ steps.classify.outputs.risk }}
       required-gates: ${{ steps.classify.outputs.required-gates }}
-      optional-gates: ${{ steps.classify.outputs.optional-gates }}
-      classification: ${{ steps.classify.outputs.classification }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -61,6 +56,11 @@ jobs:
       - run: npm ci
       - run: npm audit --audit-level=high
       - run: npm run check:tracked-secrets
+      - run: npm run check:release-config
+      - run: npm run licenses:check
+      - run: npm run check:ignored-tests
+      - run: npm run check:command-acl
+      - run: npm run check:rust-boundaries
       - run: npm run check:rust-advisories
       - run: npm run check:no-cyrillic
       - run: npm run i18n:check
@@ -75,14 +75,10 @@ jobs:
           command: check advisories licenses
 
   sast:
-    # Blocking from the start: findings and scanner errors fail Checks.
-    # Repository branch protection must require this check to enforce merge blocking.
-    # It scans the code, so a push that changes neither side skips it (a skipped
-    # job satisfies a required check); a rule change under .semgrep/ counts as both.
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.frontend == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'sast')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
@@ -125,11 +121,6 @@ jobs:
 
       - run: npm ci
       - run: npm run check:ci-parity
-      - run: npm run check:release-config
-      - run: npm run licenses:check
-      - run: npm run check:rust-boundaries
-      - run: npm run check:command-acl
-      - run: npm run check:ignored-tests
       - run: npm run check:duplicates
       - name: Keep the duplication report
         if: ${{ always() }}
@@ -139,10 +130,12 @@ jobs:
           path: duplication-report/
           if-no-files-found: ignore
       - run: npm run lint
-      # The Node and component suites, with coverage and the per-file floors.
+      - run: npm test
+        if: ${{ !inputs.force-all }}
       - run: npm run coverage
+        if: inputs.force-all
       - name: Keep the coverage report
-        if: ${{ always() }}
+        if: ${{ always() && inputs.force-all }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-frontend
@@ -161,7 +154,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.rust == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'parser-regressions')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -181,7 +174,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.rust == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-linux')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -215,7 +208,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.rust == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-test')
     # This crate has unconditional Windows and WebView2 dependencies.
     runs-on: windows-latest
     # Allow headroom for a cold Rust build and cache save.
@@ -261,7 +254,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.rust == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-test-unix')
     strategy:
       fail-fast: false
       matrix:
@@ -293,7 +286,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.rust == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-coverage')
     runs-on: windows-latest
     # An instrumented build of the whole crate, separate from rust-test's cache.
     timeout-minutes: 35
@@ -343,7 +336,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.frontend == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'visual-regression')
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -373,7 +366,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    if: needs.changes.outputs.frontend == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'i18n-audit-sample')
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -407,8 +400,7 @@ jobs:
     permissions:
       contents: read
     needs: changes
-    # The packaged application includes both Rust and frontend changes.
-    if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.frontend == 'true'
+    if: contains(fromJSON(needs.changes.outputs.required-gates), 'packaged-smoke')
     strategy:
       fail-fast: false
       matrix:

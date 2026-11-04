@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import {
-  CROSS_LANGUAGE_SOURCES,
-  GATE_DEFINITIONS,
+  GATES,
   classifyChangeSet,
-  classifyChanges,
   collectChangeSet,
   collectGitHubChangeSet,
   discoverRustIncludes,
@@ -15,61 +16,17 @@ import {
   type GitRunner,
 } from '../../../scripts/checks/classify-changes.ts';
 
-const BASE: GateId[] = ['supply-chain', 'lint-test-build'];
-const RUST: GateId[] = [
-  ...BASE,
-  'sast',
-  'parser-regressions',
-  'rust-linux',
-  'rust-test',
-  'rust-test-unix',
-  'rust-coverage',
-  'packaged-smoke',
-];
-const FRONTEND: GateId[] = [
-  ...BASE,
-  'sast',
-  'visual-regression',
-  'i18n-audit-sample',
-  'packaged-smoke',
-];
-const FULL: GateId[] = [
-  ...BASE,
-  'sast',
-  'parser-regressions',
-  'rust-linux',
-  'rust-test',
-  'rust-test-unix',
-  'rust-coverage',
-  'visual-regression',
-  'i18n-audit-sample',
-  'packaged-smoke',
-];
-const CONTEXT: ClassificationContext = {
-  source: 'pull-request',
-  base: 'base-sha',
-  head: 'head-sha',
-};
+const BASE: GateId[] = ['supply-chain'];
+const RUST: GateId[] = [...BASE, 'sast', 'rust-test'];
+const FRONTEND: GateId[] = [...BASE, 'lint-test-build', 'sast'];
+const BOTH: GateId[] = [...FRONTEND, 'rust-test'];
+const CONTEXT: ClassificationContext = { source: 'push', base: 'base-sha', head: 'head-sha' };
 
 function classify(paths: string[], context = CONTEXT) {
   return classifyChangeSet(paths, context);
 }
-
 function gateIds(paths: string[]): GateId[] {
-  return classify(paths).requiredGates.map((gate) => gate.id);
-}
-
-function decision(paths: string[], context = CONTEXT) {
-  const result = classify(paths, context);
-  return {
-    risk: result.risk,
-    affectedSubsystems: result.affectedSubsystems,
-    requiredGates: result.requiredGates,
-    optionalGates: result.optionalGates,
-    invalidationInputs: result.invalidationInputs,
-    rust: result.rust,
-    frontend: result.frontend,
-  };
+  return classify(paths).requiredGates;
 }
 
 function fakeGit(responses: Record<string, string>) {
@@ -83,194 +40,105 @@ function fakeGit(responses: Record<string, string>) {
   return { calls, run };
 }
 
-test('every risk level selects its documented concrete gates', () => {
-  const cases: Array<[string, string, GateId[]]> = [
-    ['0', 'docs/security.md', ['supply-chain']],
-    ['1', 'site/index.html', [...BASE, 'pages-build']],
-    ['1T', 'test/unit/tooling/checkDocs.test.ts', BASE],
-    ['1C', '.github/workflows/checks.yml', BASE],
-    ['2', 'Cargo.lock', RUST],
-    ['3', 'src-tauri/src/protocol/ftp.rs', RUST],
-    ['4', 'src-tauri/Cargo.toml', FULL],
+test('ordinary changes select the affected code without release-only suites', () => {
+  const cases: Array<[string, GateId[]]> = [
+    ['docs/security.md', BASE],
+    ['site/index.html', BASE],
+    ['src/styles/layout.css', FRONTEND],
+    ['src/features/sites/useSites.ts', FRONTEND],
+    ['src/main.tsx', FRONTEND],
+    ['src/i18n/locales/de.json', FRONTEND],
+    ['test/component/helpers/render.tsx', FRONTEND],
+    ['test/unit/tooling/classifyChanges.test.ts', FRONTEND],
+    ['scripts/checks/classify-changes.ts', FRONTEND],
+    ['test/visual/helpers.ts', FRONTEND],
+    ['playwright.config.ts', FRONTEND],
+    ['tsconfig.json', FRONTEND],
+    ['src-tauri/src/runtime/updater.rs', RUST],
+    ['src-tauri/Cargo.toml', RUST],
+    ['src-tauri/Cargo.lock', RUST],
+    ['src-tauri/tauri.conf.json', RUST],
+    ['src-tauri/capabilities/main.json', RUST],
+    ['rust-toolchain.toml', RUST],
+    ['src/platform/ipcContracts.ts', BOTH],
+    ['src-tauri/src/commands/sites.rs', BOTH],
+    ['package.json', BOTH],
+    ['package-lock.json', BOTH],
+    ['.github/workflows/checks.yml', BOTH],
+    ['.semgrep/security.yml', [...BASE, 'sast']],
+    ['scripts/checks/sast.ts', FRONTEND],
+    ['src-tauri/src/protocol/ftp.rs', [...BASE, 'sast', 'parser-regressions', 'rust-test']],
+    ['src-tauri/fuzz/src/list.rs', [...BASE, 'sast', 'parser-regressions', 'rust-test']],
+    ['unmapped/file.dat', [...FRONTEND, 'parser-regressions', 'rust-test']],
   ];
-  for (const [risk, file, gates] of cases) {
-    const result = classify([file]);
-    assert.equal(result.risk, risk, file);
-    assert.deepEqual(
-      result.requiredGates.map((gate) => gate.id),
-      gates,
-      file,
-    );
-  }
-  assert.equal(classify(['package-lock.json']).risk, '2');
-  assert.deepEqual(gateIds(['package-lock.json']), [...FRONTEND, 'pages-build']);
-  assert.equal(classify(['src/features/sites/useSites.ts']).risk, '3');
-  assert.deepEqual(gateIds(['src/features/sites/useSites.ts']), FRONTEND);
+  for (const [file, gates] of cases) assert.deepEqual(gateIds([file]), gates, file);
 });
 
-test('cross-language, shared, IPC and installer impacts keep their specific gates', () => {
-  assert.deepEqual(gateIds(['src/i18n/locales/en.json']), FULL);
-  assert.deepEqual(gateIds(['src/styles/layout.css']), FRONTEND);
-  assert.deepEqual(gateIds(['src/components/Dialog.tsx']), FRONTEND);
-  assert.deepEqual(gateIds(['src/platform/ipcContracts.ts']), FULL);
-  assert.deepEqual(gateIds(['src-tauri/src/commands/sites.rs']), FULL);
-  assert.deepEqual(gateIds(['src-tauri/capabilities/main.json']), FULL);
-  assert.deepEqual(gateIds(['src-tauri/tauri.conf.json']), [...FULL, 'installer']);
-  assert.deepEqual(gateIds(['src-tauri/icons/icon.png']), [...FULL, 'installer']);
-  assert.deepEqual(gateIds(['src-tauri/src/runtime/updater.rs']), [...FULL, 'installer']);
-  assert.deepEqual(gateIds(['scripts/release/test-installers.ts']), [...FULL, 'installer']);
-});
-
-test('Windows smoke tooling selects only Windows smoke in the authoritative plan', () => {
-  const result = classify(['scripts/packaged-smoke/smoke.ts']);
-  assert.equal(result.risk, '4');
-  assert.deepEqual(result.requiredGates, [
-    {
-      id: 'supply-chain',
-      platforms: ['linux'],
-      placement: ['local', 'github'],
-      reasons: ['every change requires the baseline checks'],
-    },
-    {
-      id: 'lint-test-build',
-      platforms: ['linux'],
-      placement: ['local', 'github'],
-      reasons: ['every change requires the baseline checks'],
-    },
-    {
-      id: 'packaged-smoke',
-      platforms: ['windows'],
-      placement: ['local', 'github'],
-      reasons: ['scripts/packaged-smoke/smoke.ts: Windows packaged smoke tooling changed'],
-    },
+test('mixed paths union their checks and normalize Windows paths without duplicates', () => {
+  assert.deepEqual(
+    gateIds(['README.md', './src/main.tsx', 'src-tauri\\src\\runtime\\updater.rs', 'src/main.tsx']),
+    BOTH,
+  );
+  assert.deepEqual(classify(splitPaths('docs/a.md\0src/main.tsx\0')).changedFiles, [
+    'docs/a.md',
+    'src/main.tsx',
   ]);
-  assert.deepEqual(
-    { rust: result.rust, frontend: result.frontend },
-    { rust: true, frontend: true },
-    'legacy outputs keep the current workflow conservative until it consumes gate IDs',
-  );
+  assert.deepEqual(gateIds(splitPaths('')), BASE);
+  assert.deepEqual(gateIds(splitPaths('docs/a.md\nsrc/main.tsx\n')), FRONTEND);
 });
 
-test('mixed changes take the highest risk and the union of every lower-level gate', () => {
-  const result = classify(['README.md', 'site/index.html', 'src/components/Menu.tsx']);
-  assert.equal(result.risk, '3');
-  assert.deepEqual(
-    result.requiredGates.map((gate) => gate.id),
-    [...FRONTEND, 'pages-build'],
-  );
-  const docsAndCode = classify(['docs/architecture.md', 'src-tauri/src/lib.rs']);
-  assert.equal(docsAndCode.risk, '4');
-  assert.deepEqual(
-    docsAndCode.requiredGates.map((gate) => gate.id),
-    FULL,
-  );
-  assert.ok(docsAndCode.requiredGates.every((gate) => gate.reasons.length > 0));
-});
-
-test('unknown paths and classifier edits independently force the full public suite', () => {
-  for (const file of [
-    'unmapped/file.dat',
-    'scripts/checks/classify-changes.ts',
-    'test/unit/tooling/classifyChanges.test.ts',
-  ]) {
-    const result = classify([file]);
-    assert.equal(result.risk, '4', file);
-    assert.deepEqual(
-      result.requiredGates.map((gate) => gate.id),
-      FULL,
-      file,
-    );
-    assert.deepEqual(result.optionalGates, [], file);
-  }
-});
-
-test('automatically discovered Rust includes select Rust without hiding website impact', () => {
+test('embedded files select Rust as well as their own consumers', () => {
   const includes = discoverRustIncludes();
-  for (const file of CROSS_LANGUAGE_SOURCES) assert.ok(includes.includes(file), file);
-  assert.ok(includes.includes('docs/guide/protocol-reference.md'));
-  assert.ok(includes.includes('test/fixtures/updater/dummy-update.bin'));
-  assert.deepEqual(gateIds(['test/fixtures/updater/dummy-update.bin']), RUST);
-  assert.deepEqual(gateIds(['docs/guide/protocol-reference.md']), [...RUST, 'pages-build']);
-  assert.deepEqual(gateIds(['test/fixtures/not-embedded/cases.json']), FULL);
-});
+  for (const file of [
+    'src/shared/settingsDefaults.json',
+    'src/shared/executableExtensions.json',
+    'src/i18n/locales/en.json',
+    'docs/guide/protocol-reference.md',
+    'test/fixtures/updater/dummy-update.bin',
+  ])
+    assert.ok(includes.includes(file), file);
+  assert.deepEqual(gateIds(['src/i18n/locales/en.json']), BOTH);
+  assert.deepEqual(gateIds(['docs/guide/protocol-reference.md']), RUST);
 
-test('tests-only, shared helpers, locales and configuration keep distinct impacts', () => {
-  assert.equal(classify(['test/component/helpers/render.tsx']).risk, '1T');
-  assert.deepEqual(gateIds(['test/component/helpers/render.tsx']), BASE);
-  assert.deepEqual(gateIds(['test/visual/helpers.ts']), FRONTEND);
-  assert.deepEqual(gateIds(['src/i18n/locales/de.json']), FRONTEND);
-  assert.deepEqual(gateIds(['.semgrep/security.yml']), [...BASE, 'sast']);
-  assert.deepEqual(gateIds(['scripts/coverage/coverage-floors.json']), [...BASE, 'rust-coverage']);
-  assert.deepEqual(gateIds(['test/e2e/install.vm.ts']), [...FULL, 'installer']);
-});
-
-test('every remaining path rule has a concrete risk and gate oracle', () => {
-  const cases: Array<[string, string, GateId[]]> = [
-    ['4', 'scripts/test-servers/iis.ps1', [...BASE, 'installer']],
-    ['4', 'src-tauri/unmapped.dat', FULL],
-    ['2', 'src-tauri/Cargo.lock', RUST],
-    ['1C', 'test/e2e/transfer.vm.ts', BASE],
-    ['1', 'test/unit/tooling/siteBuild.test.ts', [...BASE, 'pages-build']],
-    ['1', 'docs/guide/index.md', [...BASE, 'pages-build']],
-    ['1C', 'scripts/checks/sast.ts', [...BASE, 'sast']],
-    ['1C', 'scripts/checks/rust-check-linux.ts', [...BASE, 'rust-linux']],
-    ['1C', 'scripts/checks/check-generated-docs.ts', BASE],
-    ['1C', 'scripts/release/portable.ts', BASE],
-    ['3', 'playwright.config.ts', [...FRONTEND, 'pages-build']],
-    ['3', 'tsconfig.json', FRONTEND],
-    ['3', 'public/favicon.ico', [...FRONTEND, 'pages-build']],
-    ['3', 'scripts/benchmarks/benchmark-frontend.ts', FRONTEND],
-    ['1C', 'scripts/test-servers/ftp.ps1', BASE],
-    ['1C', '.gitignore', BASE],
-  ];
-  for (const [risk, file, gates] of cases) {
-    assert.equal(classify([file]).risk, risk, file);
-    assert.deepEqual(gateIds([file]), gates, file);
+  const root = mkdtempSync(path.join(tmpdir(), 'ftpeach-includes-'));
+  try {
+    mkdirSync(path.join(root, 'src-tauri/src'), { recursive: true });
+    writeFileSync(
+      path.join(root, 'src-tauri/src/lib.rs'),
+      'const X: &str = include_str!("../../shared/config.json");',
+    );
+    const discovered = discoverRustIncludes(root);
+    assert.deepEqual(discovered, ['shared/config.json']);
+    assert.deepEqual(
+      classifyChangeSet(['shared/config.json'], CONTEXT, discovered).requiredGates,
+      RUST,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('gate decisions explain their reasons, platforms and local/GitHub placement', () => {
-  const result = classify(['src/i18n/locales/en.json'], {
-    source: 'branch',
-    base: 'old-base',
-    head: 'new-head',
-  });
-  assert.equal(result.base, 'old-base');
-  assert.equal(result.head, 'new-head');
-  assert.equal(result.source, 'branch');
-  assert.ok(result.invalidationInputs.includes('test-config-fixtures-and-helpers'));
-  assert.ok(result.invalidationInputs.includes('whole-unfiltered-suite'));
-  for (const gate of result.requiredGates) {
-    assert.deepEqual(gate.placement, GATE_DEFINITIONS[gate.id].placement);
-    assert.ok(gate.platforms.length > 0, gate.id);
-    assert.ok(gate.reasons.length > 0, gate.id);
+test('every selected gate controls its actual workflow job', () => {
+  const workflow = readFileSync('.github/workflows/checks.yml', 'utf8').split('\njobs:')[1]!;
+  const jobs = new Map(
+    [...workflow.matchAll(/^ {2}([\w-]+):\r?\n([\s\S]*?)(?=^ {2}[\w-]+:|$(?![\s\S]))/gm)].map(
+      (match) => [match[1], match[2]],
+    ),
+  );
+  assert.deepEqual([...jobs.keys()].filter((id) => id !== 'changes').sort(), [...GATES].sort());
+  for (const id of GATES) {
+    if (id === 'supply-chain') continue;
+    assert.ok(jobs.get(id)?.includes('needs: changes'), id);
+    assert.ok(
+      jobs
+        .get(id)
+        ?.includes(`if: contains(fromJSON(needs.changes.outputs.required-gates), '${id}')`),
+      id,
+    );
   }
-  const smoke = result.requiredGates.find((gate) => gate.id === 'packaged-smoke');
-  assert.deepEqual(smoke?.platforms, ['linux', 'macos', 'windows']);
-});
-
-test('deleted and renamed paths use the same impact rules as additions', () => {
-  assert.deepEqual(
-    gateIds(['src/shared/settingsDefaults.json', 'docs/a.md']),
-    gateIds(['src/shared/settingsDefaults.json']),
-  );
-  assert.deepEqual(classifyChanges(['src-tauri/src/lib.rs']), { rust: true, frontend: true });
-  assert.deepEqual(classifyChanges(['src/i18n/locales/de.json']), {
-    rust: false,
-    frontend: true,
-  });
-  assert.deepEqual(classifyChanges(['docs/a.md']), { rust: false, frontend: false });
-});
-
-test('empty, NUL-separated and line-separated input is read the way git writes it', () => {
-  assert.deepEqual(splitPaths(''), ['']);
-  assert.deepEqual(splitPaths('\0\0'), ['', '', '']);
-  assert.deepEqual(classify(splitPaths('')).changedFiles, []);
-  assert.deepEqual(
-    classify(splitPaths('docs/a.md\0src-tauri/src/protocol/ftp.rs\0')).changedFiles,
-    ['docs/a.md', 'src-tauri/src/protocol/ftp.rs'],
-  );
-  assert.deepEqual(classify(splitPaths('docs/a.md\nsrc/main.tsx\n')).risk, '4');
+  assert.doesNotMatch(workflow, /outputs\.(?:rust|frontend|risk)/);
+  assert.match(workflow, /run: npm test\r?\n\s+if: \$\{\{ !inputs.force-all \}\}/);
+  assert.match(workflow, /run: npm run coverage\r?\n\s+if: inputs.force-all/);
 });
 
 test('working-tree collection unions staged, unstaged and untracked paths', () => {
@@ -282,10 +150,7 @@ test('working-tree collection unions staged, unstaged and untracked paths', () =
   const collected = collectChangeSet({ source: 'working-tree' }, run);
   const result = classifyChangeSet(collected.paths, collected.context, []);
   assert.deepEqual(result.changedFiles, ['docs/a.md', 'scripts/checks/new.ts', 'src/app/App.tsx']);
-  assert.deepEqual(
-    result.requiredGates.map((gate) => gate.id),
-    FRONTEND,
-  );
+  assert.deepEqual(result.requiredGates, FRONTEND);
   assert.equal(result.base, 'head-sha');
   assert.equal(result.head, 'head-sha');
   assert.equal(result.source, 'working-tree');
@@ -303,7 +168,7 @@ test('branch collection diffs the merge base through HEAD, not the last commit',
   const result = classifyChangeSet(collected.paths, collected.context, []);
   assert.equal(result.base, 'base-sha');
   assert.equal(result.head, 'head-sha');
-  assert.equal(result.risk, '4');
+  assert.ok(result.requiredGates.includes('rust-test'));
   assert.ok(
     calls.some((args) => args.join(' ') === 'diff --no-renames --name-only -z base-sha head-sha'),
   );
@@ -330,7 +195,7 @@ test('pull-request collection uses the supplied full base/head diff and records 
   );
   assert.deepEqual(before.context, { source: 'pull-request', base: 'base-1', head: 'head-1' });
   assert.deepEqual(after.context, { source: 'pull-request', base: 'base-2', head: 'head-2' });
-  assert.equal(classifyChangeSet(after.paths, after.context, []).risk, '4');
+  assert.deepEqual(classifyChangeSet(after.paths, after.context, []).requiredGates, BOTH);
 });
 
 test('local and pull-request modes make the same decision for the same files', () => {
@@ -350,7 +215,10 @@ test('local and pull-request modes make the same decision for the same files', (
       'diff --no-renames --name-only -z pr-base pr-head': 'src/i18n/locales/en.json\0',
     }).run,
   );
-  assert.deepEqual(decision(local.paths, local.context), decision(pr.paths, pr.context));
+  assert.deepEqual(
+    classify(local.paths, local.context).requiredGates,
+    classify(pr.paths, pr.context).requiredGates,
+  );
 });
 
 test('Git failures and unsupported events are explicit errors, never empty PASS plans', () => {
@@ -378,52 +246,55 @@ test('Git failures and unsupported events are explicit errors, never empty PASS 
   );
 });
 
-test('force-all and a new push base conservatively select every public check', () => {
-  const forced = collectGitHubChangeSet({
-    GITHUB_EVENT_NAME: 'pull_request',
-    FORCE_ALL: 'true',
-    BASE_SHA: 'base',
-    HEAD_SHA: 'head',
-  });
-  assert.deepEqual(
-    gateIds(forced.paths),
-    ['supply-chain'],
-    'the helper alone does not apply force-all',
+test('releases and manual full runs select every shared check without a base diff', () => {
+  for (const event of ['push', 'workflow_dispatch']) {
+    const collected = collectGitHubChangeSet({
+      GITHUB_EVENT_NAME: event,
+      FORCE_ALL: 'true',
+      HEAD_SHA: 'head',
+    });
+    assert.deepEqual(
+      classifyChangeSet(collected.paths, collected.context, []).requiredGates,
+      GATES,
+    );
+  }
+  const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+  assert.match(ci, /workflow_dispatch:/);
+  assert.ok(ci.includes("force-all: ${{ github.event_name == 'workflow_dispatch' }}"));
+  const release = readFileSync('.github/workflows/release.yml', 'utf8');
+  assert.match(
+    release,
+    /uses: \.\/\.github\/workflows\/checks.yml\r?\n\s+with:\r?\n\s+force-all: true/,
   );
-  const forcedResult = classifyChangeSet(forced.paths, forced.context, []);
-  assert.equal(forcedResult.risk, '4');
-  assert.deepEqual(
-    forcedResult.requiredGates.map((gate) => gate.id),
-    FULL,
-  );
-
-  const newPush = collectGitHubChangeSet({
-    GITHUB_EVENT_NAME: 'push',
-    BASE_SHA: '0000000000000000000000000000000000000000',
-    HEAD_SHA: 'head',
-  });
-  assert.equal(newPush.context.forceFull, true);
-  assert.deepEqual(
-    classifyChangeSet(newPush.paths, newPush.context, []).requiredGates.map((gate) => gate.id),
-    FULL,
+  assert.throws(
+    () => collectGitHubChangeSet({ GITHUB_EVENT_NAME: 'workflow_dispatch' }),
+    /requires FORCE_ALL/,
   );
 });
 
-test('the JSON CLI preserves the stable contract and compatibility outputs', () => {
-  const run = spawnSync(
-    process.execPath,
-    ['--experimental-strip-types', 'scripts/checks/classify-changes.ts', '--json'],
-    { input: 'docs/a.md\0', encoding: 'utf8' },
+test('a first push classifies the whole tree without automatically running release suites', () => {
+  const { run } = fakeGit({
+    'rev-parse --verify head^{commit}': 'head',
+    'ls-tree -r --name-only -z head': 'src/main.tsx\0src-tauri/src/lib.rs\0',
+  });
+  const collected = collectGitHubChangeSet(
+    { GITHUB_EVENT_NAME: 'push', BASE_SHA: '000000', HEAD_SHA: 'head' },
+    run,
   );
-  assert.equal(run.status, 0, run.stderr);
-  const result = JSON.parse(run.stdout);
-  assert.equal(result.risk, '0');
-  assert.equal(result.source, 'explicit');
-  assert.deepEqual(result.changedFiles, ['docs/a.md']);
-  assert.deepEqual(
-    result.requiredGates.map((gate: { id: GateId }) => gate.id),
-    ['supply-chain'],
-  );
-  assert.equal(result.rust, false);
-  assert.equal(result.frontend, false);
+  assert.deepEqual(classifyChangeSet(collected.paths, collected.context, []).requiredGates, BOTH);
+});
+
+test('the CLI writes the selected job IDs for GitHub and supports explicit full runs', () => {
+  for (const args of [[], ['--force-all'], ['--force-all=false']]) {
+    const run = spawnSync(
+      process.execPath,
+      ['--experimental-strip-types', 'scripts/checks/classify-changes.ts', ...args],
+      { input: 'src/main.tsx\0', encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: '' } },
+    );
+    assert.equal(run.status, 0, run.stderr);
+    assert.deepEqual(
+      JSON.parse(run.stdout.trim().replace(/^required-gates=/, '')),
+      args.includes('--force-all') ? GATES : FRONTEND,
+    );
+  }
 });

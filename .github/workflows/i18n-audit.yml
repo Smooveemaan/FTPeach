@@ -1,7 +1,7 @@
 name: Weekly i18n layout audit
 
 # The layout audit (test/visual/i18n-layout.audit.ts) in every language and the
-# pseudo-locale. Changes to the interface run a sample of languages in
+# pseudo-locale. Releases and manual full CI run a sample of languages in
 # checks.yml; this catches what the sample leaves out.
 
 permissions: {}

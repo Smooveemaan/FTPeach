@@ -1,9 +1,4 @@
-// CI parity, not code coverage: `npm run check` is the local stand-in for CI. That only holds while it still
-// runs what CI runs, and nothing enforced that: the script had already drifted
-// behind checks.yml by two steps, so a push could pass locally and fail on the
-// runner over work the developer never had a chance to see.
-//
-// This asserts every npm step of the workflow is reachable from `check`.
+// Keep the optional full local suite aligned with the shared CI/release workflow.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
@@ -39,6 +34,8 @@ while (pending.length > 0) {
 
 const problems: string[] = [];
 const workflowScripts = new Set(invoked(workflow));
+// coverage.ts runs the same Node and component suites as npm test, with instrumentation.
+if (reachable.has('coverage')) reachable.add('test');
 
 for (const name of [...workflowScripts].sort()) {
   if (reachable.has(name)) continue;

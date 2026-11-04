@@ -165,7 +165,7 @@ export function createSettingsApi(invoke: InvokeFn, authorize?: AuthorizeSensiti
         (): AppSettings => ({}),
       ).then((settings) => {
         if (isStorageWarnings(settings.storageWarnings) && settings.storageWarnings.length > 0)
-          reportAsyncFailure(storageWarningText(settings.storageWarnings));
+          reportAsyncFailure(storageWarningText(settings.storageWarnings), 'storage-warnings');
         return settings;
       }),
     /**

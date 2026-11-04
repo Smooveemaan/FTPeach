@@ -50,7 +50,7 @@ export function createSitesApi(invoke: InvokeFn) {
       const result = await invoke('sites_list');
       if (isRecord(result) && isManagedSiteArray(result.sites)) {
         if (isStorageWarnings(result.warnings) && result.warnings.length > 0)
-          reportAsyncFailure(storageWarningText(result.warnings));
+          reportAsyncFailure(storageWarningText(result.warnings), 'storage-warnings');
         return result.sites;
       }
       if (isManagedSiteArray(result)) return result;

@@ -91,6 +91,11 @@
     "react-i18next": "^17.1.9",
     "react-window": "^2.5.1"
   },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.4"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.64.1",

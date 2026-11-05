@@ -9,11 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Name conflicts can now create a numbered copy, with separate decisions for each file or one
-  choice for all remaining conflicts.
+  choice for all remaining conflicts (thanks @endlessnights).
 - The Computer pane's right-click menu shows the clicked file or folder in File Explorer.
 
 ### Changed
 
+- The server pane remembers the last selected protocol for new connections and after a restart
+  (thanks @endlessnights).
 - The Ember color scheme is now called Amber; select it again if it was your saved scheme.
 - Transfer notifications report errors while other transfers continue, and up to three independent
   error messages can remain visible.

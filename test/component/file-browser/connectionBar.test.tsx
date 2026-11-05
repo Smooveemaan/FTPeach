@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import ConnectionBar from '../../../src/features/connections/ConnectionBar.tsx';
-import { initialForm } from '../../../src/features/file-browser/panes/paneModel.ts';
+import { initialForm, makePane } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { ConnectionForm } from '../../../src/shared/siteContracts.ts';
 import type { PaneStatus } from '../../../src/shared/paneContracts.ts';
 
@@ -41,6 +41,16 @@ function open(initial: Partial<ConnectionForm> = {}, status: PaneStatus = 'idle'
     form: () => JSON.parse(screen.getByTestId('form').textContent!) as ConnectionForm,
   };
 }
+
+test('switching protocol remembers it for new server panes', () => {
+  const h = open();
+  fireEvent.click(screen.getByRole('button', { name: 'FTP' }));
+  fireEvent.click(screen.getByRole('option', { name: 'WebDAV' }));
+  expect(localStorage.getItem('lastConnectionProtocol')).toBe('webdav');
+  expect(makePane('b', 'remote').form.protocol).toBe('webdav');
+  h.unmount();
+  localStorage.removeItem('lastConnectionProtocol');
+});
 
 test('switching protocol empties a default port and keeps a custom one', () => {
   for (const [port, expected] of [

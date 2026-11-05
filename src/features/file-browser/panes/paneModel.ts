@@ -1,3 +1,4 @@
+import { lastProtocol } from '../../../shared/siteContracts.ts';
 import type { ConnectionForm, ManagedSite, SiteProtocol } from '../../../shared/siteContracts.ts';
 import type { PaneKind, PaneStatus, FileEntry, PaneId } from '../../../shared/paneContracts.ts';
 
@@ -100,7 +101,7 @@ export function makePane(id: PaneId, kind: PaneKind): PaneState {
     protocol: null,
     siteLabel: '',
     siteId: null,
-    form: { ...initialForm },
+    form: { ...initialForm, protocol: kind === 'remote' ? lastProtocol() : initialForm.protocol },
     status: 'idle',
     errorMessage: '',
     path: kind === 'remote' ? '/' : '',

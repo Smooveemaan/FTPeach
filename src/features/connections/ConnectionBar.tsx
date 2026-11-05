@@ -5,7 +5,11 @@ import ProtocolSelect from './ProtocolSelect.tsx';
 import Icon from '../../components/Icon.tsx';
 import PasswordInput from '../../components/PasswordInput.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
-import { DEFAULT_PORTS, portAfterProtocolChange } from '../../shared/siteContracts.ts';
+import {
+  DEFAULT_PORTS,
+  portAfterProtocolChange,
+  saveLastProtocol,
+} from '../../shared/siteContracts.ts';
 import type { ConnectionForm, SiteProtocol } from '../../shared/siteContracts.ts';
 import type { PaneStatus } from '../../shared/paneContracts.ts';
 import { handler } from '../../shared/asyncFailure.ts';
@@ -56,6 +60,7 @@ export default function ConnectionBar({
     onChange({ ...form, [key]: e.target.value });
 
   const handleProtocolChange = (protocol: SiteProtocol) => {
+    saveLastProtocol(protocol);
     onChange({ ...form, protocol, port: portAfterProtocolChange(form.port) });
   };
 

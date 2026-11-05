@@ -1,6 +1,27 @@
 /** Site and connection data shared by the connection bar, the panes, the site manager and IPC. */
 export type SiteProtocol = 'ftp' | 'ftps' | 'sftp' | 'webdav';
 
+const LAST_PROTOCOL_KEY = 'lastConnectionProtocol';
+
+export function saveLastProtocol(protocol: SiteProtocol): void {
+  try {
+    localStorage.setItem(LAST_PROTOCOL_KEY, protocol);
+  } catch {
+    // Storage can be unavailable; changing protocol still works for this session.
+  }
+}
+
+export function lastProtocol(): SiteProtocol {
+  try {
+    const protocol = localStorage.getItem(LAST_PROTOCOL_KEY);
+    if (protocol === 'ftp' || protocol === 'ftps' || protocol === 'sftp' || protocol === 'webdav')
+      return protocol;
+  } catch {
+    // Use the regular default when storage is unavailable.
+  }
+  return 'ftp';
+}
+
 /** What names a connection to the user: its bookmark, else its address. */
 export const connectionLabel = (pane: {
   siteLabel?: string | null;

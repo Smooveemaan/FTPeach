@@ -1,213 +1,351 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
-  # Only to release a tag without the closed suites' status, when their runs
-  # cannot report (docs/release-trust.md#how-releases-are-verified). The reason
-  # is written into the run's summary.
+  workflow_call:
   workflow_dispatch:
     inputs:
-      skip-private-suites:
-        description: Publish without a green private-suites status
+      operation:
+        description: Resume missing checks, deploy an accepted candidate, or record manual checks
+        type: choice
+        options: [resume, deploy, record-manual]
+        required: true
+      candidate-id:
+        description: Immutable candidate RUN_ID:BUILD_ATTEMPT from the build summary
+        type: string
+        required: true
+      installer-approved:
+        description: Owner authorized repeating Installer after reviewing the reported reason
         type: boolean
         default: false
-      reason:
-        description: Why the status is skipped (required when skipping)
+      manual-acceptance:
+        description: Complete manual acceptance JSON (record-manual only)
         type: string
         default: ''
 
 permissions: {}
 
+concurrency:
+  group: ${{ inputs.operation == 'record-manual' && format('release-manual-{0}', github.run_id) || 'release-candidate' }}
+  cancel-in-progress: false
+
 jobs:
-  # Releases run the full shared suite without path filtering.
-  gates:
+  candidate:
+    if: github.ref == 'refs/heads/master' && inputs.operation != 'record-manual'
     permissions:
       actions: read
       contents: read
-      pull-requests: read
-    uses: ./.github/workflows/checks.yml
-    with:
-      force-all: true
-
-  # The closed end-to-end, server matrix and protocol suites run in a private
-  # repository on the commit to be tagged and report the `private-suites`
-  # commit status here. This job only reads it; it never starts those runs.
-  private-suites:
-    permissions:
-      statuses: read
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Require a green private-suites status on the tagged commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SKIP: ${{ inputs.skip-private-suites }}
-          REASON: ${{ inputs.reason }}
-        run: |
-          case "$GITHUB_REF" in
-            refs/tags/v*) ;;
-            *) echo "A release runs on a v* tag, not $GITHUB_REF." >&2; exit 1 ;;
-          esac
-          if [ "$SKIP" = "true" ]; then
-            if [ -z "$(printf '%s' "$REASON" | tr -d '[:space:]')" ]; then
-              echo 'Skipping the private-suites status needs a reason.' >&2
-              exit 1
-            fi
-            printf '### private-suites NOT CHECKED\n\nSkipped by %s: %s\n' "$GITHUB_ACTOR" "$REASON" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          state="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/statuses" \
-            --jq '[.[] | select(.context == "private-suites")][0].state // "missing"')"
-          echo "private-suites on $GITHUB_SHA: $state"
-          if [ "$state" != success ]; then
-            echo 'Run the pre-release check of the closed suites on this commit first.' >&2
-            exit 1
-          fi
-
-  # Install, uninstall and update with the installer this tag builds, on a
-  # throwaway runner.
-  installer:
-    permissions:
-      contents: read
-    uses: ./.github/workflows/installer.yml
-
-  # The signing secrets live in the `release` environment. Naming it below
-  # does not prove anyone has to approve the run, so the rules are read first.
-  release-environment:
-    permissions:
-      actions: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
+    outputs:
+      sha: ${{ steps.verify.outputs.sha || steps.resume.outputs.sha }}
+      version: ${{ steps.verify.outputs.version || steps.resume.outputs.version }}
+      proof-artifact: checked-candidate-${{ github.run_attempt }}
+      artifact: ${{ steps.resume.outputs.artifact || format('release-candidate-{0}', github.run_attempt) }}
+      build-run-id: ${{ steps.resume.outputs.build-run-id || github.run_id }}
+      candidate-id: ${{ inputs.candidate-id || format('{0}:{1}', github.run_id, github.run_attempt) }}
+      attest: ${{ steps.resume.outputs.attest || (github.event_name == 'push' && 'true' || 'false') }}
+      installer: ${{ steps.resume.outputs.installer || (github.event_name == 'push' && 'true' || 'false') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.workflow_sha }}
           persist-credentials: false
-
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-
-      - name: Require approval before the signing secrets are released
+      - name: Check release controller before packaging
+        run: node --experimental-strip-types --test test/unit/tooling/candidate.test.ts test/unit/tooling/finalize.test.ts test/unit/tooling/resume.test.ts test/unit/tooling/verifyReadiness.test.ts
+      - name: Pin the successful full source checks
+        if: github.event_name == 'push'
+        id: verify
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node --experimental-strip-types scripts/release/check-release-environment.ts
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CHECK_RUN_ID: ${{ github.run_id }}
+        run: node --experimental-strip-types scripts/release/verify-readiness.ts
+      - name: Validate saved files and determine missing results
+        if: github.event_name == 'workflow_dispatch'
+        id: resume
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ inputs.candidate-id }}
+          INSTALLER_APPROVED: ${{ inputs.installer-approved }}
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts ${{ inputs.operation == 'deploy' && 'accepted' || 'resume' }}
+      - name: Require master-only automatic signing and protected deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --experimental-strip-types scripts/release/check-release-environment.ts release
+          node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: github.event_name == 'push'
+        with:
+          name: checked-candidate-${{ github.run_attempt }}
+          path: release-readiness.json
+          if-no-files-found: error
+          retention-days: 30
 
-  publish-windows:
+  build-windows:
+    needs: candidate
+    if: github.event_name == 'push'
     permissions:
-      contents: write
-      id-token: write
-      attestations: write
-    needs: [gates, private-suites, installer, release-environment]
-    runs-on: windows-latest
-    timeout-minutes: 45
+      contents: read
     environment: release
-
+    runs-on: windows-latest
+    timeout-minutes: 60
+    outputs:
+      artifact: ${{ steps.package.outputs.artifact }}
+      candidate-id: ${{ github.run_id }}:${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.candidate.outputs.sha }}
           persist-credentials: false
-
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
-
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ${{ needs.candidate.outputs.proof-artifact }}
       - name: Install pinned Rust toolchain
         run: rustup show
-
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate release configuration
-        run: npm run check:release-config
-
-      - name: Generate npm and Cargo CycloneDX SBOMs
-        run: npm run sbom:generate
-
-      - name: Build release notes from CHANGELOG.md
-        id: release-notes
-        run: node --experimental-strip-types scripts/release/build-release-notes.ts
-
-      - name: Build, sign updater artifacts and create draft release
-        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+      - run: npm ci
+      - run: npm run check:release-config
+      - run: npm run licenses:check
+      - run: npm run sbom:generate
+      - name: Extract candidate release notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          tagName: v__VERSION__
-          releaseName: FTPeach v__VERSION__
-          releaseBody: ${{ steps.release-notes.outputs.body }}
-          releaseDraft: true
-          prerelease: false
-          # The updater reads the signature from latest.json; the .sig stays in the bundle
-          # directory for the verification below.
-          uploadUpdaterSignatures: false
-          args: --bundles nsis
-
-      # The program the installer carries, for people who do not install. It is
-      # signed with the same key, before the step that verifies every signature.
-      - name: Build and sign the portable zip
+          RELEASE_SOURCE_SHA: ${{ needs.candidate.outputs.sha }}
+        run: node --experimental-strip-types scripts/release/build-release-notes.ts
+      - name: Build and sign final NSIS and portable packages
         shell: bash
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
+          npm run tauri -- build --bundles nsis
           node --experimental-strip-types scripts/release/portable.ts build
           npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip
-
-      - name: Verify every generated updater signature
-        shell: powershell
+      - name: Verify every updater signature
+        shell: pwsh
         run: |
           $config = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
-          $key = $config.plugins.updater.pubkey
-          $signatures = @(Get-ChildItem -Recurse -Path src-tauri/target/release/bundle -Filter '*.sig')
-          if ($signatures.Count -eq 0) { throw 'No signed updater artifact was generated' }
+          $signatures = @(Get-ChildItem -Recurse src-tauri/target/release/bundle -Filter '*.sig')
+          if ($signatures.Count -ne 2) { throw 'Expected the NSIS and portable updater signatures' }
           foreach ($signature in $signatures) {
             $artifact = $signature.FullName.Substring(0, $signature.FullName.Length - 4)
-            if (-not (Test-Path -LiteralPath $artifact)) { throw "Missing updater artifact for $($signature.FullName)" }
-            cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $key $artifact $signature.FullName
+            cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $config.plugins.updater.pubkey $artifact $signature.FullName
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
-
-      - name: Report updater signature, Authenticode, key absence and advisory exceptions
-        shell: powershell
+      - name: Check out verification tools from the pinned workflow commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .release-tools
+          sparse-checkout: scripts/release
+          persist-credentials: false
+      - name: Check final trust and absence of signing keys
         env:
-          # Read only to prove the key is absent from what gets published.
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        run: node --experimental-strip-types scripts/release/release-trust-report.ts
+        run: node --experimental-strip-types .release-tools/scripts/release/release-trust-report.ts
+      - name: Freeze candidate files and record source and tools
+        id: package
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.candidate.outputs.version }}
+        run: |
+          New-Item -ItemType Directory release-candidate | Out-Null
+          Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-candidate
+          Copy-Item -LiteralPath release/release-notes.md -Destination release-candidate
+          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md, release-readiness.json -DestinationPath release-candidate/release-audit.zip
+          node --experimental-strip-types .release-tools/scripts/release/candidate.ts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "artifact=release-candidate-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.package.outputs.artifact }}
+          path: release-candidate/
+          if-no-files-found: error
+          retention-days: 30
 
-      - name: Attest build provenance of the installer and the portable zip
+  attest:
+    needs: [candidate, build-windows]
+    if: always() && needs.candidate.result == 'success' && needs.candidate.outputs.attest == 'true' && (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped')
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ${{ needs.build-windows.outputs.artifact || needs.candidate.outputs.artifact }}
+          run-id: ${{ needs.candidate.outputs.build-run-id }}
+          github-token: ${{ github.token }}
+          path: release-candidate
+      - run: node --experimental-strip-types scripts/release/candidate.ts release-candidate --verify
+      - name: Attest the source manifest and final package bytes
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
-            src-tauri/target/release/bundle/nsis/*-setup.exe
-            src-tauri/target/release/bundle/portable/*-portable.zip
+            release-candidate/*-setup.exe
+            release-candidate/*-portable.zip
+            release-candidate/candidate.json
+      - id: proof
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts record attest
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.proof.outputs.evidence }}
+          path: release-evidence/attest/
+          retention-days: 30
+          if-no-files-found: error
 
-      # A portable copy reads its own entry of latest.json, so the zip is
-      # added to the feed the build step uploaded.
-      - name: Publish the portable zip and add it to the update feed
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "$GITHUB_REF_NAME" src-tauri/target/release/bundle/portable/*-portable.zip --clobber
-          gh release download "$GITHUB_REF_NAME" --pattern latest.json --dir release --clobber
-          zip_url=$(gh release view "$GITHUB_REF_NAME" --json assets -q '.assets[] | select(.name | endswith("-portable.zip")) | .apiUrl')
-          node --experimental-strip-types scripts/release/portable.ts feed release/latest.json "$zip_url"
-          gh release upload "$GITHUB_REF_NAME" release/latest.json --clobber
+  acceptance:
+    needs: [candidate, build-windows]
+    if: always() && needs.candidate.result == 'success' && needs.candidate.outputs.installer == 'true' && (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped')
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/installer.yml
+    with:
+      source-sha: ${{ needs.candidate.outputs.sha }}
+      candidate-artifact: ${{ needs.build-windows.outputs.artifact || needs.candidate.outputs.artifact }}
+      candidate-run-id: ${{ needs.candidate.outputs.build-run-id }}
+      production: true
 
-      - name: Attach SBOMs and the trust report to the draft release
-        shell: powershell
+  verify-artifacts:
+    needs: [candidate, build-windows, attest, acceptance]
+    if: always() && needs.candidate.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    permissions:
+      actions: read
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Require both independent package checks
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # One archive, so the release asset list is the installer, latest.json and the audit files.
-          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md -DestinationPath release/release-audit.zip
-          gh release upload "$env:GITHUB_REF_NAME" release/release-audit.zip --clobber
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts accepted
+
+  manual:
+    if: github.ref == 'refs/heads/master' && inputs.operation == 'record-manual'
+    permissions:
+      actions: read
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - id: manual
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ inputs.candidate-id }}
+          MANUAL_ACCEPTANCE: ${{ inputs.manual-acceptance }}
+        run: node --experimental-strip-types scripts/release/manual.ts record
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.manual.outputs.artifact }}
+          path: release-manual/
+          retention-days: 30
+          if-no-files-found: error
+
+  manual-acceptance:
+    needs: [candidate, verify-artifacts]
+    if: github.event_name == 'push' || inputs.operation == 'deploy'
+    permissions:
+      actions: read
+      contents: read
+      attestations: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 315
+    outputs:
+      candidate-id: ${{ needs.verify-artifacts.outputs.candidate-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Wait for the candidate's recorded manual acceptance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ needs.verify-artifacts.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/manual.ts ${{ github.event_name == 'push' && 'wait' || 'read' }}
+      - name: Validate readiness before requesting deploy approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ needs.verify-artifacts.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/finalize.ts
+
+  tag-and-draft:
+    needs: [candidate, manual-acceptance]
+    permissions:
+      actions: read
+      contents: write
+      attestations: read
+    environment: release-tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Recheck deploy protection after approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
+      - name: Reload manual acceptance after approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ needs.manual-acceptance.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/manual.ts read
+      - name: Revalidate, tag and resume the identical draft files
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ needs.manual-acceptance.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/finalize.ts publish

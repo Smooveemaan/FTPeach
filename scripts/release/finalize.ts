@@ -4,10 +4,10 @@ import { appendFile, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { sha256, verifyCandidate, type Candidate } from './candidate.ts';
+import { sha256, type Candidate } from './candidate.ts';
 import { withPortablePlatform } from './portable.ts';
-import { requireAcceptance } from './record-acceptance.ts';
-import { githubApi, verifyReadiness, type PublicRun } from './verify-readiness.ts';
+import { validateCandidate } from './validate-candidate.ts';
+import { githubApi, type PublicRun } from './verify-readiness.ts';
 
 export const MANUAL_CHECKS = [
   'production-updater-installed',
@@ -25,11 +25,6 @@ export interface ManualAcceptance {
   tester: string;
   checkedAt: string;
   results: Record<string, { result: string; evidence: string }>;
-}
-interface Artifact {
-  id: number;
-  name: string;
-  expired: boolean;
 }
 interface Asset {
   name: string;
@@ -57,24 +52,6 @@ export function validateManualAcceptance(manual: ManualAcceptance, sha: string, 
     assert.equal(manual.results?.[name]?.result, 'passed', `Manual check ${name} has not passed`);
     assert.ok(manual.results[name]!.evidence?.trim(), `Manual check ${name} needs evidence`);
   }
-}
-
-export function validatePackagingRun(
-  run: PublicRun,
-  candidate: Candidate,
-  workflowPath: string,
-  id: string,
-) {
-  assert.equal(String(run.id), id);
-  assert.equal(run.event, 'workflow_dispatch');
-  assert.equal(run.head_branch, 'master');
-  assert.equal(run.path, workflowPath);
-  assert.equal(run.head_repository.full_name, candidate.readiness.repository);
-  assert.equal(run.status, 'completed');
-  assert.equal(run.conclusion, 'success');
-  assert.equal(candidate.build.runId, id);
-  assert.ok(Number(candidate.build.attempt) <= run.run_attempt);
-  assert.equal(candidate.build.workflowSha, run.head_sha);
 }
 
 export function tagMessage(version: string, hash: string): string {
@@ -109,6 +86,7 @@ export function verifyAttestations(
   candidate: Candidate,
   workflowPath: string,
   run: typeof execFileSync = execFileSync,
+  toolsSha = candidate.build.workflowSha,
 ) {
   // The attested manifest binds the checked app SHA to every final file hash.
   for (const name of [
@@ -126,7 +104,7 @@ export function verifyAttestations(
         '--signer-workflow',
         `${candidate.readiness.repository}/${workflowPath}`,
         '--signer-digest',
-        candidate.build.workflowSha,
+        toolsSha,
         '--format',
         'json',
       ],
@@ -138,37 +116,6 @@ export function verifyAttestations(
       },
     );
   }
-}
-
-async function downloadArtifact(runId: string, prefix: string, directory: string) {
-  const artifacts = (await githubApi(`actions/runs/${runId}/artifacts?per_page=100`)) as {
-    artifacts: Artifact[];
-    total_count: number;
-  };
-  assert.ok(artifacts.total_count <= 100, 'Too many artifacts to select an unambiguous candidate');
-  const selected = artifacts.artifacts
-    .filter((artifact) => artifact.name.startsWith(prefix))
-    .sort((a, b) => b.id - a.id)[0];
-  assert.ok(selected && !selected.expired, 'Candidate evidence is missing or expired');
-  execFileSync(
-    'gh',
-    [
-      'run',
-      'download',
-      runId,
-      '--repo',
-      process.env.GITHUB_REPOSITORY!,
-      '--name',
-      selected.name,
-      '--dir',
-      directory,
-    ],
-    {
-      env: { ...process.env, GH_TOKEN: process.env.GITHUB_TOKEN },
-      stdio: 'pipe',
-      timeout: 120_000,
-    },
-  );
 }
 
 async function readDestination(candidate: Candidate, hash: string) {
@@ -196,65 +143,36 @@ async function readDestination(candidate: Candidate, hash: string) {
 
 async function prepare() {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
-  const id = process.env.CANDIDATE_RUN_ID!;
-  assert.match(id, /^[1-9][0-9]*$/);
-  const run = (await githubApi(`actions/runs/${id}`)) as PublicRun & { created_at: string };
-  const directory = await mkdtemp(path.join(tmpdir(), 'accepted-release-'));
-  await downloadArtifact(id, 'release-candidate-', directory);
-  const candidate = await verifyCandidate(directory);
-  const workflowPath = run.path;
-  assert.ok(
-    ['.github/workflows/release-next.yml', '.github/workflows/release.yml'].includes(workflowPath),
-    'Unknown packaging workflow',
-  );
-  validatePackagingRun(run, candidate, workflowPath, id);
-  const readiness = candidate.readiness;
-  assert.equal(readiness.runId, process.env.CHECK_RUN_ID);
-  const jobs: { id: number; name: string; conclusion: string | null }[] = [];
-  for (let page = 1; ; page++) {
-    const response = (await githubApi(
-      `actions/runs/${id}/jobs?filter=all&per_page=100&page=${page}`,
-    )) as { jobs: typeof jobs };
-    jobs.push(...response.jobs);
-    if (response.jobs.length < 100) break;
-  }
-  for (const name of ['candidate', 'build-windows', 'attest', 'acceptance / installer']) {
-    const latest = jobs.filter((job) => job.name === name).sort((a, b) => b.id - a.id)[0];
-    assert.equal(latest?.conclusion, 'success', `Candidate job ${name} is not successful`);
-  }
-  const automaticDirectory = await mkdtemp(path.join(tmpdir(), 'package-acceptance-'));
-  await downloadArtifact(id, 'installer-results-', automaticDirectory);
-  const automatic = JSON.parse(
-    await readFile(path.join(automaticDirectory, 'release-acceptance.json'), 'utf8'),
-  );
-  const hash = sha256(await readFile(path.join(directory, 'candidate.json')));
-  assert.equal(automatic.schema, 1);
-  assert.equal(automatic.sha, candidate.readiness.sha);
-  assert.equal(automatic.candidateHash, hash);
-  assert.equal(automatic.runId, id);
-  assert.ok(Number(automatic.attempt) <= run.run_attempt);
-  requireAcceptance(automatic.stats);
-  const manual = JSON.parse(process.env.MANUAL_ACCEPTANCE ?? '{}') as ManualAcceptance;
+  const accepted = await validateCandidate(process.env.CANDIDATE_ID!);
+  const { candidate, hash, directory, attest, installer, run } = accepted;
+  assert.ok(attest && installer, 'Automatic candidate acceptance is incomplete or stale');
+  const manual = JSON.parse(
+    process.env.MANUAL_ACCEPTANCE ?? (await readFile('manual-acceptance.json', 'utf8')),
+  ) as ManualAcceptance;
   validateManualAcceptance(manual, candidate.readiness.sha, hash);
-  verifyAttestations(directory, candidate, workflowPath);
+  verifyAttestations(
+    directory,
+    candidate,
+    '.github/workflows/release.yml',
+    execFileSync,
+    attest.toolsSha,
+  );
   await writeFile(
     path.join(directory, 'release-verification.json'),
-    JSON.stringify({ candidate, candidateHash: hash, automatic, manual }, null, 2),
-  );
-  const current = (await githubApi(`actions/runs/${id}`)) as PublicRun;
-  assert.equal(
-    current.run_attempt,
-    run.run_attempt,
-    'Candidate was retried during acceptance validation',
-  );
-  validatePackagingRun(current, candidate, workflowPath, id);
-  assert.deepEqual(
-    await verifyReadiness(process.env.CHECK_RUN_ID!, readiness),
-    readiness,
-    'Full readiness changed during acceptance validation',
+    JSON.stringify(
+      { candidate, candidateHash: hash, automatic: { attest, installer }, manual },
+      null,
+      2,
+    ),
   );
   await readDestination(candidate, hash);
-  return { candidate, directory, hash, manual, createdAt: run.created_at };
+  return {
+    candidate,
+    directory,
+    hash,
+    manual,
+    createdAt: (run as PublicRun & { created_at: string }).created_at,
+  };
 }
 
 async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {

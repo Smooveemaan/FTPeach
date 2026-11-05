@@ -51,27 +51,26 @@ Create these secrets in the GitHub `release` environment:
 - `TAURI_SIGNING_PRIVATE_KEY`: the complete production private-key contents;
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: the key password.
 
-Configure the environment with required reviewers and disallow administrator
-bypass. Keep both signing secrets at environment scope, not repository or
-organization scope. GitHub does not store deployment-protection rules in the
-workflow file, so the release workflow reads them from the GitHub API and
-stops before the signing job when approval is not required
-([release-trust.md](release-trust.md)).
+Restrict `release` to exactly the `master` deployment branch, without required
+reviewers. Keep signing secrets at environment scope. The separate `release-tag`
+environment requires the owner's approval and disallows administrator bypass.
+The workflow reads the actual settings before signing or deploying and fails
+closed when they differ ([release-trust.md](release-trust.md)).
 
-The `.github/workflows/release.yml` workflow runs for `v*` tags only after the
-frontend, Rust, packaged smoke and installer gates pass and the tagged commit has a green
-`private-suites` status (the closed suites, protocol compatibility among them). It builds the Windows NSIS
-installer and its `.sig`, then assembles `FTPeach_<version>_x64-portable.zip`
-from the same build (`scripts/release/portable.ts`) and signs it with the same
-key. It verifies every signature with the configured
-production public key, and publishes a draft GitHub Release with four files:
-the installer, the portable zip, `latest.json` (it carries both signatures, so
-no `.sig` is uploaded) and `release-audit.zip` (npm and Cargo CycloneDX SBOMs
-and the trust report). The zip is added to `latest.json` as
-`windows-x86_64-portable`, the entry a portable copy updates from. Before
-publishing the draft, verify the version, file list and both URLs in
-`latest.json`. Signature verification is already a blocking gate,
-including a separate positive/negative fixture test.
+A push of `master` whose last commit contains the exact line `Release-Check: true`
+runs full public and closed checks, then calls `.github/workflows/release.yml`
+in the same CI run. It builds and signs Windows NSIS and portable packages,
+verifies every updater signature, and retains the exact files before attestation
+and package acceptance. Signing never exposes the key to acceptance runners.
+
+After automatic and recorded manual acceptance, one protected deploy approval
+permits an annotated application tag and a draft. The finalizer resumes missing
+uploads, rejects conflicting files and verifies the downloaded draft and feed.
+The draft includes the installer, portable ZIP, `latest.json`, audit archive,
+candidate manifest and verification record. Signatures are carried in the feed.
+The owner publishes the draft and checks real updates from the public feed.
+Tags never start another build. See [release recovery](release-trust.md) for
+retained candidates; a failed checker does not require rebuilding their bytes.
 
 Run a local signed build only in the current PowerShell session:
 

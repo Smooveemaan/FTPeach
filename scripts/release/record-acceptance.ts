@@ -9,7 +9,7 @@ export function requireAcceptance(stats: {
   unexpected: number;
   flaky: number;
 }) {
-  assert.equal(stats.expected, 3, 'All three final-package scenarios must pass');
+  assert.equal(stats.expected, 5, 'All five final-package scenarios must pass');
   for (const value of [stats.skipped, stats.unexpected, stats.flaky])
     assert.equal(value, 0, 'Final package acceptance cannot skip, fail or retry');
 }

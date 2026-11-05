@@ -7,13 +7,11 @@ import {
   MANUAL_CHECKS,
   tagMessage,
   validateManualAcceptance,
-  validatePackagingRun,
   validateTag,
   verifyAttestations,
   type ManualAcceptance,
 } from '../../../scripts/release/finalize.ts';
 import type { Candidate } from '../../../scripts/release/candidate.ts';
-import type { PublicRun } from '../../../scripts/release/verify-readiness.ts';
 
 const sha = 'a'.repeat(40);
 const hash = 'b'.repeat(64);
@@ -83,7 +81,7 @@ test('tagging requires attested source manifest and both packages from the pinne
       '--repo',
       'owner/app',
       '--signer-workflow',
-      'owner/app/.github/workflows/release-next.yml',
+      'owner/app/.github/workflows/release.yml',
       '--signer-digest',
       candidate.build.workflowSha,
       '--format',
@@ -92,7 +90,7 @@ test('tagging requires attested source manifest and both packages from the pinne
     verified.push(file);
     return Buffer.alloc(0);
   }) as typeof execFileSync;
-  verifyAttestations('candidate', packaged, '.github/workflows/release-next.yml', run);
+  verifyAttestations('candidate', packaged, '.github/workflows/release.yml', run);
   assert.deepEqual(verified, [
     'candidate.json',
     'FTPeach_0.6.1_x64-setup.exe',
@@ -104,7 +102,7 @@ test('tagging requires attested source manifest and both packages from the pinne
       return Buffer.alloc(0);
     }) as typeof execFileSync;
     assert.throws(
-      () => verifyAttestations('candidate', packaged, '.github/workflows/release-next.yml', reject),
+      () => verifyAttestations('candidate', packaged, '.github/workflows/release.yml', reject),
       /Attestation rejected/,
     );
   }
@@ -134,31 +132,4 @@ test('uploads resume only missing assets, and never overwrite mismatches or unpr
     assetNeedsUpload({ name: 'setup.exe', url: 'asset', digest: `sha256:${'d'.repeat(64)}` }, hash),
   );
   assert.throws(() => assetNeedsUpload({ name: 'setup.exe', url: 'asset' }, hash));
-});
-test('failed, canceled or substituted packaging runs cannot authorize a tag', () => {
-  const run = {
-    id: 123,
-    run_attempt: 2,
-    head_sha: candidate.build.workflowSha,
-    head_branch: 'master',
-    event: 'workflow_dispatch',
-    path: '.github/workflows/release-next.yml',
-    status: 'completed',
-    conclusion: 'success',
-    head_repository: { full_name: 'owner/app' },
-  } as PublicRun;
-  validatePackagingRun(run, candidate, run.path, '123');
-  for (const patch of [
-    { id: 999 },
-    { event: 'push' },
-    { status: 'in_progress' },
-    { conclusion: 'failure' },
-    { conclusion: 'cancelled' },
-    { head_branch: 'branch' },
-    { head_sha: sha },
-    { path: '.github/workflows/other.yml' },
-    { run_attempt: 0 },
-  ]) {
-    assert.throws(() => validatePackagingRun({ ...run, ...patch }, candidate, run.path, '123'));
-  }
 });

@@ -447,7 +447,7 @@ test('releases and manual full runs select every shared check without a base dif
   assert.match(ci, /workflow_dispatch:/);
   assert.ok(ci.includes("force-all: ${{ needs.mode.outputs.full == 'true' }}"));
   assert.ok(ci.includes('scripts/release/check-mode.ts'));
-  const release = readFileSync('.github/workflows/release-next.yml', 'utf8');
+  const release = readFileSync('.github/workflows/release.yml', 'utf8');
   assert.match(release, /scripts\/release\/verify-readiness.ts/);
   assert.doesNotMatch(release, /uses: \.\/\.github\/workflows\/checks.yml/);
   assert.throws(

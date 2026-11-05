@@ -177,59 +177,43 @@ assert.ok(
   'CSP must have one source of truth; remove the duplicate meta tag from index.html',
 );
 
-// release.yml publishes, checks.yml verifies, and a step deleted from either
-// weakens the same release — so each entry names the file it has to appear in.
+// Keep signing, immutable packages, acceptance and deploy in the same guarded chain.
+const ciWorkflow = await readFile(
+  new URL('../../.github/workflows/ci.yml', import.meta.url),
+  'utf8',
+);
+assert.ok(ciWorkflow.includes("if: needs.mode.outputs.release == 'true'"));
+assert.ok(ciWorkflow.includes('uses: ./.github/workflows/release.yml'));
+assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber/);
 const requiredWorkflowEntries: [string, string, string][] = [
-  [releaseWorkflow, 'release.yml', '  gates:'],
-  [releaseWorkflow, 'release.yml', '    uses: ./.github/workflows/checks.yml'],
-  // A tag must never settle for the path-filtered subset CI is allowed to skip.
-  [releaseWorkflow, 'release.yml', '      force-all: true'],
+  [releaseWorkflow, 'release.yml', '  workflow_call:'],
   [releaseWorkflow, 'release.yml', '    environment: release'],
-  // Pairs with the bundle.targets assertion above.
-  [releaseWorkflow, 'release.yml', 'args: --bundles nsis'],
+  [releaseWorkflow, 'release.yml', '    environment: release-tag'],
+  [releaseWorkflow, 'release.yml', 'npm run tauri -- build --bundles nsis'],
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
-  [releaseWorkflow, 'release.yml', 'Verify every generated updater signature'],
-  // Approvals are read from GitHub, not inferred from `environment:`,
-  // and the report keeps updater signature, Authenticode and advisories apart.
-  // The installer gate proves the matrix rows on upgrades, uninstalls and updates.
-  [releaseWorkflow, 'release.yml', '    uses: ./.github/workflows/installer.yml'],
+  [releaseWorkflow, 'release.yml', 'Verify every updater signature'],
+  [releaseWorkflow, 'release.yml', 'uses: ./.github/workflows/installer.yml'],
+  [releaseWorkflow, 'release.yml', '  verify-artifacts:'],
+  [releaseWorkflow, 'release.yml', '  manual-acceptance:'],
   [
     releaseWorkflow,
     'release.yml',
-    '    needs: [gates, private-suites, installer, release-environment]',
-  ],
-  // The closed suites prove their matrix row only through this status.
-  [releaseWorkflow, 'release.yml', 'select(.context == "private-suites")'],
-  [
-    releaseWorkflow,
-    'release.yml',
-    'run: node --experimental-strip-types scripts/release/check-release-environment.ts',
+    'candidate-artifact: ${{ needs.build-windows.outputs.artifact || needs.candidate.outputs.artifact }}',
   ],
   [
     releaseWorkflow,
     'release.yml',
-    'run: node --experimental-strip-types scripts/release/release-trust-report.ts',
+    'candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}',
   ],
+  [releaseWorkflow, 'release.yml', 'scripts/release/check-release-environment.ts release-tag'],
+  [releaseWorkflow, 'release.yml', 'scripts/release/release-trust-report.ts'],
   [releaseWorkflow, 'release.yml', 'uses: actions/attest-build-provenance@'],
-  // The portable zip: built from the same release output, signed, attested,
-  // published and named in the feed a portable copy updates from.
   [releaseWorkflow, 'release.yml', 'scripts/release/portable.ts build'],
   [
     releaseWorkflow,
     'release.yml',
     'npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
   ],
-  [
-    releaseWorkflow,
-    'release.yml',
-    '            src-tauri/target/release/bundle/portable/*-portable.zip',
-  ],
-  [
-    releaseWorkflow,
-    'release.yml',
-    'gh release upload "$GITHUB_REF_NAME" src-tauri/target/release/bundle/portable/*-portable.zip',
-  ],
-  [releaseWorkflow, 'release.yml', 'scripts/release/portable.ts feed release/latest.json'],
   [releaseWorkflow, 'release.yml', 'ftpeach-npm.cdx.json'],
   [releaseWorkflow, 'release.yml', 'ftpeach-cargo.cdx.json'],
   [checksWorkflow, 'checks.yml', '  rust-test:'],
@@ -251,17 +235,12 @@ for (const [workflow, workflowName, requiredWorkflowEntry] of requiredWorkflowEn
   );
 }
 
-// Signed before the step that verifies every signature, so the zip cannot
-// reach the feed with a signature nothing checked.
-const releaseOrder = [
-  'npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip',
-  'Verify every generated updater signature',
-  'scripts/release/portable.ts feed release/latest.json',
-].map((step) => releaseWorkflow.indexOf(step));
-assert.deepEqual(
-  releaseOrder,
-  [...releaseOrder].sort((first, second) => first - second),
-  'release.yml must sign the portable zip, then verify signatures, then add the zip to the feed',
+assert.ok(
+  releaseWorkflow.indexOf('signer sign') <
+    releaseWorkflow.indexOf('Verify every updater signature'),
+);
+assert.ok(
+  releaseWorkflow.indexOf('Check release controller') < releaseWorkflow.indexOf('  build-windows:'),
 );
 
 assert.match(

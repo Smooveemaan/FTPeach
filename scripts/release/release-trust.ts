@@ -109,12 +109,41 @@ export function authenticodeVerdict(file: string, result: AuthenticodeResult): V
 export interface GithubEnvironment {
   can_admins_bypass?: boolean;
   protection_rules?: { type: string; reviewers?: unknown[] }[];
+  deployment_branch_policy?: {
+    protected_branches: boolean;
+    custom_branch_policies: boolean;
+  } | null;
+}
+
+export function signingEnvironmentVerdict(
+  environment: GithubEnvironment,
+  branches: { name: string; type: string }[],
+): Verdict {
+  const reviewers = (environment.protection_rules ?? []).some(
+    (rule) => rule.type === 'required_reviewers',
+  );
+  const policy = environment.deployment_branch_policy;
+  if (
+    reviewers ||
+    !policy?.custom_branch_policies ||
+    policy.protected_branches ||
+    branches.length !== 1 ||
+    branches[0]?.name !== 'master' ||
+    branches[0]?.type !== 'branch'
+  )
+    return {
+      ok: false,
+      summary: 'Signing requires automatic access restricted to exactly the master branch',
+    };
+  return {
+    ok: true,
+    summary: 'Signing secrets restricted to master; deploy has the separate protected approval',
+  };
 }
 
 /**
- * `environment: release` in the workflow only names an environment. Whether
- * anyone has to approve a run before it reaches the signing secrets is a
- * repository setting the workflow cannot see -- so it is read, not assumed.
+ * Deploy approval and administrator bypass are repository settings, so check
+ * them through the API rather than infer protection from the environment name.
  */
 export function environmentVerdict(environment: GithubEnvironment): Verdict {
   const reviewers = (environment.protection_rules ?? [])
@@ -126,7 +155,7 @@ export function environmentVerdict(environment: GithubEnvironment): Verdict {
   if (problems.length > 0) {
     return {
       ok: false,
-      summary: `The release environment does not guard the signing secrets: ${problems.join('; ')}`,
+      summary: `The deploy environment is not protected: ${problems.join('; ')}`,
     };
   }
   return {

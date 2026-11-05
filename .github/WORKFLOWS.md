@@ -2,13 +2,14 @@
 
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
-| `ci.yml` | Push to `master`, pull request, manual full run | Calls the shared verification suite; a newer push to a pull request cancels its older run, while every push to `master` runs to the end. |
+| `ci.yml` | Push to `master`, pull request, manual full run | Calls the shared verification suite; an exact `Release-Check: true` line in the last push commit on `master` selects full checks and continues into the release chain. A newer push to a pull request cancels its older run, while every push to `master` runs to the end. |
 | `checks.yml` | Reusable workflow | Ordinary pushes run baseline checks plus lint, tests, build and SAST for the affected code. Coverage, visual tests, language layout audits and cross-platform builds run only for releases or manual full CI. Parser changes also replay saved regression inputs. |
-| `release.yml` | Push of a `v*` tag; manual run on a tag only to skip the closed suites with a reason | Runs all checks and installer tests, requires a green `private-suites` status on the tagged commit ([How releases are verified](../docs/release-trust.md#how-releases-are-verified)), checks that the `release` environment requires approval, then builds signed Windows artifacts, SBOMs, a provenance attestation and a trust report in a draft release ([release-trust.md](../docs/release-trust.md)). |
+| `release.yml` | Called by release-check CI; manual `resume`, `record-manual` or `deploy` on `master` | Builds and saves signed Windows packages, verifies their provenance and acceptance, waits for recorded manual checks, then requests the single deploy approval before creating the tag and draft. Recovery reuses retained packages and unaffected results ([release-trust.md](../docs/release-trust.md)). |
+| `release-published.yml` | Release published by the owner | Downloads public packages, checks accepted hashes, attestations, updater signatures, the public feed and Pages availability. |
 | `pages.yml` | Push to `master` touching site inputs, guide Markdown, npm dependencies or its workflow, a published release, daily at 04:17 UTC, manual run | Builds the home page and `docs/guide/` with shared styles and fonts, the latest release's download links and public counts, then deploys them to GitHub Pages. |
 | `security-audit.yml` | Monday at 04:17 UTC, manual run | Reviews Rust advisories and fuzzes protocol parsers. |
 | `i18n-audit.yml` | Tuesday at 04:37 UTC, manual run | Runs the visual layout audit in every language and the pseudo-locale. |
-| `installer.yml` | Reusable release gate, manual run | Tests clean installation, upgrade, uninstall and installed/portable updates using signed test builds. |
+| `installer.yml` | Reusable release gate, manual run | Accepts retained production packages without rebuilding; the manual diagnostic path keeps separate test-key scenarios. |
 
 ## Maintenance
 

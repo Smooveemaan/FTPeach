@@ -35,6 +35,7 @@ export async function verifyCandidate(directory: string): Promise<Candidate> {
   assert.match(candidate.readiness.sha, /^[0-9a-f]{40}$/);
   assert.match(candidate.build.runId, /^[1-9][0-9]*$/);
   assert.match(candidate.build.attempt, /^[1-9][0-9]*$/);
+  assert.match(candidate.build.workflowSha, /^[0-9a-f]{40}$/);
   assert.deepEqual(
     Object.keys(candidate.files).sort(),
     candidateNames(candidate.readiness.version).sort(),
@@ -96,7 +97,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     await writeFile(path.join(directory, 'candidate.json'), manifest);
     await appendFile(
       process.env.GITHUB_STEP_SUMMARY!,
-      `## Final candidate\n\nVersion ${version}, source ${source}.\nCandidate SHA-256: ${sha256(manifest)}.\nArtifacts are retained for 30 days; automatic acceptance evidence for 14 days.\n`,
+      `## Final candidate\n\nCandidate ID: ${candidate.build.runId}:${candidate.build.attempt}.\nVersion ${version}, source ${source}.\nCandidate SHA-256: ${sha256(manifest)}.\nPackages and acceptance evidence are retained for 30 days; diagnostic logs for 14 days.\n`,
     );
   }
 }

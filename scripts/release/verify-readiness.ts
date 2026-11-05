@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { releaseCheck } from './check-mode.ts';
-import { assertCurrentSuccess, runPrivateCheck, type PrivateEvidence } from './private-check.ts';
+import { runPrivateCheck, type CheckJob, type PrivateEvidence } from './private-check.ts';
 
 export interface Readiness {
   schema: number;
@@ -30,6 +30,19 @@ export interface PublicRun {
   head_repository: { full_name: string };
 }
 export const WINDOWS_PACKAGES = ['windows-x86_64-nsis', 'windows-x86_64-portable'];
+const SOURCE_JOBS = ['mode', 'private-check', 'release-ready', 'checks / full-result'];
+
+export function validateSourceJobs(jobs: CheckJob[]) {
+  const latest = new Map<string, CheckJob>();
+  for (const job of jobs) {
+    if (!SOURCE_JOBS.includes(job.name) && !job.name.startsWith('checks / ')) continue;
+    if (job.id > (latest.get(job.name)?.id ?? 0)) latest.set(job.name, job);
+  }
+  for (const name of SOURCE_JOBS)
+    assert.ok(latest.has(name), `Mandatory source check ${name} is missing`);
+  for (const job of latest.values())
+    assert.equal(job.conclusion, 'success', `Source check ${job.name} is not successful`);
+}
 
 export function requireUnusedVersion(tag: unknown, release: unknown) {
   assert.equal(
@@ -56,14 +69,13 @@ export function validateReadiness(
     true,
     'An ordinary CI run is not release readiness',
   );
-  assert.equal(run.status, 'completed');
-  assert.equal(run.conclusion, 'success');
   assert.match(run.head_sha, /^[0-9a-f]{40}$/);
   assert.equal(proof.schema, 1);
   assert.equal(proof.repository, repository);
   assert.equal(proof.runId, id);
   assert.equal(proof.attempt, String(run.run_attempt));
   assert.equal(proof.sha, run.head_sha);
+  assert.ok(proof.privateCheck, 'The exact closed-check evidence is required');
   assert.match(proof.version, /^\d+\.\d+\.\d+$/);
   assert.match(
     proof.version,
@@ -109,7 +121,33 @@ export async function verifyReadiness(id: string, expected?: Readiness): Promise
   const run = expected
     ? ((await githubApi(`actions/runs/${id}/attempts/${expected.attempt}`)) as PublicRun)
     : currentAtStart;
-  assertCurrentSuccess(currentAtStart, run);
+  assert.ok(Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0);
+  async function jobsFor(route: string): Promise<CheckJob[]> {
+    const jobs: CheckJob[] = [];
+    for (let page = 1; ; page++) {
+      const response = (await githubApi(
+        `${route}${route.includes('?') ? '&' : '?'}per_page=100&page=${page}`,
+      )) as {
+        jobs: CheckJob[];
+      };
+      jobs.push(...response.jobs);
+      if (response.jobs.length < 100) return jobs;
+    }
+  }
+  async function validateCurrent(current: PublicRun) {
+    assert.equal(current.id, run.id);
+    assert.equal(current.head_sha, run.head_sha);
+    assert.ok(current.run_attempt >= run.run_attempt);
+    validateSourceJobs(await jobsFor(`actions/runs/${id}/jobs?filter=all`));
+  }
+  // A failed-job retry retains successful source jobs from earlier attempts.
+  const selectedJobs: CheckJob[] = [];
+  for (let attempt = run.run_attempt; attempt >= 1; attempt--) {
+    selectedJobs.push(...(await jobsFor(`actions/runs/${id}/attempts/${attempt}/jobs`)));
+    if (SOURCE_JOBS.every((name) => selectedJobs.some((job) => job.name === name))) break;
+  }
+  validateSourceJobs(selectedJobs);
+  await validateCurrent(currentAtStart);
   const directory = await mkdtemp(path.join(tmpdir(), 'release-readiness-'));
   execFileSync(
     'gh',
@@ -142,7 +180,12 @@ export async function verifyReadiness(id: string, expected?: Readiness): Promise
     expected: proof.privateCheck,
   });
   const current = (await githubApi(`actions/runs/${id}`)) as PublicRun;
-  assertCurrentSuccess(current, run);
+  assert.equal(
+    current.run_attempt,
+    currentAtStart.run_attempt,
+    'Source workflow was retried during readiness validation',
+  );
+  await validateCurrent(current);
   return proof;
 }
 

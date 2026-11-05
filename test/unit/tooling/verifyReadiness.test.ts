@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   validateReadiness,
+  validateSourceJobs,
   requireUnusedVersion,
   WINDOWS_PACKAGES,
   type PublicRun,
@@ -44,7 +45,17 @@ test('a version already taken by a tag or draft cannot start another packaging b
 test('packaging uses the checked source even after master advances', () => {
   assert.equal(validateReadiness('owner/app', '123', run, proof).sha, 'a'.repeat(40));
 });
-test('ordinary, partial, failed, superseded or untrusted public evidence is rejected', () => {
+test('source readiness remains valid while packaging is running or has failed', () => {
+  for (const patch of [
+    { status: 'in_progress', conclusion: null },
+    { status: 'completed', conclusion: 'failure' },
+    { status: 'completed', conclusion: 'cancelled' },
+  ]) {
+    assert.equal(validateReadiness('owner/app', '123', { ...run, ...patch }, proof), proof);
+  }
+});
+
+test('ordinary, superseded or untrusted public evidence is rejected', () => {
   for (const patch of [
     { id: 999 },
     { run_attempt: 3 },
@@ -52,8 +63,6 @@ test('ordinary, partial, failed, superseded or untrusted public evidence is reje
     { head_branch: 'branch' },
     { event: 'workflow_dispatch' },
     { path: '.github/workflows/other.yml' },
-    { status: 'in_progress' },
-    { conclusion: 'failure' },
     { head_commit: { message: 'ordinary' } },
     { head_repository: { full_name: 'fork/app' } },
   ]) {
@@ -65,7 +74,41 @@ test('ordinary, partial, failed, superseded or untrusted public evidence is reje
     { runId: '999' },
     { packages: [] },
     { version: 'bad' },
+    { privateCheck: undefined },
   ]) {
-    assert.throws(() => validateReadiness('owner/app', '123', run, { ...proof, ...patch }));
+    assert.throws(() =>
+      validateReadiness('owner/app', '123', run, { ...proof, ...patch } as Readiness),
+    );
+  }
+});
+
+const sourceJobs = [
+  'mode',
+  'private-check',
+  'release-ready',
+  'checks / full-result',
+  'checks / rust-test-unix (ubuntu-22.04)',
+  'checks / rust-test-unix (macos-15)',
+].map((name, index) => ({ id: index + 1, name, conclusion: 'success' }));
+
+test('successful retained source jobs survive failures in independent packaging stages', () => {
+  validateSourceJobs([
+    ...sourceJobs,
+    { id: 10, name: 'build-windows', conclusion: 'failure' },
+    { id: 11, name: 'tag-and-draft', conclusion: null },
+  ]);
+  validateSourceJobs([{ id: 0, name: 'private-check', conclusion: 'failure' }, ...sourceJobs]);
+});
+
+test('missing, skipped, failed and still-running source checks block readiness', () => {
+  for (const job of sourceJobs) {
+    for (const conclusion of ['failure', 'skipped', 'cancelled', null]) {
+      assert.throws(() =>
+        validateSourceJobs([...sourceJobs, { id: 100, name: job.name, conclusion }]),
+      );
+    }
+  }
+  for (const name of ['mode', 'private-check', 'release-ready', 'checks / full-result']) {
+    assert.throws(() => validateSourceJobs(sourceJobs.filter((job) => job.name !== name)));
   }
 });

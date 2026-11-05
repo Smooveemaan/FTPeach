@@ -3,7 +3,7 @@ name: CI
 permissions: {}
 
 on:
-  # Tags use release.yml; feature branches are checked through pull requests.
+  # Version tags never start a second release; branches use pull requests.
   push:
     branches: [master]
   pull_request:
@@ -105,3 +105,14 @@ jobs:
           path: release-readiness.json
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    needs: [mode, release-ready]
+    if: needs.mode.outputs.release == 'true'
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/release.yml
+    secrets: inherit

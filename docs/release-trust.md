@@ -39,8 +39,7 @@ and fails unless it has required reviewers and administrator bypass is off
 
 ## Provenance
 
-Verify that an installer was built by this repository's release workflow from
-a tagged commit:
+Verify that an installer was built by this repository's release workflow:
 
 ```powershell
 gh attestation verify FTPeach_X.Y.Z_x64-setup.exe -R Smooveemaan/FTPeach
@@ -57,10 +56,18 @@ manifest tools separately from the commit running the workflow. Fixing those too
 does not require repeating the application's full checks. Changing the
 application or its build inputs requires a newly checked source commit.
 
-The candidate record and provenance identify both commits. The manifest step
-checks the actual application and tool checkouts against them. Package
-acceptance remains mandatory for the resulting files, and the final tag points
+The candidate manifest identifies both commits and the SHA-256 of every final
+file. The manifest step checks the actual application and tool checkouts against
+them. GitHub's standard provenance action attests the installer, portable ZIP and
+`candidate.json`; before creating the tag, the finalizer verifies all three
+attestations against the pinned workflow commit. The manifest is also attached
+to the draft, so the application source remains verifiable when it differs from
+the workflow commit. Package acceptance remains mandatory for the resulting files, and the final tag points
 to the checked application commit, even if `master` has advanced.
+
+The packages are saved before a separate attestation job contacts GitHub.
+If that job fails, retrying it reuses the saved bytes. Acceptance and tag creation
+remain blocked until attestation succeeds.
 
 ## The updater private key
 

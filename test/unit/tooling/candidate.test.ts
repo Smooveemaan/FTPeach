@@ -1,24 +1,16 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import {
   candidateNames,
-  provenance,
   sha256,
   verifyCandidate,
   type Candidate,
 } from '../../../scripts/release/candidate.ts';
 import type { Readiness } from '../../../scripts/release/verify-readiness.ts';
-
-const provenanceEnv = {
-  GITHUB_WORKFLOW_REF: 'owner/app/.github/workflows/release-next.yml@refs/heads/master',
-  GITHUB_REPOSITORY_ID: '123',
-  GITHUB_REPOSITORY_OWNER_ID: '456',
-  RUNNER_ENVIRONMENT: 'github-hosted',
-};
 
 test('candidate hashes bind every final file; damaged or missing packages are rejected', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'candidate-test-'));
@@ -32,22 +24,6 @@ test('candidate hashes bind every final file; damaged or missing packages are re
   };
   await writeFile(path.join(directory, 'candidate.json'), JSON.stringify(candidate));
   assert.deepEqual(await verifyCandidate(directory), candidate);
-  const predicate = provenance(candidate, provenanceEnv);
-  assert.deepEqual(predicate.buildDefinition.internalParameters.github, {
-    event_name: 'workflow_dispatch',
-    repository_id: '123',
-    repository_owner_id: '456',
-    runner_environment: 'github-hosted',
-  });
-  for (const name of Object.keys(provenanceEnv)) {
-    assert.throws(
-      () => provenance(candidate, { ...provenanceEnv, [name]: '' }),
-      new RegExp(`Provenance requires ${name}`),
-    );
-  }
-  assert.throws(() => provenance(candidate, { ...provenanceEnv, RUNNER_ENVIRONMENT: 'unknown' }));
-  assert.equal(predicate.buildDefinition.resolvedDependencies[0]?.digest.gitCommit, 'a'.repeat(40));
-  assert.equal(predicate.buildDefinition.resolvedDependencies[1]?.digest.gitCommit, 'b'.repeat(40));
   await writeFile(path.join(directory, candidateNames('0.6.1')[0]!), 'damaged');
   await assert.rejects(verifyCandidate(directory), /Candidate file changed/);
 });
@@ -94,7 +70,6 @@ test('candidate records separate source and tool commits and rejects either chec
       encoding: 'utf8',
       env: {
         ...process.env,
-        ...provenanceEnv,
         GITHUB_WORKFLOW_SHA: workflowSha,
         GITHUB_RUN_ID: '123',
         GITHUB_RUN_ATTEMPT: '1',
@@ -117,17 +92,4 @@ test('candidate records separate source and tool commits and rejects either chec
   const wrongSource = run(toolsSha);
   assert.notEqual(wrongSource.status, 0);
   assert.match(wrongSource.stderr, /build checkout is not the checked candidate/);
-  const predicate = JSON.parse(
-    await readFile(path.join(source, 'release/provenance.json'), 'utf8'),
-  );
-  assert.equal(
-    predicate.buildDefinition.internalParameters.github.runner_environment,
-    'github-hosted',
-  );
-  assert.deepEqual(
-    predicate.buildDefinition.resolvedDependencies.map(
-      (entry: { digest: { gitCommit: string } }) => entry.digest.gitCommit,
-    ),
-    [sourceSha, toolsSha],
-  );
 });

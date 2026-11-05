@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { type execFileSync } from 'node:child_process';
+import path from 'node:path';
 import { test } from 'node:test';
 import {
   assetNeedsUpload,
@@ -7,7 +9,7 @@ import {
   validateManualAcceptance,
   validatePackagingRun,
   validateTag,
-  verifiedSource,
+  verifyAttestations,
   type ManualAcceptance,
 } from '../../../scripts/release/finalize.ts';
 import type { Candidate } from '../../../scripts/release/candidate.ts';
@@ -59,6 +61,51 @@ test('every manual result must name the exact source and accepted bytes', () => 
         sha,
         hash,
       ),
+    );
+  }
+});
+
+test('tagging requires attested source manifest and both packages from the pinned workflow', () => {
+  const packaged = {
+    ...candidate,
+    files: {
+      'FTPeach_0.6.1_x64-setup.exe': hash,
+      'FTPeach_0.6.1_x64-portable.zip': hash,
+      'release-notes.md': hash,
+    },
+  };
+  const verified: string[] = [];
+  const run = ((command: string, args: string[]) => {
+    assert.equal(command, 'gh');
+    const file = path.basename(args[2]!);
+    assert.deepEqual(args.slice(0, 2), ['attestation', 'verify']);
+    assert.deepEqual(args.slice(3), [
+      '--repo',
+      'owner/app',
+      '--signer-workflow',
+      'owner/app/.github/workflows/release-next.yml',
+      '--signer-digest',
+      candidate.build.workflowSha,
+      '--format',
+      'json',
+    ]);
+    verified.push(file);
+    return Buffer.alloc(0);
+  }) as typeof execFileSync;
+  verifyAttestations('candidate', packaged, '.github/workflows/release-next.yml', run);
+  assert.deepEqual(verified, [
+    'candidate.json',
+    'FTPeach_0.6.1_x64-setup.exe',
+    'FTPeach_0.6.1_x64-portable.zip',
+  ]);
+  for (const rejected of verified) {
+    const reject = ((_command: string, args: string[]) => {
+      if (path.basename(args[2]!) === rejected) throw new Error('Attestation rejected');
+      return Buffer.alloc(0);
+    }) as typeof execFileSync;
+    assert.throws(
+      () => verifyAttestations('candidate', packaged, '.github/workflows/release-next.yml', reject),
+      /Attestation rejected/,
     );
   }
 });
@@ -114,24 +161,4 @@ test('failed, canceled or substituted packaging runs cannot authorize a tag', ()
   ]) {
     assert.throws(() => validatePackagingRun({ ...run, ...patch }, candidate, run.path, '123'));
   }
-});
-test('the verified attestation must identify the actual checkout, independently of controller SHA', () => {
-  const output = [
-    {
-      verificationResult: {
-        statement: {
-          predicate: {
-            buildDefinition: {
-              resolvedDependencies: [
-                { uri: `git+https://github.com/owner/app@${sha}`, digest: { gitCommit: sha } },
-              ],
-            },
-          },
-        },
-      },
-    },
-  ];
-  assert.equal(verifiedSource(output, 'owner/app', sha), true);
-  assert.equal(verifiedSource(output, 'owner/app', 'd'.repeat(40)), false);
-  assert.equal(verifiedSource([], 'owner/app', sha), false);
 });

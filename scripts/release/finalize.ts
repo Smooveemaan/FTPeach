@@ -104,28 +104,40 @@ export function assetNeedsUpload(asset: Asset | undefined, hash: string): boolea
   return false;
 }
 
-export function verifiedSource(output: unknown, repository: string, sha: string): boolean {
-  const results = output as {
-    verificationResult?: {
-      statement?: {
-        predicate?: {
-          buildDefinition?: {
-            resolvedDependencies?: { uri?: string; digest?: { gitCommit?: string } }[];
-          };
-        };
-      };
-    };
-  }[];
-  return (
-    Array.isArray(results) &&
-    results.some((item) =>
-      item.verificationResult?.statement?.predicate?.buildDefinition?.resolvedDependencies?.some(
-        (source) =>
-          source.uri === `git+https://github.com/${repository}@${sha}` &&
-          source.digest?.gitCommit === sha,
-      ),
-    )
-  );
+export function verifyAttestations(
+  directory: string,
+  candidate: Candidate,
+  workflowPath: string,
+  run: typeof execFileSync = execFileSync,
+) {
+  // The attested manifest binds the checked app SHA to every final file hash.
+  for (const name of [
+    'candidate.json',
+    ...Object.keys(candidate.files).filter((name) => /(-setup\.exe|-portable\.zip)$/.test(name)),
+  ]) {
+    run(
+      'gh',
+      [
+        'attestation',
+        'verify',
+        path.join(directory, name),
+        '--repo',
+        candidate.readiness.repository,
+        '--signer-workflow',
+        `${candidate.readiness.repository}/${workflowPath}`,
+        '--signer-digest',
+        candidate.build.workflowSha,
+        '--format',
+        'json',
+      ],
+      {
+        env: { ...process.env, GH_TOKEN: process.env.GITHUB_TOKEN },
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 120_000,
+      },
+    );
+  }
 }
 
 async function downloadArtifact(runId: string, prefix: string, directory: string) {
@@ -206,7 +218,7 @@ async function prepare() {
     jobs.push(...response.jobs);
     if (response.jobs.length < 100) break;
   }
-  for (const name of ['candidate', 'build-windows', 'acceptance / installer']) {
+  for (const name of ['candidate', 'build-windows', 'attest', 'acceptance / installer']) {
     const latest = jobs.filter((job) => job.name === name).sort((a, b) => b.id - a.id)[0];
     assert.equal(latest?.conclusion, 'success', `Candidate job ${name} is not successful`);
   }
@@ -224,36 +236,7 @@ async function prepare() {
   requireAcceptance(automatic.stats);
   const manual = JSON.parse(process.env.MANUAL_ACCEPTANCE ?? '{}') as ManualAcceptance;
   validateManualAcceptance(manual, candidate.readiness.sha, hash);
-  for (const name of Object.keys(candidate.files).filter((name) =>
-    /(-setup\.exe|-portable\.zip)$/.test(name),
-  )) {
-    const output = execFileSync(
-      'gh',
-      [
-        'attestation',
-        'verify',
-        path.join(directory, name),
-        '--repo',
-        readiness.repository,
-        '--signer-workflow',
-        `${readiness.repository}/${workflowPath}`,
-        '--signer-digest',
-        candidate.build.workflowSha,
-        '--format',
-        'json',
-      ],
-      {
-        env: { ...process.env, GH_TOKEN: process.env.GITHUB_TOKEN },
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: 120_000,
-      },
-    );
-    assert.ok(
-      verifiedSource(JSON.parse(output), readiness.repository, readiness.sha),
-      'Attestation does not identify the checked build source',
-    );
-  }
+  verifyAttestations(directory, candidate, workflowPath);
   await writeFile(
     path.join(directory, 'release-verification.json'),
     JSON.stringify({ candidate, candidateHash: hash, automatic, manual }, null, 2),
@@ -312,6 +295,7 @@ async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
     `FTPeach_${version}_x64-setup.exe`,
     `FTPeach_${version}_x64-portable.zip`,
     'release-audit.zip',
+    'candidate.json',
     'release-verification.json',
   ];
   const allowed = [...packages, 'latest.json'];

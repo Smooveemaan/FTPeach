@@ -49,58 +49,6 @@ export async function verifyCandidate(directory: string): Promise<Candidate> {
   return candidate;
 }
 
-export function provenance(candidate: Candidate, env: Record<string, string | undefined>) {
-  for (const name of [
-    'GITHUB_WORKFLOW_REF',
-    'GITHUB_REPOSITORY_ID',
-    'GITHUB_REPOSITORY_OWNER_ID',
-    'RUNNER_ENVIRONMENT',
-  ]) {
-    assert.ok(env[name]?.trim(), `Provenance requires ${name}`);
-  }
-  assert.ok(['github-hosted', 'self-hosted'].includes(env.RUNNER_ENVIRONMENT!));
-  const repository = `https://github.com/${candidate.readiness.repository}`;
-  return {
-    buildDefinition: {
-      buildType: 'https://actions.github.io/buildtypes/workflow/v1',
-      externalParameters: {
-        workflow: {
-          ref: 'refs/heads/master',
-          repository,
-          path: env.GITHUB_WORKFLOW_REF?.split('@')[0]?.slice(
-            candidate.readiness.repository.length + 1,
-          ),
-        },
-        source: { sha: candidate.readiness.sha },
-      },
-      internalParameters: {
-        github: {
-          event_name: 'workflow_dispatch',
-          repository_id: env.GITHUB_REPOSITORY_ID,
-          repository_owner_id: env.GITHUB_REPOSITORY_OWNER_ID,
-          runner_environment: env.RUNNER_ENVIRONMENT,
-        },
-      },
-      resolvedDependencies: [
-        {
-          uri: `git+${repository}@${candidate.readiness.sha}`,
-          digest: { gitCommit: candidate.readiness.sha },
-        },
-        {
-          uri: `git+${repository}@${candidate.build.workflowSha}`,
-          digest: { gitCommit: candidate.build.workflowSha },
-        },
-      ],
-    },
-    runDetails: {
-      builder: { id: `https://github.com/${env.GITHUB_WORKFLOW_REF}` },
-      metadata: {
-        invocationId: `${repository}/actions/runs/${candidate.build.runId}/attempts/${candidate.build.attempt}`,
-      },
-    },
-  };
-}
-
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const directory = process.argv[2] ?? 'release-candidate';
   if (process.argv.includes('--verify')) {
@@ -149,10 +97,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     await appendFile(
       process.env.GITHUB_STEP_SUMMARY!,
       `## Final candidate\n\nVersion ${version}, source ${source}.\nCandidate SHA-256: ${sha256(manifest)}.\nArtifacts are retained for 30 days; automatic acceptance evidence for 14 days.\n`,
-    );
-    await writeFile(
-      'release/provenance.json',
-      JSON.stringify(provenance(candidate, process.env), null, 2),
     );
   }
 }

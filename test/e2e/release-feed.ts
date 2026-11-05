@@ -1,6 +1,6 @@
 // A loopback-only substitute for the production HTTPS feed on disposable Windows runners.
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -9,6 +9,7 @@ import { createServer as createHttpsServer } from 'node:https';
 import { connect, type AddressInfo, type Server, type Socket } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { verifyCandidate } from '../../scripts/release/candidate.ts';
 
 export const PRODUCTION_FEED = '/Smooveemaan/ftpeach/releases/latest/download/latest.json';
@@ -112,11 +113,14 @@ export async function serveProductionFeed(directory: string) {
   );
   const temporary = await mkdtemp(path.join(tmpdir(), 'ftpeach-release-feed-'));
   const password = randomBytes(32).toString('hex');
-  const powershell = (script: string) =>
-    execFileSync('pwsh', ['-NoProfile', '-Command', script], {
-      encoding: 'utf8',
-      env: { ...process.env, RELEASE_FEED_DIR: temporary, RELEASE_FEED_PASSWORD: password },
-    }).trim();
+  const powershell = async (script: string) =>
+    (
+      await promisify(execFile)('pwsh', ['-NoProfile', '-Command', script], {
+        encoding: 'utf8',
+        timeout: 60_000,
+        env: { ...process.env, RELEASE_FEED_DIR: temporary, RELEASE_FEED_PASSWORD: password },
+      })
+    ).stdout.trim();
   let certificates: { root: string; leaf: string } | undefined;
   let closeHttps: (() => Promise<void>) | undefined;
   let proxy: Awaited<ReturnType<typeof productionProxy>> | undefined;
@@ -131,7 +135,7 @@ export async function serveProductionFeed(directory: string) {
           if (certificates) {
             assert.match(certificates.root, /^[0-9A-F]{40}$/);
             assert.match(certificates.leaf, /^[0-9A-F]{40}$/);
-            powershell(`$ErrorActionPreference = 'Stop'
+            await powershell(`$ErrorActionPreference = 'Stop'
               $rootPath = 'Cert:\\CurrentUser\\Root\\${certificates.root}'
               if (Test-Path -LiteralPath $rootPath) { Remove-Item -LiteralPath $rootPath }
               foreach ($certPath in @('Cert:\\CurrentUser\\My\\${certificates.leaf}', 'Cert:\\CurrentUser\\My\\${certificates.root}')) {
@@ -145,7 +149,7 @@ export async function serveProductionFeed(directory: string) {
     }
   }
   try {
-    powershell(`$ErrorActionPreference = 'Stop'
+    await powershell(`$ErrorActionPreference = 'Stop'
       $root = $null; $leaf = $null
       try {
         $root = New-SelfSignedCertificate -Type Custom -Subject ('CN=FTPeach disposable feed ' + [guid]::NewGuid()) -KeyUsage CertSign,CRLSign,DigitalSignature -TextExtension @('2.5.29.19={critical}{text}ca=1&pathlength=0') -CertStoreLocation Cert:\\CurrentUser\\My -KeyExportPolicy Exportable -NotAfter (Get-Date).AddDays(1)

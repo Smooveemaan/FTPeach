@@ -98,7 +98,7 @@ export async function productionProxy(targetPort: number) {
   };
 }
 
-/** Installs a temporary CA only in the disposable account; no app config or signing key changes. */
+/** Installs a temporary CA only on the disposable machine; no app config or signing key changes. */
 export async function serveProductionFeed(directory: string) {
   const { requireThrowawayMachine } = await import('./install.ts');
   requireThrowawayMachine();
@@ -136,7 +136,7 @@ export async function serveProductionFeed(directory: string) {
             assert.match(certificates.root, /^[0-9A-F]{40}$/);
             assert.match(certificates.leaf, /^[0-9A-F]{40}$/);
             await powershell(`$ErrorActionPreference = 'Stop'
-              $rootPath = 'Cert:\\CurrentUser\\Root\\${certificates.root}'
+              $rootPath = 'Cert:\\LocalMachine\\Root\\${certificates.root}'
               if (Test-Path -LiteralPath $rootPath) { Remove-Item -LiteralPath $rootPath }
               foreach ($certPath in @('Cert:\\CurrentUser\\My\\${certificates.leaf}', 'Cert:\\CurrentUser\\My\\${certificates.root}')) {
                 if (Test-Path -LiteralPath $certPath) { Remove-Item -LiteralPath $certPath -DeleteKey }
@@ -157,9 +157,9 @@ export async function serveProductionFeed(directory: string) {
         Export-Certificate -Cert $root -FilePath (Join-Path $env:RELEASE_FEED_DIR 'root.cer') | Out-Null
         Export-PfxCertificate -Cert $leaf -FilePath (Join-Path $env:RELEASE_FEED_DIR 'server.pfx') -Password (ConvertTo-SecureString $env:RELEASE_FEED_PASSWORD -AsPlainText -Force) | Out-Null
         @{ root = $root.Thumbprint; leaf = $leaf.Thumbprint } | ConvertTo-Json -Compress | Set-Content -LiteralPath (Join-Path $env:RELEASE_FEED_DIR 'certificates.json') -Encoding ascii
-        Import-Certificate -FilePath (Join-Path $env:RELEASE_FEED_DIR 'root.cer') -CertStoreLocation Cert:\\CurrentUser\\Root | Out-Null
+        Import-Certificate -FilePath (Join-Path $env:RELEASE_FEED_DIR 'root.cer') -CertStoreLocation Cert:\\LocalMachine\\Root | Out-Null
       } catch {
-        if ($root) { Remove-Item -LiteralPath ('Cert:\\CurrentUser\\Root\\' + $root.Thumbprint) -ErrorAction SilentlyContinue }
+        if ($root) { Remove-Item -LiteralPath ('Cert:\\LocalMachine\\Root\\' + $root.Thumbprint) -ErrorAction SilentlyContinue }
         foreach ($cert in @($leaf, $root)) { if ($cert) { Remove-Item -LiteralPath ('Cert:\\CurrentUser\\My\\' + $cert.Thumbprint) -DeleteKey -ErrorAction SilentlyContinue } }
         throw
       }`);

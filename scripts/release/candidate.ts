@@ -50,6 +50,15 @@ export async function verifyCandidate(directory: string): Promise<Candidate> {
 }
 
 export function provenance(candidate: Candidate, env: Record<string, string | undefined>) {
+  for (const name of [
+    'GITHUB_WORKFLOW_REF',
+    'GITHUB_REPOSITORY_ID',
+    'GITHUB_REPOSITORY_OWNER_ID',
+    'RUNNER_ENVIRONMENT',
+  ]) {
+    assert.ok(env[name]?.trim(), `Provenance requires ${name}`);
+  }
+  assert.ok(['github-hosted', 'self-hosted'].includes(env.RUNNER_ENVIRONMENT!));
   const repository = `https://github.com/${candidate.readiness.repository}`;
   return {
     buildDefinition: {
@@ -69,6 +78,7 @@ export function provenance(candidate: Candidate, env: Record<string, string | un
           event_name: 'workflow_dispatch',
           repository_id: env.GITHUB_REPOSITORY_ID,
           repository_owner_id: env.GITHUB_REPOSITORY_OWNER_ID,
+          runner_environment: env.RUNNER_ENVIRONMENT,
         },
       },
       resolvedDependencies: [

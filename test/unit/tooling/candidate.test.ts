@@ -13,6 +13,13 @@ import {
 } from '../../../scripts/release/candidate.ts';
 import type { Readiness } from '../../../scripts/release/verify-readiness.ts';
 
+const provenanceEnv = {
+  GITHUB_WORKFLOW_REF: 'owner/app/.github/workflows/release-next.yml@refs/heads/master',
+  GITHUB_REPOSITORY_ID: '123',
+  GITHUB_REPOSITORY_OWNER_ID: '456',
+  RUNNER_ENVIRONMENT: 'github-hosted',
+};
+
 test('candidate hashes bind every final file; damaged or missing packages are rejected', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'candidate-test-'));
   const files = Object.fromEntries(candidateNames('0.6.1').map((name) => [name, sha256(name)]));
@@ -25,9 +32,20 @@ test('candidate hashes bind every final file; damaged or missing packages are re
   };
   await writeFile(path.join(directory, 'candidate.json'), JSON.stringify(candidate));
   assert.deepEqual(await verifyCandidate(directory), candidate);
-  const predicate = provenance(candidate, {
-    GITHUB_WORKFLOW_REF: 'owner/app/.github/workflows/release.yml@refs/heads/master',
+  const predicate = provenance(candidate, provenanceEnv);
+  assert.deepEqual(predicate.buildDefinition.internalParameters.github, {
+    event_name: 'workflow_dispatch',
+    repository_id: '123',
+    repository_owner_id: '456',
+    runner_environment: 'github-hosted',
   });
+  for (const name of Object.keys(provenanceEnv)) {
+    assert.throws(
+      () => provenance(candidate, { ...provenanceEnv, [name]: '' }),
+      new RegExp(`Provenance requires ${name}`),
+    );
+  }
+  assert.throws(() => provenance(candidate, { ...provenanceEnv, RUNNER_ENVIRONMENT: 'unknown' }));
   assert.equal(predicate.buildDefinition.resolvedDependencies[0]?.digest.gitCommit, 'a'.repeat(40));
   assert.equal(predicate.buildDefinition.resolvedDependencies[1]?.digest.gitCommit, 'b'.repeat(40));
   await writeFile(path.join(directory, candidateNames('0.6.1')[0]!), 'damaged');
@@ -76,8 +94,8 @@ test('candidate records separate source and tool commits and rejects either chec
       encoding: 'utf8',
       env: {
         ...process.env,
+        ...provenanceEnv,
         GITHUB_WORKFLOW_SHA: workflowSha,
-        GITHUB_WORKFLOW_REF: 'owner/app/.github/workflows/release-next.yml@refs/heads/master',
         GITHUB_RUN_ID: '123',
         GITHUB_RUN_ATTEMPT: '1',
         GITHUB_STEP_SUMMARY: path.join(directory, 'summary.md'),
@@ -101,6 +119,10 @@ test('candidate records separate source and tool commits and rejects either chec
   assert.match(wrongSource.stderr, /build checkout is not the checked candidate/);
   const predicate = JSON.parse(
     await readFile(path.join(source, 'release/provenance.json'), 'utf8'),
+  );
+  assert.equal(
+    predicate.buildDefinition.internalParameters.github.runner_environment,
+    'github-hosted',
   );
   assert.deepEqual(
     predicate.buildDefinition.resolvedDependencies.map(

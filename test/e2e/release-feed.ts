@@ -113,7 +113,7 @@ export async function serveProductionFeed(directory: string) {
   const temporary = await mkdtemp(path.join(tmpdir(), 'ftpeach-release-feed-'));
   const password = randomBytes(32).toString('hex');
   const powershell = (script: string) =>
-    execFileSync('powershell', ['-NoProfile', '-Command', script], {
+    execFileSync('pwsh', ['-NoProfile', '-Command', script], {
       encoding: 'utf8',
       env: { ...process.env, RELEASE_FEED_DIR: temporary, RELEASE_FEED_PASSWORD: password },
     }).trim();

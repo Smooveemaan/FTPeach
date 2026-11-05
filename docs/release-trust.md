@@ -134,7 +134,7 @@ A `master` push whose last commit contains the exact standalone line
 `Release-Check: true` starts the full public and closed checks. Their success
 continues through Windows x64 NSIS and portable packaging, signing, artifact
 retention, attestation and final-package acceptance in one CI chain. The
-`verify-artifacts` stage requires separate attestation and package-test results.
+`manual-acceptance` stage requires separate attestation and package-test results.
 The diagnostic Installer workflow retains its test-key negative scenarios.
 Unix source checks remain part of the full suite; this release's packaging and
 package acceptance run only on Windows.

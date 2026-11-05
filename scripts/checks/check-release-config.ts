@@ -193,8 +193,8 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
   [releaseWorkflow, 'release.yml', 'Verify every updater signature'],
   [releaseWorkflow, 'release.yml', 'uses: ./.github/workflows/installer.yml'],
-  [releaseWorkflow, 'release.yml', '  verify-artifacts:'],
   [releaseWorkflow, 'release.yml', '  manual-acceptance:'],
+  [releaseWorkflow, 'release.yml', 'needs: [candidate, build-windows, attest, acceptance]'],
   [
     releaseWorkflow,
     'release.yml',

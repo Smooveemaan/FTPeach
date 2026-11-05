@@ -141,9 +141,11 @@ async function readDestination(candidate: Candidate, hash: string) {
   return { draft, reference, marker };
 }
 
-async function prepare() {
+type AcceptedCandidate = Awaited<ReturnType<typeof validateCandidate>>;
+
+async function prepare(accepted?: AcceptedCandidate) {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
-  const accepted = await validateCandidate(process.env.CANDIDATE_ID!);
+  accepted ??= await validateCandidate(process.env.CANDIDATE_ID!);
   const { candidate, hash, directory, attest, installer, run } = accepted;
   assert.ok(attest && installer, 'Automatic candidate acceptance is incomplete or stale');
   const manual = JSON.parse(
@@ -278,9 +280,12 @@ async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   );
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const accepted = await prepare();
-  if (process.argv[2] === 'publish') {
+export async function finalizeCandidate(
+  validated?: AcceptedCandidate,
+  shouldPublish = process.argv[2] === 'publish',
+) {
+  const accepted = await prepare(validated);
+  if (shouldPublish) {
     assert.equal(
       process.env.GITHUB_JOB,
       'tag-and-draft',
@@ -294,4 +299,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       `## Approval to create the final tag\n\nv${accepted.candidate.readiness.version}, source ${accepted.candidate.readiness.sha}, candidate SHA-256 ${accepted.hash}.\n\nAutomatic acceptance and all ${MANUAL_CHECKS.length} manual checks passed. Approve release-tag only to create this tag and upload these exact files to a draft.\n`,
     );
   }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await finalizeCandidate();
 }

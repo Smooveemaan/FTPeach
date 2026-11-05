@@ -228,31 +228,6 @@ jobs:
       candidate-run-id: ${{ needs.candidate.outputs.build-run-id }}
       production: true
 
-  verify-artifacts:
-    needs: [candidate, build-windows, attest, acceptance]
-    if: always() && needs.candidate.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    permissions:
-      actions: read
-      contents: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      - name: Require both independent package checks
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/validate-candidate.ts accepted
-
   manual:
     if: github.ref == 'refs/heads/master' && inputs.operation == 'record-manual'
     permissions:
@@ -283,8 +258,8 @@ jobs:
           if-no-files-found: error
 
   manual-acceptance:
-    needs: [candidate, verify-artifacts]
-    if: github.event_name == 'push' || inputs.operation == 'deploy'
+    needs: [candidate, build-windows, attest, acceptance]
+    if: always() && needs.candidate.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
     permissions:
       actions: read
       contents: read
@@ -292,7 +267,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 315
     outputs:
-      candidate-id: ${{ needs.verify-artifacts.outputs.candidate-id }}
+      candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -300,20 +275,13 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-      - name: Wait for the candidate's recorded manual acceptance
+      - name: Require automatic checks and manual acceptance before deploy approval
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
           PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.verify-artifacts.outputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/manual.ts ${{ github.event_name == 'push' && 'wait' || 'read' }}
-      - name: Validate readiness before requesting deploy approval
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.verify-artifacts.outputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/finalize.ts
+          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/manual.ts ${{ github.event_name == 'push' && 'wait' || 'read' }} finalize
 
   tag-and-draft:
     needs: [candidate, manual-acceptance]
@@ -335,17 +303,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
-      - name: Reload manual acceptance after approval
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.manual-acceptance.outputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/manual.ts read
       - name: Revalidate, tag and resume the identical draft files
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
           PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
           CANDIDATE_ID: ${{ needs.manual-acceptance.outputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/finalize.ts publish
+        run: node --experimental-strip-types scripts/release/manual.ts read publish

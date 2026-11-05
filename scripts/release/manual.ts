@@ -3,7 +3,7 @@ import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { validateManualAcceptance, type ManualAcceptance } from './finalize.ts';
+import { finalizeCandidate, validateManualAcceptance, type ManualAcceptance } from './finalize.ts';
 import {
   downloadArtifact,
   findArtifact,
@@ -64,7 +64,8 @@ export async function manualAcceptance(
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   const id = process.env.CANDIDATE_ID!;
-  const { candidate, hash, attest, installer } = await validateCandidate(id);
+  const validated = await validateCandidate(id);
+  const { candidate, hash, attest, installer } = validated;
   assert.ok(attest && installer, 'Complete automatic acceptance before recording manual results');
   if (process.argv[2] === 'record') {
     const manual = JSON.parse(process.env.MANUAL_ACCEPTANCE ?? '{}') as ManualAcceptance;
@@ -108,5 +109,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       'Manual acceptance is missing; record it, then dispatch deploy with this candidate ID',
     );
     await writeFile('manual-acceptance.json', JSON.stringify(manual, null, 2));
+    if (process.argv[3] === 'finalize' || process.argv[3] === 'publish')
+      await finalizeCandidate(
+        process.argv[2] === 'wait' ? undefined : validated,
+        process.argv[3] === 'publish',
+      );
   }
 }

@@ -107,7 +107,7 @@ jobs:
         if: inputs.production
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/release-acceptance-results.json
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/test-results/release-acceptance-results.json
         run: npx playwright test --config test/e2e/playwright.config.ts --project=release --reporter=list,json
 
       - name: Bind acceptance to the tested files

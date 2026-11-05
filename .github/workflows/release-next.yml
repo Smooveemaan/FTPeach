@@ -36,6 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.workflow_sha }}
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -117,10 +118,17 @@ jobs:
             cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $config.plugins.updater.pubkey $artifact $signature.FullName
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
+      - name: Check out verification tools from the pinned workflow commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .release-tools
+          sparse-checkout: scripts/release
+          persist-credentials: false
       - name: Check final trust and absence of signing keys
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        run: node --experimental-strip-types scripts/release/release-trust-report.ts
+        run: node --experimental-strip-types .release-tools/scripts/release/release-trust-report.ts
       - name: Freeze candidate files and record source and tools
         id: package
         shell: pwsh
@@ -131,7 +139,7 @@ jobs:
           Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-candidate
           Copy-Item -LiteralPath release/release-notes.md -Destination release-candidate
           Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md, release-readiness.json -DestinationPath release-candidate/release-audit.zip
-          node --experimental-strip-types scripts/release/candidate.ts
+          node --experimental-strip-types .release-tools/scripts/release/candidate.ts
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "artifact=release-candidate-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
       - name: Attest the actual source and final package bytes
@@ -174,6 +182,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.workflow_sha }}
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -205,7 +214,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.finalize-candidate.outputs.sha }}
+          ref: ${{ github.workflow_sha }}
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

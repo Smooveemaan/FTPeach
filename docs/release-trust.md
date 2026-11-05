@@ -50,6 +50,18 @@ The installer is not byte-for-byte reproducible (NSIS and the Rust toolchain
 embed build-time data), so provenance is attested, not rebuilt. The SHA-256 of
 the installer and the app binary is in the trust report.
 
+The candidate workflow pins the application to the commit of its successful
+full public and private checks. Sources, dependencies and build scripts stay
+on that commit. After building, it checks out the trust report and candidate
+manifest tools separately from the commit running the workflow. Fixing those tools therefore
+does not require repeating the application's full checks. Changing the
+application or its build inputs requires a newly checked source commit.
+
+The candidate record and provenance identify both commits. The manifest step
+checks the actual application and tool checkouts against them. Package
+acceptance remains mandatory for the resulting files, and the final tag points
+to the checked application commit, even if `master` has advanced.
+
 ## The updater private key
 
 The report scans the app binary and every file in the bundle directory for

@@ -107,6 +107,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       /^[0-9a-f]{40}$/,
       'The build workflow SHA is required',
     );
+    const toolsSource = execFileSync('git', ['-C', import.meta.dirname, 'rev-parse', 'HEAD'], {
+      encoding: 'utf8',
+    }).trim();
+    assert.equal(
+      toolsSource,
+      process.env.GITHUB_WORKFLOW_SHA,
+      'Release verification tools must come from the pinned build workflow commit',
+    );
     const files: Record<string, string> = {};
     for (const name of candidateNames(version))
       files[name] = sha256(await readFile(path.join(directory, name)));

@@ -28,10 +28,11 @@ async function filesUnder(directory: string): Promise<string[]> {
 
 function authenticode(file: string): AuthenticodeResult {
   const script = [
+    "$ErrorActionPreference = 'Stop'",
     `$s = Get-AuthenticodeSignature -LiteralPath '${file.replaceAll("'", "''")}'`,
     '[pscustomobject]@{ status = $s.Status.ToString(); signer = $s.SignerCertificate.Subject; timestamped = $null -ne $s.TimeStamperCertificate } | ConvertTo-Json -Compress',
   ].join('; ');
-  const output = execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], {
+  const output = execFileSync('pwsh', ['-NoProfile', '-NonInteractive', '-Command', script], {
     encoding: 'utf8',
     timeout: 60_000,
   });

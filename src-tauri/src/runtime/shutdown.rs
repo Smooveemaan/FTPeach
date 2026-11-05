@@ -233,12 +233,13 @@ async fn flush_renderer<R: Runtime>(app: &AppHandle<R>, deadline: Duration) -> b
         "app:flush-state",
         serde_json::json!({"requestId": request_id}),
     );
-    let saved = emitted.is_ok() && wait_for_flush(receiver, deadline).await;
-    if !saved {
-        log::warn!(
-            "renderer did not confirm its state was saved within {deadline:?} (failed or timed out)"
-        );
-    }
+    let saved = match emitted {
+        Ok(()) => wait_for_flush(receiver, deadline).await,
+        Err(error) => {
+            log::warn!("could not request renderer state flush: {error}");
+            false
+        }
+    };
     coordinator.state_flushed(&request_id, false);
     saved
 }
@@ -247,7 +248,21 @@ async fn wait_for_flush(
     receiver: tokio::sync::oneshot::Receiver<bool>,
     deadline: Duration,
 ) -> bool {
-    matches!(tokio::time::timeout(deadline, receiver).await, Ok(Ok(true)))
+    match tokio::time::timeout(deadline, receiver).await {
+        Ok(Ok(true)) => true,
+        Ok(Ok(false)) => {
+            log::warn!("renderer reported a failed state flush");
+            false
+        }
+        Ok(Err(error)) => {
+            log::warn!("renderer state flush acknowledgement was dropped: {error}");
+            false
+        }
+        Err(_) => {
+            log::warn!("renderer state flush acknowledgement timed out after {deadline:?}");
+            false
+        }
+    }
 }
 
 #[cfg(test)]
@@ -332,5 +347,11 @@ mod tests {
         let (sender, receiver) = tokio::sync::oneshot::channel();
         sender.send(true).unwrap();
         assert!(wait_for_flush(receiver, Duration::from_millis(10)).await);
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        sender.send(false).unwrap();
+        assert!(!wait_for_flush(receiver, Duration::from_millis(10)).await);
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        drop(sender);
+        assert!(!wait_for_flush(receiver, Duration::from_millis(10)).await);
     }
 }

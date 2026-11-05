@@ -758,9 +758,15 @@ mod tests {
             .chain(std::env::var_os("HOME").map(PathBuf::from))
         {
             let error = validated_delete_target(&folder).await.unwrap_err();
+            // macOS exposes /var as a symlink to /private/var.
+            let expected = if cfg!(target_os = "macos") && folder == Path::new("/var") {
+                crate::ipc::ErrorCode::LinkNotFollowed
+            } else {
+                crate::ipc::ErrorCode::PermissionDenied
+            };
             assert_eq!(
                 crate::ipc::CommandError::from_anyhow(&error).code,
-                crate::ipc::ErrorCode::PermissionDenied,
+                expected,
                 "{}",
                 folder.display()
             );

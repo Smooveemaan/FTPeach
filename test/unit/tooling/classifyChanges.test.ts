@@ -91,6 +91,27 @@ test('check tooling does not build the app, while mixed changes still do', () =>
   );
 });
 
+test('native safety and smoke fixes select their platform checks without a full run', () => {
+  assert.deepEqual(gateIds(['src-tauri/src/local_fs/filesystem_safety.rs']), [
+    ...RUST,
+    'rust-test-unix',
+  ]);
+  for (const file of [
+    'src-tauri/src/commands/smoke.rs',
+    'src-tauri/src/runtime/shutdown.rs',
+    'src-tauri/assets/smoke_test.js',
+    'src-tauri/assets/acl_probe.js',
+    'scripts/packaged-smoke/harness.ts',
+    'scripts/packaged-smoke/smoke.ts',
+    'test/unit/tooling/packagedSmoke.test.ts',
+  ]) {
+    const gates = gateIds([file]);
+    assert.ok(gates.includes('packaged-smoke'), file);
+    assert.ok(!gates.includes('rust-coverage'), file);
+    assert.ok(!gates.includes('visual-regression'), file);
+  }
+});
+
 test('baseline quality checks follow their inputs and full runs retain every check', () => {
   const cases: Array<[string, readonly string[]]> = [
     ['README.md', []],

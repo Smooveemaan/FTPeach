@@ -64,7 +64,7 @@ export function discoverRustIncludes(
   return [...found].sort();
 }
 
-/** Select ordinary checks by affected code; expensive suites require an explicit full run. */
+/** Select checks by affected code; explicit full runs include every suite. */
 export function classifyChangeSet(
   paths: Iterable<string>,
   context: ClassificationContext = { source: 'explicit', base: null, head: null },
@@ -195,6 +195,21 @@ export function classifyChangeSet(
     }
     if (file.startsWith('src-tauri/src/protocol/') || file.startsWith('src-tauri/fuzz/')) {
       selected.add('parser-regressions');
+    }
+    if (file === 'src-tauri/src/local_fs/filesystem_safety.rs') {
+      selected.add('rust-test-unix');
+    }
+    if (
+      [
+        'src-tauri/src/commands/smoke.rs',
+        'src-tauri/src/runtime/shutdown.rs',
+        'src-tauri/assets/smoke_test.js',
+        'src-tauri/assets/acl_probe.js',
+        'test/unit/tooling/packagedSmoke.test.ts',
+      ].includes(file) ||
+      file.startsWith('scripts/packaged-smoke/')
+    ) {
+      selected.add('packaged-smoke');
     }
   }
   const checkTooling = changedFiles.some(

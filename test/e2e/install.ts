@@ -222,6 +222,7 @@ export function writeProfile(
 
 /** Changes settings.json while FTPeach is not running. */
 export function changeSettings(patch: Record<string, unknown>, folder = dataDir) {
+  mkdirSync(folder, { recursive: true });
   const file = path.join(folder, 'settings.json');
   const settings = existsSync(file)
     ? (JSON.parse(readFileSync(file, 'utf8')) as { schemaVersion: number; data: object })

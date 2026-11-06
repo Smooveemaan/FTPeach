@@ -45,6 +45,7 @@ jobs:
       candidate-id: ${{ inputs.candidate-id || format('{0}:{1}', github.run_id, github.run_attempt) }}
       attest: ${{ steps.resume.outputs.attest || (github.event_name == 'push' && 'true' || 'false') }}
       installer: ${{ steps.resume.outputs.installer || (github.event_name == 'push' && 'true' || 'false') }}
+      desktop: ${{ steps.resume.outputs.desktop || (github.event_name == 'push' && 'true' || 'false') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -54,7 +55,7 @@ jobs:
         with:
           node-version: 24
       - name: Check release controller before packaging
-        run: node --experimental-strip-types --test test/unit/tooling/candidate.test.ts test/unit/tooling/finalize.test.ts test/unit/tooling/resume.test.ts test/unit/tooling/verifyReadiness.test.ts
+        run: node --experimental-strip-types --test test/unit/tooling/candidate.test.ts test/unit/tooling/finalize.test.ts test/unit/tooling/resume.test.ts test/unit/tooling/desktopCheck.test.ts test/unit/tooling/verifyReadiness.test.ts
       - name: Pin the successful full source checks
         if: github.event_name == 'push'
         id: verify
@@ -228,6 +229,37 @@ jobs:
       candidate-run-id: ${{ needs.candidate.outputs.build-run-id }}
       production: true
 
+  desktop-acceptance:
+    needs: [candidate, build-windows, acceptance]
+    if: always() && needs.candidate.result == 'success' && needs.candidate.outputs.desktop == 'true' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Accept portable, shell and notifications on disposable Windows
+        id: proof
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
+          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
+          CANDIDATE_ID: ${{ needs.candidate.outputs.candidate-id }}
+        run: node --experimental-strip-types scripts/release/desktop-check.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.proof.outputs.evidence }}
+          path: release-evidence/desktop/
+          retention-days: 30
+          if-no-files-found: error
+
   manual:
     if: github.ref == 'refs/heads/master' && inputs.operation == 'record-manual'
     permissions:
@@ -258,7 +290,7 @@ jobs:
           if-no-files-found: error
 
   manual-acceptance:
-    needs: [candidate, build-windows, attest, acceptance]
+    needs: [candidate, build-windows, attest, acceptance, desktop-acceptance]
     if: always() && needs.candidate.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
     permissions:
       actions: read

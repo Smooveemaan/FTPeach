@@ -4,10 +4,11 @@ import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import type { DesktopReceipt } from './desktop-receipt.ts';
 import { sha256, verifyCandidate, type Candidate } from './candidate.ts';
 import { githubApi, verifyReadiness, type PublicRun } from './verify-readiness.ts';
 
-export type Stage = 'attest' | 'installer';
+export type Stage = 'attest' | 'installer' | 'desktop';
 export interface Evidence {
   schema: number;
   candidateId: string;
@@ -18,6 +19,7 @@ export interface Evidence {
   attempt: string;
   toolsSha: string;
   workflow: string;
+  desktop?: DesktopReceipt;
 }
 export interface Artifact {
   id: number;
@@ -61,15 +63,24 @@ export function stageInputs(stage: Stage, files: Record<string, string>): string
 }
 
 export function workflowInputs(source: string, stage: Stage): string {
+  source = source.replaceAll('\r\n', '\n');
   const start = source.indexOf('\njobs:\n');
   const jobs = [...source.matchAll(/^ {2}([\w-]+):\r?$/gm)].filter((match) => match.index > start);
   if (
     start < 0 ||
-    !jobs.some((match) => match[1] === (stage === 'attest' ? 'attest' : 'acceptance'))
+    !jobs.some(
+      (match) =>
+        match[1] ===
+        (stage === 'attest' ? 'attest' : stage === 'desktop' ? 'desktop-acceptance' : 'acceptance'),
+    )
   )
     return source;
   const selected = jobs.flatMap((match, index) => {
-    if (match[1] !== (stage === 'attest' ? 'attest' : 'acceptance')) return [];
+    if (
+      match[1] !==
+      (stage === 'attest' ? 'attest' : stage === 'desktop' ? 'desktop-acceptance' : 'acceptance')
+    )
+      return [];
     return [source.slice(match.index, jobs[index + 1]?.index ?? source.length)];
   });
   return source.slice(0, start) + selected.join('\n');
@@ -214,7 +225,21 @@ export async function stageEvidence(
   const run = (await githubApi(`actions/runs/${artifact.workflow_run.id}`)) as PublicRun;
   validateOrigin(run, String(artifact.workflow_run.id), process.env.GITHUB_REPOSITORY!);
   validateEvidence(proof, stage, id, hash, inputs, run);
-  const name = stage === 'installer' ? 'acceptance / installer' : 'attest';
+  if (stage === 'desktop') {
+    assert.ok(proof.desktop, 'Desktop receipt missing');
+    assert.equal(proof.desktop.candidateId, id);
+    assert.equal(proof.desktop.candidateHash, hash);
+    assert.equal(proof.desktop.publicToolsSha, proof.toolsSha);
+    assert.equal(proof.desktop.parentRunId, proof.runId);
+    const { verifyDesktopRun } = await import('./desktop-check.ts');
+    if (!(await verifyDesktopRun(proof.desktop))) return undefined;
+  }
+  const name =
+    stage === 'installer'
+      ? 'acceptance / installer'
+      : stage === 'desktop'
+        ? 'desktop-acceptance'
+        : 'attest';
   if ((await jobConclusion(proof.runId, proof.attempt, name)) !== 'success') return undefined;
   const currentJobs: { id: number; name: string; conclusion: string | null }[] = [];
   for (let page = 1; ; page++) {
@@ -253,17 +278,31 @@ export async function validateCandidate(id: string) {
   await requireJob(runId, attempt, 'build-windows');
   await verifyReadiness(candidate.readiness.runId, candidate.readiness);
   const hash = sha256(await readFile(`${directory}/candidate.json`));
-  const inputs = { attest: checkoutInputs('attest'), installer: checkoutInputs('installer') };
+  const inputs = {
+    attest: checkoutInputs('attest'),
+    installer: checkoutInputs('installer'),
+    desktop: checkoutInputs('desktop'),
+  };
   const attest = await stageEvidence('attest', id, hash, inputs.attest);
   const installer = await stageEvidence('installer', id, hash, inputs.installer);
-  return { candidate, hash, inputs, attest, installer, directory, run };
+  const desktop = await stageEvidence('desktop', id, hash, inputs.desktop);
+  if (desktop) assert.equal(desktop.desktop!.applicationSha, candidate.readiness.sha);
+  return { candidate, hash, inputs, attest, installer, desktop, directory, run };
 }
 
 export function resumePlan(
-  result: { attest?: Evidence | undefined; installer?: Evidence | undefined },
+  result: {
+    attest?: Evidence | undefined;
+    installer?: Evidence | undefined;
+    desktop?: Evidence | undefined;
+  },
   installerApproved: boolean,
 ) {
-  const missing = { attest: !result.attest, installer: !result.installer };
+  const missing = {
+    attest: !result.attest,
+    installer: !result.installer,
+    desktop: !result.desktop,
+  };
   if (missing.installer)
     assert.equal(
       installerApproved,
@@ -273,7 +312,12 @@ export function resumePlan(
   return missing;
 }
 
-export async function recordEvidence(stage: Stage, candidate: Candidate, hash: string) {
+export async function recordEvidence(
+  stage: Stage,
+  candidate: Candidate,
+  hash: string,
+  desktop?: DesktopReceipt,
+) {
   const id = `${candidate.build.runId}:${candidate.build.attempt}`;
   const toolsSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
   assert.equal(
@@ -283,6 +327,7 @@ export async function recordEvidence(stage: Stage, candidate: Candidate, hash: s
   );
   const inputs = checkoutInputs(stage);
   const proof: Evidence = {
+    ...(desktop ? { desktop } : {}),
     schema: 1,
     candidateId: id,
     candidateHash: hash,
@@ -316,10 +361,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     );
     const plan = resumePlan(result, process.env.INSTALLER_APPROVED === 'true');
     if (process.argv[2] === 'accepted')
-      assert.ok(!plan.attest && !plan.installer, 'Automatic acceptance is missing or stale');
+      assert.ok(
+        !plan.attest && !plan.installer && !plan.desktop,
+        'Automatic acceptance is missing or stale',
+      );
     await appendFile(
       process.env.GITHUB_OUTPUT!,
-      `sha=${result.candidate.readiness.sha}\nversion=${result.candidate.readiness.version}\nattest=${plan.attest}\ninstaller=${plan.installer}\nartifact=release-candidate-${result.candidate.build.attempt}\nbuild-run-id=${result.candidate.build.runId}\n`,
+      `sha=${result.candidate.readiness.sha}\nversion=${result.candidate.readiness.version}\nattest=${plan.attest}\ninstaller=${plan.installer}\ndesktop=${plan.desktop}\nartifact=release-candidate-${result.candidate.build.attempt}\nbuild-run-id=${result.candidate.build.runId}\n`,
     );
   }
 }

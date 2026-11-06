@@ -119,8 +119,8 @@ update cannot ship on unit tests alone ([dependency-policy.md](dependency-policy
 Besides the tests in this repository, every release is checked by suites the
 maintainer keeps closed: end-to-end tests that drive the built application,
 the client against a matrix of real FTP, FTPS, SFTP and WebDAV servers, and
-protocol round trips against servers in Docker. They run on GitHub-hosted
-runners in a private repository, on the exact commit to be tagged. The release
+protocol round trips against servers in Docker. They run in a closed verification
+environment on the exact commit to be tagged. The release
 chain validates the specific private run, attempt, test-source SHA and mandatory
 results against its public parent run. A commit status alone cannot authorize a
 release. Private sources and logs remain in the private repository. Desktop
@@ -139,7 +139,18 @@ The diagnostic Installer workflow retains its test-key negative scenarios.
 Unix source checks remain part of the full suite; this release's packaging and
 package acceptance run only on Windows.
 
-The owner records required manual acceptance for the exact application SHA and
+Portable isolation, Windows shell actions and transfer-notification clicks are
+automated closed candidate acceptance on the saved packages. Desktop acceptance
+follows successful Installer acceptance; attestation runs in parallel. Desktop proof
+requires the complete fixed set of portable, shell and notification results and a
+validated closed acceptance receipt. The retained release
+record requires `production-updater-installed`, `production-updater-portable`,
+`native-desktop` and `filesystem-stand`. Windows Hello (including a second account)
+and vault locking with Windows are checked locally on relevant behavior changes,
+by owner decision dated 2026-11-06; exclusion is not passed candidate evidence.
+Visual checks are repeated when the affected appearance changes.
+
+The owner records required acceptance for the exact application SHA and
 manifest SHA-256. In `release.yml`, operation `record-manual` accepts the
 `candidate-id` (`RUN_ID:BUILD_ATTEMPT`) and `manual-acceptance` JSON. It records the
 tester, date, and each mandatory result with evidence. A skipped or unperformed
@@ -152,7 +163,9 @@ feed. Existing tags and assets must match; recovery adds missing assets without
 replacing them. The workflow downloads the draft assets and verifies their
 completeness and hashes before declaring the draft ready. The owner publishes
 it. Public package and feed availability, Pages, and a real update from the
-public feed are checked after publication. Tags do not start another build or CI.
+public feed are checked after publication. The real installed and portable updates
+are required independent automation; they never delay the draft or publication.
+Tags do not start another build or CI.
 
 For an interrupted candidate, dispatch `release.yml` on trusted `master` with
 operation `resume` and its `candidate-id`. The workflow determines which evidence
@@ -174,8 +187,10 @@ workflow change; the workflow definition alone is not proof that either passed.
 The release trust report copies this table into every draft release. Rows in
 the `ci` lane are proven by jobs the release workflow requires; every other row
 is printed as NOT VERIFIED until the maintainer records its result for the exact
-candidate. Required pre-publication results are checked before deploy; the public-feed
-update check follows publication. A `manual` row links to its steps.
+candidate when required. Hello/vault rows describe change-triggered local checks,
+not mandatory candidate results. Required pre-publication results are checked
+before deploy; the public-feed update check follows publication. Linked procedures
+also support local diagnosis.
 
 | Cell | Lane | How |
 | --- | --- | --- |
@@ -186,8 +201,8 @@ update check follows publication. A `manual` row links to its steps.
 | Desktop end-to-end, server matrix and protocol compatibility suites | ci | the private run and receipt bound to the release CI and application SHA |
 | Native desktop checks: Explorer drag and drop, file dialogs, the tray and its notifications | local | run by the maintainer before the release |
 | File operations on a second drive, a full drive, exFAT, a share and through links | local | run by the maintainer before the release |
-| Clicking the transfer notification brings the window back | manual | [Clicking the transfer notification](manual-checks.md#clicking-the-transfer-notification) |
-| Windows Hello unlock | manual | [Windows Hello](manual-checks.md#windows-hello) |
-| Windows Hello on a second account | manual | [Windows Hello](manual-checks.md#windows-hello) |
-| Vault locks with Windows | manual | [Vault locks with Windows](manual-checks.md#vault-locks-with-windows) |
-| Update from the previous published release with the release key, after publishing | manual | [Update from the previous published release](manual-checks.md#update-from-the-previous-published-release) |
+| Portable isolation, Windows shell actions and notification click | ci | closed candidate acceptance on the saved packages |
+| Windows Hello unlock | local | on relevant changes; [Windows Hello](manual-checks.md#windows-hello) |
+| Windows Hello on a second account | local | on relevant changes; [Windows Hello](manual-checks.md#windows-hello) |
+| Vault locks with Windows | local | on relevant changes; [Vault locks with Windows](manual-checks.md#vault-locks-with-windows) |
+| Update from the previous published release with the release key, after publishing | local | required independent post-publication automation; [Update from the previous published release](manual-checks.md#update-from-the-previous-published-release) |

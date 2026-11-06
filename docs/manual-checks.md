@@ -2,7 +2,9 @@
 
 Some behavior can only be confirmed by a person running the real application:
 a fingerprint or a face, a locked Windows session, how a moving window looks.
-This page lists those checks and records each run. Everything else is either
+This page lists local procedures and records runs. Portable, Windows shell and
+transfer-notification checks are automated closed candidate acceptance; their
+steps below also support local diagnosis. Everything else is either
 covered by an automated check or listed as a known gap (lane `none`) in the
 [release matrix](release-trust.md#release-matrix).
 
@@ -10,11 +12,18 @@ The [user guide](guide/index.md) points to a recorded run with
 `<!-- verified-by: manual <heading> -->`, which `npm run check:verified-by`
 requires to match a heading on this page.
 
-## What is checked by hand
+The owner decided on 2026-11-06 that Windows Hello (including a second account)
+and vault locking with Windows are checked locally when relevant behavior changes,
+not for every candidate. This decision is not a passed candidate result. Visual
+checks remain required when the affected appearance changes. The retained release
+record covers `production-updater-installed`, `production-updater-portable`,
+`native-desktop` and `filesystem-stand`; deploy approval remains required.
+
+## Local check procedures
 
 ### Windows Hello
 
-When: before each release, on a computer with Windows Hello set up.
+When: after relevant Hello behavior changes, locally on a computer with Windows Hello set up.
 
 1. Settings > Security: protect saved passwords with a master password, then
    turn on **Allow system unlock**.
@@ -34,7 +43,7 @@ When: before each release, on a computer with Windows Hello set up.
 
 ### Vault locks with Windows
 
-When: before each release.
+When: after relevant vault or Windows session-lock behavior changes, locally.
 
 1. With saved passwords protected by a master password, unlock the vault,
    start a long download, press Win+L and sign back in.
@@ -58,9 +67,8 @@ When: after a change to the window frame, its scaling or the WebView setup.
 
 ### The Windows shell
 
-When: before each release. The test build holds back the programs and the
-Explorer windows FTPeach would open, and the desktop is no window the tests
-can drag to.
+When: automated closed candidate acceptance; repeat locally when investigating
+relevant shell changes.
 
 1. Drag a file from a server pane onto the desktop.
    Expected: the file appears on the desktop with the server's contents.
@@ -89,10 +97,8 @@ changed screen.
 
 ### Clicking the transfer notification
 
-When: before each release. The native tests confirm the notification itself,
-but the shell may hold its banner back (Do not disturb, a full-screen window),
-and the notification center is out of reach of UI Automation, so the click is
-made by hand.
+When: automated closed candidate acceptance, including the real notification
+click for tray and minimized windows. Repeat locally on relevant changes.
 
 1. Turn on Settings > Transfers > **Notify when transfers finish** and
    Settings > Interface > **Close to tray**. Start an upload of a few large files, then close the
@@ -107,7 +113,8 @@ made by hand.
 
 ### Portable copy on a computer it has not run on
 
-When: before each release, under a Windows account FTPeach has never run in.
+When: automated closed candidate acceptance under a fresh Windows account;
+repeat locally on relevant portable behavior changes.
 
 1. Unpack the portable zip on a USB drive, start it, finish an upload with
    Settings > Transfers > **Notify when transfers finish** on, and quit.
@@ -119,7 +126,9 @@ When: before each release, under a Windows account FTPeach has never run in.
 
 ### Update from the previous published release
 
-When: right after publishing a release.
+When: after publishing each release, through independent automation using the
+real public feed. This required check never delays draft preparation or publication.
+The steps below describe its observable contract and local diagnostic procedure.
 
 1. Install the previous release and add a bookmark with a saved password;
    unpack the previous portable zip and do the same there.

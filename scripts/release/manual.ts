@@ -65,8 +65,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   const id = process.env.CANDIDATE_ID!;
   const validated = await validateCandidate(id);
-  const { candidate, hash, attest, installer } = validated;
-  assert.ok(attest && installer, 'Complete automatic acceptance before recording manual results');
+  const { candidate, hash, attest, installer, desktop } = validated;
+  assert.ok(
+    attest && installer && desktop,
+    'Complete automatic acceptance before recording manual results',
+  );
   if (process.argv[2] === 'record') {
     const manual = JSON.parse(process.env.MANUAL_ACCEPTANCE ?? '{}') as ManualAcceptance;
     validateManualAcceptance(manual, candidate.readiness.sha, hash);

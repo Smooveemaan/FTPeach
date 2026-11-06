@@ -52,11 +52,15 @@ test('a fixed acceptance helper rechecks the same bytes without losing independe
   assert.equal(stageInputs('attest', files), stageInputs('attest', fixed));
   assert.notEqual(stageInputs('installer', files), stageInputs('installer', fixed));
   validateEvidence(proof, 'attest', id, hash, stageInputs('attest', fixed), run);
-  assert.deepEqual(resumePlan({ attest: proof }, true), { attest: false, installer: true });
+  assert.deepEqual(resumePlan({ attest: proof }, true), {
+    attest: false,
+    installer: true,
+    desktop: true,
+  });
   assert.throws(() => resumePlan({ attest: proof }, false), /requires installer-approved/);
   assert.deepEqual(
     resumePlan({ attest: proof, installer: { ...proof, stage: 'installer' } }, false),
-    { attest: false, installer: false },
+    { attest: false, installer: false, desktop: true },
   );
 });
 

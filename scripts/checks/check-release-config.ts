@@ -194,7 +194,11 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'Verify every updater signature'],
   [releaseWorkflow, 'release.yml', 'uses: ./.github/workflows/installer.yml'],
   [releaseWorkflow, 'release.yml', '  manual-acceptance:'],
-  [releaseWorkflow, 'release.yml', 'needs: [candidate, build-windows, attest, acceptance]'],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'needs: [candidate, build-windows, attest, acceptance, desktop-acceptance]',
+  ],
   [
     releaseWorkflow,
     'release.yml',

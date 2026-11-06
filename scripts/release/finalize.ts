@@ -14,7 +14,6 @@ export const MANUAL_CHECKS = [
   'production-updater-portable',
   'native-desktop',
   'filesystem-stand',
-  'tray-notification',
 ] as const;
 export interface ManualAcceptance {
   sha: string;
@@ -143,8 +142,11 @@ type AcceptedCandidate = Awaited<ReturnType<typeof validateCandidate>>;
 async function prepare(accepted?: AcceptedCandidate) {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   accepted ??= await validateCandidate(process.env.CANDIDATE_ID!);
-  const { candidate, hash, directory, attest, installer, run } = accepted;
-  assert.ok(attest && installer, 'Automatic candidate acceptance is incomplete or stale');
+  const { candidate, hash, directory, attest, installer, desktop, run } = accepted;
+  assert.ok(
+    attest && installer && desktop,
+    'Automatic candidate acceptance is incomplete or stale',
+  );
   const manual = JSON.parse(
     process.env.MANUAL_ACCEPTANCE ?? (await readFile('manual-acceptance.json', 'utf8')),
   ) as ManualAcceptance;
@@ -159,7 +161,7 @@ async function prepare(accepted?: AcceptedCandidate) {
   await writeFile(
     path.join(directory, 'release-verification.json'),
     JSON.stringify(
-      { candidate, candidateHash: hash, automatic: { attest, installer }, manual },
+      { candidate, candidateHash: hash, automatic: { attest, installer, desktop }, manual },
       null,
       2,
     ),

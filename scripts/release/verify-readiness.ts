@@ -96,22 +96,27 @@ export async function githubApi(
   allowMissing = false,
 ): Promise<unknown> {
   assert.ok(process.env.GITHUB_TOKEN, 'GITHUB_TOKEN is required');
-  const response = await fetch(
-    `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/${route}`,
-    {
-      method: body === undefined ? 'GET' : 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2026-03-10',
+  for (let attempt = 1; ; attempt++) {
+    const response = await fetch(
+      `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/${route}`,
+      {
+        method: body === undefined ? 'GET' : 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2026-03-10',
+        },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        signal: AbortSignal.timeout(30_000),
       },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      signal: AbortSignal.timeout(30_000),
-    },
-  );
-  if (allowMissing && response.status === 404) return null;
-  assert.ok(response.ok, `GitHub API request failed: HTTP ${response.status}`);
-  return response.json();
+    );
+    if (allowMissing && response.status === 404) return null;
+    if (response.ok) return response.json();
+    if (body !== undefined || attempt === 3 || ![502, 503, 504].includes(response.status)) {
+      assert.fail(`GitHub API request failed: HTTP ${response.status}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+  }
 }
 
 export async function verifyReadiness(id: string, expected?: Readiness): Promise<Readiness> {

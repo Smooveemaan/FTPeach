@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  githubApi,
   validateReadiness,
   validateSourceJobs,
   requireUnusedVersion,
@@ -111,4 +112,23 @@ test('missing, skipped, failed and still-running source checks block readiness',
   for (const name of ['mode', 'private-check', 'release-ready', 'checks / full-result']) {
     assert.throws(() => validateSourceJobs(sourceJobs.filter((job) => job.name !== name)));
   }
+});
+
+test('temporary GitHub gateway failures retry GET but not POST', async (t) => {
+  process.env.GITHUB_TOKEN = 'token';
+  process.env.GITHUB_REPOSITORY = 'owner/app';
+  let calls = 0;
+  t.mock.method(
+    globalThis,
+    'fetch',
+    async (_url: string | URL | Request, init?: { body?: unknown }) => {
+      calls++;
+      const failed = calls === 1 || init?.body !== undefined;
+      return new Response(failed ? null : '{}', { status: failed ? 502 : 200 });
+    },
+  );
+  assert.deepEqual(await githubApi('actions/runs/123'), {});
+  assert.equal(calls, 2);
+  await assert.rejects(githubApi('actions/runs/123', {}), /HTTP 502/);
+  assert.equal(calls, 3);
 });

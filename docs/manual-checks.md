@@ -113,7 +113,7 @@ click for tray and minimized windows. Repeat locally on relevant changes.
 
 ### Portable copy on a computer it has not run on
 
-When: automated closed candidate acceptance under a fresh Windows account;
+When: automated closed candidate acceptance with a clean Windows test profile;
 repeat locally on relevant portable behavior changes.
 
 1. Unpack the portable zip on a USB drive, start it, finish an upload with

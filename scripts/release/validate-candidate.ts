@@ -52,6 +52,11 @@ export function stageInputs(stage: Stage, files: Record<string, string>): string
     if (stage === 'installer' && /^scripts\/release\/desktop-(check|receipt)\.ts$/.test(name))
       return false;
     if (
+      stage !== 'attest' &&
+      /^scripts\/release\/(validate-candidate|verify-readiness|private-check)\.ts$/.test(name)
+    )
+      return false;
+    if (
       stage === 'desktop' &&
       (/^test\/e2e\//.test(name) ||
         name === '.github/workflows/installer.yml' ||

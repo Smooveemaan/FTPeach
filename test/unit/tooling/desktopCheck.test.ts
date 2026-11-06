@@ -79,6 +79,15 @@ test('desktop, Installer and postpublication fixes preserve independent acceptan
     for (const stage of ['attest', 'installer', 'desktop'] as const)
       assert.equal(stageInputs(stage, changed), stageInputs(stage, files));
   }
+  for (const name of [
+    'scripts/release/validate-candidate.ts',
+    'scripts/release/verify-readiness.ts',
+    'scripts/release/private-check.ts',
+  ]) {
+    const changed = { ...files, [name]: 'orchestration fix' };
+    assert.equal(stageInputs('installer', changed), stageInputs('installer', files));
+    assert.equal(stageInputs('desktop', changed), stageInputs('desktop', files));
+  }
   for (const stage of ['attest', 'installer', 'desktop'] as const)
     assert.notEqual(
       stageInputs(stage, { ...files, 'scripts/release/candidate.ts': 'shared fix' }),

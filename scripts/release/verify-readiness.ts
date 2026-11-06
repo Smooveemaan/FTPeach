@@ -131,7 +131,7 @@ export async function verifyReadiness(id: string, expected?: Readiness): Promise
     const jobs: CheckJob[] = [];
     for (let page = 1; ; page++) {
       const response = (await githubApi(
-        `${route}${route.includes('?') ? '&' : '?'}per_page=100&page=${page}`,
+        `${route}${route.includes('?') ? '&' : '?'}per_page=50&page=${page}`,
       )) as {
         jobs: CheckJob[];
       };

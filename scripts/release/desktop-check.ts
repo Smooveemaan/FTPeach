@@ -67,10 +67,10 @@ export async function verifyDesktopRun(receipt: DesktopReceipt): Promise<boolean
   const jobs: CheckJob[] = [];
   for (let page = 1; ; page++) {
     const response = (await api(
-      `actions/runs/${run.id}/jobs?filter=all&per_page=100&page=${page}`,
+      `actions/runs/${run.id}/jobs?filter=all&per_page=50&page=${page}`,
     )) as { jobs: CheckJob[] };
     jobs.push(...response.jobs);
-    if (response.jobs.length < 100) break;
+    if (response.jobs.length < 50) break;
   }
   validateDesktopJobs(jobs);
   const artifacts = (await api(`actions/runs/${run.id}/artifacts?per_page=100`)) as {

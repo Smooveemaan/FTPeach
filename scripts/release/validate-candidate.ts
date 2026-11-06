@@ -138,10 +138,10 @@ export async function jobConclusion(runId: string, attempt: string, name: string
   const jobs: { name: string; conclusion: string | null }[] = [];
   for (let page = 1; ; page++) {
     const result = (await githubApi(
-      `actions/runs/${runId}/attempts/${attempt}/jobs?per_page=100&page=${page}`,
+      `actions/runs/${runId}/attempts/${attempt}/jobs?per_page=50&page=${page}`,
     )) as { jobs: typeof jobs };
     jobs.push(...result.jobs);
-    if (result.jobs.length < 100) break;
+    if (result.jobs.length < 50) break;
   }
   const matches = jobs.filter((job) => job.name === name || job.name.endsWith(` / ${name}`));
   assert.equal(matches.length, 1, `Missing or ambiguous ${name} job in ${runId}:${attempt}`);
@@ -259,10 +259,10 @@ export async function stageEvidence(
   const currentJobs: { id: number; name: string; conclusion: string | null }[] = [];
   for (let page = 1; ; page++) {
     const result = (await githubApi(
-      `actions/runs/${proof.runId}/jobs?filter=all&per_page=100&page=${page}`,
+      `actions/runs/${proof.runId}/jobs?filter=all&per_page=50&page=${page}`,
     )) as { jobs: typeof currentJobs };
     currentJobs.push(...result.jobs);
-    if (result.jobs.length < 100) break;
+    if (result.jobs.length < 50) break;
   }
   if (!latestStageSuccess(currentJobs, name)) return undefined;
   return proof;

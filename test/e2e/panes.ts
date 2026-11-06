@@ -174,8 +174,9 @@ export async function dismissAlert(page: Page, text: string | RegExp) {
 
 /** Fills a pane's connection bar, the right one's unless told, and presses Connect. */
 export async function startConnecting(page: Page, server: Server, remote = remotePane(page)) {
-  if (server.protocol !== 'FTP') {
-    await remote.locator('.protocol-select-trigger').click();
+  const protocol = remote.locator('.protocol-select-trigger');
+  if (!(await protocol.getByText(server.protocol, { exact: true }).count())) {
+    await protocol.click();
     await page.getByRole('option', { name: server.protocol, exact: true }).click();
   }
   await remote.getByRole('textbox', { name: 'Address', exact: true }).fill(server.host);

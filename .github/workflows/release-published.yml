@@ -8,6 +8,8 @@ permissions: {}
 
 jobs:
   public-files:
+    outputs:
+      tools-sha: ${{ steps.tools.outputs.sha }}
     permissions:
       actions: read
       contents: read
@@ -19,6 +21,9 @@ jobs:
         with:
           ref: master
           persist-credentials: false
+      - id: tools
+        shell: pwsh
+        run: Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "sha=$(git rev-parse HEAD)"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
@@ -30,3 +35,55 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node --experimental-strip-types scripts/release/check-published.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-update-inputs
+          path: |
+            published-release/candidate.json
+            published-release/FTPeach_*
+            published-release/latest.json
+          retention-days: 1
+          if-no-files-found: error
+
+  public-update:
+    needs: public-files
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [installed, portable]
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.public-files.outputs.tools-sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: published-update-inputs
+          path: published-release
+      - name: Update previous published copy through the public feed
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FTPEACH_UPDATE_MODE: ${{ matrix.mode }}
+          FTPEACH_UPDATE_TOOLS_SHA: ${{ needs.public-files.outputs.tools-sha }}
+        run: npx playwright test --config test/e2e/published-update.config.ts
+      - name: Preserve postpublication updater evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published-update-${{ matrix.mode }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/published-update/**/result.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Record real updater result
+        if: success()
+        shell: pwsh
+        run: Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value 'Real public-feed ${{ matrix.mode }} update passed; executable/About version, staged package hash, profile, bookmark, DPAPI password and recovered data checked.'

@@ -14,9 +14,6 @@ export const MANUAL_CHECKS = [
   'production-updater-portable',
   'native-desktop',
   'filesystem-stand',
-  'windows-hello',
-  'windows-hello-second-account',
-  'vault-lock',
   'tray-notification',
 ] as const;
 export interface ManualAcceptance {

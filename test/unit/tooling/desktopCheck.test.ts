@@ -15,6 +15,7 @@ import {
 import { MANUAL_CHECKS } from '../../../scripts/release/finalize.ts';
 import {
   resumePlan,
+  stageInputs,
   workflowInputs,
   type Evidence,
 } from '../../../scripts/release/validate-candidate.ts';
@@ -51,6 +52,39 @@ const receipt: DesktopReceipt = {
 const jobs = [...DESKTOP_SCENARIOS.map((scenario) => `desktop (${scenario})`), 'receipt'].map(
   (name, index) => ({ id: index + 1, name, conclusion: 'success' }),
 );
+
+test('desktop, Installer and postpublication fixes preserve independent acceptance inputs', () => {
+  const files = { 'scripts/release/candidate.ts': 'shared' };
+  for (const name of ['scripts/release/desktop-check.ts', 'scripts/release/desktop-receipt.ts']) {
+    const changed = { ...files, [name]: 'desktop fix' };
+    assert.equal(stageInputs('installer', changed), stageInputs('installer', files));
+    assert.equal(stageInputs('attest', changed), stageInputs('attest', files));
+    assert.notEqual(stageInputs('desktop', changed), stageInputs('desktop', files));
+  }
+  for (const name of [
+    'test/e2e/install.ts',
+    '.github/workflows/installer.yml',
+    'scripts/release/record-acceptance.ts',
+  ]) {
+    const changed = { ...files, [name]: 'Installer fix' };
+    assert.equal(stageInputs('desktop', changed), stageInputs('desktop', files));
+    assert.notEqual(stageInputs('installer', changed), stageInputs('installer', files));
+  }
+  for (const name of [
+    'scripts/release/published-update.ts',
+    '.github/workflows/release-published.yml',
+    'test/e2e/published-update.spec.ts',
+  ]) {
+    const changed = { ...files, [name]: 'published fix' };
+    for (const stage of ['attest', 'installer', 'desktop'] as const)
+      assert.equal(stageInputs(stage, changed), stageInputs(stage, files));
+  }
+  for (const stage of ['attest', 'installer', 'desktop'] as const)
+    assert.notEqual(
+      stageInputs(stage, { ...files, 'scripts/release/candidate.ts': 'shared fix' }),
+      stageInputs(stage, files),
+    );
+});
 
 test('desktop acceptance requires all three real scenarios bound to the exact candidate and tool runs', () => {
   validateDesktopReceipt(receipt, receipt, run);
@@ -214,6 +248,9 @@ test('desktop reconnect reuses an active run, but changed private tools get a di
   assert.equal((await findOrDispatchDesktop(api, receipt, 'master', 'owner/app')).id, run.id);
   assert.equal(dispatched, 0);
   changed = true;
+  assert.equal((await findOrDispatchDesktop(api, receipt, 'master', 'owner/app')).id, run.id);
+  assert.equal(dispatched, 0);
+  active.status = 'completed';
   assert.equal((await findOrDispatchDesktop(api, receipt, 'master', 'owner/app')).id, 789);
   assert.equal(dispatched, 1);
 });

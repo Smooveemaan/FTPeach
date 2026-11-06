@@ -44,6 +44,21 @@ export function stageInputs(stage: Stage, files: Record<string, string>): string
   const relevant = Object.entries(files).filter(([name]) => {
     if (/^(docs|site|assets|src|public)\//.test(name) || /\.md$/.test(name)) return false;
     if (
+      name === '.github/workflows/release-published.yml' ||
+      name === 'scripts/release/published-update.ts' ||
+      /^test\/e2e\/published-update\./.test(name)
+    )
+      return false;
+    if (stage === 'installer' && /^scripts\/release\/desktop-(check|receipt)\.ts$/.test(name))
+      return false;
+    if (
+      stage === 'desktop' &&
+      (/^test\/e2e\//.test(name) ||
+        name === '.github/workflows/installer.yml' ||
+        /^scripts\/release\/(record-acceptance|test-installers)\.ts$/.test(name))
+    )
+      return false;
+    if (
       /^scripts\/release\/(finalize|manual|check-published|check-release-environment|build-release-notes)\.ts$/.test(
         name,
       ) ||

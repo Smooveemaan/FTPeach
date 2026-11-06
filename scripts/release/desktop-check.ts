@@ -123,6 +123,7 @@ export async function findOrDispatchDesktop(
     for (const found of response.workflow_runs) {
       if (found.display_title !== `${title} ${found.head_sha}`) continue;
       if (
+        found.status !== 'completed' ||
         found.head_sha === commit.sha ||
         (await desktopToolsUnchanged(api, found.head_sha, commit.sha))
       )

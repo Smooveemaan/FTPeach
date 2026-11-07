@@ -111,8 +111,7 @@ pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
     if let Some(b) = saved {
         restore_size(&window, b.width, b.height);
     }
-    // A test run keeps the saved size, so a restart can be measured, but
-    // stays off every screen.
+    // Test runs keep the saved size; their helper decides whether to show on the native desktop.
     #[cfg(feature = "smoke-test")]
     if super::e2e_browser::active() {
         return super::e2e_browser::show_in_background(&window);

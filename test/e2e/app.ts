@@ -227,7 +227,10 @@ async function start(
       waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60),
     );
     await timed(timings, 'cdpConnectMs', async () => {
-      run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
+      run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`, {
+        // Native notification tests need the window's real focus, not CDP focus emulation.
+        noDefaults: process.env.FTPEACH_NATIVE_SCREEN === '1',
+      });
     });
     return await timed(timings, 'mainWindowMs', () =>
       mainWindow(run.browser!, startLanguage(exe, profile)),

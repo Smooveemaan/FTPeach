@@ -3,7 +3,7 @@
 /// The WebView2 arguments for an automated run. They
 /// replace wry's defaults, which come first. Every window sharing the WebView2
 /// profile has to be created with the same arguments, the confirmation window
-/// too. The windows of a run sit off screen (`show_in_background`); without
+/// too. Background test windows sit off screen (`show_in_background`); without
 /// the occlusion switches the page would count as hidden and stop drawing.
 pub(crate) fn args() -> Option<String> {
     if !active() {
@@ -60,19 +60,22 @@ pub(crate) fn say_instead_of_message_box(message: &str) -> bool {
         .is_some_and(|file| std::fs::write(file, message).is_ok())
 }
 
-/// Shows the main window off every screen and without taking the focus, so a
-/// run leaves the desktop to whoever works at it. The tests drive the page
-/// over DevTools, which needs neither.
+/// Keeps ordinary desktop tests off screen; explicitly authorized native
+/// screen tests need a visible window with normal Windows focus.
 pub(crate) fn show_in_background(window: &tauri::WebviewWindow) {
-    let _ = window.set_position(tauri::PhysicalPosition::new(-20_000, -20_000));
+    if std::env::var("FTPEACH_NATIVE_SCREEN").as_deref() != Ok("1") {
+        let _ = window.set_position(tauri::PhysicalPosition::new(-20_000, -20_000));
+    }
     show_without_focus(window);
 }
 
-/// Shows a window without activating it. A window that cannot take the focus
-/// is shown without being activated, and it is shown through the windowing
-/// library rather than around it: a window shown behind its back stays hidden
-/// as far as it knows, and a later `hide`, to the tray say, does nothing.
+/// Shows through the windowing library so later hides stay synchronized.
+/// Only explicitly authorized native screen tests activate the window.
 pub(crate) fn show_without_focus(window: &tauri::WebviewWindow) {
-    let _ = window.set_focusable(false);
+    let native = std::env::var("FTPEACH_NATIVE_SCREEN").as_deref() == Ok("1");
+    let _ = window.set_focusable(native);
     let _ = window.show();
+    if native {
+        let _ = window.set_focus();
+    }
 }

@@ -317,6 +317,7 @@ jobs:
 
   tag-and-draft:
     needs: [candidate, manual-acceptance]
+    if: always() && needs.candidate.result == 'success' && needs.manual-acceptance.result == 'success'
     permissions:
       actions: read
       contents: write

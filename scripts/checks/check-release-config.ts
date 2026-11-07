@@ -185,6 +185,11 @@ const ciWorkflow = await readFile(
 assert.ok(ciWorkflow.includes("if: needs.mode.outputs.release == 'true'"));
 assert.ok(ciWorkflow.includes('uses: ./.github/workflows/release.yml'));
 assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber/);
+assert.match(
+  releaseWorkflow,
+  / {2}tag-and-draft:\r?\n {4}needs: \[candidate, manual-acceptance\]\r?\n {4}if: always\(\) && needs\.candidate\.result == 'success' && needs\.manual-acceptance\.result == 'success'/,
+  'Saved-candidate deploy must run after skipped build jobs, only when both gates pass',
+);
 const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '  workflow_call:'],
   [releaseWorkflow, 'release.yml', '    environment: release'],

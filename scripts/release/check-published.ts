@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash, createPublicKey, verify } from 'node:crypto';
 import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -7,6 +8,56 @@ import { pathToFileURL } from 'node:url';
 import { candidateNames, githubApi, sha256, type Candidate, type PublicRun } from './candidate.ts';
 import { validateTag, verifyAttestations } from './finalize.ts';
 import { downloadArtifact, validateOrigin, type Artifact } from './validate-candidate.ts';
+
+const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
+
+export function verifyUpdaterSignature(
+  encodedPublicKey: string,
+  content: Buffer,
+  encodedSignature: string,
+) {
+  const pubLines = Buffer.from(encodedPublicKey.trim(), 'base64')
+    .toString('utf8')
+    .trim()
+    .split(/\r?\n/);
+  assert.equal(pubLines.length, 2, 'Invalid minisign public key format');
+  assert.ok(pubLines[0]!.startsWith('untrusted comment: '), 'Missing public key untrusted comment');
+  const pubBin = Buffer.from(pubLines[1]!, 'base64');
+  assert.equal(pubBin.length, 42, 'Invalid minisign public key length');
+  assert.equal(pubBin.subarray(0, 2).toString('ascii'), 'Ed', 'Unsupported public key algorithm');
+
+  const sigLines = Buffer.from(encodedSignature.trim(), 'base64')
+    .toString('utf8')
+    .trim()
+    .split(/\r?\n/);
+  assert.equal(sigLines.length, 4, 'Invalid minisign signature format');
+  assert.ok(sigLines[0]!.startsWith('untrusted comment: '), 'Missing signature untrusted comment');
+  const sigBin = Buffer.from(sigLines[1]!, 'base64');
+  assert.equal(sigBin.length, 74, 'Invalid minisign signature length');
+  const alg = sigBin.subarray(0, 2).toString('ascii');
+  assert.ok(alg === 'Ed' || alg === 'ED', `Unsupported minisign signature algorithm: ${alg}`);
+  assert.ok(
+    pubBin.subarray(2, 10).equals(sigBin.subarray(2, 10)),
+    'Updater signature key ID does not match public key',
+  );
+  assert.ok(sigLines[2]!.startsWith('trusted comment: '), 'Missing signature trusted comment');
+  const globalSig = Buffer.from(sigLines[3]!, 'base64');
+  assert.equal(globalSig.length, 64, 'Invalid minisign global signature length');
+
+  const key = createPublicKey({
+    key: Buffer.concat([ED25519_SPKI_PREFIX, pubBin.subarray(10, 42)]),
+    format: 'der',
+    type: 'spki',
+  });
+  const payload = alg === 'ED' ? createHash('blake2b512').update(content).digest() : content;
+  const signature = sigBin.subarray(10, 74);
+  assert.ok(verify(null, payload, key, signature), 'Updater signature verification failed');
+  const trustedComment = Buffer.from(sigLines[2]!.slice('trusted comment: '.length), 'utf8');
+  assert.ok(
+    verify(null, Buffer.concat([signature, trustedComment]), key, globalSig),
+    'Updater trusted comment signature verification failed',
+  );
+}
 
 export function validatePublicFeed(
   feed: { version: string; platforms: Record<string, { url: string; signature: string }> },
@@ -136,23 +187,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     ['windows-x86_64-portable', 'portable.zip'],
   ]) {
     const file = `${directory}/FTPeach_${feed.version}_x64-${suffix}`;
-    await writeFile(`${file}.sig`, feed.platforms[platform!]!.signature);
-    execFileSync(
-      'cargo',
-      [
-        'run',
-        '--locked',
-        '--manifest-path',
-        'src-tauri/Cargo.toml',
-        '--example',
-        'verify_updater',
-        '--',
-        key,
-        file,
-        `${file}.sig`,
-      ],
-      { stdio: 'inherit', timeout: 1_200_000 },
-    );
+    const signature = feed.platforms[platform!]!.signature;
+    await writeFile(`${file}.sig`, signature);
+    verifyUpdaterSignature(key, await readFile(file), signature);
   }
   const page = await fetch('https://ftpeach.com/', { signal: AbortSignal.timeout(60_000) });
   assert.ok(page.ok, `Public Pages: HTTP ${page.status}`);

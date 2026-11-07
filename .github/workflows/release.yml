@@ -29,71 +29,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  candidate:
-    if: github.ref == 'refs/heads/master' && inputs.operation != 'record-manual'
+  build-windows:
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     permissions:
       actions: read
       contents: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      sha: ${{ steps.verify.outputs.sha || steps.resume.outputs.sha }}
-      version: ${{ steps.verify.outputs.version || steps.resume.outputs.version }}
-      proof-artifact: checked-candidate-${{ github.run_attempt }}
-      artifact: ${{ steps.resume.outputs.artifact || format('release-candidate-{0}', github.run_attempt) }}
-      build-run-id: ${{ steps.resume.outputs.build-run-id || github.run_id }}
-      candidate-id: ${{ inputs.candidate-id || format('{0}:{1}', github.run_id, github.run_attempt) }}
-      attest: ${{ steps.resume.outputs.attest || (github.event_name == 'push' && 'true' || 'false') }}
-      installer: ${{ steps.resume.outputs.installer || (github.event_name == 'push' && 'true' || 'false') }}
-      desktop: ${{ steps.resume.outputs.desktop || (github.event_name == 'push' && 'true' || 'false') }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      - name: Check release controller before packaging
-        run: node --experimental-strip-types --test test/unit/tooling/candidate.test.ts test/unit/tooling/finalize.test.ts test/unit/tooling/resume.test.ts test/unit/tooling/desktopCheck.test.ts test/unit/tooling/verifyReadiness.test.ts
-      - name: Pin the successful full source checks
-        if: github.event_name == 'push'
-        id: verify
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CHECK_RUN_ID: ${{ github.run_id }}
-        run: node --experimental-strip-types scripts/release/verify-readiness.ts
-      - name: Validate saved files and determine missing results
-        if: github.event_name == 'workflow_dispatch'
-        id: resume
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ inputs.candidate-id }}
-          INSTALLER_APPROVED: ${{ inputs.installer-approved }}
-        run: node --experimental-strip-types scripts/release/validate-candidate.ts ${{ inputs.operation == 'deploy' && 'accepted' || 'resume' }}
-      - name: Require master-only automatic signing and protected deploy
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          node --experimental-strip-types scripts/release/check-release-environment.ts release
-          node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: github.event_name == 'push'
-        with:
-          name: checked-candidate-${{ github.run_attempt }}
-          path: release-readiness.json
-          if-no-files-found: error
-          retention-days: 30
-
-  build-windows:
-    needs: candidate
-    if: github.event_name == 'push'
-    permissions:
-      contents: read
+      id-token: write
+      attestations: write
     environment: release
     runs-on: windows-latest
     timeout-minutes: 60
@@ -103,15 +45,24 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.candidate.outputs.sha }}
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: ${{ needs.candidate.outputs.proof-artifact }}
+      - name: Check release controller before packaging
+        run: node --experimental-strip-types --test test/unit/tooling/candidate.test.ts test/unit/tooling/finalize.test.ts test/unit/tooling/resume.test.ts test/unit/tooling/desktopCheck.test.ts
+      - name: Validate candidate version and unused release tag
+        id: preflight
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/candidate.ts --preflight
+      - name: Require master-only automatic signing and protected deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --experimental-strip-types scripts/release/check-release-environment.ts release
+          node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
       - name: Install pinned Rust toolchain
         run: rustup show
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
@@ -123,7 +74,7 @@ jobs:
       - run: npm run sbom:generate
       - name: Extract candidate release notes
         env:
-          RELEASE_SOURCE_SHA: ${{ needs.candidate.outputs.sha }}
+          RELEASE_SOURCE_SHA: ${{ github.sha }}
         run: node --experimental-strip-types scripts/release/build-release-notes.ts
       - name: Build and sign final NSIS and portable packages
         shell: bash
@@ -145,61 +96,23 @@ jobs:
             cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $config.plugins.updater.pubkey $artifact $signature.FullName
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
-      - name: Check out verification tools from the pinned workflow commit
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.workflow_sha }}
-          path: .release-tools
-          sparse-checkout: scripts/release
-          persist-credentials: false
       - name: Check final trust and absence of signing keys
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        run: node --experimental-strip-types .release-tools/scripts/release/release-trust-report.ts
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts
       - name: Freeze candidate files and record source and tools
         id: package
         shell: pwsh
         env:
-          VERSION: ${{ needs.candidate.outputs.version }}
+          VERSION: ${{ steps.preflight.outputs.version }}
         run: |
           New-Item -ItemType Directory release-candidate | Out-Null
           Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-candidate
           Copy-Item -LiteralPath release/release-notes.md -Destination release-candidate
-          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md, release-readiness.json -DestinationPath release-candidate/release-audit.zip
-          node --experimental-strip-types .release-tools/scripts/release/candidate.ts
+          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md -DestinationPath release-candidate/release-audit.zip
+          node --experimental-strip-types scripts/release/candidate.ts
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "artifact=release-candidate-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ${{ steps.package.outputs.artifact }}
-          path: release-candidate/
-          if-no-files-found: error
-          retention-days: 30
-
-  attest:
-    needs: [candidate, build-windows]
-    if: always() && needs.candidate.result == 'success' && needs.candidate.outputs.attest == 'true' && (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped')
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      attestations: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: ${{ needs.build-windows.outputs.artifact || needs.candidate.outputs.artifact }}
-          run-id: ${{ needs.candidate.outputs.build-run-id }}
-          github-token: ${{ github.token }}
-          path: release-candidate
-      - run: node --experimental-strip-types scripts/release/candidate.ts release-candidate --verify
       - name: Attest the source manifest and final package bytes
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
@@ -207,31 +120,29 @@ jobs:
             release-candidate/*-setup.exe
             release-candidate/*-portable.zip
             release-candidate/candidate.json
-      - id: proof
-        run: node --experimental-strip-types scripts/release/validate-candidate.ts record attest
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ steps.proof.outputs.evidence }}
-          path: release-evidence/attest/
-          retention-days: 30
+          name: ${{ steps.package.outputs.artifact }}
+          path: release-candidate/
           if-no-files-found: error
+          retention-days: 30
 
   acceptance:
-    needs: [candidate, build-windows]
-    if: always() && needs.candidate.result == 'success' && needs.candidate.outputs.installer == 'true' && (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped')
+    needs: build-windows
+    if: always() && github.ref == 'refs/heads/master' && (needs.build-windows.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
     permissions:
       contents: read
       actions: read
     uses: ./.github/workflows/installer.yml
     with:
-      source-sha: ${{ needs.candidate.outputs.sha }}
-      candidate-artifact: ${{ needs.build-windows.outputs.artifact || needs.candidate.outputs.artifact }}
-      candidate-run-id: ${{ needs.candidate.outputs.build-run-id }}
+      candidate-id: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
+      candidate-artifact: ${{ needs.build-windows.outputs.artifact }}
+      installer-approved: ${{ github.event_name == 'push' || inputs.installer-approved }}
       production: true
 
   desktop-acceptance:
-    needs: [candidate, build-windows, acceptance]
-    if: always() && needs.candidate.result == 'success' && needs.candidate.outputs.desktop == 'true' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs: [build-windows, acceptance]
+    if: always() && github.ref == 'refs/heads/master' && (github.event_name == 'push' || inputs.operation == 'resume') && (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped') && needs.acceptance.result == 'success'
     permissions:
       contents: read
       actions: read
@@ -251,9 +162,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
           PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.candidate.outputs.candidate-id }}
+          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
         run: node --experimental-strip-types scripts/release/desktop-check.ts
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.proof.outputs.evidence != ''
         with:
           name: ${{ steps.proof.outputs.evidence }}
           path: release-evidence/desktop/
@@ -290,8 +202,8 @@ jobs:
           if-no-files-found: error
 
   manual-acceptance:
-    needs: [candidate, build-windows, attest, acceptance, desktop-acceptance]
-    if: always() && needs.candidate.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
+    needs: [build-windows, acceptance, desktop-acceptance]
+    if: always() && github.ref == 'refs/heads/master' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
     permissions:
       actions: read
       contents: read
@@ -299,7 +211,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 315
     outputs:
-      candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
+      candidate-id: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -312,12 +224,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
           PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}
+          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
         run: node --experimental-strip-types scripts/release/manual.ts ${{ github.event_name == 'push' && 'wait' || 'read' }} finalize
 
   tag-and-draft:
-    needs: [candidate, manual-acceptance]
-    if: always() && needs.candidate.result == 'success' && needs.manual-acceptance.result == 'success'
+    needs: manual-acceptance
+    if: always() && needs.manual-acceptance.result == 'success'
     permissions:
       actions: read
       contents: write

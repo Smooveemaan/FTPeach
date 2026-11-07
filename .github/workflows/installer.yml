@@ -16,12 +16,18 @@ on:
       source-sha:
         type: string
         default: ''
+      candidate-id:
+        type: string
+        default: ''
       candidate-artifact:
         type: string
         default: ''
       candidate-run-id:
         type: string
         default: ''
+      installer-approved:
+        type: boolean
+        default: false
       production:
         type: boolean
         default: false
@@ -53,21 +59,34 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Validate saved candidate and check retained installer evidence
+        if: inputs.production && inputs.candidate-artifact == ''
+        id: resume
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CANDIDATE_ID: ${{ inputs.candidate-id }}
+          INSTALLER_APPROVED: ${{ inputs.installer-approved }}
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts prepare-installer
+
       - name: Install pinned Rust toolchain
+        if: steps.resume.outputs.installer != 'false'
         run: rustup show
 
       - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+        if: steps.resume.outputs.installer != 'false'
 
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        if: steps.resume.outputs.installer != 'false'
         with:
           workspaces: src-tauri
           # test-installers writes to this target directory instead of src-tauri/target.
           cache-directories: .tools/installer-target
 
-      - run: npm ci
+      - if: steps.resume.outputs.installer != 'false'
+        run: npm ci
 
       - name: Download the final candidate
-        if: inputs.production
+        if: inputs.production && inputs.candidate-artifact != ''
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: ${{ inputs.candidate-artifact }}
@@ -76,7 +95,7 @@ jobs:
           path: release-candidate
 
       - name: Verify final candidate bytes
-        if: inputs.production
+        if: inputs.production && steps.resume.outputs.installer != 'false'
         run: node --experimental-strip-types scripts/release/candidate.ts release-candidate --verify
 
       # The profiles the tests put in place name the IIS FTP account and the
@@ -104,23 +123,23 @@ jobs:
         run: npm run test:e2e:vm
 
       - name: Accept the final packages without rebuilding
-        if: inputs.production
+        if: inputs.production && steps.resume.outputs.installer != 'false'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/test-results/release-acceptance-results.json
         run: npx playwright test --config test/e2e/playwright.config.ts --project=release --reporter=list,json
 
       - name: Bind acceptance to the tested files
-        if: inputs.production
+        if: inputs.production && steps.resume.outputs.installer != 'false'
         run: node --experimental-strip-types scripts/release/record-acceptance.ts
 
       - name: Record independent production acceptance
-        if: inputs.production
+        if: inputs.production && steps.resume.outputs.installer != 'false'
         id: proof
         run: node --experimental-strip-types scripts/release/validate-candidate.ts record installer
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: inputs.production
+        if: inputs.production && steps.resume.outputs.installer != 'false'
         with:
           name: ${{ steps.proof.outputs.evidence }}
           path: release-evidence/installer/

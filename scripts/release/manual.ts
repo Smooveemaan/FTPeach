@@ -3,6 +3,7 @@ import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { githubApi, type PublicRun } from './candidate.ts';
 import { finalizeCandidate, validateManualAcceptance, type ManualAcceptance } from './finalize.ts';
 import {
   downloadArtifact,
@@ -12,7 +13,6 @@ import {
   validateCandidate,
   validateOrigin,
 } from './validate-candidate.ts';
-import { githubApi, type PublicRun } from './verify-readiness.ts';
 
 interface ManualRecord {
   runId: string;
@@ -65,11 +65,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   const id = process.env.CANDIDATE_ID!;
   const validated = await validateCandidate(id);
-  const { candidate, hash, attest, installer, desktop } = validated;
-  assert.ok(
-    attest && installer && desktop,
-    'Complete automatic acceptance before recording manual results',
-  );
+  const { candidate, hash, installer, desktop } = validated;
+  assert.ok(installer && desktop, 'Complete automatic acceptance before recording manual results');
   if (process.argv[2] === 'record') {
     const manual = JSON.parse(process.env.MANUAL_ACCEPTANCE ?? '{}') as ManualAcceptance;
     validateManualAcceptance(manual, candidate.readiness.sha, hash);

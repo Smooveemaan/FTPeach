@@ -182,13 +182,14 @@ const ciWorkflow = await readFile(
   new URL('../../.github/workflows/ci.yml', import.meta.url),
   'utf8',
 );
+assert.ok(ciWorkflow.includes('needs: [mode, checks, private-check]'));
 assert.ok(ciWorkflow.includes("if: needs.mode.outputs.release == 'true'"));
 assert.ok(ciWorkflow.includes('uses: ./.github/workflows/release.yml'));
-assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber/);
+assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber|\.release-tools/);
 assert.match(
   releaseWorkflow,
-  / {2}tag-and-draft:\r?\n {4}needs: \[candidate, manual-acceptance\]\r?\n {4}if: always\(\) && needs\.candidate\.result == 'success' && needs\.manual-acceptance\.result == 'success'/,
-  'Saved-candidate deploy must run after skipped build jobs, only when both gates pass',
+  / {2}tag-and-draft:\r?\n {4}needs: manual-acceptance\r?\n {4}if: always\(\) && needs\.manual-acceptance\.result == 'success'/,
+  'Saved-candidate deploy must run after skipped build jobs, only when manual-acceptance passes',
 );
 const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '  workflow_call:'],
@@ -199,21 +200,18 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'Verify every updater signature'],
   [releaseWorkflow, 'release.yml', 'uses: ./.github/workflows/installer.yml'],
   [releaseWorkflow, 'release.yml', '  manual-acceptance:'],
+  [releaseWorkflow, 'release.yml', 'needs: [build-windows, acceptance, desktop-acceptance]'],
   [
     releaseWorkflow,
     'release.yml',
-    'needs: [candidate, build-windows, attest, acceptance, desktop-acceptance]',
+    'candidate-artifact: ${{ needs.build-windows.outputs.artifact }}',
   ],
   [
     releaseWorkflow,
     'release.yml',
-    'candidate-artifact: ${{ needs.build-windows.outputs.artifact || needs.candidate.outputs.artifact }}',
+    'candidate-id: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}',
   ],
-  [
-    releaseWorkflow,
-    'release.yml',
-    'candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}',
-  ],
+  [releaseWorkflow, 'release.yml', 'scripts/release/check-release-environment.ts release'],
   [releaseWorkflow, 'release.yml', 'scripts/release/check-release-environment.ts release-tag'],
   [releaseWorkflow, 'release.yml', 'RELEASE_TAG_KEY: ${{ secrets.RELEASE_TAG_KEY }}'],
   [releaseWorkflow, 'release.yml', 'StrictHostKeyChecking=yes'],
@@ -251,7 +249,14 @@ assert.ok(
     releaseWorkflow.indexOf('Verify every updater signature'),
 );
 assert.ok(
-  releaseWorkflow.indexOf('Check release controller') < releaseWorkflow.indexOf('  build-windows:'),
+  releaseWorkflow.indexOf('Check release controller') <
+    releaseWorkflow.indexOf('npm run tauri -- build --bundles nsis'),
+);
+assert.ok(
+  releaseWorkflow.indexOf('Verify every updater signature') <
+    releaseWorkflow.indexOf('uses: actions/attest-build-provenance@') &&
+    releaseWorkflow.indexOf('uses: actions/attest-build-provenance@') <
+      releaseWorkflow.indexOf('  acceptance:'),
 );
 
 assert.match(

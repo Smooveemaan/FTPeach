@@ -219,15 +219,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const { validateCandidate, recordEvidence } = await import('./validate-candidate.ts');
     const result = await validateCandidate(process.env.CANDIDATE_ID!);
     assert.ok(result.installer, 'Installer acceptance must pass first');
-    const receipt = await runDesktopCheck({
-      candidateId: process.env.CANDIDATE_ID!,
-      candidateHash: result.hash,
-      applicationSha: result.candidate.readiness.sha,
-      parentRunId: process.env.GITHUB_RUN_ID!,
-      publicToolsSha: process.env.GITHUB_WORKFLOW_SHA!,
-    });
-    await writeFile('desktop-receipt.json', JSON.stringify(receipt));
-    await recordEvidence('desktop', result.candidate, result.hash, receipt);
+    if (!result.desktop) {
+      const receipt = await runDesktopCheck({
+        candidateId: process.env.CANDIDATE_ID!,
+        candidateHash: result.hash,
+        applicationSha: result.candidate.readiness.sha,
+        parentRunId: process.env.GITHUB_RUN_ID!,
+        publicToolsSha: process.env.GITHUB_WORKFLOW_SHA!,
+      });
+      await writeFile('desktop-receipt.json', JSON.stringify(receipt));
+      await recordEvidence('desktop', result.candidate, result.hash, receipt);
+    }
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'Desktop acceptance failed');
     process.exitCode = 1;

@@ -58,7 +58,6 @@ test('desktop, Installer and postpublication fixes preserve independent acceptan
   for (const name of ['scripts/release/desktop-check.ts', 'scripts/release/desktop-receipt.ts']) {
     const changed = { ...files, [name]: 'desktop fix' };
     assert.equal(stageInputs('installer', changed), stageInputs('installer', files));
-    assert.equal(stageInputs('attest', changed), stageInputs('attest', files));
     assert.notEqual(stageInputs('desktop', changed), stageInputs('desktop', files));
   }
   for (const name of [
@@ -76,19 +75,15 @@ test('desktop, Installer and postpublication fixes preserve independent acceptan
     'test/e2e/published-update.spec.ts',
   ]) {
     const changed = { ...files, [name]: 'published fix' };
-    for (const stage of ['attest', 'installer', 'desktop'] as const)
+    for (const stage of ['installer', 'desktop'] as const)
       assert.equal(stageInputs(stage, changed), stageInputs(stage, files));
   }
-  for (const name of [
-    'scripts/release/validate-candidate.ts',
-    'scripts/release/verify-readiness.ts',
-    'scripts/release/private-check.ts',
-  ]) {
+  for (const name of ['scripts/release/validate-candidate.ts', 'scripts/release/private-check.ts']) {
     const changed = { ...files, [name]: 'orchestration fix' };
     assert.equal(stageInputs('installer', changed), stageInputs('installer', files));
     assert.equal(stageInputs('desktop', changed), stageInputs('desktop', files));
   }
-  for (const stage of ['attest', 'installer', 'desktop'] as const)
+  for (const stage of ['installer', 'desktop'] as const)
     assert.notEqual(
       stageInputs(stage, { ...files, 'scripts/release/candidate.ts': 'shared fix' }),
       stageInputs(stage, files),
@@ -181,13 +176,11 @@ test('Hello and session lock do not block release; automatic desktop acceptance 
     ],
   );
   const proof = {} as Evidence;
-  assert.deepEqual(resumePlan({ attest: proof, installer: proof }, false), {
-    attest: false,
+  assert.deepEqual(resumePlan({ installer: proof }, false), {
     installer: false,
     desktop: true,
   });
-  assert.deepEqual(resumePlan({ attest: proof, installer: proof, desktop: proof }, false), {
-    attest: false,
+  assert.deepEqual(resumePlan({ installer: proof, desktop: proof }, false), {
     installer: false,
     desktop: false,
   });
@@ -195,10 +188,7 @@ test('Hello and session lock do not block release; automatic desktop acceptance 
     new URL('../../../.github/workflows/release.yml', import.meta.url),
     'utf8',
   );
-  assert.match(
-    workflow,
-    /needs: \[candidate, build-windows, attest, acceptance, desktop-acceptance\]/,
-  );
+  assert.match(workflow, /needs: \[build-windows, acceptance, desktop-acceptance\]/);
   assert.doesNotMatch(workflow, /hello-assisted|windows-hello|vault-lock/);
   const changed = workflow.replace(
     'scripts/release/desktop-check.ts',
@@ -206,7 +196,6 @@ test('Hello and session lock do not block release; automatic desktop acceptance 
   );
   assert.notEqual(workflowInputs(workflow, 'desktop'), workflowInputs(changed, 'desktop'));
   assert.equal(workflowInputs(workflow, 'installer'), workflowInputs(changed, 'installer'));
-  assert.equal(workflowInputs(workflow, 'attest'), workflowInputs(changed, 'attest'));
 });
 
 test('partial desktop retries retain independent successful scenarios without accepting duplicate or foreign fragments', () => {

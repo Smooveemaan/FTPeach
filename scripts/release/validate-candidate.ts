@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { DesktopReceipt } from './desktop-receipt.ts';
-import { sha256, verifyCandidate, type Candidate } from './candidate.ts';
-import { githubApi, verifyReadiness, type PublicRun } from './verify-readiness.ts';
+import { githubApi, sha256, verifyCandidate, type Candidate, type PublicRun } from './candidate.ts';
 
-export type Stage = 'attest' | 'installer' | 'desktop';
+export type Stage = 'installer' | 'desktop';
 export interface Evidence {
   schema: number;
   candidateId: string;
@@ -51,11 +50,7 @@ export function stageInputs(stage: Stage, files: Record<string, string>): string
       return false;
     if (stage === 'installer' && /^scripts\/release\/desktop-(check|receipt)\.ts$/.test(name))
       return false;
-    if (
-      stage !== 'attest' &&
-      /^scripts\/release\/(validate-candidate|verify-readiness|private-check)\.ts$/.test(name)
-    )
-      return false;
+    if (/^scripts\/release\/(validate-candidate|private-check)\.ts$/.test(name)) return false;
     if (
       stage === 'desktop' &&
       (/^test\/e2e\//.test(name) ||
@@ -71,12 +66,6 @@ export function stageInputs(stage: Stage, files: Record<string, string>): string
       /^test\/(unit|component|visual)\//.test(name)
     )
       return false;
-    if (stage === 'attest')
-      return (
-        name === '.github/workflows/release.yml' ||
-        ['scripts/release/candidate.ts', 'scripts/release/validate-candidate.ts'].includes(name) ||
-        /^(package(-lock)?\.json|rust-toolchain\.toml)$/.test(name)
-      );
     return true;
   });
   return sha256(JSON.stringify(relevant.sort(([a], [b]) => a.localeCompare(b))));
@@ -86,21 +75,10 @@ export function workflowInputs(source: string, stage: Stage): string {
   source = source.replaceAll('\r\n', '\n');
   const start = source.indexOf('\njobs:\n');
   const jobs = [...source.matchAll(/^ {2}([\w-]+):\r?$/gm)].filter((match) => match.index > start);
-  if (
-    start < 0 ||
-    !jobs.some(
-      (match) =>
-        match[1] ===
-        (stage === 'attest' ? 'attest' : stage === 'desktop' ? 'desktop-acceptance' : 'acceptance'),
-    )
-  )
-    return source;
+  const target = stage === 'desktop' ? 'desktop-acceptance' : 'acceptance';
+  if (start < 0 || !jobs.some((match) => match[1] === target)) return source;
   const selected = jobs.flatMap((match, index) => {
-    if (
-      match[1] !==
-      (stage === 'attest' ? 'attest' : stage === 'desktop' ? 'desktop-acceptance' : 'acceptance')
-    )
-      return [];
+    if (match[1] !== target) return [];
     return [source.slice(match.index, jobs[index + 1]?.index ?? source.length)];
   });
   return source.slice(0, start) + selected.join('\n');
@@ -254,12 +232,7 @@ export async function stageEvidence(
     const { verifyDesktopRun } = await import('./desktop-check.ts');
     if (!(await verifyDesktopRun(proof.desktop))) return undefined;
   }
-  const name =
-    stage === 'installer'
-      ? 'acceptance / installer'
-      : stage === 'desktop'
-        ? 'desktop-acceptance'
-        : 'attest';
+  const name = stage === 'installer' ? 'acceptance / installer' : 'desktop-acceptance';
   if ((await jobConclusion(proof.runId, proof.attempt, name)) !== 'success') return undefined;
   const currentJobs: { id: number; name: string; conclusion: string | null }[] = [];
   for (let page = 1; ; page++) {
@@ -296,30 +269,25 @@ export async function validateCandidate(id: string) {
   assert.equal(candidate.build.attempt, attempt);
   assert.equal(candidate.build.workflowSha, run.head_sha);
   await requireJob(runId, attempt, 'build-windows');
-  await verifyReadiness(candidate.readiness.runId, candidate.readiness);
   const hash = sha256(await readFile(`${directory}/candidate.json`));
   const inputs = {
-    attest: checkoutInputs('attest'),
     installer: checkoutInputs('installer'),
     desktop: checkoutInputs('desktop'),
   };
-  const attest = await stageEvidence('attest', id, hash, inputs.attest);
   const installer = await stageEvidence('installer', id, hash, inputs.installer);
   const desktop = await stageEvidence('desktop', id, hash, inputs.desktop);
   if (desktop) assert.equal(desktop.desktop!.applicationSha, candidate.readiness.sha);
-  return { candidate, hash, inputs, attest, installer, desktop, directory, run };
+  return { candidate, hash, inputs, installer, desktop, directory, run };
 }
 
 export function resumePlan(
   result: {
-    attest?: Evidence | undefined;
     installer?: Evidence | undefined;
     desktop?: Evidence | undefined;
   },
   installerApproved: boolean,
 ) {
   const missing = {
-    attest: !result.attest,
     installer: !result.installer,
     desktop: !result.desktop,
   };
@@ -366,7 +334,7 @@ export async function recordEvidence(
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (process.argv[2] === 'record') {
     const stage = process.argv[3];
-    assert.ok(stage === 'attest' || stage === 'installer');
+    assert.ok(stage === 'installer');
     await recordEvidence(
       stage,
       await verifyCandidate('release-candidate'),
@@ -377,17 +345,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const result = await validateCandidate(process.env.CANDIDATE_ID!);
     await appendFile(
       process.env.GITHUB_STEP_SUMMARY!,
-      `Candidate ${process.env.CANDIDATE_ID}, manifest ${result.hash}, state ${result.attest && result.installer ? 'accepted' : 'built'}.\nAttestation inputs: ${result.inputs.attest}; ${result.attest ? 'retained success' : 'no valid retained success'}.\nInstaller inputs: ${result.inputs.installer}; ${result.installer ? 'retained success' : 'no valid retained success; owner permission required before repeating installation'}.\n`,
+      `Candidate ${process.env.CANDIDATE_ID}, manifest ${result.hash}, state ${result.installer && result.desktop ? 'accepted' : 'built'}.\nInstaller inputs: ${result.inputs.installer}; ${result.installer ? 'retained success' : 'no valid retained success; owner permission required before repeating installation'}.\n`,
     );
     const plan = resumePlan(result, process.env.INSTALLER_APPROVED === 'true');
     if (process.argv[2] === 'accepted')
-      assert.ok(
-        !plan.attest && !plan.installer && !plan.desktop,
-        'Automatic acceptance is missing or stale',
-      );
+      assert.ok(!plan.installer && !plan.desktop, 'Automatic acceptance is missing or stale');
+    if (process.argv[2] === 'prepare-installer' && plan.installer) {
+      await cp(result.directory, 'release-candidate', { recursive: true });
+    }
     await appendFile(
       process.env.GITHUB_OUTPUT!,
-      `sha=${result.candidate.readiness.sha}\nversion=${result.candidate.readiness.version}\nattest=${plan.attest}\ninstaller=${plan.installer}\ndesktop=${plan.desktop}\nartifact=release-candidate-${result.candidate.build.attempt}\nbuild-run-id=${result.candidate.build.runId}\n`,
+      `sha=${result.candidate.readiness.sha}\nversion=${result.candidate.readiness.version}\ninstaller=${plan.installer}\ndesktop=${plan.desktop}\nartifact=release-candidate-${result.candidate.build.attempt}\nbuild-run-id=${result.candidate.build.runId}\n`,
     );
   }
 }

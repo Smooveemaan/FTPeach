@@ -4,10 +4,9 @@ import { appendFile, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { sha256, type Candidate } from './candidate.ts';
+import { githubApi, sha256, type Candidate, type PublicRun } from './candidate.ts';
 import { withPortablePlatform } from './portable.ts';
 import { validateCandidate } from './validate-candidate.ts';
-import { githubApi, type PublicRun } from './verify-readiness.ts';
 
 export const MANUAL_CHECKS = [
   'production-updater-installed',
@@ -185,11 +184,8 @@ type AcceptedCandidate = Awaited<ReturnType<typeof validateCandidate>>;
 async function prepare(accepted?: AcceptedCandidate) {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   accepted ??= await validateCandidate(process.env.CANDIDATE_ID!);
-  const { candidate, hash, directory, attest, installer, desktop, run } = accepted;
-  assert.ok(
-    attest && installer && desktop,
-    'Automatic candidate acceptance is incomplete or stale',
-  );
+  const { candidate, hash, directory, installer, desktop, run } = accepted;
+  assert.ok(installer && desktop, 'Automatic candidate acceptance is incomplete or stale');
   const manual = JSON.parse(
     process.env.MANUAL_ACCEPTANCE ?? (await readFile('manual-acceptance.json', 'utf8')),
   ) as ManualAcceptance;
@@ -199,12 +195,12 @@ async function prepare(accepted?: AcceptedCandidate) {
     candidate,
     '.github/workflows/release.yml',
     execFileSync,
-    attest.toolsSha,
+    candidate.build.workflowSha,
   );
   await writeFile(
     path.join(directory, 'release-verification.json'),
     JSON.stringify(
-      { candidate, candidateHash: hash, automatic: { attest, installer, desktop }, manual },
+      { candidate, candidateHash: hash, automatic: { installer, desktop }, manual },
       null,
       2,
     ),

@@ -2,9 +2,8 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { candidateNames, sha256, type Candidate } from './candidate.ts';
+import { candidateNames, githubApi, sha256, type Candidate } from './candidate.ts';
 import { validateManualAcceptance, verifyAttestations } from './finalize.ts';
-import { githubApi } from './verify-readiness.ts';
 
 export function validatePublicFeed(
   feed: { version: string; platforms: Record<string, { url: string; signature: string }> },
@@ -96,7 +95,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     candidate,
     '.github/workflows/release.yml',
     execFileSync,
-    verification.automatic.attest.toolsSha,
+    candidate.build.workflowSha,
   );
   const config = (await githubApi(
     `contents/src-tauri/tauri.conf.json?ref=${candidate.readiness.sha}`,

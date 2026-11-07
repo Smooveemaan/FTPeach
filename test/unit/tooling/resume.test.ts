@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { sha256 } from '../../../scripts/release/candidate.ts';
+import { sha256, type PublicRun } from '../../../scripts/release/candidate.ts';
 import {
   parseCandidateId,
   findArtifact,
@@ -14,7 +14,6 @@ import {
   type Evidence,
 } from '../../../scripts/release/validate-candidate.ts';
 import { signingEnvironmentVerdict } from '../../../scripts/release/release-trust.ts';
-import type { PublicRun } from '../../../scripts/release/verify-readiness.ts';
 import { MANUAL_CHECKS } from '../../../scripts/release/finalize.ts';
 import { validateManualRecord } from '../../../scripts/release/manual.ts';
 
@@ -40,28 +39,27 @@ const proof: Evidence = {
   schema: 1,
   candidateId: id,
   candidateHash: hash,
-  stage: 'attest',
-  inputs: stageInputs('attest', files),
+  stage: 'installer',
+  inputs: stageInputs('installer', files),
   runId: '456',
   attempt: '1',
   toolsSha: run.head_sha,
   workflow: run.path,
 };
 
-test('a fixed acceptance helper rechecks the same bytes without losing independent attestation', () => {
-  assert.equal(stageInputs('attest', files), stageInputs('attest', fixed));
+test('a fixed acceptance helper rechecks the same bytes without losing independent stage evidence', () => {
+  assert.equal(stageInputs('desktop', files), stageInputs('desktop', fixed));
   assert.notEqual(stageInputs('installer', files), stageInputs('installer', fixed));
-  validateEvidence(proof, 'attest', id, hash, stageInputs('attest', fixed), run);
-  assert.deepEqual(resumePlan({ attest: proof }, true), {
-    attest: false,
+  validateEvidence(proof, 'installer', id, hash, stageInputs('installer', files), run);
+  assert.deepEqual(resumePlan({}, true), {
     installer: true,
     desktop: true,
   });
-  assert.throws(() => resumePlan({ attest: proof }, false), /requires installer-approved/);
-  assert.deepEqual(
-    resumePlan({ attest: proof, installer: { ...proof, stage: 'installer' } }, false),
-    { attest: false, installer: false, desktop: true },
-  );
+  assert.throws(() => resumePlan({}, false), /requires installer-approved/);
+  assert.deepEqual(resumePlan({ installer: proof }, false), {
+    installer: false,
+    desktop: true,
+  });
 });
 
 test('unknown inputs invalidate acceptance as a group, while unrelated prose preserves it', () => {
@@ -97,11 +95,11 @@ test('substituted run, attempt, SHA, stage, inputs or candidate hash cannot auth
     { attempt: '0' },
     { toolsSha: 'c'.repeat(40) },
     { workflow: '.github/workflows/installer.yml' },
-    { stage: 'installer' as const },
+    { stage: 'desktop' as const },
     { inputs: 'bad' },
   ])
     assert.throws(() =>
-      validateEvidence({ ...proof, ...patch }, 'attest', id, hash, proof.inputs, run),
+      validateEvidence({ ...proof, ...patch }, 'installer', id, hash, proof.inputs, run),
     );
   for (const patch of [
     { event: 'pull_request' },
@@ -143,33 +141,33 @@ test('automatic signing is permitted only for an exact master branch environment
 
 test('a newer failed attempt invalidates its own stage while independent success survives', () => {
   const jobs = [
-    { id: 1, name: 'release / attest', conclusion: 'success' },
+    { id: 1, name: 'release / desktop-acceptance', conclusion: 'success' },
     { id: 2, name: 'release / acceptance / installer', conclusion: 'success' },
   ];
   for (const conclusion of ['failure', 'cancelled', 'timed_out', null]) {
     const retried = [...jobs, { id: 3, name: 'release / acceptance / installer', conclusion }];
     assert.equal(latestStageSuccess(retried, 'acceptance / installer'), false);
-    assert.equal(latestStageSuccess(retried, 'attest'), true);
+    assert.equal(latestStageSuccess(retried, 'desktop-acceptance'), true);
   }
   assert.equal(
     latestStageSuccess(
-      [...jobs, { id: 3, name: 'release / attest', conclusion: 'skipped' }],
-      'attest',
+      [...jobs, { id: 3, name: 'release / desktop-acceptance', conclusion: 'skipped' }],
+      'desktop-acceptance',
     ),
     true,
   );
 });
 
-test('fixing only the Installer workflow job preserves the attestation fingerprint', () => {
+test('fixing only the Installer workflow job preserves the desktop acceptance fingerprint', () => {
   const before =
-    'on:\n  workflow_call:\njobs:\n  attest:\n    run: attest\n  acceptance:\n    run: broken\n  next:\n    run: later\n';
+    'on:\n  workflow_call:\njobs:\n  acceptance:\n    run: broken\n  desktop-acceptance:\n    run: desktop\n  next:\n    run: later\n';
   const after = before.replace('run: broken', 'run: fixed');
-  assert.equal(workflowInputs(before, 'attest'), workflowInputs(after, 'attest'));
+  assert.equal(workflowInputs(before, 'desktop'), workflowInputs(after, 'desktop'));
   assert.notEqual(workflowInputs(before, 'installer'), workflowInputs(after, 'installer'));
-  assert.equal(workflowInputs('unknown YAML shape', 'attest'), 'unknown YAML shape');
+  assert.equal(workflowInputs('unknown YAML shape', 'desktop'), 'unknown YAML shape');
   assert.equal(
-    stageInputs('attest', files),
-    stageInputs('attest', { ...files, '.github/workflows/installer.yml': 'fixed' }),
+    stageInputs('desktop', files),
+    stageInputs('desktop', { ...files, '.github/workflows/installer.yml': 'fixed' }),
   );
 });
 
@@ -207,11 +205,11 @@ test('expired evidence and missing, skipped or failed jobs cannot permit a trans
   t.mock.method(globalThis, 'fetch', async () => Response.json(body));
   assert.equal(await findArtifact('proof'), undefined);
   body = { jobs: [] };
-  await assert.rejects(requireJob('123', '1', 'attest'), /Missing or ambiguous/);
+  await assert.rejects(requireJob('123', '1', 'build-windows'), /Missing or ambiguous/);
   for (const conclusion of ['skipped', 'failure', 'cancelled', null]) {
-    body = { jobs: [{ name: 'release / attest', conclusion }] };
-    await assert.rejects(requireJob('123', '1', 'attest'), /did not succeed/);
+    body = { jobs: [{ name: 'release / build-windows', conclusion }] };
+    await assert.rejects(requireJob('123', '1', 'build-windows'), /did not succeed/);
   }
-  body = { jobs: [{ name: 'release / attest', conclusion: 'success' }] };
-  await requireJob('123', '1', 'attest');
+  body = { jobs: [{ name: 'release / build-windows', conclusion: 'success' }] };
+  await requireJob('123', '1', 'build-windows');
 });

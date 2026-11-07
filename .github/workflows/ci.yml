@@ -72,42 +72,8 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  release-ready:
-    needs: [mode, checks, private-check]
-    if: always() && needs.mode.outputs.release == 'true'
-    permissions:
-      contents: read
-      actions: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      - name: Download the retained private-check result
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" --jq '[.artifacts[] | select(.expired == false and (.name | startswith("private-check-")))] | sort_by(.id) | last | .name // empty')
-          test -n "$artifact"
-          gh run download "$GITHUB_RUN_ID" --name "$artifact" --dir .
-      - name: Require public and closed results
-        env:
-          RESULTS: ${{ toJSON(needs) }}
-        run: node --experimental-strip-types scripts/release/check-readiness.ts
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: release-readiness-${{ github.run_attempt }}
-          path: release-readiness.json
-          if-no-files-found: error
-          retention-days: 30
-
   release:
-    needs: [mode, release-ready]
+    needs: [mode, checks, private-check]
     if: needs.mode.outputs.release == 'true'
     permissions:
       actions: read

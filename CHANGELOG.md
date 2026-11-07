@@ -8,30 +8,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Name conflicts can now create a numbered copy, with separate decisions for each file or one
-  choice for all remaining conflicts (thanks @endlessnights).
-- The Computer pane's right-click menu shows the clicked file or folder in File Explorer.
+- When a file name conflicts, you can keep both files by creating a numbered copy. Choose separately
+  for each conflict or apply one choice to all remaining conflicts (thanks @endlessnights).
+- The Computer pane’s right-click menu lets you show a file or folder in File Explorer.
 
 ### Changed
 
-- The server pane remembers the last selected protocol for new connections and after a restart
-  (thanks @endlessnights).
-- The Ember color scheme is now called Amber; select it again if it was your saved scheme.
-- Transfer notifications report errors while other transfers continue, and up to three independent
-  error messages can remain visible.
-- When a password cannot be saved, the message explains how to set up master-password protection.
+- The server pane remembers your last selected protocol for new connections, including after
+  restarting FTPeach (thanks @endlessnights).
+- The Ember color scheme is renamed to Amber. If you used Ember, select Amber to restore it.
+- Transfer errors appear while other transfers continue. Up to three separate error messages can
+  stay visible at once.
+- If a password cannot be saved, the error message explains how to set up master-password protection.
 
 ### Fixed
 
-- Password-vault read and save errors are translated in every interface language.
-- Downloading to the root of a Windows drive checks the correct folder for existing files.
-- Retried transfers no longer announce an old error, and folder failures no longer report a made-up
-  number of failed files.
-- Transfers finished in the active window no longer trigger a notification when you minimize it.
-- Localized application menus stay inside narrow windows.
-- Dialogs reliably respond to the first Escape or Enter key press.
-- On Windows, sleep prevention is released when transfers finish or the setting is turned off.
-- Show FTPeach reliably closes the tray menu and restores the window.
+- Errors when reading or saving the password vault appear in the selected interface language.
+- Downloads to the root of a Windows drive correctly detect existing files.
+- Retrying a transfer no longer repeats its previous error notification.
+- Failed folder transfers no longer show an incorrect count of failed files.
+- Minimizing the window no longer triggers notifications for transfers that finished while it was
+  active.
+- Application menus fit inside narrow windows in every interface language.
+- Dialogs respond to the first press of Escape or Enter.
+- On Windows, FTPeach stops preventing sleep when transfers finish or you turn off the setting.
+- “Show FTPeach” closes the tray menu and restores the window reliably.
 
 ## [0.6.0] - 2026-10-25
 

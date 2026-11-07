@@ -184,8 +184,8 @@ type AcceptedCandidate = Awaited<ReturnType<typeof validateCandidate>>;
 async function prepare(accepted?: AcceptedCandidate) {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   accepted ??= await validateCandidate(process.env.CANDIDATE_ID!);
-  const { candidate, hash, directory, installer, desktop, run } = accepted;
-  assert.ok(installer && desktop, 'Automatic candidate acceptance is incomplete or stale');
+  const { candidate, hash, directory, installer, run } = accepted;
+  assert.ok(installer, 'Automatic candidate acceptance is incomplete or stale');
   const manual = JSON.parse(
     process.env.MANUAL_ACCEPTANCE ?? (await readFile('manual-acceptance.json', 'utf8')),
   ) as ManualAcceptance;
@@ -199,11 +199,7 @@ async function prepare(accepted?: AcceptedCandidate) {
   );
   await writeFile(
     path.join(directory, 'release-verification.json'),
-    JSON.stringify(
-      { candidate, candidateHash: hash, automatic: { installer, desktop }, manual },
-      null,
-      2,
-    ),
+    JSON.stringify({ candidate, candidateHash: hash, automatic: { installer }, manual }, null, 2),
   );
   await readDestination(candidate, hash);
   return {

@@ -69,14 +69,14 @@ jobs:
         run: node --experimental-strip-types scripts/release/validate-candidate.ts prepare-installer
 
       - name: Install pinned Rust toolchain
-        if: steps.resume.outputs.installer != 'false'
+        if: ${{ !inputs.production }}
         run: rustup show
 
       - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
-        if: steps.resume.outputs.installer != 'false'
+        if: ${{ !inputs.production }}
 
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        if: steps.resume.outputs.installer != 'false'
+        if: ${{ !inputs.production }}
         with:
           workspaces: src-tauri
           # test-installers writes to this target directory instead of src-tauri/target.
@@ -101,7 +101,7 @@ jobs:
       # The profiles the tests put in place name the IIS FTP account and the
       # OpenSSH server.
       - name: Install IIS FTP and WebDAV test sites
-        if: ${{ !inputs.production }}
+        if: steps.resume.outputs.installer != 'false'
         shell: powershell
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
 
@@ -121,6 +121,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: npm run test:e2e:vm
+
+      - name: Accept portable, shell and notifications on disposable Windows
+        if: inputs.production && steps.resume.outputs.installer != 'false'
+        shell: bash
+        env:
+          FTPEACH_DISPOSABLE_VM: '1'
+          CANDIDATE_ID: ${{ inputs.candidate-id }}
+        run: |
+          for scenario in portable shell notification; do
+            node --experimental-strip-types scripts/release/acceptance/orchestrator.ts \
+              --guest \
+              --scenario "$scenario" \
+              --candidate-id "$CANDIDATE_ID" \
+              --candidate release-candidate \
+              --results test-results/e2e/desktop-acceptance
+          done
 
       - name: Accept the final packages without rebuilding
         if: inputs.production && steps.resume.outputs.installer != 'false'

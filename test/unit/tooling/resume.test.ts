@@ -47,18 +47,15 @@ const proof: Evidence = {
   workflow: run.path,
 };
 
-test('a fixed acceptance helper rechecks the same bytes without losing independent stage evidence', () => {
-  assert.equal(stageInputs('desktop', files), stageInputs('desktop', fixed));
+test('a fixed acceptance helper rechecks the same bytes and requires approval when missing', () => {
   assert.notEqual(stageInputs('installer', files), stageInputs('installer', fixed));
   validateEvidence(proof, 'installer', id, hash, stageInputs('installer', files), run);
   assert.deepEqual(resumePlan({}, true), {
     installer: true,
-    desktop: true,
   });
   assert.throws(() => resumePlan({}, false), /requires installer-approved/);
   assert.deepEqual(resumePlan({ installer: proof }, false), {
     installer: false,
-    desktop: true,
   });
 });
 
@@ -95,7 +92,7 @@ test('substituted run, attempt, SHA, stage, inputs or candidate hash cannot auth
     { attempt: '0' },
     { toolsSha: 'c'.repeat(40) },
     { workflow: '.github/workflows/installer.yml' },
-    { stage: 'desktop' as const },
+    { stage: 'desktop' as unknown as Evidence['stage'] },
     { inputs: 'bad' },
   ])
     assert.throws(() =>
@@ -139,36 +136,36 @@ test('automatic signing is permitted only for an exact master branch environment
   );
 });
 
-test('a newer failed attempt invalidates its own stage while independent success survives', () => {
+test('a newer failed attempt invalidates its own stage while skipped retries preserve success', () => {
   const jobs = [
-    { id: 1, name: 'release / desktop-acceptance', conclusion: 'success' },
+    { id: 1, name: 'release / build-windows', conclusion: 'success' },
     { id: 2, name: 'release / acceptance / installer', conclusion: 'success' },
   ];
   for (const conclusion of ['failure', 'cancelled', 'timed_out', null]) {
     const retried = [...jobs, { id: 3, name: 'release / acceptance / installer', conclusion }];
     assert.equal(latestStageSuccess(retried, 'acceptance / installer'), false);
-    assert.equal(latestStageSuccess(retried, 'desktop-acceptance'), true);
+    assert.equal(latestStageSuccess(retried, 'build-windows'), true);
   }
   assert.equal(
     latestStageSuccess(
-      [...jobs, { id: 3, name: 'release / desktop-acceptance', conclusion: 'skipped' }],
-      'desktop-acceptance',
+      [...jobs, { id: 3, name: 'release / acceptance / installer', conclusion: 'skipped' }],
+      'acceptance / installer',
     ),
     true,
   );
 });
 
-test('fixing only the Installer workflow job preserves the desktop acceptance fingerprint', () => {
+test('fixing another release workflow job preserves the acceptance fingerprint', () => {
   const before =
-    'on:\n  workflow_call:\njobs:\n  acceptance:\n    run: broken\n  desktop-acceptance:\n    run: desktop\n  next:\n    run: later\n';
+    'on:\n  workflow_call:\njobs:\n  acceptance:\n    run: installer\n  next:\n    run: broken\n';
   const after = before.replace('run: broken', 'run: fixed');
-  assert.equal(workflowInputs(before, 'desktop'), workflowInputs(after, 'desktop'));
-  assert.notEqual(workflowInputs(before, 'installer'), workflowInputs(after, 'installer'));
-  assert.equal(workflowInputs('unknown YAML shape', 'desktop'), 'unknown YAML shape');
-  assert.equal(
-    stageInputs('desktop', files),
-    stageInputs('desktop', { ...files, '.github/workflows/installer.yml': 'fixed' }),
+  const changedAcceptance = before.replace('run: installer', 'run: updated');
+  assert.equal(workflowInputs(before, 'installer'), workflowInputs(after, 'installer'));
+  assert.notEqual(
+    workflowInputs(before, 'installer'),
+    workflowInputs(changedAcceptance, 'installer'),
   );
+  assert.equal(workflowInputs('unknown YAML shape', 'installer'), 'unknown YAML shape');
 });
 
 test('an uploaded manual record stays pending until its recording job succeeds', () => {

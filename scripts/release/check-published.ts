@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { candidateNames, githubApi, sha256, type Candidate } from './candidate.ts';
-import { verifyAttestations } from './finalize.ts';
+import { candidateNames, githubApi, sha256, type Candidate, type PublicRun } from './candidate.ts';
+import { validateTag, verifyAttestations } from './finalize.ts';
+import { downloadArtifact, validateOrigin, type Artifact } from './validate-candidate.ts';
 
 export function validatePublicFeed(
   feed: { version: string; platforms: Record<string, { url: string; signature: string }> },
@@ -32,6 +35,40 @@ export function validatePublicFeed(
   }
 }
 
+async function resolvePublishedCandidate(tagName: string, directory: string): Promise<Candidate> {
+  const reference = (await githubApi(`git/ref/tags/${tagName}`)) as {
+    object: { type: string; sha: string };
+  };
+  assert.equal(reference.object.type, 'tag', 'Published release tag must be an annotated tag');
+  const tag = (await githubApi(`git/tags/${reference.object.sha}`)) as Parameters<
+    typeof validateTag
+  >[0];
+  const hashMatch = tag.message.match(/FTPeach candidate SHA256: ([0-9a-f]{64})\b/);
+  assert.ok(hashMatch?.[1], 'Release tag is missing candidate SHA256');
+  const expectedHash = hashMatch[1];
+
+  const { artifacts } = (await githubApi('actions/artifacts?per_page=100')) as {
+    artifacts: Artifact[];
+  };
+  const candidates = artifacts
+    .filter((item) => !item.expired && /^release-candidate-[1-9][0-9]*$/.test(item.name))
+    .sort((a, b) => b.id - a.id);
+
+  for (const artifact of candidates) {
+    const tempDir = await mkdtemp(path.join(tmpdir(), 'published-candidate-'));
+    downloadArtifact(artifact, tempDir);
+    const manifest = await readFile(path.join(tempDir, 'candidate.json'));
+    if (sha256(manifest) !== expectedHash) continue;
+    const run = (await githubApi(`actions/runs/${artifact.workflow_run.id}`)) as PublicRun;
+    validateOrigin(run, String(artifact.workflow_run.id), process.env.GITHUB_REPOSITORY!);
+    const candidate = JSON.parse(manifest.toString()) as Candidate;
+    validateTag(tag, candidate, expectedHash);
+    await writeFile(path.join(directory, 'candidate.json'), manifest);
+    return candidate;
+  }
+  assert.fail(`No retained release-candidate artifact matches tag ${tagName} (${expectedHash})`);
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const event = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH!, 'utf8'));
   assert.equal(event.action, 'published');
@@ -50,8 +87,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     assert.ok(response.ok, `Public asset ${asset.name}: HTTP ${response.status}`);
     await writeFile(`${directory}/${asset.name}`, Buffer.from(await response.arrayBuffer()));
   }
-  const manifest = await readFile(`${directory}/candidate.json`);
-  const candidate = JSON.parse(manifest.toString()) as Candidate;
+  const candidate = await resolvePublishedCandidate(release.tag_name, directory);
   assert.equal(candidate.schema, 1);
   assert.match(candidate.readiness.sha, /^[0-9a-f]{40}$/);
   assert.deepEqual(
@@ -63,8 +99,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     [
       `FTPeach_${candidate.readiness.version}_x64-setup.exe`,
       `FTPeach_${candidate.readiness.version}_x64-portable.zip`,
-      'candidate.json',
-      'release-verification.json',
       'release-audit.zip',
       'latest.json',
     ].sort(),
@@ -74,9 +108,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     process.env.GITHUB_REPOSITORY!.toLowerCase(),
   );
   assert.equal(release.tag_name, `v${candidate.readiness.version}`);
-  const verification = JSON.parse(await readFile(`${directory}/release-verification.json`, 'utf8'));
-  assert.equal(verification.candidateHash, sha256(manifest));
-  assert.deepEqual(verification.candidate, candidate);
   for (const [name, hash] of Object.entries(candidate.files).filter(
     ([name]) => !name.endsWith('.sig') && name !== 'release-notes.md',
   ))

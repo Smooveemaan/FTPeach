@@ -2,13 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { sha256, type PublicRun } from '../../../scripts/release/candidate.ts';
 import {
+  evidenceName,
   parseCandidateId,
   findArtifact,
   requireJob,
   latestStageSuccess,
-  workflowInputs,
   resumePlan,
-  stageInputs,
   validateEvidence,
   validateOrigin,
   type Evidence,
@@ -17,13 +16,6 @@ import { signingEnvironmentVerdict } from '../../../scripts/release/release-trus
 
 const id = '123:1';
 const hash = sha256('immutable candidate manifest');
-const files = {
-  'scripts/release/candidate.ts': 'a',
-  'test/e2e/release-feed.ts': 'broken-helper',
-  'src/app.ts': 'app',
-  'package-lock.json': 'lock',
-};
-const fixed = { ...files, 'test/e2e/release-feed.ts': 'fixed-helper' };
 const run = {
   id: 456,
   run_attempt: 2,
@@ -38,16 +30,15 @@ const proof: Evidence = {
   candidateId: id,
   candidateHash: hash,
   stage: 'installer',
-  inputs: stageInputs('installer', files),
   runId: '456',
   attempt: '1',
   toolsSha: run.head_sha,
   workflow: run.path,
 };
 
-test('a fixed acceptance helper rechecks the same bytes and requires approval when missing', () => {
-  assert.notEqual(stageInputs('installer', files), stageInputs('installer', fixed));
-  validateEvidence(proof, 'installer', id, hash, stageInputs('installer', files), run);
+test('acceptance evidence binds to candidate ID and manifest hash and requires approval when missing', () => {
+  assert.equal(evidenceName(id), 'candidate-123-1-acceptance');
+  validateEvidence(proof, 'installer', id, hash, run);
   assert.deepEqual(resumePlan({}, true), {
     installer: true,
   });
@@ -57,30 +48,7 @@ test('a fixed acceptance helper rechecks the same bytes and requires approval wh
   });
 });
 
-test('unknown inputs invalidate acceptance as a group, while unrelated prose preserves it', () => {
-  assert.notEqual(
-    stageInputs('installer', files),
-    stageInputs('installer', { ...files, 'unknown.config': 'changed' }),
-  );
-  assert.equal(
-    stageInputs('installer', files),
-    stageInputs('installer', { ...files, 'docs/guide.md': 'changed' }),
-  );
-  assert.notEqual(
-    stageInputs('installer', files),
-    stageInputs('installer', { ...files, 'package-lock.json': 'new dependency' }),
-  );
-  assert.equal(
-    stageInputs('installer', files),
-    stageInputs('installer', {
-      ...files,
-      'scripts/release/finalize.ts': 'fixed partial upload',
-      'test/unit/tooling/finalize.test.ts': 'regression',
-    }),
-  );
-});
-
-test('substituted run, attempt, SHA, stage, inputs or candidate hash cannot authorize reuse', () => {
+test('substituted run, attempt, SHA, stage or candidate hash cannot authorize reuse', () => {
   validateOrigin(run, '456', 'owner/app');
   for (const patch of [
     { candidateId: '123:2' },
@@ -91,11 +59,8 @@ test('substituted run, attempt, SHA, stage, inputs or candidate hash cannot auth
     { toolsSha: 'c'.repeat(40) },
     { workflow: '.github/workflows/installer.yml' },
     { stage: 'desktop' as unknown as Evidence['stage'] },
-    { inputs: 'bad' },
   ])
-    assert.throws(() =>
-      validateEvidence({ ...proof, ...patch }, 'installer', id, hash, proof.inputs, run),
-    );
+    assert.throws(() => validateEvidence({ ...proof, ...patch }, 'installer', id, hash, run));
   for (const patch of [
     { event: 'pull_request' },
     { head_branch: 'untrusted' },
@@ -151,19 +116,6 @@ test('a newer failed attempt invalidates its own stage while skipped retries pre
     ),
     true,
   );
-});
-
-test('fixing another release workflow job preserves the acceptance fingerprint', () => {
-  const before =
-    'on:\n  workflow_call:\njobs:\n  acceptance:\n    run: installer\n  next:\n    run: broken\n';
-  const after = before.replace('run: broken', 'run: fixed');
-  const changedAcceptance = before.replace('run: installer', 'run: updated');
-  assert.equal(workflowInputs(before, 'installer'), workflowInputs(after, 'installer'));
-  assert.notEqual(
-    workflowInputs(before, 'installer'),
-    workflowInputs(changedAcceptance, 'installer'),
-  );
-  assert.equal(workflowInputs('unknown YAML shape', 'installer'), 'unknown YAML shape');
 });
 
 test('expired evidence and missing, skipped or failed jobs cannot permit a transition', async (t) => {

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { appendFile, mkdtemp, readFile, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { appendFile, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { githubApi, sha256, type Candidate, type PublicRun } from './candidate.ts';
@@ -128,14 +127,17 @@ export function verifyAttestations(
   }
 }
 
-async function readDestination(candidate: Candidate, hash: string) {
+async function readDestination(candidate: Candidate, hash: string, notes: string) {
   const tag = `v${candidate.readiness.version}`;
-  const marker = `<!-- ftpeach-candidate:${hash} -->`;
   const draft = (await githubApi(`releases/tags/${tag}`, undefined, true)) as Draft | null;
   if (draft) {
     assert.equal(draft.draft, true, 'A published release cannot be resumed or changed');
     assert.equal(draft.tag_name, tag);
-    assert.ok(draft.body.includes(marker), 'Existing draft belongs to a different candidate');
+    assert.equal(
+      draft.body.trimEnd(),
+      notes.trimEnd(),
+      'Existing draft belongs to a different candidate',
+    );
   }
   const reference = (await githubApi(`git/ref/tags/${tag}`, undefined, true)) as {
     object: { type: string; sha: string };
@@ -148,7 +150,7 @@ async function readDestination(candidate: Candidate, hash: string) {
       hash,
     );
   }
-  return { draft, reference, marker };
+  return { draft, reference };
 }
 
 type AcceptedCandidate = Awaited<ReturnType<typeof validateCandidate>>;
@@ -165,11 +167,8 @@ async function prepare(accepted?: AcceptedCandidate) {
     execFileSync,
     candidate.build.workflowSha,
   );
-  await writeFile(
-    path.join(directory, 'release-verification.json'),
-    JSON.stringify({ candidate, candidateHash: hash, automatic: { installer } }, null, 2),
-  );
-  await readDestination(candidate, hash);
+  const notes = await readFile(path.join(directory, 'release-notes.md'), 'utf8');
+  await readDestination(candidate, hash, notes);
   return {
     candidate,
     directory,
@@ -180,38 +179,35 @@ async function prepare(accepted?: AcceptedCandidate) {
 
 export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   const { candidate, directory, hash, createdAt } = accepted;
-  const { sha, version, repository } = candidate.readiness;
+  const { version, repository } = candidate.readiness;
   const tag = `v${version}`;
-  const destination = await readDestination(candidate, hash);
+  const notes = (await readFile(path.join(directory, 'release-notes.md'), 'utf8')).trimEnd();
+  const destination = await readDestination(candidate, hash, notes);
   let draft = destination.draft;
-  const marker = destination.marker;
   if (!destination.reference) {
     createVersionTag(candidate, hash);
     assert.ok(
-      (await readDestination(candidate, hash)).reference,
+      (await readDestination(candidate, hash, notes)).reference,
       'The version tag was not created',
     );
   }
   if (!draft) {
-    const notes = await readFile(path.join(directory, 'release-notes.md'), 'utf8');
     // An explicit target_commitish requires workflow-write permission even with an existing tag.
     draft = (await githubApi('releases', {
       tag_name: tag,
       name: `FTPeach ${tag}`,
       draft: true,
       prerelease: false,
-      body: `${notes}\n\n${marker}\n\nSource: ${sha}. Full checks: https://github.com/${repository}/actions/runs/${candidate.readiness.runId}. Packages: https://github.com/${repository}/actions/runs/${candidate.build.runId}.\n\nPublic-feed update verification remains required after publication.`,
+      body: notes,
     })) as Draft;
   }
   assert.equal(draft.draft, true, 'A published release cannot be resumed or changed');
   assert.equal(draft.tag_name, tag);
-  assert.ok(draft.body.includes(marker), 'Existing draft belongs to a different candidate');
+  assert.equal(draft.body.trimEnd(), notes, 'Existing draft belongs to a different candidate');
   const packages = [
     `FTPeach_${version}_x64-setup.exe`,
     `FTPeach_${version}_x64-portable.zip`,
     'release-audit.zip',
-    'candidate.json',
-    'release-verification.json',
   ];
   const allowed = [...packages, 'latest.json'];
   assert.ok(
@@ -257,21 +253,20 @@ export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   );
   await writeFile(path.join(directory, 'latest.json'), `${JSON.stringify(feed, null, 2)}\n`);
   await upload('latest.json');
-  const downloaded = await mkdtemp(path.join(tmpdir(), 'draft-download-'));
-  execFileSync('gh', ['release', 'download', tag, '--repo', repository, '--dir', downloaded], {
-    env: { ...process.env, GH_TOKEN: process.env.GITHUB_TOKEN },
-    stdio: 'pipe',
-    timeout: 120_000,
-  });
-  for (const name of allowed)
+  const finalAssets = (await githubApi(`releases/${draft.id}/assets?per_page=100`)) as Asset[];
+  for (const name of allowed) {
+    const expected = sha256(await readFile(path.join(directory, name)));
+    const uploaded = finalAssets.find((asset) => asset.name === name);
+    assert.ok(uploaded, `Missing uploaded draft asset: ${name}`);
     assert.equal(
-      sha256(await readFile(path.join(downloaded, name))),
-      sha256(await readFile(path.join(directory, name))),
-      `Downloaded draft asset differs: ${name}`,
+      uploaded.digest,
+      `sha256:${expected}`,
+      `Uploaded draft asset digest differs: ${name}`,
     );
+  }
   await appendFile(
     process.env.GITHUB_STEP_SUMMARY!,
-    `Draft ${tag} is complete: identical accepted packages and feed verified after download. The owner publishes it, then verifies the public feed.\n`,
+    `Draft ${tag} is complete: identical accepted packages and feed verified via SHA-256 digests. The owner publishes it, then verifies the public feed.\n`,
   );
 }
 

@@ -100,7 +100,7 @@ test('a rejected tag push fails deploy instead of continuing to draft creation',
   assert.throws(() => createVersionTag(candidate, hash, run), /Tag creation denied/);
 });
 
-test('draft creation uses the verified existing tag without requesting workflow-write permission', async (t) => {
+test('draft creation uses the verified existing tag, clean release notes and no target_commitish', async (t) => {
   const directory = mkdtempSync(path.join(tmpdir(), 'release-draft-'));
   const originalToken = process.env.GITHUB_TOKEN;
   const originalRepository = process.env.GITHUB_REPOSITORY;
@@ -115,7 +115,7 @@ test('draft creation uses the verified existing tag without requesting workflow-
     else process.env.GITHUB_REPOSITORY = originalRepository;
     rmSync(directory, { recursive: true, force: true });
   });
-  writeFileSync(path.join(directory, 'release-notes.md'), 'Accepted release notes');
+  writeFileSync(path.join(directory, 'release-notes.md'), 'Accepted release notes\n');
   t.mock.method(
     globalThis,
     'fetch',
@@ -127,7 +127,7 @@ test('draft creation uses the verified existing tag without requesting workflow-
         assert.equal(body.tag_name, 'v0.6.1');
         assert.equal(body.draft, true);
         assert.ok(!Object.hasOwn(body, 'target_commitish'));
-        assert.ok(body.body.includes(`ftpeach-candidate:${hash}`));
+        assert.equal(body.body, 'Accepted release notes');
         draftRequests++;
         throw new Error('Draft request verified');
       }

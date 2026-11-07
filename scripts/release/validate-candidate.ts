@@ -12,7 +12,6 @@ export interface Evidence {
   candidateId: string;
   candidateHash: string;
   stage: Stage;
-  inputs: string;
   runId: string;
   attempt: string;
   toolsSha: string;
@@ -34,64 +33,6 @@ export function parseCandidateId(id: string): { runId: string; attempt: string }
   assert.match(id, /^[1-9][0-9]*:[1-9][0-9]*$/, 'Candidate ID must be RUN_ID:BUILD_ATTEMPT');
   const [runId, attempt] = id.split(':') as [string, string];
   return { runId, attempt };
-}
-
-export function stageInputs(_stage: Stage, files: Record<string, string>): string {
-  // Unknown changes invalidate the group; only explicitly unrelated trees are excluded.
-  const relevant = Object.entries(files).filter(([name]) => {
-    if (/^(docs|site|assets|src|public)\//.test(name) || /\.md$/.test(name)) return false;
-    if (
-      name === '.github/workflows/release-published.yml' ||
-      name === 'scripts/release/published-update.ts' ||
-      /^test\/e2e\/published-update\./.test(name)
-    )
-      return false;
-    if (/^scripts\/release\/(validate-candidate|private-check)\.ts$/.test(name)) return false;
-    if (
-      /^scripts\/release\/(finalize|manual|check-published|check-release-environment|build-release-notes)\.ts$/.test(
-        name,
-      ) ||
-      /^scripts\/(checks|site|coverage|benchmarks)\//.test(name) ||
-      /^test\/(unit|component|visual)\//.test(name)
-    )
-      return false;
-    return true;
-  });
-  return sha256(JSON.stringify(relevant.sort(([a], [b]) => a.localeCompare(b))));
-}
-
-export function workflowInputs(source: string, _stage: Stage): string {
-  source = source.replaceAll('\r\n', '\n');
-  const start = source.indexOf('\njobs:\n');
-  const jobs = [...source.matchAll(/^ {2}([\w-]+):\r?$/gm)].filter((match) => match.index > start);
-  const target = 'acceptance';
-  if (start < 0 || !jobs.some((match) => match[1] === target)) return source;
-  const selected = jobs.flatMap((match, index) => {
-    if (match[1] !== target) return [];
-    return [source.slice(match.index, jobs[index + 1]?.index ?? source.length)];
-  });
-  return source.slice(0, start) + selected.join('\n');
-}
-
-export function checkoutInputs(stage: Stage): string {
-  const files = Object.fromEntries(
-    execFileSync('git', ['ls-tree', '-r', 'HEAD'], { encoding: 'utf8' })
-      .trim()
-      .split('\n')
-      .map((line) => {
-        const [meta, name] = line.split('\t');
-        assert.ok(meta && name);
-        return [name, meta.split(' ')[2]!];
-      }),
-  );
-  if (files['.github/workflows/release.yml'])
-    files['.github/workflows/release.yml'] = sha256(
-      workflowInputs(
-        execFileSync('git', ['show', 'HEAD:.github/workflows/release.yml'], { encoding: 'utf8' }),
-        stage,
-      ),
-    );
-  return stageInputs(stage, files);
 }
 
 export function validateOrigin(run: PublicRun, id: string, repository: string) {
@@ -159,10 +100,9 @@ export async function findArtifact(name: string): Promise<Artifact | undefined> 
   return result.artifacts.filter((artifact) => !artifact.expired).sort((a, b) => b.id - a.id)[0];
 }
 
-export function evidenceName(id: string, stage: Stage, inputs: string) {
+export function evidenceName(id: string) {
   parseCandidateId(id);
-  assert.match(inputs, /^[0-9a-f]{64}$/);
-  return `candidate-${id.replace(':', '-')}-${stage}-${inputs}`;
+  return `candidate-${id.replace(':', '-')}-acceptance`;
 }
 
 export function validateEvidence(
@@ -170,14 +110,12 @@ export function validateEvidence(
   stage: Stage,
   id: string,
   hash: string,
-  inputs: string,
   run: PublicRun,
 ) {
   assert.equal(proof.schema, 1);
   assert.equal(proof.stage, stage);
   assert.equal(proof.candidateId, id);
   assert.equal(proof.candidateHash, hash);
-  assert.equal(proof.inputs, inputs);
   assert.match(proof.attempt, /^[1-9][0-9]*$/);
   assert.equal(proof.runId, String(run.id));
   assert.equal(proof.workflow, run.path);
@@ -202,16 +140,15 @@ export async function stageEvidence(
   stage: Stage,
   id: string,
   hash: string,
-  inputs: string,
 ): Promise<Evidence | undefined> {
-  const artifact = await findArtifact(evidenceName(id, stage, inputs));
+  const artifact = await findArtifact(evidenceName(id));
   if (!artifact) return undefined;
   const directory = await mkdtemp(path.join(tmpdir(), `release-${stage}-`));
   downloadArtifact(artifact, directory);
   const proof = JSON.parse(await readFile(`${directory}/evidence.json`, 'utf8')) as Evidence;
   const run = (await githubApi(`actions/runs/${artifact.workflow_run.id}`)) as PublicRun;
   validateOrigin(run, String(artifact.workflow_run.id), process.env.GITHUB_REPOSITORY!);
-  validateEvidence(proof, stage, id, hash, inputs, run);
+  validateEvidence(proof, stage, id, hash, run);
   const name = 'acceptance / installer';
   if ((await jobConclusion(proof.runId, proof.attempt, name)) !== 'success') return undefined;
   const currentJobs: { id: number; name: string; conclusion: string | null }[] = [];
@@ -250,11 +187,8 @@ export async function validateCandidate(id: string) {
   assert.equal(candidate.build.workflowSha, run.head_sha);
   await requireJob(runId, attempt, 'build-windows');
   const hash = sha256(await readFile(`${directory}/candidate.json`));
-  const inputs = {
-    installer: checkoutInputs('installer'),
-  };
-  const installer = await stageEvidence('installer', id, hash, inputs.installer);
-  return { candidate, hash, inputs, installer, directory, run };
+  const installer = await stageEvidence('installer', id, hash);
+  return { candidate, hash, installer, directory, run };
 }
 
 export function resumePlan(
@@ -270,7 +204,7 @@ export function resumePlan(
     assert.equal(
       installerApproved,
       true,
-      'Installer evidence is missing, expired or its inputs changed. Repeating installation requires installer-approved=true after owner permission.',
+      'Installer evidence is missing or expired. Repeating installation requires installer-approved=true after owner permission.',
     );
   return missing;
 }
@@ -283,13 +217,11 @@ export async function recordEvidence(stage: Stage, candidate: Candidate, hash: s
     process.env.GITHUB_WORKFLOW_SHA,
     'Acceptance tools checkout differs from the trusted workflow',
   );
-  const inputs = checkoutInputs(stage);
   const proof: Evidence = {
     schema: 1,
     candidateId: id,
     candidateHash: hash,
     stage,
-    inputs,
     runId: process.env.GITHUB_RUN_ID!,
     attempt: process.env.GITHUB_RUN_ATTEMPT!,
     toolsSha,
@@ -297,7 +229,7 @@ export async function recordEvidence(stage: Stage, candidate: Candidate, hash: s
   };
   await mkdir(`release-evidence/${stage}`, { recursive: true });
   await writeFile(`release-evidence/${stage}/evidence.json`, JSON.stringify(proof, null, 2));
-  await appendFile(process.env.GITHUB_OUTPUT!, `evidence=${evidenceName(id, stage, inputs)}\n`);
+  await appendFile(process.env.GITHUB_OUTPUT!, `evidence=${evidenceName(id)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -314,7 +246,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const result = await validateCandidate(process.env.CANDIDATE_ID!);
     await appendFile(
       process.env.GITHUB_STEP_SUMMARY!,
-      `Candidate ${process.env.CANDIDATE_ID}, manifest ${result.hash}, state ${result.installer ? 'accepted' : 'built'}.\nInstaller inputs: ${result.inputs.installer}; ${result.installer ? 'retained success' : 'no valid retained success; owner permission required before repeating installation'}.\n`,
+      `Candidate ${process.env.CANDIDATE_ID}, manifest ${result.hash}, state ${result.installer ? 'accepted' : 'built'}.\nInstaller acceptance: ${result.installer ? 'retained success' : 'no valid retained success; owner permission required before repeating installation'}.\n`,
     );
     const plan = resumePlan(result, process.env.INSTALLER_APPROVED === 'true');
     if (process.argv[2] === 'accepted')

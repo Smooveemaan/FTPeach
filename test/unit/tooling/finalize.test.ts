@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
@@ -9,6 +9,7 @@ import {
   assetNeedsUpload,
   createVersionTag,
   MANUAL_CHECKS,
+  publish,
   tagMessage,
   validateManualAcceptance,
   validateTag,
@@ -112,6 +113,56 @@ test('a rejected tag push fails deploy instead of continuing to draft creation',
     return Buffer.alloc(0);
   }) as typeof execFileSync;
   assert.throws(() => createVersionTag(candidate, hash, run), /Tag creation denied/);
+});
+
+test('draft creation uses the verified existing tag without requesting workflow-write permission', async (t) => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'release-draft-'));
+  const originalToken = process.env.GITHUB_TOKEN;
+  const originalRepository = process.env.GITHUB_REPOSITORY;
+  process.env.GITHUB_TOKEN = 'test-token';
+  process.env.GITHUB_REPOSITORY = 'owner/app';
+  let validTag = false;
+  let draftRequests = 0;
+  t.after(() => {
+    if (originalToken === undefined) delete process.env.GITHUB_TOKEN;
+    else process.env.GITHUB_TOKEN = originalToken;
+    if (originalRepository === undefined) delete process.env.GITHUB_REPOSITORY;
+    else process.env.GITHUB_REPOSITORY = originalRepository;
+    rmSync(directory, { recursive: true, force: true });
+  });
+  writeFileSync(path.join(directory, 'release-notes.md'), 'Accepted release notes');
+  t.mock.method(
+    globalThis,
+    'fetch',
+    async (url: string, options: { method: string; body?: string }) => {
+      const route = url.replace('https://api.github.com/repos/owner/app/', '');
+      if (options.method === 'POST') {
+        assert.equal(route, 'releases');
+        const body = JSON.parse(options.body as string);
+        assert.equal(body.tag_name, 'v0.6.1');
+        assert.equal(body.draft, true);
+        assert.ok(!Object.hasOwn(body, 'target_commitish'));
+        assert.ok(body.body.includes(`ftpeach-candidate:${hash}`));
+        draftRequests++;
+        throw new Error('Draft request verified');
+      }
+      if (route === 'releases/tags/v0.6.1') return new Response('', { status: 404 });
+      if (route === 'git/ref/tags/v0.6.1')
+        return Response.json({ object: { type: 'tag', sha: 'tag-object' } });
+      assert.equal(route, 'git/tags/tag-object');
+      return Response.json({
+        tag: 'v0.6.1',
+        message: tagMessage('0.6.1', validTag ? hash : 'c'.repeat(64)),
+        object: { type: 'commit', sha },
+      });
+    },
+  );
+  const accepted = { candidate, hash, manual, directory, createdAt: manual.checkedAt };
+  await assert.rejects(publish(accepted), /different candidate bytes/);
+  assert.equal(draftRequests, 0);
+  validTag = true;
+  await assert.rejects(publish(accepted), /Draft request verified/);
+  assert.equal(draftRequests, 1);
 });
 
 test('every manual result must name the exact source and accepted bytes', () => {

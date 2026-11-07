@@ -219,7 +219,7 @@ async function prepare(accepted?: AcceptedCandidate) {
   };
 }
 
-async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
+export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   const { candidate, directory, hash, manual, createdAt } = accepted;
   const { sha, version, repository } = candidate.readiness;
   const tag = `v${version}`;
@@ -228,6 +228,10 @@ async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   const marker = destination.marker;
   if (!destination.reference) {
     createVersionTag(candidate, hash);
+    assert.ok(
+      (await readDestination(candidate, hash)).reference,
+      'The version tag was not created',
+    );
   }
   if (!draft) {
     const notes = await readFile(path.join(directory, 'release-notes.md'), 'utf8');
@@ -235,9 +239,9 @@ async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
       (name) =>
         `- ${name}: passed (${manual.tester}, ${manual.checkedAt}); ${manual.results[name]!.evidence}`,
     );
+    // An explicit target_commitish requires workflow-write permission even with an existing tag.
     draft = (await githubApi('releases', {
       tag_name: tag,
-      target_commitish: sha,
       name: `FTPeach ${tag}`,
       draft: true,
       prerelease: false,

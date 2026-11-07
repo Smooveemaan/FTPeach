@@ -8,6 +8,7 @@ import {
   requireJob,
   latestStageSuccess,
   resumePlan,
+  stageJobName,
   validateEvidence,
   validateOrigin,
   type Evidence,
@@ -38,6 +39,11 @@ const proof: Evidence = {
 
 test('acceptance evidence binds to candidate ID and manifest hash and requires approval when missing', () => {
   assert.equal(evidenceName(id), 'candidate-123-1-acceptance');
+  assert.equal(evidenceName(id, 'macos'), 'candidate-123-1-acceptance-macos');
+  assert.equal(evidenceName(id, 'linux'), 'candidate-123-1-acceptance-linux');
+  assert.equal(stageJobName('installer'), 'acceptance / installer');
+  assert.equal(stageJobName('macos'), 'acceptance-macos');
+  assert.equal(stageJobName('linux'), 'acceptance-linux');
   validateEvidence(proof, 'installer', id, hash, run);
   assert.deepEqual(resumePlan({}, true), {
     installer: true,
@@ -46,6 +52,21 @@ test('acceptance evidence binds to candidate ID and manifest hash and requires a
   assert.deepEqual(resumePlan({ installer: proof }, false), {
     installer: false,
   });
+  assert.deepEqual(
+    resumePlan(
+      {
+        installer: proof,
+        macos: { ...proof, stage: 'macos' },
+        multiplatform: true,
+      },
+      false,
+    ),
+    {
+      installer: false,
+      macos: false,
+      linux: true,
+    },
+  );
 });
 
 test('substituted run, attempt, SHA, stage or candidate hash cannot authorize reuse', () => {

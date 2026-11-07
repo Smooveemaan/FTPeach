@@ -15,6 +15,9 @@ pub fn root_for(dir: &Path) -> Option<PathBuf> {
 
 /// The program's folder when this copy is portable.
 pub fn root() -> Option<&'static Path> {
+    if cfg!(feature = "ms-store") {
+        return None;
+    }
     static ROOT: OnceLock<Option<PathBuf>> = OnceLock::new();
     ROOT.get_or_init(|| root_for(std::env::current_exe().ok()?.parent()?))
         .as_deref()

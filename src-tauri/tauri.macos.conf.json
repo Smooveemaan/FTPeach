@@ -1,0 +1,29 @@
+{
+  "app": {
+    "windows": [
+      {
+        "title": "FTPeach",
+        "create": false,
+        "width": 1180,
+        "height": 740,
+        "minWidth": 480,
+        "minHeight": 520,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "backgroundColor": "#141312",
+        "zoomHotkeysEnabled": false,
+        "visible": false
+      }
+    ]
+  },
+  "bundle": {
+    "targets": ["app", "dmg"],
+    "macOS": {
+      "minimumSystemVersion": "13.3",
+      "entitlements": "Entitlements.plist"
+    }
+  }
+}

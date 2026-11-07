@@ -27,6 +27,14 @@ export interface PublicRun {
   head_repository: { full_name: string };
 }
 export const WINDOWS_PACKAGES = ['windows-x86_64-nsis', 'windows-x86_64-portable'];
+export const MULTIPLATFORM_PACKAGES = [
+  ...WINDOWS_PACKAGES,
+  'windows-x86_64-msix',
+  'macos-universal-dmg',
+  'macos-universal-app',
+  'linux-x86_64-appimage',
+  'linux-x86_64-deb',
+];
 
 export interface Candidate {
   schema: number;
@@ -36,6 +44,13 @@ export interface Candidate {
 }
 export const sha256 = (data: string | Buffer): string =>
   createHash('sha256').update(data).digest('hex');
+
+export function isMultiPlatformVersion(version: string): boolean {
+  assert.match(version, /^\d+\.\d+\.\d+$/);
+  const [major, minor] = version.split('.').map(Number) as [number, number, number];
+  assert.ok(major > 0 || minor >= 6, `Unsupported release version: ${version}`);
+  return major > 0 || minor >= 7;
+}
 
 export function requireUnusedVersion(tag: unknown, release: unknown) {
   assert.equal(
@@ -76,14 +91,48 @@ export async function githubApi(
 }
 
 export function candidateNames(version: string): string[] {
-  assert.match(version, /^\d+\.\d+\.\d+$/);
+  const multi = isMultiPlatformVersion(version);
   return [
     `FTPeach_${version}_x64-setup.exe`,
     `FTPeach_${version}_x64-setup.exe.sig`,
     `FTPeach_${version}_x64-portable.zip`,
     `FTPeach_${version}_x64-portable.zip.sig`,
+    ...(multi
+      ? [
+          `FTPeach_${version}_x64.msix`,
+          `FTPeach_${version}_universal.dmg`,
+          `FTPeach_${version}_universal.app.tar.gz`,
+          `FTPeach_${version}_universal.app.tar.gz.sig`,
+          `FTPeach_${version}_amd64.AppImage`,
+          `FTPeach_${version}_amd64.AppImage.sig`,
+          `FTPeach_${version}_amd64.deb`,
+          `FTPeach_${version}_amd64.deb.sig`,
+        ]
+      : []),
     'release-audit.zip',
     'release-notes.md',
+  ];
+}
+
+export function releaseAssetNames(version: string): string[] {
+  return candidateNames(version).filter(
+    (name) => !name.endsWith('.sig') && !name.endsWith('.msix') && name !== 'release-notes.md',
+  );
+}
+
+export function updaterFeedTargets(version: string): [string, string][] {
+  const multi = isMultiPlatformVersion(version);
+  return [
+    ['windows-x86_64', `FTPeach_${version}_x64-setup.exe`],
+    ['windows-x86_64-portable', `FTPeach_${version}_x64-portable.zip`],
+    ...(multi
+      ? ([
+          ['darwin-aarch64', `FTPeach_${version}_universal.app.tar.gz`],
+          ['darwin-x86_64', `FTPeach_${version}_universal.app.tar.gz`],
+          ['linux-x86_64', `FTPeach_${version}_amd64.AppImage`],
+          ['linux-x86_64-deb', `FTPeach_${version}_amd64.deb`],
+        ] as [string, string][])
+      : []),
   ];
 }
 
@@ -120,17 +169,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       'Packaging can only be dispatched on master',
     );
     const { version } = JSON.parse(await readFile('package.json', 'utf8')) as { version: string };
-    assert.match(version, /^\d+\.\d+\.\d+$/);
-    assert.match(
-      version,
-      /^0\.6\.\d+$/,
-      'The multi-platform release matrix must be implemented before 0.7.0',
-    );
+    const multiplatform = isMultiPlatformVersion(version);
     requireUnusedVersion(
       await githubApi(`git/ref/tags/v${version}`, undefined, true),
       await githubApi(`releases/tags/v${version}`, undefined, true),
     );
-    await appendFile(process.env.GITHUB_OUTPUT!, `version=${version}\n`);
+    await appendFile(
+      process.env.GITHUB_OUTPUT!,
+      `version=${version}\nmultiplatform=${multiplatform}\n`,
+    );
   } else if (process.argv.includes('--verify')) {
     await verifyCandidate(directory);
   } else {
@@ -143,12 +190,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       );
     }
     const { version } = JSON.parse(await readFile('package.json', 'utf8')) as { version: string };
-    assert.match(version, /^\d+\.\d+\.\d+$/);
-    assert.match(
-      version,
-      /^0\.6\.\d+$/,
-      'The multi-platform release matrix must be implemented before 0.7.0',
-    );
+    const multiplatform = isMultiPlatformVersion(version);
     const workflowSha = process.env.GITHUB_WORKFLOW_SHA ?? source;
     assert.match(workflowSha, /^[0-9a-f]{40}$/, 'The build workflow SHA is required');
     const readiness: Readiness = {
@@ -158,7 +200,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       attempt: process.env.GITHUB_RUN_ATTEMPT!,
       sha: source,
       version,
-      packages: WINDOWS_PACKAGES,
+      packages: multiplatform ? MULTIPLATFORM_PACKAGES : WINDOWS_PACKAGES,
     };
     const files: Record<string, string> = {};
     for (const name of candidateNames(version))

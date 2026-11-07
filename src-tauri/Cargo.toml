@@ -20,6 +20,8 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 # --cfg test. Not for production use — enable only when running those suites.
 test-utils = []
 smoke-test = []
+# Microsoft Store package: Store services updates and WindowsApps is read-only.
+ms-store = []
 
 # Lint policy lives here rather than only in the CI command line, so that
 # rust-analyzer in the editor, a bare `cargo clippy`, and CI all see the same

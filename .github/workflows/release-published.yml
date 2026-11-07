@@ -35,7 +35,8 @@ jobs:
           name: published-update-inputs
           path: |
             published-release/candidate.json
-            published-release/FTPeach_*
+            published-release/FTPeach_*_x64-setup.exe
+            published-release/FTPeach_*_x64-portable.zip
             published-release/latest.json
           retention-days: 1
           if-no-files-found: error

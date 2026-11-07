@@ -25,7 +25,159 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  build-macos:
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    environment: release
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate candidate version and unused release tag
+        id: preflight
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/candidate.ts --preflight
+      - name: Require master-only automatic signing and protected deploy
+        if: steps.preflight.outputs.multiplatform == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --experimental-strip-types scripts/release/check-release-environment.ts release
+          node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
+      - name: Install pinned Rust toolchain and universal macOS targets
+        if: steps.preflight.outputs.multiplatform == 'true'
+        run: |
+          rustup show
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        if: steps.preflight.outputs.multiplatform == 'true'
+        with:
+          workspaces: src-tauri
+          key: macos-universal
+      - if: steps.preflight.outputs.multiplatform == 'true'
+        run: npm ci
+      - name: Build, sign and notarize universal macOS packages
+        if: steps.preflight.outputs.multiplatform == 'true'
+        env:
+          VERSION: ${{ steps.preflight.outputs.version }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          npm run tauri -- build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles app,dmg
+          mkdir -p release-macos
+          bundle_root="src-tauri/target/universal-apple-darwin/release/bundle"
+          cp "$bundle_root"/dmg/*.dmg "release-macos/FTPeach_${VERSION}_universal.dmg"
+          cp "$bundle_root"/macos/*.app.tar.gz "release-macos/FTPeach_${VERSION}_universal.app.tar.gz"
+          cp "$bundle_root"/macos/*.app.tar.gz.sig "release-macos/FTPeach_${VERSION}_universal.app.tar.gz.sig"
+          xcrun stapler validate "release-macos/FTPeach_${VERSION}_universal.dmg"
+      - name: Attest macOS package bytes
+        if: steps.preflight.outputs.multiplatform == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            release-macos/*.dmg
+            release-macos/*.app.tar.gz
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.preflight.outputs.multiplatform == 'true'
+        with:
+          name: release-macos-${{ github.run_attempt }}
+          path: release-macos/
+          if-no-files-found: error
+          retention-days: 5
+
+  build-linux:
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    environment: release
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate candidate version and unused release tag
+        id: preflight
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/release/candidate.ts --preflight
+      - name: Require master-only automatic signing and protected deploy
+        if: steps.preflight.outputs.multiplatform == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --experimental-strip-types scripts/release/check-release-environment.ts release
+          node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
+      - name: Install Linux packaging dependencies
+        if: steps.preflight.outputs.multiplatform == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 file libssl-dev
+      - name: Install pinned Rust toolchain
+        if: steps.preflight.outputs.multiplatform == 'true'
+        run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        if: steps.preflight.outputs.multiplatform == 'true'
+        with:
+          workspaces: src-tauri
+          key: linux-x86_64
+      - if: steps.preflight.outputs.multiplatform == 'true'
+        run: npm ci
+      - name: Build and sign Linux AppImage and Debian packages
+        if: steps.preflight.outputs.multiplatform == 'true'
+        env:
+          VERSION: ${{ steps.preflight.outputs.version }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          npm run tauri -- build --config src-tauri/tauri.linux.conf.json --bundles deb,appimage
+          npm run tauri -- signer sign src-tauri/target/release/bundle/deb/*.deb
+          mkdir -p release-linux
+          cp src-tauri/target/release/bundle/appimage/*.AppImage "release-linux/FTPeach_${VERSION}_amd64.AppImage"
+          cp src-tauri/target/release/bundle/appimage/*.AppImage.sig "release-linux/FTPeach_${VERSION}_amd64.AppImage.sig"
+          cp src-tauri/target/release/bundle/deb/*.deb "release-linux/FTPeach_${VERSION}_amd64.deb"
+          cp src-tauri/target/release/bundle/deb/*.deb.sig "release-linux/FTPeach_${VERSION}_amd64.deb.sig"
+      - name: Attest Linux package bytes
+        if: steps.preflight.outputs.multiplatform == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            release-linux/*.AppImage
+            release-linux/*.deb
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.preflight.outputs.multiplatform == 'true'
+        with:
+          name: release-linux-${{ github.run_attempt }}
+          path: release-linux/
+          if-no-files-found: error
+          retention-days: 5
+
   build-windows:
+    needs: [build-macos, build-linux]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     permissions:
       actions: read
@@ -38,6 +190,7 @@ jobs:
     outputs:
       artifact: ${{ steps.package.outputs.artifact }}
       candidate-id: ${{ github.run_id }}:${{ github.run_attempt }}
+      multiplatform: ${{ steps.preflight.outputs.multiplatform }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -81,12 +234,33 @@ jobs:
           npm run tauri -- build --bundles nsis
           node --experimental-strip-types scripts/release/portable.ts build
           npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip
+      - name: Build Microsoft Store MSIX package
+        if: steps.preflight.outputs.multiplatform == 'true'
+        shell: bash
+        run: |
+          cargo build --release --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol,ms-store --target-dir src-tauri/target/ms-store
+          node --experimental-strip-types scripts/release/msix.ts build src-tauri/target/release src-tauri/target/ms-store/release/app.exe
+      - name: Download macOS packages
+        if: steps.preflight.outputs.multiplatform == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-macos-${{ github.run_attempt }}
+          path: src-tauri/target/release/bundle/external
+      - name: Download Linux packages
+        if: steps.preflight.outputs.multiplatform == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-linux-${{ github.run_attempt }}
+          path: src-tauri/target/release/bundle/external
       - name: Verify every updater signature
         shell: pwsh
+        env:
+          MULTIPLATFORM: ${{ steps.preflight.outputs.multiplatform }}
         run: |
           $config = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
           $signatures = @(Get-ChildItem -Recurse src-tauri/target/release/bundle -Filter '*.sig')
-          if ($signatures.Count -ne 2) { throw 'Expected the NSIS and portable updater signatures' }
+          $expected = if ($env:MULTIPLATFORM -eq 'true') { 5 } else { 2 }
+          if ($signatures.Count -ne $expected) { throw "Expected $expected updater signatures, found $($signatures.Count)" }
           foreach ($signature in $signatures) {
             $artifact = $signature.FullName.Substring(0, $signature.FullName.Length - 4)
             cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $config.plugins.updater.pubkey $artifact $signature.FullName
@@ -101,9 +275,14 @@ jobs:
         shell: pwsh
         env:
           VERSION: ${{ steps.preflight.outputs.version }}
+          MULTIPLATFORM: ${{ steps.preflight.outputs.multiplatform }}
         run: |
           New-Item -ItemType Directory release-candidate | Out-Null
           Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-candidate
+          if ($env:MULTIPLATFORM -eq 'true') {
+            Copy-Item -LiteralPath "src-tauri/target/release/bundle/msix/FTPeach_$($env:VERSION)_x64.msix" -Destination release-candidate
+            Copy-Item -Path "src-tauri/target/release/bundle/external/*" -Destination release-candidate
+          }
           Copy-Item -LiteralPath release/release-notes.md -Destination release-candidate
           Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md -DestinationPath release-candidate/release-audit.zip
           node --experimental-strip-types scripts/release/candidate.ts
@@ -136,8 +315,105 @@ jobs:
       installer-approved: ${{ github.event_name == 'push' || inputs.installer-approved }}
       production: true
 
+  acceptance-macos:
+    needs: build-windows
+    if: always() && github.ref == 'refs/heads/master' && ((needs.build-windows.result == 'success' && needs.build-windows.outputs.multiplatform == 'true') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
+    permissions:
+      contents: read
+      actions: read
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate saved candidate and check retained macOS evidence
+        if: needs.build-windows.outputs.artifact == ''
+        id: resume
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CANDIDATE_ID: ${{ inputs.candidate-id }}
+          INSTALLER_APPROVED: ${{ inputs.installer-approved }}
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts prepare-macos
+      - name: Download the final candidate
+        if: needs.build-windows.outputs.artifact != ''
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ${{ needs.build-windows.outputs.artifact }}
+          path: release-candidate
+      - name: Accept universal macOS DMG, app bundle and updater archive
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
+        run: node --experimental-strip-types scripts/release/unix-acceptance.ts release-candidate --macos
+      - name: Record independent macOS acceptance
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
+        id: proof
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts record macos
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
+        with:
+          name: ${{ steps.proof.outputs.evidence }}
+          path: release-evidence/macos/
+          if-no-files-found: error
+          retention-days: 30
+
+  acceptance-linux:
+    needs: build-windows
+    if: always() && github.ref == 'refs/heads/master' && ((needs.build-windows.result == 'success' && needs.build-windows.outputs.multiplatform == 'true') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate saved candidate and check retained Linux evidence
+        if: needs.build-windows.outputs.artifact == ''
+        id: resume
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CANDIDATE_ID: ${{ inputs.candidate-id }}
+          INSTALLER_APPROVED: ${{ inputs.installer-approved }}
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts prepare-linux
+      - name: Download the final candidate
+        if: needs.build-windows.outputs.artifact != ''
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ${{ needs.build-windows.outputs.artifact }}
+          path: release-candidate
+      - name: Install headless Linux runtime dependencies
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb dbus-x11 libfuse2 libwebkit2gtk-4.1-0 libayatana-appindicator3-1
+      - name: Accept Linux Debian and AppImage packages
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        run: node --experimental-strip-types scripts/release/unix-acceptance.ts release-candidate --linux
+      - name: Record independent Linux acceptance
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        id: proof
+        run: node --experimental-strip-types scripts/release/validate-candidate.ts record linux
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        with:
+          name: ${{ steps.proof.outputs.evidence }}
+          path: release-evidence/linux/
+          if-no-files-found: error
+          retention-days: 30
+
   tag-and-draft:
-    needs: [build-windows, acceptance]
+    needs: [build-windows, acceptance, acceptance-macos, acceptance-linux]
     if: always() && github.ref == 'refs/heads/master' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
     permissions:
       actions: read

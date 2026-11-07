@@ -21,7 +21,11 @@ async fn fresh_offer<R: tauri::Runtime>(
     dir: &Path,
 ) -> anyhow::Result<Option<Update>> {
     // No cached offer: a removed release must not authorize a saved package.
-    let updater = app.updater_builder().timeout(OFFER_DEADLINE).build()?;
+    let mut builder = app.updater_builder().timeout(OFFER_DEADLINE);
+    if let Some(target) = feed_target(package()) {
+        builder = builder.target(target);
+    }
+    let updater = builder.build()?;
     let response = tokio::time::timeout(OFFER_DEADLINE, updater.check())
         .await
         .map_err(|_| anyhow::anyhow!("The update check took too long"))?;

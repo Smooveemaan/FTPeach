@@ -5,7 +5,15 @@ import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { candidateNames, githubApi, sha256, type Candidate, type PublicRun } from './candidate.ts';
+import {
+  candidateNames,
+  githubApi,
+  releaseAssetNames,
+  sha256,
+  updaterFeedTargets,
+  type Candidate,
+  type PublicRun,
+} from './candidate.ts';
 import { validateTag, verifyAttestations } from './finalize.ts';
 import { downloadArtifact, validateOrigin, type Artifact } from './validate-candidate.ts';
 
@@ -65,17 +73,14 @@ export function validatePublicFeed(
   assets: { name: string; url: string }[],
 ) {
   assert.equal(feed.version, candidate.readiness.version);
-  assert.deepEqual(Object.keys(feed.platforms).sort(), [
-    'windows-x86_64',
-    'windows-x86_64-portable',
-  ]);
-  for (const [platform, suffix] of [
-    ['windows-x86_64', 'setup.exe'],
-    ['windows-x86_64-portable', 'portable.zip'],
-  ]) {
-    const name = `FTPeach_${feed.version}_x64-${suffix}`;
-    assert.equal(feed.platforms[platform!]!.url, assets.find((asset) => asset.name === name)?.url);
-    const signature = feed.platforms[platform!]!.signature;
+  const targets = updaterFeedTargets(candidate.readiness.version);
+  assert.deepEqual(
+    Object.keys(feed.platforms).sort(),
+    targets.map(([platform]) => platform).sort(),
+  );
+  for (const [platform, name] of targets) {
+    assert.equal(feed.platforms[platform]!.url, assets.find((asset) => asset.name === name)?.url);
+    const signature = feed.platforms[platform]!.signature;
     assert.ok(signature.trim());
     assert.ok(
       [signature, `${signature}\n`, `${signature}\r\n`].some(
@@ -145,24 +150,22 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     Object.keys(candidate.files).sort(),
     candidateNames(candidate.readiness.version).sort(),
   );
+  const expectedAssets = releaseAssetNames(candidate.readiness.version);
   assert.deepEqual(
     release.assets.map((asset) => asset.name).sort(),
-    [
-      `FTPeach_${candidate.readiness.version}_x64-setup.exe`,
-      `FTPeach_${candidate.readiness.version}_x64-portable.zip`,
-      'release-audit.zip',
-      'latest.json',
-    ].sort(),
+    [...expectedAssets, 'latest.json'].sort(),
   );
   assert.equal(
     candidate.readiness.repository.toLowerCase(),
     process.env.GITHUB_REPOSITORY!.toLowerCase(),
   );
   assert.equal(release.tag_name, `v${candidate.readiness.version}`);
-  for (const [name, hash] of Object.entries(candidate.files).filter(
-    ([name]) => !name.endsWith('.sig') && name !== 'release-notes.md',
-  ))
-    assert.equal(sha256(await readFile(`${directory}/${name}`)), hash, `Published ${name} changed`);
+  for (const name of expectedAssets)
+    assert.equal(
+      sha256(await readFile(`${directory}/${name}`)),
+      candidate.files[name],
+      `Published ${name} changed`,
+    );
   const publicFeed = await fetch(
     `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/latest/download/latest.json`,
     { signal: AbortSignal.timeout(60_000) },
@@ -182,12 +185,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     `contents/src-tauri/tauri.conf.json?ref=${candidate.readiness.sha}`,
   )) as { content: string };
   const key = JSON.parse(Buffer.from(config.content, 'base64').toString()).plugins.updater.pubkey;
-  for (const [platform, suffix] of [
-    ['windows-x86_64', 'setup.exe'],
-    ['windows-x86_64-portable', 'portable.zip'],
-  ]) {
-    const file = `${directory}/FTPeach_${feed.version}_x64-${suffix}`;
-    const signature = feed.platforms[platform!]!.signature;
+  for (const [platform, name] of updaterFeedTargets(feed.version)) {
+    const file = `${directory}/${name}`;
+    const signature = feed.platforms[platform]!.signature;
     await writeFile(`${file}.sig`, signature);
     verifyUpdaterSignature(key, await readFile(file), signature);
   }

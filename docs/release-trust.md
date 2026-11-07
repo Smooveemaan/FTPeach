@@ -1,25 +1,28 @@
 # What a release proves
 
-A published FTPeach release carries three separate kinds of trust. They are
-easy to blur into "the release is signed", so each release run reports them
-apart in `release-trust-report.md`, printed in the job summary and attached to
-the draft release inside `release-audit.zip`, next to the npm and Cargo SBOMs
+A published FTPeach release carries separate kinds of trust. They are easy to
+blur into "the release is signed", so each release run reports them apart in
+`release-trust-report.md`, printed in the job summary and attached to the draft
+release inside `release-audit.zip`, next to the npm and Cargo SBOMs
 (`scripts/release/release-trust-report.ts`).
 
 | Mechanism | Who checks it | Status |
 | --- | --- | --- |
 | Updater signature (minisign, `.sig`) | The in-app updater, before installing an update | Every `.sig` verified against `plugins.updater.pubkey`; the release fails otherwise. Published inside `latest.json`, not as a separate file |
-| Windows Authenticode | Explorer, SmartScreen and UAC on the first download | **Not signed.** Accepted risk, see below |
-| Build provenance attestation | Anyone, with `gh attestation verify` | Generated for the NSIS installer and the portable zip by `actions/attest-build-provenance` |
+| Windows Authenticode | Explorer, SmartScreen and UAC on the first download | **Not signed** on direct downloads (accepted risk, see below); Microsoft Store MSIX builds are signed by Microsoft Partner Center |
+| macOS Developer ID & Notarization | Gatekeeper (`codesign`, `spctl`, `stapler`) | Signed with Developer ID Application, notarized via `notarytool`, and stapled (`>= 0.7.0`) |
+| Build provenance attestation | Anyone, with `gh attestation verify` | Generated during the build jobs for `candidate.json` and the release packages by `actions/attest-build-provenance` |
 | RustSec exceptions | cargo-deny, `check:rust-advisories` | Listed with kind and review date; see [rust-advisories.md](rust-advisories.md) |
 
 ## Authenticode
 
-FTPeach has no code-signing certificate, so the first installer a user
-downloads is unsigned and Windows may warn about an unknown publisher. The
-updater signature does not change that: Windows never reads it. Once a user
-runs a genuine installer, later updates are protected by the updater
-signature.
+FTPeach has no Windows Authenticode certificate for direct GitHub downloads, so
+the first NSIS installer or portable archive a user downloads is unsigned and
+Windows may warn about an unknown publisher. The updater signature does not
+change that: Windows never reads it. Once a user runs a genuine copy, later
+updates are protected by the updater signature. Microsoft Store builds (`*.msix`
+from `>= 0.7.0`) disable the in-app updater and portable mode at compile time
+(`--features ms-store`) and are signed and updated by the Microsoft Store.
 
 The report accepts `NotSigned` as the known state and says so. It fails the
 release for any other outcome that is not a valid, timestamped signature: a
@@ -36,10 +39,10 @@ checks in the same CI chain and needs no separate reviewer approval. PRs,
 ordinary pushes and acceptance jobs do not receive the signing key.
 
 The separate `release-tag` environment requires reviewer approval and forbids
-administrator bypass. It protects creation of the tag and draft, after automatic
-and manual acceptance. A recovered deploy requires a fresh approval. The workflow
-reads the actual environment settings from GitHub before proceeding; an environment
-name in YAML alone does not prove its protections
+administrator bypass. It protects creation of the tag and draft directly after
+automatic candidate acceptance succeeds. A recovered deploy requires a fresh
+approval. The workflow reads the actual environment settings from GitHub before
+proceeding; an environment name in YAML alone does not prove its protections
 (`scripts/release/check-release-environment.ts`).
 
 Tag creation uses a repository deploy key stored only in the `release-tag`
@@ -52,42 +55,30 @@ SSH host key pinned. Drafts and assets use the job's ordinary `GITHUB_TOKEN`.
 
 ## Provenance
 
-Verify that an installer was built by this repository's release workflow:
+Verify that a release package was built by this repository's release workflow:
 
 ```powershell
 gh attestation verify FTPeach_X.Y.Z_x64-setup.exe -R Smooveemaan/FTPeach
 ```
 
-The installer is not byte-for-byte reproducible (NSIS and the Rust toolchain
-embed build-time data), so provenance is attested, not rebuilt. The SHA-256 of
-the installer and the app binary is in the trust report.
+The packages are not byte-for-byte reproducible (NSIS, linker metadata and the
+Rust toolchain embed build-time data), so provenance is attested, not rebuilt.
+The SHA-256 of every release artifact is recorded in the trust report and bound
+in `candidate.json`.
 
-The release chain pins the application to the commit of its successful
-full public and private checks. Sources, dependencies and build scripts stay
-on that commit. After building, it checks out the trust report and candidate
-manifest tools separately from the commit running the workflow. Fixing those tools therefore
-does not require repeating the application's full checks. Changing the
-application or its build inputs requires a newly checked source commit.
-
-The candidate manifest identifies both commits and the SHA-256 of every final
-file. The manifest step checks the actual application and tool checkouts against
-them. GitHub's standard provenance action attests the installer, portable ZIP and
-`candidate.json`. Acceptance evidence identifies the exact run and attempt,
-verification tools, and manifest hash. Before creating the tag, the finalizer
-validates that evidence and the attestations. The manifest is also attached to
-the draft, so the application source remains verifiable when it differs from
-the workflow commit. The final tag points to the checked application commit,
-even if `master` has advanced.
-
-The packages are saved before a separate attestation job contacts GitHub.
-If that job fails, retrying it reuses the saved bytes. Acceptance and tag creation
-remain blocked until attestation succeeds.
-
-Recovery compares the inputs of each check. A tool correction can verify the
-saved packages without rebuilding them or repeating unrelated successful checks.
-Changing only the tools commit does not invalidate every result. A missing,
-failed, skipped, expired or mismatched result blocks the transition it proves;
-an unrelated failed job does not erase successful evidence.
+The release chain runs on the exact commit of its successful full public and
+private checks. `candidate.json` records the application SHA, workflow SHA,
+toolchain versions, and the SHA-256 of every final file across all built
+platforms. GitHub's standard provenance action attests the built packages and
+`candidate.json` directly at the end of the build jobs. Acceptance evidence
+(`candidate-<id>-acceptance`, `candidate-<id>-acceptance-macos`,
+`candidate-<id>-acceptance-linux`) binds directly to the immutable `candidateId`
+and `candidateHash`. Before creating the tag, `finalize.ts` validates that
+evidence and verifies the provenance attestations. `candidate.json` remains
+inside the retained Actions artifact (`release-candidate-<attempt>`) and is not
+attached to the public GitHub Release; the annotated release tag `vX.Y.Z`
+embeds `FTPeach candidate SHA256: <hash>` and points to the checked application
+commit.
 
 ## The updater private key
 
@@ -128,77 +119,53 @@ Besides the tests in this repository, every release is checked by suites the
 maintainer keeps closed: end-to-end tests that drive the built application,
 the client against a matrix of real FTP, FTPS, SFTP and WebDAV servers, and
 protocol round trips against servers in Docker. They run in a closed verification
-environment on the exact commit to be tagged. The release
-chain validates the specific private run, attempt, test-source SHA and mandatory
-results against its public parent run. A commit status alone cannot authorize a
-release. Private sources and logs remain in the private repository. Desktop
-checks that take over the screen and the mouse (Explorer drag and drop, file
-dialogs, the tray) and the file-system checks on extra drives and shares run on
-the maintainer's machine before the release.
+environment on the exact commit to be tagged. The release chain runs directly
+after `mode`, `checks` and `private-check` succeed in `ci.yml`. Private sources
+and logs remain in the private repository.
 
 ### Release and recovery
 
 A `master` push whose last commit contains the exact standalone line
 `Release-Check: true` starts the full public and closed checks. Their success
-continues through Windows x64 NSIS and portable packaging, signing, artifact
-retention, attestation and final-package acceptance in one CI chain. The
-`manual-acceptance` stage requires separate attestation and package-test results.
-The diagnostic Installer workflow retains its test-key negative scenarios.
-Unix source checks remain part of the full suite; this release's packaging and
-package acceptance run only on Windows.
+continues directly into `release.yml`:
+- For `0.6.x`, `build-windows` builds and signs the Windows x64 NSIS and
+  portable packages and attests them, followed by `acceptance` on
+  `windows-latest` (running `portable`, `shell`, `notification` and full
+  installer/updater scenarios on the saved candidate bytes).
+- Starting with `0.7.0`, `build-macos` (`macos-15`), `build-linux`
+  (`ubuntu-22.04`) and `build-windows` (`windows-latest`, including Microsoft
+  Store MSIX) build, sign and attest all target packages into a single unified
+  `release-candidate` artifact, followed in parallel by `acceptance`
+  (`windows-latest`), `acceptance-macos` (`macos-15`) and `acceptance-linux`
+  (`ubuntu-22.04`).
 
-Portable isolation, Windows shell actions and transfer-notification clicks are
-automated closed candidate acceptance on the saved packages. Desktop acceptance
-follows successful Installer acceptance; attestation runs in parallel. Desktop proof
-requires the complete fixed set of portable, shell and notification results and a
-validated closed acceptance receipt. The retained release
-record requires `production-updater-installed`, `production-updater-portable`,
-`native-desktop` and `filesystem-stand`. Windows Hello (including a second account)
-and vault locking with Windows are checked locally on relevant behavior changes,
-by owner decision dated 2026-11-06; exclusion is not passed candidate evidence.
-Visual checks are repeated when the affected appearance changes.
+Once automatic acceptance succeeds, `tag-and-draft` automatically pauses in
+`Waiting` on the protected `release-tag` environment. There is no manual-check
+JSON upload or polling loop in CI; local manual checks (`docs/manual-checks.md`)
+are performed only when changes touch those specific areas.
 
-The owner records required acceptance for the exact application SHA and
-manifest SHA-256. In `release.yml`, operation `record-manual` accepts the
-`candidate-id` (`RUN_ID:BUILD_ATTEMPT`) and `manual-acceptance` JSON. It records the
-tester, date, and each mandatory result with evidence. A skipped or unperformed
-check does not pass. The normal chain waits for that record before requesting
-the `release-tag` deploy approval.
-
-After approval, readiness is checked again. The workflow creates an annotated
-tag on the application SHA and a draft containing the accepted files and update
-feed. Existing tags and assets must match; recovery adds missing assets without
-replacing them. The workflow downloads the draft assets and verifies their
-completeness and hashes before declaring the draft ready. The owner publishes
-it. Public package and feed availability, Pages, and a real update from the
-public feed are checked after publication. The real installed and portable updates
-are required independent automation; they never delay the draft or publication.
-Tags do not start another build or CI.
+After the owner approves `release-tag`, `finalize.ts` revalidates the candidate
+and acceptance evidence, creates the annotated tag `vX.Y.Z`, creates the draft
+release with clean `release-notes.md` text, uploads only user-facing assets and
+`latest.json` (verifying SHA-256 digests directly from the GitHub API response),
+and leaves the draft ready for publication. After the owner publishes the draft,
+`release-published.yml` verifies the public assets, `latest.json`, Ed25519
+updater signatures and Pages on `ubuntu-latest`, and runs real public-feed
+updates on `windows-latest`.
 
 For an interrupted candidate, dispatch `release.yml` on trusted `master` with
-operation `resume` and its `candidate-id`. The workflow determines which evidence
-is missing or stale; the operator does not select a stage. A repeated Installer
-run reports its reason and requires separate permission through
-`installer-approved`. Operation `deploy` resumes an accepted candidate's tag and
-draft preparation and always requires a new protected approval.
-
-If application or build inputs change, the new candidate needs its own package
-acceptance. If saved packages expire before tagging, create a new candidate;
-after tagging, recover the original files. A new build cannot replace a tagged
-release. An unsafe published version is corrected with a new release.
-
-The ordinary Windows path and recovery still require live acceptance of this
-workflow change; the workflow definition alone is not proof that either passed.
+operation `resume` and its `candidate-id` to rerun missing automatic acceptance
+on the saved candidate bytes without rebuilding, or operation `deploy` to run
+`tag-and-draft` (with a fresh `release-tag` approval) when automatic acceptance
+is already complete. Repeating Windows `installer` acceptance requires
+`installer-approved: true` after owner permission.
 
 ### Release matrix
 
-The release trust report copies this table into every draft release. Rows in
+The release trust report includes this table in `release-audit.zip`. Rows in
 the `ci` lane are proven by jobs the release workflow requires; every other row
-is printed as NOT VERIFIED until the maintainer records its result for the exact
-candidate when required. Hello/vault rows describe change-triggered local checks,
-not mandatory candidate results. Required pre-publication results are checked
-before deploy; the public-feed update check follows publication. Linked procedures
-also support local diagnosis.
+is printed as NOT VERIFIED by the automated workflow and describes change-triggered
+local checks or post-publication automation.
 
 | Cell | Lane | How |
 | --- | --- | --- |
@@ -206,10 +173,11 @@ also support local diagnosis.
 | Packaged native smoke on Windows, macOS and Linux: shutdown flush, editor recovery, vault lock | ci | `packaged-smoke` matrix |
 | Portable Windows copy keeps its data beside the program and none in the profile folders | ci | `packaged-smoke`, second run on Windows |
 | Clean install, upgrade from the previous release, uninstall, the updater, portable update | ci | `installer` |
-| Desktop end-to-end, server matrix and protocol compatibility suites | ci | the private run and receipt bound to the release CI and application SHA |
-| Native desktop checks: Explorer drag and drop, file dialogs, the tray and its notifications | local | run by the maintainer before the release |
-| File operations on a second drive, a full drive, exFAT, a share and through links | local | run by the maintainer before the release |
-| Portable isolation, Windows shell actions and notification click | ci | closed candidate acceptance on the saved packages |
+| Desktop end-to-end, server matrix and protocol compatibility suites | ci | the private run bound to the release CI and application SHA |
+| Portable isolation, Windows shell actions and notification click | ci | `acceptance` (`installer.yml`) on the saved candidate packages |
+| macOS universal signature, notarization, DMG mount, dual-slice launch and updater archive (`>= 0.7.0`) | ci | `acceptance-macos` on the saved candidate packages |
+| Linux Debian install, AppImage launch and updater signatures under Xvfb + D-Bus (`>= 0.7.0`) | ci | `acceptance-linux` on the saved candidate packages |
+| File operations on a second drive, a full drive, exFAT, a share and through links | local | on relevant filesystem changes |
 | Windows Hello unlock | local | on relevant changes; [Windows Hello](manual-checks.md#windows-hello) |
 | Windows Hello on a second account | local | on relevant changes; [Windows Hello](manual-checks.md#windows-hello) |
 | Vault locks with Windows | local | on relevant changes; [Vault locks with Windows](manual-checks.md#vault-locks-with-windows) |

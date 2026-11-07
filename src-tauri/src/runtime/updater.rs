@@ -80,6 +80,7 @@ pub enum UpdaterStatus {
 /// replace, and a smoke-test instance must not install over the real one.
 pub fn updates_enabled() -> bool {
     !cfg!(debug_assertions)
+        && !cfg!(feature = "ms-store")
         && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
         && supported_package()
 }
@@ -134,9 +135,20 @@ fn staging_dir(app: &AppHandle) -> anyhow::Result<PathBuf> {
         .ok_or_else(|| anyhow::anyhow!("No local application data directory"))
 }
 
-/// The entry of the update feed a portable copy reads. The installed copy
-/// keeps the plugin's own target, so neither can take the other's artifact.
+/// Custom feed entries for non-default package types (`windows-x86_64-portable`,
+/// `linux-x86_64-deb`), so each copy only reads its own package format.
 const PORTABLE_TARGET: &str = "windows-x86_64-portable";
+#[cfg(any(unix, test))]
+const DEB_TARGET: &str = "linux-x86_64-deb";
+
+fn feed_target(package: Package) -> Option<&'static str> {
+    match package {
+        Package::PortableZip => Some(PORTABLE_TARGET),
+        #[cfg(any(unix, test))]
+        Package::Deb => Some(DEB_TARGET),
+        _ => None,
+    }
+}
 
 fn package() -> Package {
     #[cfg(unix)]
@@ -315,13 +327,13 @@ async fn find_update(app: &AppHandle, state: &UpdaterState) -> anyhow::Result<Op
     let mut available = state.available.lock().await;
     if available.is_none() {
         send(app, UpdaterStatus::Checking);
-        let portable = portable::root().is_some();
+        let pkg = package();
         let mut updater = app.updater_builder();
-        if portable {
-            updater = updater.target(PORTABLE_TARGET);
+        if let Some(target) = feed_target(pkg) {
+            updater = updater.target(target);
         }
         *available = match updater.build()?.check().await {
-            Err(error) if portable && missing_target(&error) => {
+            Err(error) if pkg == Package::PortableZip && missing_target(&error) => {
                 // Releases before 0.4.0 publish no portable package: there is
                 // nothing a portable copy could update to.
                 log::info!("The update feed has no portable package: {error}");
@@ -486,6 +498,11 @@ mod serde_field_casing {
         );
         assert_eq!(unix_package("linux", None), None);
         assert_eq!(unix_package("linux", Some(BundleType::Rpm)), None);
+        assert_eq!(feed_target(Package::PortableZip), Some(PORTABLE_TARGET));
+        assert_eq!(feed_target(Package::Deb), Some(DEB_TARGET));
+        assert_eq!(feed_target(Package::AppImage), None);
+        assert_eq!(feed_target(Package::MacApp), None);
+        assert_eq!(feed_target(Package::Installer), None);
     }
 
     #[test]

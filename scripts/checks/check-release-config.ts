@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const configPath = new URL('../../src-tauri/tauri.conf.json', import.meta.url);
+const macosConfigPath = new URL('../../src-tauri/tauri.macos.conf.json', import.meta.url);
+const linuxConfigPath = new URL('../../src-tauri/tauri.linux.conf.json', import.meta.url);
+const infoPlistPath = new URL('../../src-tauri/Info.plist', import.meta.url);
+const entitlementsPath = new URL('../../src-tauri/Entitlements.plist', import.meta.url);
 const capabilitiesPath = new URL('../../src-tauri/capabilities/default.json', import.meta.url);
 const indexPath = new URL('../../index.html', import.meta.url);
 const spikePublicKeyPath = new URL('../../test/fixtures/updater/spike.key.pub', import.meta.url);
@@ -16,6 +20,10 @@ const checksWorkflowPath = new URL('../../.github/workflows/checks.yml', import.
 const installerHooksPath = new URL('../../src-tauri/installer/hooks.nsh', import.meta.url);
 const [
   configSource,
+  macosConfigSource,
+  linuxConfigSource,
+  infoPlist,
+  entitlementsPlist,
   capabilitiesSource,
   indexHtml,
   spikePublicKeySource,
@@ -28,6 +36,10 @@ const [
   installerHooks,
 ] = await Promise.all([
   readFile(configPath, 'utf8'),
+  readFile(macosConfigPath, 'utf8'),
+  readFile(linuxConfigPath, 'utf8'),
+  readFile(infoPlistPath, 'utf8'),
+  readFile(entitlementsPath, 'utf8'),
   readFile(capabilitiesPath, 'utf8'),
   readFile(indexPath, 'utf8'),
   readFile(spikePublicKeyPath, 'utf8'),
@@ -42,6 +54,8 @@ const [
   readFile(rustLicensesPath, 'utf8'),
 ]);
 const config = JSON.parse(configSource);
+const macosConfig = JSON.parse(macosConfigSource);
+const linuxConfig = JSON.parse(linuxConfigSource);
 const capabilities = JSON.parse(capabilitiesSource);
 const spikePublicKey = spikePublicKeySource.trim();
 const endpoints = config?.plugins?.updater?.endpoints;
@@ -117,14 +131,44 @@ assert.ok(
   'The installer must get the version information FTPeach 0.3.0 to 0.4.0 read (version-info.ps1)',
 );
 
-// A release ships the NSIS installer and nothing else, so bundling anything
-// else only produces installers no one tests. The MSI in particular has no
-// uninstall-time prompt at all, so it would answer the app-data question
-// differently from the installer users actually get.
+// The base config ships the NSIS installer; macOS and Linux release builds pass
+// dedicated overlay configs so local Windows builds never produce untested MSI bundles.
+assert.deepEqual(config?.bundle?.targets, ['nsis'], 'Base bundle target must remain NSIS only');
 assert.deepEqual(
-  config?.bundle?.targets,
-  ['nsis'],
-  'Local bundles must match the release: NSIS only',
+  macosConfig?.bundle?.targets,
+  ['app', 'dmg'],
+  'macOS release overlay must bundle app and dmg',
+);
+assert.equal(
+  macosConfig?.bundle?.macOS?.minimumSystemVersion,
+  '13.3',
+  'macOS minimumSystemVersion must be 13.3',
+);
+assert.equal(
+  macosConfig?.bundle?.macOS?.entitlements,
+  'Entitlements.plist',
+  'macOS overlay must reference Entitlements.plist',
+);
+assert.equal(macosConfig?.app?.windows?.[0]?.decorations, true);
+assert.equal(macosConfig?.app?.windows?.[0]?.titleBarStyle, 'Overlay');
+assert.equal(macosConfig?.app?.windows?.[0]?.hiddenTitle, true);
+assert.deepEqual(
+  linuxConfig?.bundle?.targets,
+  ['deb', 'appimage'],
+  'Linux release overlay must bundle deb and appimage',
+);
+assert.deepEqual(linuxConfig?.bundle?.linux?.deb?.depends, [
+  'libwebkit2gtk-4.1-0',
+  'libayatana-appindicator3-1',
+]);
+assert.ok(
+  infoPlist.includes('NSAppleEventsUsageDescription') &&
+    infoPlist.includes('NSLocalNetworkUsageDescription'),
+  'Info.plist must declare AppleEvents and LocalNetwork usage descriptions',
+);
+assert.ok(
+  entitlementsPlist.includes('com.apple.security.automation.apple-events'),
+  'Entitlements.plist must declare com.apple.security.automation.apple-events',
 );
 
 assert.equal(typeof updaterPublicKey, 'string', 'Updater public key must be configured');
@@ -185,21 +229,46 @@ const ciWorkflow = await readFile(
 assert.ok(ciWorkflow.includes('needs: [mode, checks, private-check]'));
 assert.ok(ciWorkflow.includes("if: needs.mode.outputs.release == 'true'"));
 assert.ok(ciWorkflow.includes('uses: ./.github/workflows/release.yml'));
-assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber|\.release-tools|record-manual|manual-acceptance/);
+assert.doesNotMatch(
+  releaseWorkflow,
+  /\n {2}push:|skip-private-suites|--clobber|\.release-tools|record-manual|manual-acceptance/,
+);
 assert.match(
   releaseWorkflow,
-  / {2}tag-and-draft:\r?\n {4}needs: \[build-windows, acceptance\]\r?\n {4}if: always\(\) && github\.ref == 'refs\/heads\/master' && !contains\(needs\.\*\.result, 'failure'\) && !contains\(needs\.\*\.result, 'cancelled'\) && \(github\.event_name == 'push' \|\| inputs\.operation == 'deploy'\)/,
-  'Saved-candidate deploy must run after automatic acceptance or skipped build jobs on deploy without failures',
+  / {2}tag-and-draft:\r?\n {4}needs: \[build-windows, acceptance, acceptance-macos, acceptance-linux\]\r?\n {4}if: always\(\) && github\.ref == 'refs\/heads\/master' && !contains\(needs\.\*\.result, 'failure'\) && !contains\(needs\.\*\.result, 'cancelled'\) && \(github\.event_name == 'push' \|\| inputs\.operation == 'deploy'\)/,
+  'Saved-candidate deploy must run after automatic acceptance across all target platforms or skipped build jobs on deploy without failures',
 );
 const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '  workflow_call:'],
+  [releaseWorkflow, 'release.yml', '  build-macos:'],
+  [releaseWorkflow, 'release.yml', '  build-linux:'],
+  [releaseWorkflow, 'release.yml', '  build-windows:'],
+  [releaseWorkflow, 'release.yml', '  acceptance-macos:'],
+  [releaseWorkflow, 'release.yml', '  acceptance-linux:'],
   [releaseWorkflow, 'release.yml', '    environment: release'],
   [releaseWorkflow, 'release.yml', '    environment: release-tag'],
   [releaseWorkflow, 'release.yml', 'npm run tauri -- build --bundles nsis'],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'npm run tauri -- build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles app,dmg',
+  ],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'npm run tauri -- build --config src-tauri/tauri.linux.conf.json --bundles deb,appimage',
+  ],
+  [releaseWorkflow, 'release.yml', 'scripts/release/msix.ts build'],
+  [releaseWorkflow, 'release.yml', 'scripts/release/unix-acceptance.ts release-candidate --macos'],
+  [releaseWorkflow, 'release.yml', 'scripts/release/unix-acceptance.ts release-candidate --linux'],
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
   [releaseWorkflow, 'release.yml', 'Verify every updater signature'],
   [releaseWorkflow, 'release.yml', 'uses: ./.github/workflows/installer.yml'],
-  [releaseWorkflow, 'release.yml', 'needs: [build-windows, acceptance]'],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'needs: [build-windows, acceptance, acceptance-macos, acceptance-linux]',
+  ],
   [
     releaseWorkflow,
     'release.yml',
@@ -243,19 +312,20 @@ for (const [workflow, workflowName, requiredWorkflowEntry] of requiredWorkflowEn
   );
 }
 
+const buildWindowsSection = releaseWorkflow.slice(releaseWorkflow.indexOf('  build-windows:'));
 assert.ok(
-  releaseWorkflow.indexOf('signer sign') <
-    releaseWorkflow.indexOf('Verify every updater signature'),
+  buildWindowsSection.indexOf('signer sign') <
+    buildWindowsSection.indexOf('Verify every updater signature'),
 );
 assert.ok(
-  releaseWorkflow.indexOf('Check release controller') <
-    releaseWorkflow.indexOf('npm run tauri -- build --bundles nsis'),
+  buildWindowsSection.indexOf('Check release controller') <
+    buildWindowsSection.indexOf('npm run tauri -- build --bundles nsis'),
 );
 assert.ok(
-  releaseWorkflow.indexOf('Verify every updater signature') <
-    releaseWorkflow.indexOf('uses: actions/attest-build-provenance@') &&
-    releaseWorkflow.indexOf('uses: actions/attest-build-provenance@') <
-      releaseWorkflow.indexOf('  acceptance:'),
+  buildWindowsSection.indexOf('Verify every updater signature') <
+    buildWindowsSection.indexOf('uses: actions/attest-build-provenance@') &&
+    buildWindowsSection.indexOf('uses: actions/attest-build-provenance@') <
+      buildWindowsSection.indexOf('  acceptance:'),
 );
 
 assert.match(

@@ -7,6 +7,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import {
   assetNeedsUpload,
+  buildReleaseFeed,
   createVersionTag,
   publish,
   tagMessage,
@@ -150,12 +151,17 @@ test('draft creation uses the verified existing tag, clean release notes and no 
   assert.equal(draftRequests, 1);
 });
 
-test('tagging requires attested source manifest and both packages from the pinned workflow', () => {
+test('tagging requires attested source manifest and public packages from the pinned workflow', () => {
   const packaged = {
     ...candidate,
     files: {
-      'FTPeach_0.6.1_x64-setup.exe': hash,
-      'FTPeach_0.6.1_x64-portable.zip': hash,
+      'FTPeach_0.7.0_x64-setup.exe': hash,
+      'FTPeach_0.7.0_x64-portable.zip': hash,
+      'FTPeach_0.7.0_x64.msix': hash,
+      'FTPeach_0.7.0_universal.dmg': hash,
+      'FTPeach_0.7.0_universal.app.tar.gz': hash,
+      'FTPeach_0.7.0_amd64.AppImage': hash,
+      'FTPeach_0.7.0_amd64.deb': hash,
       'release-notes.md': hash,
     },
   };
@@ -180,8 +186,12 @@ test('tagging requires attested source manifest and both packages from the pinne
   verifyAttestations('candidate', packaged, '.github/workflows/release.yml', run);
   assert.deepEqual(verified, [
     'candidate.json',
-    'FTPeach_0.6.1_x64-setup.exe',
-    'FTPeach_0.6.1_x64-portable.zip',
+    'FTPeach_0.7.0_x64-setup.exe',
+    'FTPeach_0.7.0_x64-portable.zip',
+    'FTPeach_0.7.0_universal.dmg',
+    'FTPeach_0.7.0_universal.app.tar.gz',
+    'FTPeach_0.7.0_amd64.AppImage',
+    'FTPeach_0.7.0_amd64.deb',
   ]);
   for (const rejected of verified) {
     const reject = ((_command: string, args: string[]) => {
@@ -194,6 +204,61 @@ test('tagging requires attested source manifest and both packages from the pinne
     );
   }
 });
+
+test('buildReleaseFeed populates all multi-platform targets for 0.7.0+', async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'release-feed-'));
+  try {
+    for (const [name, sig] of [
+      ['FTPeach_0.7.0_x64-setup.exe.sig', 'sig-win'],
+      ['FTPeach_0.7.0_x64-portable.zip.sig', 'sig-port'],
+      ['FTPeach_0.7.0_universal.app.tar.gz.sig', 'sig-mac'],
+      ['FTPeach_0.7.0_amd64.AppImage.sig', 'sig-appimage'],
+      ['FTPeach_0.7.0_amd64.deb.sig', 'sig-deb'],
+    ] as const) {
+      writeFileSync(path.join(directory, name), `${sig}\n`);
+    }
+    const assets = [
+      {
+        name: 'FTPeach_0.7.0_x64-setup.exe',
+        url: 'https://api.github.com/repos/owner/app/releases/assets/1',
+      },
+      {
+        name: 'FTPeach_0.7.0_x64-portable.zip',
+        url: 'https://api.github.com/repos/owner/app/releases/assets/2',
+      },
+      {
+        name: 'FTPeach_0.7.0_universal.app.tar.gz',
+        url: 'https://api.github.com/repos/owner/app/releases/assets/3',
+      },
+      {
+        name: 'FTPeach_0.7.0_amd64.AppImage',
+        url: 'https://api.github.com/repos/owner/app/releases/assets/4',
+      },
+      {
+        name: 'FTPeach_0.7.0_amd64.deb',
+        url: 'https://api.github.com/repos/owner/app/releases/assets/5',
+      },
+    ];
+    const feed = await buildReleaseFeed(
+      directory,
+      '0.7.0',
+      'Notes\n',
+      '2026-11-07T00:00:00Z',
+      assets,
+    );
+    assert.deepEqual(Object.keys(feed.platforms ?? {}).sort(), [
+      'darwin-aarch64',
+      'darwin-x86_64',
+      'linux-x86_64',
+      'linux-x86_64-deb',
+      'windows-x86_64',
+      'windows-x86_64-portable',
+    ]);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('only an annotated tag of these exact candidate bytes can be resumed', () => {
   const tag = {
     tag: 'v0.6.1',

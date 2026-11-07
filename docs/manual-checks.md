@@ -2,22 +2,20 @@
 
 Some behavior can only be confirmed by a person running the real application:
 a fingerprint or a face, a locked Windows session, how a moving window looks.
-This page lists local procedures and records runs. Portable, Windows shell and
-transfer-notification checks are automated closed candidate acceptance; their
-steps below also support local diagnosis. Everything else is either
-covered by an automated check or listed as a known gap (lane `none`) in the
-[release matrix](release-trust.md#release-matrix).
+This page lists local procedures and records runs. Portable isolation, Windows
+shell actions and transfer-notification clicks run automatically during release
+candidate acceptance (`installer.yml` on `windows-latest`); their steps below
+also support local diagnosis. Everything else is either covered by an automated
+check or listed in the [release matrix](release-trust.md#release-matrix).
 
 The [user guide](guide/index.md) points to a recorded run with
 `<!-- verified-by: manual <heading> -->`, which `npm run check:verified-by`
 requires to match a heading on this page.
 
-The owner decided on 2026-11-06 that Windows Hello (including a second account)
-and vault locking with Windows are checked locally when relevant behavior changes,
-not for every candidate. This decision is not a passed candidate result. Visual
-checks remain required when the affected appearance changes. The retained release
-record covers `production-updater-installed`, `production-updater-portable`,
-`native-desktop` and `filesystem-stand`; deploy approval remains required.
+Local manual checks (such as Windows Hello, vault locking with Windows, or
+window resize appearance) are run locally when changes affect the corresponding
+code or visual presentation, not as a blocking JSON upload on every release
+candidate. Deploy approval on the `release-tag` environment remains required.
 
 ## Local check procedures
 
@@ -67,8 +65,8 @@ When: after a change to the window frame, its scaling or the WebView setup.
 
 ### The Windows shell
 
-When: automated closed candidate acceptance; repeat locally when investigating
-relevant shell changes.
+When: automated candidate acceptance in `installer.yml`; repeat locally when
+investigating relevant shell changes.
 
 1. Drag a file from a server pane onto the desktop.
    Expected: the file appears on the desktop with the server's contents.
@@ -97,8 +95,9 @@ changed screen.
 
 ### Clicking the transfer notification
 
-When: automated closed candidate acceptance, including the real notification
-click for tray and minimized windows. Repeat locally on relevant changes.
+When: automated candidate acceptance in `installer.yml`, including the real
+notification click for tray and minimized windows. Repeat locally on relevant
+changes.
 
 1. Turn on Settings > Transfers > **Notify when transfers finish** and
    Settings > Interface > **Close to tray**. Start an upload of a few large files, then close the
@@ -113,8 +112,8 @@ click for tray and minimized windows. Repeat locally on relevant changes.
 
 ### Portable copy on a computer it has not run on
 
-When: automated closed candidate acceptance with a clean Windows test profile;
-repeat locally on relevant portable behavior changes.
+When: automated candidate acceptance in `installer.yml` with a clean Windows
+test profile; repeat locally on relevant portable behavior changes.
 
 1. Unpack the portable zip on a USB drive, start it, finish an upload with
    Settings > Transfers > **Notify when transfers finish** on, and quit.

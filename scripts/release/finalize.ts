@@ -3,8 +3,16 @@ import { execFileSync } from 'node:child_process';
 import { appendFile, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { githubApi, sha256, type Candidate, type PublicRun } from './candidate.ts';
-import { withPortablePlatform } from './portable.ts';
+import {
+  githubApi,
+  isMultiPlatformVersion,
+  releaseAssetNames,
+  sha256,
+  updaterFeedTargets,
+  type Candidate,
+  type PublicRun,
+} from './candidate.ts';
+import { PORTABLE_TARGET, withPortablePlatform } from './portable.ts';
 import { validateCandidate } from './validate-candidate.ts';
 
 interface Asset {
@@ -100,7 +108,9 @@ export function verifyAttestations(
   // The attested manifest binds the checked app SHA to every final file hash.
   for (const name of [
     'candidate.json',
-    ...Object.keys(candidate.files).filter((name) => /(-setup\.exe|-portable\.zip)$/.test(name)),
+    ...Object.keys(candidate.files).filter((name) =>
+      /(-setup\.exe|-portable\.zip|\.dmg|\.app\.tar\.gz|\.AppImage|\.deb)$/.test(name),
+    ),
   ]) {
     run(
       'gh',
@@ -125,6 +135,39 @@ export function verifyAttestations(
       },
     );
   }
+}
+
+export async function buildReleaseFeed(
+  directory: string,
+  version: string,
+  notes: string,
+  createdAt: string,
+  assets: Asset[],
+) {
+  const platforms: Record<string, { url: string; signature: string }> = {};
+  let portableEntry: { url: string; signature: string } | undefined;
+  for (const [target, fileName] of updaterFeedTargets(version)) {
+    const asset = assets.find((item) => item.name === fileName);
+    assert.ok(asset, `Missing uploaded asset for updater target ${target}: ${fileName}`);
+    const signature = await readFile(path.join(directory, `${fileName}.sig`), 'utf8');
+    if (target === PORTABLE_TARGET) {
+      portableEntry = { url: asset.url, signature };
+    } else {
+      assert.ok(signature.trim(), `Missing updater signature for ${fileName}`);
+      platforms[target] = { url: asset.url, signature: signature.trim() };
+    }
+  }
+  assert.ok(portableEntry, 'Missing portable updater target');
+  return withPortablePlatform(
+    {
+      version,
+      notes,
+      pub_date: createdAt,
+      platforms,
+    },
+    portableEntry.url,
+    portableEntry.signature,
+  );
 }
 
 async function readDestination(candidate: Candidate, hash: string, notes: string) {
@@ -158,8 +201,11 @@ type AcceptedCandidate = Awaited<ReturnType<typeof validateCandidate>>;
 async function prepare(accepted?: AcceptedCandidate) {
   assert.equal(process.env.GITHUB_REF, 'refs/heads/master');
   accepted ??= await validateCandidate(process.env.CANDIDATE_ID!);
-  const { candidate, hash, directory, installer, run } = accepted;
+  const { candidate, hash, directory, installer, macos, linux, run } = accepted;
   assert.ok(installer, 'Automatic candidate acceptance is incomplete or stale');
+  if (isMultiPlatformVersion(candidate.readiness.version)) {
+    assert.ok(macos && linux, 'Multi-platform candidate acceptance is incomplete or stale');
+  }
   verifyAttestations(
     directory,
     candidate,
@@ -181,7 +227,8 @@ export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   const { candidate, directory, hash, createdAt } = accepted;
   const { version, repository } = candidate.readiness;
   const tag = `v${version}`;
-  const notes = (await readFile(path.join(directory, 'release-notes.md'), 'utf8')).trimEnd();
+  const rawNotes = await readFile(path.join(directory, 'release-notes.md'), 'utf8');
+  const notes = rawNotes.trimEnd();
   const destination = await readDestination(candidate, hash, notes);
   let draft = destination.draft;
   if (!destination.reference) {
@@ -204,11 +251,7 @@ export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   assert.equal(draft.draft, true, 'A published release cannot be resumed or changed');
   assert.equal(draft.tag_name, tag);
   assert.equal(draft.body.trimEnd(), notes, 'Existing draft belongs to a different candidate');
-  const packages = [
-    `FTPeach_${version}_x64-setup.exe`,
-    `FTPeach_${version}_x64-portable.zip`,
-    'release-audit.zip',
-  ];
+  const packages = releaseAssetNames(version);
   const allowed = [...packages, 'latest.json'];
   assert.ok(
     draft.assets.every((asset) => allowed.includes(asset.name)),
@@ -233,24 +276,7 @@ export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   }
   for (const name of packages) await upload(name);
   const assets = (await githubApi(`releases/${draft.id}/assets?per_page=100`)) as Asset[];
-  const installer = assets.find((asset) => asset.name === packages[0]);
-  const portable = assets.find((asset) => asset.name === packages[1]);
-  assert.ok(installer && portable);
-  const feed = withPortablePlatform(
-    {
-      version,
-      notes: await readFile(path.join(directory, 'release-notes.md'), 'utf8'),
-      pub_date: createdAt,
-      platforms: {
-        'windows-x86_64': {
-          url: installer.url,
-          signature: (await readFile(path.join(directory, `${packages[0]}.sig`), 'utf8')).trim(),
-        },
-      },
-    },
-    portable.url,
-    await readFile(path.join(directory, `${packages[1]}.sig`), 'utf8'),
-  );
+  const feed = await buildReleaseFeed(directory, version, rawNotes, createdAt, assets);
   await writeFile(path.join(directory, 'latest.json'), `${JSON.stringify(feed, null, 2)}\n`);
   await upload('latest.json');
   const finalAssets = (await githubApi(`releases/${draft.id}/assets?per_page=100`)) as Asset[];

@@ -53,6 +53,49 @@ export function validateManualAcceptance(manual: ManualAcceptance, sha: string, 
 export function tagMessage(version: string, hash: string): string {
   return `Release ${version}\n\nFTPeach candidate SHA256: ${hash}\n`;
 }
+
+export function createVersionTag(
+  candidate: Candidate,
+  hash: string,
+  run: typeof execFileSync = execFileSync,
+) {
+  const { version, sha, repository } = candidate.readiness;
+  const tag = `v${version}`;
+  const options = { stdio: 'pipe' as const, timeout: 120_000 };
+  run(
+    'git',
+    ['fetch', '--no-tags', '--depth=1', `https://github.com/${repository}.git`, sha],
+    options,
+  );
+  run(
+    'git',
+    [
+      '-c',
+      'user.name=github-actions[bot]',
+      '-c',
+      'user.email=41898282+github-actions[bot]@users.noreply.github.com',
+      '-c',
+      'tag.gpgSign=false',
+      'tag',
+      '--annotate',
+      '--message',
+      tagMessage(version, hash),
+      tag,
+      sha,
+    ],
+    options,
+  );
+  run(
+    'git',
+    [
+      'push',
+      '--no-follow-tags',
+      `git@github.com:${repository}.git`,
+      `refs/tags/${tag}:refs/tags/${tag}`,
+    ],
+    options,
+  );
+}
 export function validateTag(
   tag: { tag: string; message: string; object: { type: string; sha: string } },
   candidate: Candidate,
@@ -184,13 +227,7 @@ async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   let draft = destination.draft;
   const marker = destination.marker;
   if (!destination.reference) {
-    const object = (await githubApi('git/tags', {
-      tag,
-      message: tagMessage(version, hash),
-      object: sha,
-      type: 'commit',
-    })) as { sha: string };
-    await githubApi('git/refs', { ref: `refs/tags/${tag}`, sha: object.sha });
+    createVersionTag(candidate, hash);
   }
   if (!draft) {
     const notes = await readFile(path.join(directory, 'release-notes.md'), 'utf8');

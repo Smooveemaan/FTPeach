@@ -42,6 +42,14 @@ reads the actual environment settings from GitHub before proceeding; an environm
 name in YAML alone does not prove its protections
 (`scripts/release/check-release-environment.ts`).
 
+Tag creation uses a repository deploy key stored only in the `release-tag`
+environment as `RELEASE_TAG_KEY`. Its private key becomes available after approval
+and is removed from the runner when the tag job exits. The creation ruleset for
+`v*` tags permits deploy keys; a separate ruleset still restricts updates and
+deletions to repository administrators. Only the release deploy key should have
+write access. The workflow pushes one annotated tag without force, with GitHub's
+SSH host key pinned. Drafts and assets use the job's ordinary `GITHUB_TOKEN`.
+
 ## Provenance
 
 Verify that an installer was built by this repository's release workflow:

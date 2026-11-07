@@ -215,6 +215,8 @@ const requiredWorkflowEntries: [string, string, string][] = [
     'candidate-id: ${{ needs.build-windows.outputs.candidate-id || needs.candidate.outputs.candidate-id }}',
   ],
   [releaseWorkflow, 'release.yml', 'scripts/release/check-release-environment.ts release-tag'],
+  [releaseWorkflow, 'release.yml', 'RELEASE_TAG_KEY: ${{ secrets.RELEASE_TAG_KEY }}'],
+  [releaseWorkflow, 'release.yml', 'StrictHostKeyChecking=yes'],
   [releaseWorkflow, 'release.yml', 'scripts/release/release-trust-report.ts'],
   [releaseWorkflow, 'release.yml', 'uses: actions/attest-build-provenance@'],
   [releaseWorkflow, 'release.yml', 'scripts/release/portable.ts build'],

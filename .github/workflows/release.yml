@@ -339,7 +339,17 @@ jobs:
       - name: Revalidate, tag and resume the identical draft files
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_TAG_KEY: ${{ secrets.RELEASE_TAG_KEY }}
           PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
           PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
           CANDIDATE_ID: ${{ needs.manual-acceptance.outputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/manual.ts read publish
+        run: |
+          test -n "$RELEASE_TAG_KEY"
+          key="$RUNNER_TEMP/release-tag-key"
+          trap 'rm -f "$key" "$key.known_hosts"' EXIT
+          umask 077
+          printf '%s\n' "$RELEASE_TAG_KEY" > "$key"
+          unset RELEASE_TAG_KEY
+          printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' > "$key.known_hosts"
+          export GIT_SSH_COMMAND="ssh -F /dev/null -i \"$key\" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=\"$key.known_hosts\""
+          node --experimental-strip-types scripts/release/manual.ts read publish

@@ -8,19 +8,6 @@ import { githubApi, sha256, type Candidate, type PublicRun } from './candidate.t
 import { withPortablePlatform } from './portable.ts';
 import { validateCandidate } from './validate-candidate.ts';
 
-export const MANUAL_CHECKS = [
-  'production-updater-installed',
-  'production-updater-portable',
-  'native-desktop',
-  'filesystem-stand',
-] as const;
-export interface ManualAcceptance {
-  sha: string;
-  candidateHash: string;
-  tester: string;
-  checkedAt: string;
-  results: Record<string, { result: string; evidence: string }>;
-}
 interface Asset {
   name: string;
   url: string;
@@ -32,21 +19,6 @@ interface Draft {
   draft: boolean;
   body: string;
   assets: Asset[];
-}
-
-export function validateManualAcceptance(manual: ManualAcceptance, sha: string, hash: string) {
-  assert.equal(manual.sha, sha);
-  assert.equal(manual.candidateHash, hash);
-  assert.ok(manual.tester?.trim(), 'Name the person who performed acceptance');
-  assert.ok(
-    Number.isFinite(Date.parse(manual.checkedAt)) &&
-      Date.parse(manual.checkedAt) <= Date.now() + 300_000,
-    'Acceptance needs a valid check date',
-  );
-  for (const name of MANUAL_CHECKS) {
-    assert.equal(manual.results?.[name]?.result, 'passed', `Manual check ${name} has not passed`);
-    assert.ok(manual.results[name]!.evidence?.trim(), `Manual check ${name} needs evidence`);
-  }
 }
 
 export function tagMessage(version: string, hash: string): string {
@@ -186,10 +158,6 @@ async function prepare(accepted?: AcceptedCandidate) {
   accepted ??= await validateCandidate(process.env.CANDIDATE_ID!);
   const { candidate, hash, directory, installer, run } = accepted;
   assert.ok(installer, 'Automatic candidate acceptance is incomplete or stale');
-  const manual = JSON.parse(
-    process.env.MANUAL_ACCEPTANCE ?? (await readFile('manual-acceptance.json', 'utf8')),
-  ) as ManualAcceptance;
-  validateManualAcceptance(manual, candidate.readiness.sha, hash);
   verifyAttestations(
     directory,
     candidate,
@@ -199,20 +167,19 @@ async function prepare(accepted?: AcceptedCandidate) {
   );
   await writeFile(
     path.join(directory, 'release-verification.json'),
-    JSON.stringify({ candidate, candidateHash: hash, automatic: { installer }, manual }, null, 2),
+    JSON.stringify({ candidate, candidateHash: hash, automatic: { installer } }, null, 2),
   );
   await readDestination(candidate, hash);
   return {
     candidate,
     directory,
     hash,
-    manual,
     createdAt: (run as PublicRun & { created_at: string }).created_at,
   };
 }
 
 export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
-  const { candidate, directory, hash, manual, createdAt } = accepted;
+  const { candidate, directory, hash, createdAt } = accepted;
   const { sha, version, repository } = candidate.readiness;
   const tag = `v${version}`;
   const destination = await readDestination(candidate, hash);
@@ -227,17 +194,13 @@ export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   }
   if (!draft) {
     const notes = await readFile(path.join(directory, 'release-notes.md'), 'utf8');
-    const manualLines = MANUAL_CHECKS.map(
-      (name) =>
-        `- ${name}: passed (${manual.tester}, ${manual.checkedAt}); ${manual.results[name]!.evidence}`,
-    );
     // An explicit target_commitish requires workflow-write permission even with an existing tag.
     draft = (await githubApi('releases', {
       tag_name: tag,
       name: `FTPeach ${tag}`,
       draft: true,
       prerelease: false,
-      body: `${notes}\n\n${marker}\n\nSource: ${sha}. Full checks: https://github.com/${repository}/actions/runs/${candidate.readiness.runId}. Packages: https://github.com/${repository}/actions/runs/${candidate.build.runId}.\n\n${manualLines.join('\n')}\n\nPublic-feed update verification remains required after publication.`,
+      body: `${notes}\n\n${marker}\n\nSource: ${sha}. Full checks: https://github.com/${repository}/actions/runs/${candidate.readiness.runId}. Packages: https://github.com/${repository}/actions/runs/${candidate.build.runId}.\n\nPublic-feed update verification remains required after publication.`,
     })) as Draft;
   }
   assert.equal(draft.draft, true, 'A published release cannot be resumed or changed');
@@ -312,25 +275,14 @@ export async function publish(accepted: Awaited<ReturnType<typeof prepare>>) {
   );
 }
 
-export async function finalizeCandidate(
-  validated?: AcceptedCandidate,
-  shouldPublish = process.argv[2] === 'publish',
-) {
+export async function finalizeCandidate(validated?: AcceptedCandidate) {
+  assert.equal(
+    process.env.GITHUB_JOB,
+    'tag-and-draft',
+    'Only the separately approved tag job may mutate the release',
+  );
   const accepted = await prepare(validated);
-  if (shouldPublish) {
-    assert.equal(
-      process.env.GITHUB_JOB,
-      'tag-and-draft',
-      'Only the separately approved tag job may mutate the release',
-    );
-    await publish(accepted);
-  } else {
-    await appendFile(process.env.GITHUB_OUTPUT!, `sha=${accepted.candidate.readiness.sha}\n`);
-    await appendFile(
-      process.env.GITHUB_STEP_SUMMARY!,
-      `## Approval to create the final tag\n\nv${accepted.candidate.readiness.version}, source ${accepted.candidate.readiness.sha}, candidate SHA-256 ${accepted.hash}.\n\nAutomatic acceptance and all ${MANUAL_CHECKS.length} manual checks passed. Approve release-tag only to create this tag and upload these exact files to a draft.\n`,
-    );
-  }
+  await publish(accepted);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

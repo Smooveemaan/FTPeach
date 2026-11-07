@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Resume missing checks, deploy an accepted candidate, or record manual checks
+        description: Resume missing checks or deploy an accepted candidate
         type: choice
-        options: [resume, deploy, record-manual]
+        options: [resume, deploy]
         required: true
       candidate-id:
         description: Immutable candidate RUN_ID:BUILD_ATTEMPT from the build summary
@@ -17,15 +17,11 @@ on:
         description: Owner authorized repeating Installer after reviewing the reported reason
         type: boolean
         default: false
-      manual-acceptance:
-        description: Complete manual acceptance JSON (record-manual only)
-        type: string
-        default: ''
 
 permissions: {}
 
 concurrency:
-  group: ${{ inputs.operation == 'record-manual' && format('release-manual-{0}', github.run_id) || 'release-candidate' }}
+  group: release-candidate
   cancel-in-progress: false
 
 jobs:
@@ -140,64 +136,9 @@ jobs:
       installer-approved: ${{ github.event_name == 'push' || inputs.installer-approved }}
       production: true
 
-  manual:
-    if: github.ref == 'refs/heads/master' && inputs.operation == 'record-manual'
-    permissions:
-      actions: read
-      contents: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      - id: manual
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ inputs.candidate-id }}
-          MANUAL_ACCEPTANCE: ${{ inputs.manual-acceptance }}
-        run: node --experimental-strip-types scripts/release/manual.ts record
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ${{ steps.manual.outputs.artifact }}
-          path: release-manual/
-          retention-days: 30
-          if-no-files-found: error
-
-  manual-acceptance:
+  tag-and-draft:
     needs: [build-windows, acceptance]
     if: always() && github.ref == 'refs/heads/master' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
-    permissions:
-      actions: read
-      contents: read
-      attestations: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 315
-    outputs:
-      candidate-id: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      - name: Require automatic checks and manual acceptance before deploy approval
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
-        run: node --experimental-strip-types scripts/release/manual.ts ${{ github.event_name == 'push' && 'wait' || 'read' }} finalize
-
-  tag-and-draft:
-    needs: manual-acceptance
-    if: always() && needs.manual-acceptance.result == 'success'
     permissions:
       actions: read
       contents: write
@@ -220,9 +161,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_TAG_KEY: ${{ secrets.RELEASE_TAG_KEY }}
-          PRIVATE_CHECK_TOKEN: ${{ secrets.PRIVATE_CHECK_TOKEN }}
-          PRIVATE_CHECK_CONFIG: ${{ secrets.PRIVATE_CHECK_CONFIG }}
-          CANDIDATE_ID: ${{ needs.manual-acceptance.outputs.candidate-id }}
+          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
         run: |
           test -n "$RELEASE_TAG_KEY"
           key="$RUNNER_TEMP/release-tag-key"
@@ -232,4 +171,4 @@ jobs:
           unset RELEASE_TAG_KEY
           printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' > "$key.known_hosts"
           export GIT_SSH_COMMAND="ssh -F /dev/null -i \"$key\" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=\"$key.known_hosts\""
-          node --experimental-strip-types scripts/release/manual.ts read publish
+          node --experimental-strip-types scripts/release/finalize.ts

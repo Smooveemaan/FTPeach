@@ -14,8 +14,6 @@ import {
   type Evidence,
 } from '../../../scripts/release/validate-candidate.ts';
 import { signingEnvironmentVerdict } from '../../../scripts/release/release-trust.ts';
-import { MANUAL_CHECKS } from '../../../scripts/release/finalize.ts';
-import { validateManualRecord } from '../../../scripts/release/manual.ts';
 
 const id = '123:1';
 const hash = sha256('immutable candidate manifest');
@@ -166,29 +164,6 @@ test('fixing another release workflow job preserves the acceptance fingerprint',
     workflowInputs(changedAcceptance, 'installer'),
   );
   assert.equal(workflowInputs('unknown YAML shape', 'installer'), 'unknown YAML shape');
-});
-
-test('an uploaded manual record stays pending until its recording job succeeds', () => {
-  const manual = {
-    sha: 'a'.repeat(40),
-    candidateHash: hash,
-    tester: 'owner',
-    checkedAt: '2026-01-01T00:00:00Z',
-    results: Object.fromEntries(
-      MANUAL_CHECKS.map((name) => [
-        name,
-        { result: 'passed', evidence: 'Checked on the candidate' },
-      ]),
-    ),
-  };
-  const record = { runId: '456', attempt: '1', candidateId: id, manual };
-  assert.equal(validateManualRecord(record, id, manual.sha, hash, run, null), undefined);
-  assert.deepEqual(validateManualRecord(record, id, manual.sha, hash, run, 'success'), manual);
-  for (const conclusion of ['failure', 'cancelled', 'skipped'])
-    assert.throws(() => validateManualRecord(record, id, manual.sha, hash, run, conclusion));
-  assert.throws(() =>
-    validateManualRecord({ ...record, candidateId: '123:2' }, id, manual.sha, hash, run, 'success'),
-  );
 });
 
 test('expired evidence and missing, skipped or failed jobs cannot permit a transition', async (t) => {

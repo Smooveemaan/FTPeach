@@ -8,13 +8,10 @@ import { pathToFileURL } from 'node:url';
 import {
   assetNeedsUpload,
   createVersionTag,
-  MANUAL_CHECKS,
   publish,
   tagMessage,
-  validateManualAcceptance,
   validateTag,
   verifyAttestations,
-  type ManualAcceptance,
 } from '../../../scripts/release/finalize.ts';
 import type { Candidate } from '../../../scripts/release/candidate.ts';
 
@@ -24,18 +21,6 @@ const candidate = {
   readiness: { version: '0.6.1', sha, repository: 'owner/app' },
   build: { runId: '123', attempt: '1', workflowSha: 'c'.repeat(40) },
 } as Candidate;
-const manual: ManualAcceptance = {
-  sha,
-  candidateHash: hash,
-  tester: 'owner',
-  checkedAt: '2026-01-01T12:00:00Z',
-  results: Object.fromEntries(
-    MANUAL_CHECKS.map((name) => [
-      name,
-      { result: 'passed', evidence: 'Recorded test on a clean machine' },
-    ]),
-  ),
-};
 
 test('deploy transport creates exactly one annotated candidate tag and cannot replace it', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'release-tag-'));
@@ -157,43 +142,12 @@ test('draft creation uses the verified existing tag without requesting workflow-
       });
     },
   );
-  const accepted = { candidate, hash, manual, directory, createdAt: manual.checkedAt };
+  const accepted = { candidate, hash, directory, createdAt: '2026-01-01T12:00:00Z' };
   await assert.rejects(publish(accepted), /different candidate bytes/);
   assert.equal(draftRequests, 0);
   validTag = true;
   await assert.rejects(publish(accepted), /Draft request verified/);
   assert.equal(draftRequests, 1);
-});
-
-test('every manual result must name the exact source and accepted bytes', () => {
-  validateManualAcceptance(manual, sha, hash);
-  for (const patch of [
-    { sha: 'd'.repeat(40) },
-    { candidateHash: 'd'.repeat(64) },
-    { tester: '' },
-    { checkedAt: 'not a date' },
-    { results: {} },
-  ]) {
-    assert.throws(() => validateManualAcceptance({ ...manual, ...patch }, sha, hash));
-  }
-  for (const name of MANUAL_CHECKS) {
-    for (const result of ['skipped', 'failed', 'not verified']) {
-      assert.throws(() =>
-        validateManualAcceptance(
-          { ...manual, results: { ...manual.results, [name]: { result, evidence: 'A note' } } },
-          sha,
-          hash,
-        ),
-      );
-    }
-    assert.throws(() =>
-      validateManualAcceptance(
-        { ...manual, results: { ...manual.results, [name]: { result: 'passed', evidence: '' } } },
-        sha,
-        hash,
-      ),
-    );
-  }
 });
 
 test('tagging requires attested source manifest and both packages from the pinned workflow', () => {

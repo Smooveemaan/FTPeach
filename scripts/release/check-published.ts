@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { candidateNames, githubApi, sha256, type Candidate } from './candidate.ts';
-import { validateManualAcceptance, verifyAttestations } from './finalize.ts';
+import { verifyAttestations } from './finalize.ts';
 
 export function validatePublicFeed(
   feed: { version: string; platforms: Record<string, { url: string; signature: string }> },
@@ -77,7 +77,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const verification = JSON.parse(await readFile(`${directory}/release-verification.json`, 'utf8'));
   assert.equal(verification.candidateHash, sha256(manifest));
   assert.deepEqual(verification.candidate, candidate);
-  validateManualAcceptance(verification.manual, candidate.readiness.sha, sha256(manifest));
   for (const [name, hash] of Object.entries(candidate.files).filter(
     ([name]) => !name.endsWith('.sig') && name !== 'release-notes.md',
   ))

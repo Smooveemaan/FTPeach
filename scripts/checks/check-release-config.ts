@@ -185,11 +185,11 @@ const ciWorkflow = await readFile(
 assert.ok(ciWorkflow.includes('needs: [mode, checks, private-check]'));
 assert.ok(ciWorkflow.includes("if: needs.mode.outputs.release == 'true'"));
 assert.ok(ciWorkflow.includes('uses: ./.github/workflows/release.yml'));
-assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber|\.release-tools/);
+assert.doesNotMatch(releaseWorkflow, /\n {2}push:|skip-private-suites|--clobber|\.release-tools|record-manual|manual-acceptance/);
 assert.match(
   releaseWorkflow,
-  / {2}tag-and-draft:\r?\n {4}needs: manual-acceptance\r?\n {4}if: always\(\) && needs\.manual-acceptance\.result == 'success'/,
-  'Saved-candidate deploy must run after skipped build jobs, only when manual-acceptance passes',
+  / {2}tag-and-draft:\r?\n {4}needs: \[build-windows, acceptance\]\r?\n {4}if: always\(\) && github\.ref == 'refs\/heads\/master' && !contains\(needs\.\*\.result, 'failure'\) && !contains\(needs\.\*\.result, 'cancelled'\) && \(github\.event_name == 'push' \|\| inputs\.operation == 'deploy'\)/,
+  'Saved-candidate deploy must run after automatic acceptance or skipped build jobs on deploy without failures',
 );
 const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '  workflow_call:'],
@@ -199,7 +199,6 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'run: npm run sbom:generate'],
   [releaseWorkflow, 'release.yml', 'Verify every updater signature'],
   [releaseWorkflow, 'release.yml', 'uses: ./.github/workflows/installer.yml'],
-  [releaseWorkflow, 'release.yml', '  manual-acceptance:'],
   [releaseWorkflow, 'release.yml', 'needs: [build-windows, acceptance]'],
   [
     releaseWorkflow,

@@ -20,6 +20,7 @@
   /* Shared control geometry. Components consume these tokens instead of
      carrying independent copies of the same dimensions. */
   --title-bar-height: 28.8px;
+  --title-bar-traffic-lights-width: 78px;
   --control-height: 26px;
   --control-height-lg: 28px;
   --control-radius: var(--radius-sm);

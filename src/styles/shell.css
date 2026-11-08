@@ -24,6 +24,13 @@
   gap: 8px;
 }
 
+.title-bar.macos,
+:root[data-platform='macos'] .title-bar {
+  padding-inline: 0;
+  padding-left: var(--title-bar-traffic-lights-width, 78px);
+  padding-right: 14px;
+}
+
 /* A dialog's scrim starts below the title bar so the window stays draggable and
    its minimize/maximize/close buttons keep working while the dialog is open.
    Give the bar a matching, click-through scrim of its own so the whole window

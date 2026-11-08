@@ -4,9 +4,12 @@ import i18n from './i18n/index.ts';
 import './styles/theme.css';
 import { installConfirmationAppearance } from './platform/confirmationAppearance.ts';
 import { installKeyboardNavigation } from './platform/keyboardNavigation.ts';
+import { hostPlatform } from './platform/os.ts';
 
 const disposeKeyboardNavigation = installKeyboardNavigation();
 if (import.meta.hot) import.meta.hot.dispose(disposeKeyboardNavigation);
+
+document.documentElement.dataset.platform = hostPlatform();
 
 const query = new URLSearchParams(window.location.search);
 const securityRequestId = query.get('security-confirmation');

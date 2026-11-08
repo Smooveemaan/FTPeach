@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.tsx';
+import { hostPlatform } from '../platform/os.ts';
 import { useWindowControls, type WindowControlsModel } from '../platform/useWindowControls.ts';
 
 interface TitleBarProps {
   minimizeToTray: boolean;
+  platform?: 'windows' | 'macos' | 'linux';
 }
 
 function TauriWindowControls({
@@ -44,14 +46,21 @@ function TauriWindowControls({
   );
 }
 
-export default function TitleBar({ minimizeToTray }: TitleBarProps) {
-  const { available, showSystemMenu, ...controls } = useWindowControls(minimizeToTray);
+export default function TitleBar({ minimizeToTray, platform = hostPlatform() }: TitleBarProps) {
+  const isMac = platform === 'macos';
+  const { available, showSystemMenu, ...controls } = useWindowControls(
+    minimizeToTray,
+    undefined,
+    !isMac && typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window,
+  );
+
   return (
     <div
-      className="title-bar"
+      className={`title-bar ${isMac ? 'macos' : ''}`}
+      data-platform={platform}
       data-tauri-drag-region="deep"
       onContextMenu={
-        available
+        available && !isMac
           ? (event) => {
               event.preventDefault();
               showSystemMenu();
@@ -63,7 +72,7 @@ export default function TitleBar({ minimizeToTray }: TitleBarProps) {
         <b>FTP</b>each
       </span>
       <span className="title-bar-spacer" />
-      {available && <TauriWindowControls {...controls} />}
+      {available && !isMac && <TauriWindowControls {...controls} />}
     </div>
   );
 }

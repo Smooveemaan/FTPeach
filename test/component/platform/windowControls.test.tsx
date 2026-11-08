@@ -32,6 +32,27 @@ test('browser rendering never loads native window bindings', () => {
   expect(load).not.toHaveBeenCalled();
 });
 
+test('macOS host defaults available to false even when inside Tauri', () => {
+  vi.stubGlobal('__TAURI_INTERNALS__', {});
+  const originalUserAgent = navigator.userAgent;
+  try {
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+      configurable: true,
+    });
+    const load = vi.fn();
+    const { result } = renderHook(() => useWindowControls(false, load));
+    expect(result.current.available).toBe(false);
+    expect(load).not.toHaveBeenCalled();
+  } finally {
+    Object.defineProperty(navigator, 'userAgent', {
+      value: originalUserAgent,
+      configurable: true,
+    });
+    vi.unstubAllGlobals();
+  }
+});
+
 test('unmount before window loading prevents a subscription', async () => {
   const pending = deferred<NativeWindowControls>();
   const win = nativeWindow();

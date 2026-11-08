@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { handler, reportRejection } from '../shared/asyncFailure.ts';
 import { api } from './api/index.ts';
+import { hostPlatform } from './os.ts';
 
 /** Native operations required by the application title bar. */
 export interface NativeWindowControls {
@@ -41,7 +42,9 @@ export interface WindowControlsModel {
 export function useWindowControls(
   minimizeToTray: boolean,
   getWindow: () => Promise<NativeWindowControls> = loadWindow,
-  available = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window,
+  available = typeof window !== 'undefined' &&
+    '__TAURI_INTERNALS__' in window &&
+    hostPlatform() !== 'macos',
 ): WindowControlsModel {
   const [maximized, setMaximized] = useState(false);
   const windowRef = useRef<NativeWindowControls | null>(null);

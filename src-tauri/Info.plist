@@ -6,6 +6,6 @@
 	<key>NSAppleEventsUsageDescription</key>
 	<string>FTPeach asks Finder to move deleted files to the Trash, so that Put Back can restore them.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>FTPeach connects to FTP, FTPS, and SFTP servers on your local network.</string>
+	<string>FTPeach connects to FTP, FTPS, SFTP and WebDAV servers on your local network.</string>
 </dict>
 </plist>

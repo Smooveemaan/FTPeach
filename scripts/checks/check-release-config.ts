@@ -121,7 +121,7 @@ assert.ok(
 // that forgets it strands the installer after the app is gone.
 assert.match(
   installerHooks,
-  /RMDir \/r "\$LOCALAPPDATA\\\$\{BUNDLEID\}\\updates"/,
+  /RMDir \/r "\$LOCALAPPDATA\\\$(\{BUNDLEID\}|com\.smooveemaan\.ftpeach)\\updates"/,
   'A real uninstall must remove the staged update the next launch would have installed',
 );
 // FTPeach 0.3.0 to 0.4.0 refuse an installer without a version structure of
@@ -149,9 +149,26 @@ assert.equal(
   'Entitlements.plist',
   'macOS overlay must reference Entitlements.plist',
 );
-assert.equal(macosConfig?.app?.windows?.[0]?.decorations, true);
-assert.equal(macosConfig?.app?.windows?.[0]?.titleBarStyle, 'Overlay');
-assert.equal(macosConfig?.app?.windows?.[0]?.hiddenTitle, true);
+const baseWindow = config?.app?.windows?.[0];
+const macWindow = macosConfig?.app?.windows?.[0];
+assert.ok(
+  Array.isArray(macosConfig?.app?.windows) && macosConfig.app.windows.length === 1,
+  'macOS overlay config must define the windows array in its entirety',
+);
+const baseProps = { ...baseWindow };
+delete baseProps.decorations;
+const macProps = { ...macWindow };
+assert.equal(macProps.decorations, true, 'macOS window decorations must be true');
+assert.equal(macProps.titleBarStyle, 'Overlay', 'macOS window titleBarStyle must be Overlay');
+assert.equal(macProps.hiddenTitle, true, 'macOS window hiddenTitle must be true');
+delete macProps.decorations;
+delete macProps.titleBarStyle;
+delete macProps.hiddenTitle;
+assert.deepEqual(
+  macProps,
+  baseProps,
+  'macOS window definition must replicate all base window properties because Merge Patch replaces arrays',
+);
 assert.deepEqual(
   linuxConfig?.bundle?.targets,
   ['deb', 'appimage'],

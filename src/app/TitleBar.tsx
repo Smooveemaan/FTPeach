@@ -68,9 +68,7 @@ export default function TitleBar({ minimizeToTray, platform = hostPlatform() }: 
           : undefined
       }
     >
-      <span className="wordmark">
-        <b>FTP</b>each
-      </span>
+      <span className="wordmark">FTPeach</span>
       <span className="title-bar-spacer" />
       {available && !isMac && <TauriWindowControls {...controls} />}
     </div>

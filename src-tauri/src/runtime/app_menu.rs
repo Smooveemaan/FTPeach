@@ -12,11 +12,10 @@
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use tauri::{
     AppHandle, Emitter, Manager, Runtime,
-    menu::{
-        AboutMetadata, CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
-    },
+    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
 };
 
+pub const ID_APP_ABOUT: &str = "app-menu-about";
 pub const ID_APP_QUIT: &str = "app-menu-quit";
 const APP_MENU_ACTION_EVENT: &str = "app-menu:action";
 pub const MAX_MENU_TEXT_CHARS: usize = 256;
@@ -24,12 +23,15 @@ pub const MAX_MENU_TEXT_CHARS: usize = 256;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppMenuCommand {
     Quit,
+    About,
 }
 
 /// What an application menu item click asks for.
 pub fn command_for(id: &str) -> Option<AppMenuCommand> {
     if id == ID_APP_QUIT {
         Some(AppMenuCommand::Quit)
+    } else if id == ID_APP_ABOUT {
+        Some(AppMenuCommand::About)
     } else {
         None
     }
@@ -65,7 +67,9 @@ impl AppMenuModel {
     pub fn validate(&self) -> Result<(), String> {
         for menu in &self.menus {
             if menu.label.chars().count() > MAX_MENU_TEXT_CHARS {
-                return Err(format!("Menu label is longer than {MAX_MENU_TEXT_CHARS} chars"));
+                return Err(format!(
+                    "Menu label is longer than {MAX_MENU_TEXT_CHARS} chars"
+                ));
             }
             Self::validate_items(&menu.items)?;
         }
@@ -77,12 +81,16 @@ impl AppMenuModel {
             if let Some(label) = &item.label
                 && label.chars().count() > MAX_MENU_TEXT_CHARS
             {
-                return Err(format!("Menu item label is longer than {MAX_MENU_TEXT_CHARS} chars"));
+                return Err(format!(
+                    "Menu item label is longer than {MAX_MENU_TEXT_CHARS} chars"
+                ));
             }
             if let Some(id) = &item.id
                 && id.chars().count() > MAX_MENU_TEXT_CHARS
             {
-                return Err(format!("Menu item id is longer than {MAX_MENU_TEXT_CHARS} chars"));
+                return Err(format!(
+                    "Menu item id is longer than {MAX_MENU_TEXT_CHARS} chars"
+                ));
             }
             if let Some(children) = &item.children {
                 Self::validate_items(children)?;
@@ -108,7 +116,7 @@ impl AppMenuState {
 }
 
 /// Builds the custom application menu:
-/// - FTPeach (About, Services, Hide Others, Show All, Quit with dialog)
+/// - FTPeach (About FTPeach, Services, Hide Others, Show All, Quit with dialog)
 /// - Top-level menus provided by the renderer (File, Edit, View, Transfer, Bookmarks, Help)
 /// - Window (Minimize, Zoom, Bring All to Front)
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
@@ -116,21 +124,12 @@ pub fn build_app_menu<R: Runtime>(
     app: &AppHandle<R>,
     dynamic: Option<&AppMenuModel>,
 ) -> tauri::Result<Menu<R>> {
-    let pkg_info = app.package_info();
-    let config = app.config();
-    let about_metadata = AboutMetadata {
-        name: Some(pkg_info.name.clone()),
-        version: Some(pkg_info.version.to_string()),
-        copyright: config.bundle.copyright.clone(),
-        authors: config.bundle.publisher.clone().map(|p| vec![p]),
-        ..Default::default()
-    };
-
     let menu = Menu::new(app)?;
 
     // 1. FTPeach submenu
     let app_submenu = Submenu::new(app, "FTPeach", true)?;
-    app_submenu.append(&PredefinedMenuItem::about(app, None, Some(about_metadata))?)?;
+    let about_item = MenuItem::with_id(app, ID_APP_ABOUT, "About FTPeach", true, None::<&str>)?;
+    app_submenu.append(&about_item)?;
     app_submenu.append(&PredefinedMenuItem::separator(app)?)?;
     app_submenu.append(&PredefinedMenuItem::services(app, None)?)?;
     app_submenu.append(&PredefinedMenuItem::separator(app)?)?;
@@ -241,7 +240,8 @@ fn append_dynamic_item<R: Runtime>(
     let accelerator = item.shortcut.as_deref();
 
     if let Some(checked) = item.checked {
-        let check_item = match CheckMenuItem::with_id(app, &id, text, enabled, checked, accelerator) {
+        let check_item = match CheckMenuItem::with_id(app, &id, text, enabled, checked, accelerator)
+        {
             Ok(item) => item,
             Err(_) => CheckMenuItem::with_id(app, &id, text, enabled, checked, None::<&str>)?,
         };
@@ -299,6 +299,11 @@ pub fn install(app: &AppHandle) -> tauri::Result<()> {
         let id = event.id().as_ref();
         match command_for(id) {
             Some(AppMenuCommand::Quit) => crate::runtime::shutdown::quit(app),
+            Some(AppMenuCommand::About) => {
+                if let Err(error) = app.emit_to("main", APP_MENU_ACTION_EVENT, "about") {
+                    log::warn!("could not emit app menu action: {error}");
+                }
+            }
             None => {
                 if id.starts_with("app-menu:") {
                     let action_id = id.strip_prefix("app-menu:").unwrap_or(id);
@@ -320,6 +325,7 @@ mod tests {
     #[test]
     fn command_routing_recognizes_quit() {
         assert_eq!(command_for(ID_APP_QUIT), Some(AppMenuCommand::Quit));
+        assert_eq!(command_for(ID_APP_ABOUT), Some(AppMenuCommand::About));
         assert_eq!(command_for("other-id"), None);
     }
 

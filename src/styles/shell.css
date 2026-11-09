@@ -49,17 +49,28 @@ body:has(.modal-overlay) .title-bar::after {
 }
 
 .title-bar .wordmark {
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   font-size: 12.5px;
-  color: var(--text-secondary);
+  color: var(--text-faint);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
-.title-bar .wordmark b {
-  color: var(--text-primary);
+.title-bar.macos .wordmark,
+:root[data-platform='macos'] .title-bar .wordmark {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  top: 0;
+  bottom: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', system-ui, sans-serif;
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: normal;
 }
-
 
 .line-pulse {
   flex: 0 0 auto;

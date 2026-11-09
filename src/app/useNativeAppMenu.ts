@@ -54,13 +54,19 @@ function toTopLabel(label: ReactNode): string {
 
 const TOP_MENU_IDS = ['file', 'edit', 'view', 'transfer', 'bookmarks', 'help'] as const;
 
-export function useNativeAppMenu(menus: readonly MenuBarEntry[]): void {
+export function useNativeAppMenu(menus: readonly MenuBarEntry[], onAbout?: () => void): void {
   const callbacksRef = useRef<Map<string, () => void>>(new Map());
+  const onAboutRef = useRef(onAbout);
+  onAboutRef.current = onAbout;
 
   // Listen to actions from macOS menu bar
   useEffect(() => {
     if (hostPlatform() !== 'macos') return;
     return api.appMenu.onAction((actionId: string) => {
+      if (actionId === 'about') {
+        onAboutRef.current?.();
+        return;
+      }
       const cb = callbacksRef.current.get(actionId);
       if (cb) {
         cb();

@@ -19,6 +19,6 @@ export function useApplicationMenuCommands(context: ApplicationCommandContext): 
     context.settings.shortcuts.keyboardShortcuts,
   );
   const menus = buildMenus(context);
-  useNativeAppMenu(menus);
+  useNativeAppMenu(menus, () => context.dialogs.setShowAbout(true));
   return menus;
 }

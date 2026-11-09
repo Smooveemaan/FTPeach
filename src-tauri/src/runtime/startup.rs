@@ -64,6 +64,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     #[cfg(target_os = "macos")]
     local_fs::recycle_bin::ask_for_finder_access();
     #[cfg(target_os = "macos")]
+    super::dock::set_dock_title("FTPeach");
+    #[cfg(target_os = "macos")]
     app_menu::install(app.handle())?;
     app.manage(ProgressEmitter::new(app.handle().clone()));
     let panel = app.handle().clone();

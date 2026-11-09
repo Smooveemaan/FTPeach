@@ -33,6 +33,8 @@ describe('TitleBar', () => {
     expect(screen.queryByLabelText('titleBar.maximize')).toBeNull();
     expect(screen.queryByLabelText('common.close')).toBeNull();
     expect(container.querySelector('.title-bar-controls')).toBeNull();
+    expect(bar?.querySelector('.wordmark')?.textContent).toBe('FTPeach');
+    expect(bar?.querySelector('.wordmark b')).toBeNull();
 
     fireEvent.contextMenu(bar!);
     expect(showSystemMenu).not.toHaveBeenCalled();
@@ -58,6 +60,8 @@ describe('TitleBar', () => {
     expect(bar?.classList.contains('macos')).toBe(false);
     expect(bar?.getAttribute('data-platform')).toBe('windows');
     expect(container.querySelector('.title-bar-controls')).not.toBeNull();
+    expect(bar?.querySelector('.wordmark')?.textContent).toBe('FTPeach');
+    expect(bar?.querySelector('.wordmark b')).toBeNull();
 
     const minBtn = screen.getByLabelText('titleBar.minimize');
     fireEvent.click(minBtn);
@@ -89,5 +93,7 @@ describe('TitleBar', () => {
     const bar = container.querySelector('.title-bar');
     expect(bar).not.toBeNull();
     expect(container.querySelector('.title-bar-controls')).toBeNull();
+    expect(bar?.querySelector('.wordmark')?.textContent).toBe('FTPeach');
+    expect(bar?.querySelector('.wordmark b')).toBeNull();
   });
 });

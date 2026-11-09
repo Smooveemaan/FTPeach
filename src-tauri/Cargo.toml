@@ -145,7 +145,7 @@ zstd = { version = "=0.14.3", default-features = false }
 # Already in the tree through `trash`: whether a volume has a Trash
 # (local_fs/recycle_bin.rs).
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSString", "NSURL"] }
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSProcessInfo", "NSString", "NSURL"] }
 
 [dev-dependencies]
 tar = "0.4.46"

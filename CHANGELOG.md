@@ -4,6 +4,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The toolbar has a Settings button to open Settings directly.
+- The Help menu includes a direct link to the User Guide.
+
+### Fixed
+
+- Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
+- Clicking any button or control dismisses open tooltips immediately.
+- Resetting the window layout while fullscreen restores the window to its centered size.
+
 ## [0.6.1] - 2026-11-05
 
 ### Added

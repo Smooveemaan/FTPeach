@@ -100,6 +100,49 @@ async fn file_name_encoding_survives_site_storage() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[tokio::test]
+async fn a_local_bookmark_can_be_saved_and_deleted_while_the_vault_is_locked() {
+    let (root, store, vault) = store_with_vault("ftpeach-locked-local").await;
+    vault.lock().await;
+    let mut local = json!({
+        "kind": "local",
+        "name": "Docs",
+        "localPath": if cfg!(windows) { r"C:\Docs" } else { "/tmp/docs" },
+    })
+    .as_object()
+    .unwrap()
+    .clone();
+
+    let saved = store
+        .save_site_with_vault(local.clone(), None, &vault)
+        .await
+        .unwrap();
+
+    local.insert("id".into(), Value::String(saved.id.clone()));
+    local.insert("name".into(), Value::String("Updated Docs".into()));
+    let edited = store
+        .save_site_with_vault(local, None, &vault)
+        .await
+        .unwrap();
+    assert_eq!(edited.id, saved.id);
+
+    let entries = store.list_sites().await.unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(
+        entries[0].get("name").and_then(Value::as_str),
+        Some("Updated Docs")
+    );
+
+    store
+        .delete_site_with_vault(saved.id, &vault)
+        .await
+        .unwrap();
+
+    let entries_after = store.list_sites().await.unwrap();
+    assert!(entries_after.is_empty());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 #[cfg(windows)]
 #[tokio::test]
 async fn a_failed_downgrade_keeps_the_vault_and_copies_no_secret_out() {

@@ -265,6 +265,9 @@ impl Store {
         confirmed: Option<&SecretTransfer>,
         vault: &Vault,
     ) -> Result<SaveSiteOutcome> {
+        if input.get("kind").and_then(Value::as_str) == Some("local") {
+            return self.save_site(input).await;
+        }
         let store = self.clone();
         let vault = vault.clone();
         let confirmed = confirmed.cloned();
@@ -631,6 +634,14 @@ impl Store {
     }
 
     pub async fn delete_site_with_vault(&self, id: String, vault: &Vault) -> Result<()> {
+        self.ensure_storage_split().await?;
+        let local: Vec<JsonMap> = self.read_json(&self.local_paths_file(), Vec::new()).await;
+        if local
+            .iter()
+            .any(|s| s.get("id").and_then(Value::as_str) == Some(&id))
+        {
+            return self.delete_site(&id).await;
+        }
         let store = self.clone();
         let vault = vault.clone();
         tokio::spawn(async move {

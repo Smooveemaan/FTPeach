@@ -437,6 +437,14 @@
   max-height: none;
 }
 
+.color-scheme-select .language-select-trigger {
+  width: 100%;
+  min-width: 134px;
+}
+.color-scheme-select .language-select-dropdown > .menu-items {
+  scrollbar-gutter: stable;
+}
+
 .date-time-format-controls {
   display: flex;
   justify-content: flex-end;

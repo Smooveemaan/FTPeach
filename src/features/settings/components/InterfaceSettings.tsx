@@ -92,6 +92,7 @@ export default function InterfaceSettings({
         <label className="settings-field">
           <span>{t('settings.colorSchemeLabel')}</span>
           <SelectMenu
+            fitToOptions
             value={colorSchemeValue}
             onChange={setColorSchemeValue}
             label={t('settings.colorSchemeLabel')}

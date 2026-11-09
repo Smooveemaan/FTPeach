@@ -289,14 +289,20 @@ pub async fn app_reset_layout(
     match store.reset_layout_settings().await {
         Ok(settings) => {
             if let Some(window) = app.get_webview_window("main") {
-                if window.is_maximized().unwrap_or(false) {
+                if window.is_fullscreen().unwrap_or(false) {
+                    let _ = window.set_fullscreen(false);
+                } else if window.is_maximized().unwrap_or(false) {
                     let _ = window.unmaximize();
                 }
                 let _ = window.set_size(tauri::LogicalSize::new(
                     DEFAULT_WINDOW_WIDTH,
                     DEFAULT_WINDOW_HEIGHT,
                 ));
-                let _ = window.center();
+                crate::runtime::window_bounds::center_window(
+                    &window,
+                    DEFAULT_WINDOW_WIDTH,
+                    DEFAULT_WINDOW_HEIGHT,
+                );
             }
             Ok(ResetLayout { settings })
         }

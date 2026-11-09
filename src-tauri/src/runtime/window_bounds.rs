@@ -83,6 +83,46 @@ fn restore_size(window: &WebviewWindow, width: f64, height: f64) {
     }
 }
 
+/// Calculates the top-left position that centers a rectangle of `(width, height)`
+/// symmetrically within the specified `work_area` (x, y, width, height) in logical pixels.
+/// Clamps the result so the top-left corner is not placed outside the work area.
+pub fn calculate_center_position(
+    work_area: (f64, f64, f64, f64),
+    width: f64,
+    height: f64,
+) -> (f64, f64) {
+    let (wa_x, wa_y, wa_w, wa_h) = work_area;
+    let x = ((wa_w - width) / 2.0 + wa_x).round().max(wa_x.round());
+    let y = ((wa_h - height) / 2.0 + wa_y).round().max(wa_y.round());
+    (x, y)
+}
+
+/// Centers the window symmetrically within the work area of its current monitor
+/// (falling back to the primary monitor, or Tauri's native center if undetectable).
+/// Unlike macOS Cocoa's `[NSWindow center]`, this avoids the vertical optical bias
+/// where the top margin is half the bottom margin.
+pub fn center_window(window: &WebviewWindow, width: f64, height: f64) {
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten());
+    if let Some(monitor) = monitor {
+        let sf = monitor.scale_factor();
+        let wa = monitor.work_area();
+        let work_area = (
+            wa.position.x as f64 / sf,
+            wa.position.y as f64 / sf,
+            wa.size.width as f64 / sf,
+            wa.size.height as f64 / sf,
+        );
+        let (x, y) = calculate_center_position(work_area, width, height);
+        let _ = window.set_position(LogicalPosition::new(x, y));
+    } else {
+        let _ = window.center();
+    }
+}
+
 pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
     let settings = store.get_settings().await;
     let saved = parse_bounds(settings.get("windowBounds"));
@@ -260,5 +300,30 @@ mod tests {
             Some(bounds(f64::NAN, 600.0, None, None)),
         );
         assert_eq!(got, None);
+    }
+
+    #[test]
+    fn centers_symmetrically_within_work_area() {
+        let (x, y) = calculate_center_position((0.0, 0.0, 1920.0, 1080.0), 1180.0, 740.0);
+        assert_eq!((x, y), (370.0, 170.0));
+    }
+
+    #[test]
+    fn centers_symmetrically_with_menu_bar_and_dock_offsets() {
+        // e.g. macOS work area: menu bar at top (y=25), dock at bottom (height reduced)
+        let (x, y) = calculate_center_position((0.0, 25.0, 1920.0, 980.0), 1180.0, 740.0);
+        assert_eq!((x, y), (370.0, 145.0));
+    }
+
+    #[test]
+    fn centers_symmetrically_on_secondary_monitor() {
+        let (x, y) = calculate_center_position((1920.0, 0.0, 2560.0, 1440.0), 1180.0, 740.0);
+        assert_eq!((x, y), (2610.0, 350.0));
+    }
+
+    #[test]
+    fn clamps_to_work_area_when_window_exceeds_monitor() {
+        let (x, y) = calculate_center_position((100.0, 50.0, 1000.0, 600.0), 1180.0, 740.0);
+        assert_eq!((x, y), (100.0, 50.0));
     }
 }

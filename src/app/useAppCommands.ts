@@ -59,6 +59,14 @@ export function useAppCommands(
           !(event.target instanceof Element && event.target.closest('.pane'))
         )
           event.preventDefault();
+        // Prevent browser default actions that treat the window like a web page:
+        // reload (Cmd/Ctrl+R), print (Cmd/Ctrl+P), and browser in-page find (Cmd/Ctrl+F).
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          !event.altKey &&
+          (event.code === 'KeyR' || event.code === 'KeyP' || event.code === 'KeyF')
+        )
+          event.preventDefault();
         const action = resolveGlobalAction(event, keyboardShortcutsRef.current);
         if (!action) return;
         const handled = dispatchAppCommand(action, commandsRef.current);

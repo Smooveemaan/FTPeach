@@ -1,4 +1,5 @@
 pub(crate) mod app_log;
+pub(crate) mod app_menu;
 #[cfg(windows)]
 pub(crate) mod browser_keys;
 pub(crate) mod log_emitter;

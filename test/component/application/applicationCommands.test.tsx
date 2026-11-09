@@ -131,6 +131,7 @@ function mount(h: Harness) {
 
 const ctrl = { ctrlKey: true };
 const ctrlShift = { ctrlKey: true, shiftKey: true };
+const cmd = { metaKey: true };
 
 test('tab shortcuts open, close, reopen and cycle tabs', () => {
   const h = harness({ tabs: 3 });
@@ -192,6 +193,21 @@ test('search, hidden files, refresh and settings reach their owners', () => {
   expect(h.layout.toggleHiddenFiles).toHaveBeenCalledOnce();
   expect(h.browser.refreshBothPanes).toHaveBeenCalledOnce();
   expect(h.dialogs.setShowSettings).toHaveBeenCalledExactlyOnceWith(true);
+});
+
+test('Cmd+R, Cmd+P and Cmd+F prevent default browser actions without touching the page', () => {
+  const h = harness();
+  expect(h.press('KeyP', cmd)).toBe(true);
+  expect(h.press('KeyR', cmd)).toBe(true);
+  expect(h.press('KeyF', cmd)).toBe(true);
+  expect(h.search.a).toHaveBeenCalledOnce();
+
+  // Even when a modal is open, browser print, reload and in-page find stay suppressed
+  const modalHarness = harness({ modalOpen: true });
+  expect(modalHarness.press('KeyP', cmd)).toBe(true);
+  expect(modalHarness.press('KeyR', cmd)).toBe(true);
+  expect(modalHarness.press('KeyF', cmd)).toBe(true);
+  expect(modalHarness.search.a).not.toHaveBeenCalled();
 });
 
 test('an open dialog blocks every command but the developer tools', () => {

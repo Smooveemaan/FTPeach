@@ -1,4 +1,6 @@
 //! Runtime initialization after Tauri installs managed state and plugins.
+#[cfg(target_os = "macos")]
+use super::app_menu;
 use super::log_emitter::LogEmitter;
 use super::{
     app_log, notification, settings_apply, shutdown, tray, updater, vault_auto_lock, window_bounds,
@@ -61,6 +63,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     notification::register_identity(app.handle());
     #[cfg(target_os = "macos")]
     local_fs::recycle_bin::ask_for_finder_access();
+    #[cfg(target_os = "macos")]
+    app_menu::install(app.handle())?;
     app.manage(ProgressEmitter::new(app.handle().clone()));
     let panel = app.handle().clone();
     app.manage(LogEmitter::start(logs_dir, move |batch| {

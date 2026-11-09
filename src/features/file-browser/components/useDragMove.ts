@@ -1,6 +1,7 @@
 import type { MutableRefObject, MouseEvent as ReactMouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
+import { hostPlatform } from '../../../platform/os.ts';
 import type { DropAction, DropKeys } from './dropAction.ts';
 import type { PaneId } from '../../../shared/paneContracts.ts';
 
@@ -211,7 +212,13 @@ export function useDragMove(
       if (!target.row && target.side === drag.side) return null;
       if (resolveActionRef.current)
         return resolveActionRef.current(drag.side, target.side, target.folder, drag.names, keys);
-      return keys.ctrlKey && keys.shiftKey ? 'invalid' : keys.shiftKey ? 'move' : 'copy';
+      const isMac = hostPlatform() === 'macos';
+      const copyModifier = isMac ? !!keys.altKey : keys.ctrlKey;
+      return (copyModifier && keys.shiftKey) || (keys.ctrlKey && keys.shiftKey)
+        ? 'invalid'
+        : keys.shiftKey
+          ? 'move'
+          : 'copy';
     };
     const updateTarget = (e: MouseEvent, keys: DropKeys) => {
       const drag = dragRef.current;
@@ -283,7 +290,8 @@ export function useDragMove(
     };
 
     const handleModifierKey = (e: KeyboardEvent) => {
-      if ((e.key === 'Control' || e.key === 'Shift') && lastPointer) updateTarget(lastPointer, e);
+      if ((e.key === 'Control' || e.key === 'Shift' || e.key === 'Alt') && lastPointer)
+        updateTarget(lastPointer, e);
     };
 
     const finishDrag = (e: MouseEvent | undefined, commit: boolean) => {
@@ -399,3 +407,4 @@ export function useDragMove(
     closeDropMenu: () => setDropMenu(null),
   };
 }
+

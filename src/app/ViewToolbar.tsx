@@ -35,7 +35,7 @@ interface ViewToolbarProps {
   stopAllTransfers: Action;
   retryAllTransfers: (refreshTargets?: RefreshAction) => unknown;
   refreshBothPanes: RefreshAction;
-  keyboardShortcuts?: ShortcutOverrides | null;
+  keyboardShortcuts?: ShortcutOverrides | null | undefined;
   /** `null` until read; the lock shows only once a master password is set. */
   vault?: { configured: boolean; locked: boolean } | null;
   toggleVault?: Action;
@@ -94,6 +94,11 @@ export default function ViewToolbar({
   // is enough to know the whole panel-toggle group is empty.
   const showDivider = !foldedKeys.has('paneLeft');
 
+  const refreshShortcut = formatBinding(effectiveBinding('refresh', keyboardShortcuts));
+  const refreshPanesTooltip = refreshShortcut
+    ? t('viewToolbar.refreshPanesTooltip', { shortcut: refreshShortcut })
+    : t('menu.view.refreshBothPanes');
+
   const overflowItems: MenuItem[] = [
     ...(foldedKeys.has('paneLeft')
       ? [
@@ -141,7 +146,7 @@ export default function ViewToolbar({
       ? [
           {
             label: t('menu.view.refreshBothPanes'),
-            shortcut: formatBinding(effectiveBinding('refresh', keyboardShortcuts)),
+            shortcut: refreshShortcut,
             onClick: refreshBothPanes,
           },
         ]
@@ -278,8 +283,8 @@ export default function ViewToolbar({
         <button
           type="button"
           className="btn btn-ghost btn-icon"
-          data-tooltip={t('viewToolbar.refreshPanesTooltip')}
-          aria-label={t('viewToolbar.refreshPanesTooltip')}
+          data-tooltip={refreshPanesTooltip}
+          aria-label={refreshPanesTooltip}
           onClick={refreshBothPanes}
         >
           <Icon name="refresh" />

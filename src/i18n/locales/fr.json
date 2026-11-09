@@ -969,7 +969,7 @@
   "tabStrip": {
     "localComputer": "Ordinateur",
     "untitledTab": "Nouvel onglet",
-    "newTabTooltip": "Nouvel onglet (Ctrl+T)",
+    "newTabTooltip": "Nouvel onglet ({{shortcut}})",
     "rename": "Nom de l'onglet"
   },
   "toolbarOverflowMenu": {
@@ -1020,7 +1020,7 @@
     "resumeAllPaused": "Reprendre tous les transferts mis en pause",
     "stopActive": "Arrêter les transferts en cours",
     "retryAllStopped": "Réessayer tous les transferts arrêtés",
-    "refreshPanesTooltip": "Actualiser les deux volets (F5)",
+    "refreshPanesTooltip": "Actualiser les deux volets ({{shortcut}})",
     "lockVault": "Verrouiller le coffre-fort",
     "unlockVault": "Déverrouiller le coffre-fort"
   },

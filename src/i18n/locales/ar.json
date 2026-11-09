@@ -987,7 +987,7 @@
   "tabStrip": {
     "localComputer": "الكمبيوتر",
     "untitledTab": "علامة تبويب جديدة",
-    "newTabTooltip": "علامة تبويب جديدة (Ctrl+T)",
+    "newTabTooltip": "علامة تبويب جديدة ({{shortcut}})",
     "rename": "اسم علامة التبويب"
   },
   "toolbarOverflowMenu": {
@@ -1038,7 +1038,7 @@
     "resumeAllPaused": "استئناف جميع عمليات النقل الموقفة مؤقتًا",
     "stopActive": "إيقاف عمليات النقل الجارية",
     "retryAllStopped": "إعادة محاولة جميع عمليات النقل المتوقفة",
-    "refreshPanesTooltip": "تحديث كلا الجزأين (F5)",
+    "refreshPanesTooltip": "تحديث كلا الجزأين ({{shortcut}})",
     "lockVault": "قفل الخزنة",
     "unlockVault": "إلغاء قفل الخزنة"
   },

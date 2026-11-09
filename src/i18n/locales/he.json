@@ -969,7 +969,7 @@
   "tabStrip": {
     "localComputer": "מחשב",
     "untitledTab": "כרטיסייה חדשה",
-    "newTabTooltip": "כרטיסייה חדשה (Ctrl+T)",
+    "newTabTooltip": "כרטיסייה חדשה ({{shortcut}})",
     "rename": "שם הכרטיסייה"
   },
   "toolbarOverflowMenu": {
@@ -1020,7 +1020,7 @@
     "resumeAllPaused": "המשך את כל ההעברות המושהות",
     "stopActive": "הפסק את ההעברות הפעילות",
     "retryAllStopped": "נסה שוב את כל ההעברות שנעצרו",
-    "refreshPanesTooltip": "רענן את שתי החלוניות (F5)",
+    "refreshPanesTooltip": "רענן את שתי החלוניות ({{shortcut}})",
     "lockVault": "נעל את הכספת",
     "unlockVault": "ביטול נעילת הכספת"
   },

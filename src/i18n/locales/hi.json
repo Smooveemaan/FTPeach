@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "कंप्यूटर",
     "untitledTab": "नया टैब",
-    "newTabTooltip": "नया टैब (Ctrl+T)",
+    "newTabTooltip": "नया टैब ({{shortcut}})",
     "rename": "टैब का नाम"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "सभी रुके हुए स्थानांतरण फिर से शुरू करें",
     "stopActive": "सक्रिय स्थानांतरण बंद करें",
     "retryAllStopped": "सभी बंद किए गए स्थानांतरण फिर से आज़माएँ",
-    "refreshPanesTooltip": "दोनों फलकों को ताज़ा करें (F5)",
+    "refreshPanesTooltip": "दोनों फलकों को ताज़ा करें ({{shortcut}})",
     "lockVault": "वॉल्ट लॉक करें",
     "unlockVault": "वॉल्ट अनलॉक करें"
   },

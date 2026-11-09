@@ -975,7 +975,7 @@
   "tabStrip": {
     "localComputer": "Компьютер",
     "untitledTab": "Новая вкладка",
-    "newTabTooltip": "Новая вкладка (Ctrl+T)",
+    "newTabTooltip": "Новая вкладка ({{shortcut}})",
     "rename": "Название вкладки"
   },
   "toolbarOverflowMenu": {
@@ -1026,7 +1026,7 @@
     "resumeAllPaused": "Возобновить все приостановленные передачи",
     "stopActive": "Остановить активные передачи",
     "retryAllStopped": "Повторить все остановленные передачи",
-    "refreshPanesTooltip": "Обновить обе панели (F5)",
+    "refreshPanesTooltip": "Обновить обе панели ({{shortcut}})",
     "lockVault": "Заблокировать хранилище",
     "unlockVault": "Разблокировать хранилище"
   },

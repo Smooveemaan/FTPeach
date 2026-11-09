@@ -653,4 +653,17 @@ describe('FilePane interactions', () => {
     expect(iconSpy).not.toHaveBeenCalled();
     iconSpy.mockRestore();
   });
+  test('on macOS Ctrl+click opens row context menu without triggering normal click selection', () => {
+    const userAgentSpy = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)');
+    const getContextMenuItems = vi.fn(() => [{ label: 'item', onClick: () => {} }]);
+    const { props } = renderPane({ getContextMenuItems, selectedNames: new Set(['Zoo.txt', 'beta.txt']) });
+    const row = within(screen.getByRole('listbox')).getByRole('option', { name: /Zoo\.txt/ });
+
+    // On macOS, Ctrl+click acts as a secondary click: opens context menu and leaves multi-selection intact
+    fireEvent.click(row, { ctrlKey: true, button: 0 });
+
+    expect(getContextMenuItems).toHaveBeenCalled();
+    expect(props.onSelectionChange).not.toHaveBeenCalled();
+    userAgentSpy.mockRestore();
+  });
 });

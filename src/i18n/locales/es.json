@@ -969,7 +969,7 @@
   "tabStrip": {
     "localComputer": "Ordenador",
     "untitledTab": "Nueva pestaña",
-    "newTabTooltip": "Nueva pestaña (Ctrl+T)",
+    "newTabTooltip": "Nueva pestaña ({{shortcut}})",
     "rename": "Nombre de la pestaña"
   },
   "toolbarOverflowMenu": {
@@ -1020,7 +1020,7 @@
     "resumeAllPaused": "Reanudar todas las transferencias en pausa",
     "stopActive": "Detener las transferencias activas",
     "retryAllStopped": "Reintentar todas las transferencias detenidas",
-    "refreshPanesTooltip": "Actualizar ambos paneles (F5)",
+    "refreshPanesTooltip": "Actualizar ambos paneles ({{shortcut}})",
     "lockVault": "Bloquear la bóveda",
     "unlockVault": "Desbloquear la bóveda"
   },

@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Számítógép",
     "untitledTab": "Új lap",
-    "newTabTooltip": "Új lap (Ctrl+T)",
+    "newTabTooltip": "Új lap ({{shortcut}})",
     "rename": "Lap neve"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Az összes szüneteltetett átvitel folytatása",
     "stopActive": "Az aktív átvitelek leállítása",
     "retryAllStopped": "Az összes leállított átvitel újrapróbálása",
-    "refreshPanesTooltip": "Mindkét panel frissítése (F5)",
+    "refreshPanesTooltip": "Mindkét panel frissítése ({{shortcut}})",
     "lockVault": "A széf zárolása",
     "unlockVault": "A széf feloldása"
   },

@@ -975,7 +975,7 @@
   "tabStrip": {
     "localComputer": "Komputer",
     "untitledTab": "Nowa karta",
-    "newTabTooltip": "Nowa karta (Ctrl+T)",
+    "newTabTooltip": "Nowa karta ({{shortcut}})",
     "rename": "Nazwa karty"
   },
   "toolbarOverflowMenu": {
@@ -1026,7 +1026,7 @@
     "resumeAllPaused": "Wznów wszystkie wstrzymane transfery",
     "stopActive": "Zatrzymaj aktywne transfery",
     "retryAllStopped": "Ponów wszystkie zatrzymane transfery",
-    "refreshPanesTooltip": "Odśwież oba panele (F5)",
+    "refreshPanesTooltip": "Odśwież oba panele ({{shortcut}})",
     "lockVault": "Zablokuj sejf",
     "unlockVault": "Odblokuj sejf"
   },

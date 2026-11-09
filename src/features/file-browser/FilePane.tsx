@@ -1,3 +1,4 @@
+import { hostPlatform } from '../../platform/os.ts';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   CSSProperties,
@@ -78,7 +79,7 @@ export interface FilePaneProps {
   onCopyToOtherPane?: (() => unknown) | undefined;
   onCopySelection?: (() => unknown) | undefined;
   onCutSelection?: (() => unknown) | undefined;
-  onPaste?: (() => unknown) | undefined;
+  onPaste?: ((options?: { move?: boolean }) => unknown) | undefined;
   onPathSubmit?: ((path: string) => unknown) | undefined;
   getContextMenuItems?: (
     entry: FileEntry | null,
@@ -412,6 +413,7 @@ function FilePane({
         toolbar={toolbar}
         sourceRef={sourceRef}
         t={t}
+        keyboardShortcuts={keyboardShortcuts}
       />
 
       {!disconnected && (
@@ -505,6 +507,11 @@ function FilePane({
             'aria-multiselectable': 'true',
             'aria-label': t('filePane.filesAriaLabel'),
             onPointerDown: startMarquee,
+            onClick: (e) => {
+              if (hostPlatform() === 'macos' && e.ctrlKey && !e.metaKey && e.button === 0) {
+                contextMenu.openFiles(e, null);
+              }
+            },
             onContextMenu: (e) => contextMenu.openFiles(e, null),
           }}
           loading={loading}

@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "コンピューター",
     "untitledTab": "新しいタブ",
-    "newTabTooltip": "新しいタブ（Ctrl+T）",
+    "newTabTooltip": "新しいタブ（{{shortcut}}）",
     "rename": "タブ名"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "一時停止中の転送をすべて再開",
     "stopActive": "実行中の転送を停止",
     "retryAllStopped": "停止した転送をすべて再試行",
-    "refreshPanesTooltip": "両方のペインを更新（F5）",
+    "refreshPanesTooltip": "両方のペインを更新（{{shortcut}}）",
     "lockVault": "保管庫をロック",
     "unlockVault": "保管庫のロックを解除"
   },

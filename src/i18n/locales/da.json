@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Computer",
     "untitledTab": "Ny fane",
-    "newTabTooltip": "Ny fane (Ctrl+T)",
+    "newTabTooltip": "Ny fane ({{shortcut}})",
     "rename": "Fanens navn"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Genoptag alle overførsler på pause",
     "stopActive": "Stop aktive overførsler",
     "retryAllStopped": "Prøv igen med alle stoppede overførsler",
-    "refreshPanesTooltip": "Opdater begge ruder (F5)",
+    "refreshPanesTooltip": "Opdater begge ruder ({{shortcut}})",
     "lockVault": "Lås boksen",
     "unlockVault": "Lås boksen op"
   },

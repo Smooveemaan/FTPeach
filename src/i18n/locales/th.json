@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "คอมพิวเตอร์",
     "untitledTab": "แท็บใหม่",
-    "newTabTooltip": "แท็บใหม่ (Ctrl+T)",
+    "newTabTooltip": "แท็บใหม่ ({{shortcut}})",
     "rename": "ชื่อแท็บ"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "ดำเนินการต่อทุกการโอนที่ถูกหยุดชั่วคราว",
     "stopActive": "หยุดการโอนที่กำลังดำเนินการ",
     "retryAllStopped": "ลองโอนใหม่ทั้งหมดที่ถูกหยุด",
-    "refreshPanesTooltip": "รีเฟรชทั้งสองแผง (F5)",
+    "refreshPanesTooltip": "รีเฟรชทั้งสองแผง ({{shortcut}})",
     "lockVault": "ล็อกคลังนิรภัย",
     "unlockVault": "ปลดล็อกคลังนิรภัย"
   },

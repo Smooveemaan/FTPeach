@@ -2,11 +2,13 @@ import { dropDestinationPath, normalizeLocalPath } from '../../../shared/paths.t
 import { canMoveBetween } from '../../../shared/movePolicy.ts';
 import { paneJoin } from '../panes/paneBackend.ts';
 import type { PaneState } from '../panes/paneModel.ts';
+import { hostPlatform, type Platform } from '../../../platform/os.ts';
 
 export type DropAction = 'copy' | 'move' | 'invalid' | null;
 export interface DropKeys {
   ctrlKey: boolean;
   shiftKey: boolean;
+  altKey?: boolean;
 }
 
 export function resolveDropAction(
@@ -15,7 +17,11 @@ export function resolveDropAction(
   folder: string | null,
   names: string[],
   keys: DropKeys,
+  platform: Platform = hostPlatform(),
 ): DropAction {
+  const isMac = platform === 'macos';
+  const copyModifier = isMac ? !!keys.altKey : keys.ctrlKey;
+  if (copyModifier && keys.shiftKey) return 'invalid';
   if (keys.ctrlKey && keys.shiftKey) return 'invalid';
   if (!source.path || !target.path || !names.length) return 'invalid';
   if (
@@ -39,10 +45,11 @@ export function resolveDropAction(
     }
   }
   // Like Explorer: with no modifier, a drop onto another disk copies. Shift still moves there.
+  // On macOS (Finder convention), Option (⌥ / altKey) copies.
   // shortcut: mount points count as their host volume; use filesystem IDs when cross-volume defaults are needed
   const volume = (path: string) => /^([a-z]:|\/\/[^/]+\/[^/]+)/.exec(path)?.[1] ?? '';
   const sameVolume =
     source.kind !== 'local' || volume(normalize(source.path)) === volume(destination);
-  const move = keys.shiftKey || (!keys.ctrlKey && same && sameVolume);
+  const move = keys.shiftKey || (!copyModifier && same && sameVolume);
   return move ? (same ? 'move' : 'invalid') : 'copy';
 }

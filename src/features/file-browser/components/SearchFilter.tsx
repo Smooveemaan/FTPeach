@@ -2,6 +2,9 @@ import Icon from '../../../components/Icon.tsx';
 import type { RefObject } from 'react';
 import type { PaneId } from '../panes/paneModel.ts';
 import type { Translate } from './fileListModel.ts';
+import { effectiveBinding } from '../../../shortcuts/resolve.ts';
+import { formatBinding } from '../../../shortcuts/bindings.ts';
+import type { ShortcutOverrides } from '../../../shortcuts/resolve.ts';
 
 interface SearchFilterProps {
   side: PaneId;
@@ -12,6 +15,7 @@ interface SearchFilterProps {
   onClose: () => void;
   onChange: (value: string) => void;
   t: Translate;
+  keyboardShortcuts?: ShortcutOverrides | null | undefined;
 }
 
 export default function SearchFilter({
@@ -23,8 +27,12 @@ export default function SearchFilter({
   onClose,
   onChange,
   t,
+  keyboardShortcuts,
 }: SearchFilterProps) {
-  const shortcut = side === 'b' ? 'Ctrl+Shift+F' : 'Ctrl+F';
+  const shortcut =
+    formatBinding(
+      effectiveBinding(side === 'b' ? 'search-remote' : 'search-local', keyboardShortcuts),
+    ) || (side === 'b' ? 'Ctrl+Shift+F' : 'Ctrl+F');
   return (
     <>
       <button

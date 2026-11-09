@@ -19,6 +19,9 @@ import type { ManagedSite } from '../../shared/siteContracts.ts';
 import type { PaneId, PaneStatus } from '../../shared/paneContracts.ts';
 import type { Translate } from '../../shared/translate.ts';
 import { PANE_IDS, type TabState } from './panes/paneModel.ts';
+import { effectiveBinding } from '../../shortcuts/resolve.ts';
+import { formatBinding } from '../../shortcuts/bindings.ts';
+import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
 
 // `ch` undershoots proportional fonts (e.g. "New Tab" > 8ch); measure the rename input's actual rendered width.
 let measureCanvas: HTMLCanvasElement | null = null;
@@ -68,6 +71,7 @@ interface TabStripProps {
   colored?: boolean;
   disabled?: boolean;
   lastActivePaneId?: PaneId | null;
+  keyboardShortcuts?: ShortcutOverrides | null | undefined;
 }
 
 // Last segment of a local path, e.g. "C:\Users\foo\Documents" -> "Documents".
@@ -187,6 +191,7 @@ export default function TabStrip({
   colored = true,
   disabled,
   lastActivePaneId = null,
+  keyboardShortcuts,
 }: TabStripProps) {
   const { t } = useTranslation();
   const tabRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -393,6 +398,11 @@ export default function TabStrip({
     }
   };
 
+  const newTabShortcut = formatBinding(effectiveBinding('new-tab', keyboardShortcuts));
+  const newTabTooltip = newTabShortcut
+    ? t('tabStrip.newTabTooltip', { shortcut: newTabShortcut })
+    : t('tabStrip.untitledTab');
+
   return (
     <div className={`tab-strip ${disabled ? 'disabled' : ''}`} ref={containerRef}>
       <div
@@ -525,7 +535,8 @@ export default function TabStrip({
         type="button"
         className="tab-strip-add"
         onClick={onNew}
-        data-tooltip={t('tabStrip.newTabTooltip')}
+        data-tooltip={newTabTooltip}
+        aria-label={newTabTooltip}
       >
         +
       </button>

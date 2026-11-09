@@ -10,8 +10,15 @@ import {
   parseBinding,
 } from '../../../src/shortcuts/bindings.ts';
 import type { ShortcutKeyboardEvent } from '../../../src/shortcuts/bindings.ts';
-import { effectiveBinding, findConflicts, resolveAction } from '../../../src/shortcuts/resolve.ts';
+import {
+  actionDefault,
+  effectiveBinding,
+  findConflicts,
+  resolveAction,
+} from '../../../src/shortcuts/resolve.ts';
 import { normalizeKeyboardShortcuts } from '../../../src/features/settings/useSettings.ts';
+import { resolveDropAction } from '../../../src/features/file-browser/components/dropAction.ts';
+import { makePane } from '../../../src/features/file-browser/panes/paneModel.ts';
 
 function fakeEvent({
   code,
@@ -45,7 +52,7 @@ test('bindingFromEvent handles modifier combos', () => {
     'Ctrl+Shift+KeyT',
   );
   assert.equal(bindingFromEvent(fakeEvent({ code: 'ArrowLeft', altKey: true })), 'Alt+ArrowLeft');
-  // Ctrl and Meta are merged into a single "primary modifier" — matching
+  // Ctrl and Meta are merged into a single "primary modifier" on non-macOS — matching
   // the app's existing cross-platform convention.
   assert.equal(bindingFromEvent(fakeEvent({ code: 'KeyT', metaKey: true })), 'Ctrl+KeyT');
 });
@@ -112,9 +119,124 @@ test('normalizeKeyboardShortcuts drops unknown ids and malformed bindings, keeps
     refresh: 'Ctrl+KeyR',
     rename: '',
     'not-a-real-action': 'KeyA',
-    'new-tab': 'Meta+KeyT', // 'Meta' isn't a recognized modifier name (Ctrl/Alt/Shift only)
+    'new-tab': 'Meta+KeyT', // 'Meta' isn't a recognized modifier name (Ctrl/Alt/Shift/Cmd only)
   });
   assert.deepEqual(normalized, { refresh: 'Ctrl+KeyR', rename: '' });
   assert.deepEqual(normalizeKeyboardShortcuts(null), {});
   assert.deepEqual(normalizeKeyboardShortcuts([]), {});
+});
+
+test('macOS default bindings and formatting round-trip', () => {
+  for (const action of SHORTCUT_ACTIONS) {
+    const macBinding = actionDefault(action, 'macos');
+    assert.ok(macBinding, `macOS binding for ${action.id} should be defined`);
+    const parsed = parseBinding(macBinding);
+    assert.ok(parsed, `macOS binding ${macBinding} for ${action.id} should parse`);
+    const event = fakeEvent({
+      code: parsed.code,
+      ctrlKey: parsed.ctrl,
+      altKey: parsed.alt,
+      shiftKey: parsed.shift,
+      metaKey: parsed.cmd,
+    });
+    assert.equal(bindingFromEvent(event, 'macos'), macBinding);
+    assert.ok(matchesBinding(event, macBinding, 'macos'));
+    assert.ok(formatBinding(macBinding, 'macos').length > 0);
+  }
+});
+
+test('bindingFromEvent separates Cmd and Ctrl on macOS', () => {
+  assert.equal(
+    bindingFromEvent(fakeEvent({ code: 'KeyF', metaKey: true }), 'macos'),
+    'Cmd+KeyF',
+  );
+  assert.equal(
+    bindingFromEvent(fakeEvent({ code: 'KeyF', ctrlKey: true }), 'macos'),
+    'Ctrl+KeyF',
+  );
+  assert.equal(
+    bindingFromEvent(fakeEvent({ code: 'KeyF', metaKey: true, shiftKey: true }), 'macos'),
+    'Shift+Cmd+KeyF',
+  );
+  assert.equal(
+    bindingFromEvent(fakeEvent({ code: 'KeyV', metaKey: true, altKey: true }), 'macos'),
+    'Alt+Cmd+KeyV',
+  );
+  assert.equal(
+    bindingFromEvent(fakeEvent({ code: 'Tab', ctrlKey: true }), 'macos'),
+    'Ctrl+Tab',
+  );
+});
+
+test('formatBinding displays macOS modifier symbols in ⌃⌥⇧⌘ order and replaces special keys', () => {
+  assert.equal(formatBinding('Cmd+KeyF', 'macos'), '⌘F');
+  assert.equal(formatBinding('Shift+Cmd+KeyF', 'macos'), '⇧⌘F');
+  assert.equal(formatBinding('Shift+Cmd+Period', 'macos'), '⇧⌘.');
+  assert.equal(formatBinding('Cmd+Comma', 'macos'), '⌘,');
+  assert.equal(formatBinding('Ctrl+Tab', 'macos'), '⌃Tab');
+  assert.equal(formatBinding('Ctrl+Shift+Tab', 'macos'), '⌃⇧Tab');
+  assert.equal(formatBinding('Shift+Cmd+BracketRight', 'macos'), '⇧⌘]');
+  assert.equal(formatBinding('Shift+Cmd+BracketLeft', 'macos'), '⇧⌘[');
+  assert.equal(formatBinding('Enter', 'macos'), 'Return');
+  assert.equal(formatBinding('Cmd+ArrowDown', 'macos'), '⌘↓');
+  assert.equal(formatBinding('Cmd+ArrowUp', 'macos'), '⌘↑');
+  assert.equal(formatBinding('Cmd+Backspace', 'macos'), '⌘⌫');
+  assert.equal(formatBinding('Alt+Cmd+Backspace', 'macos'), '⌥⌘⌫');
+  assert.equal(formatBinding('Alt+Cmd+KeyV', 'macos'), '⌥⌘V');
+  assert.equal(formatBinding('Shift+Cmd+KeyM', 'macos'), '⇧⌘M');
+  assert.equal(formatBinding('Shift+Cmd+KeyN', 'macos'), '⇧⌘N');
+  assert.equal(formatBinding('Alt+Cmd+KeyN', 'macos'), '⌥⌘N');
+  assert.equal(formatBinding('Alt+Cmd+KeyC', 'macos'), '⌥⌘C');
+  assert.equal(formatBinding('Shift+Cmd+KeyH', 'macos'), '⇧⌘H');
+});
+
+test('resolveAction resolves macOS defaults and aliases', () => {
+  // Defaults on macOS
+  assert.equal(resolveAction(fakeEvent({ code: 'KeyF', metaKey: true }), 'global', {}, 'macos'), 'search-local');
+  assert.equal(resolveAction(fakeEvent({ code: 'KeyF', metaKey: true, shiftKey: true }), 'global', {}, 'macos'), 'search-remote');
+  assert.equal(resolveAction(fakeEvent({ code: 'KeyR', metaKey: true }), 'global', {}, 'macos'), 'refresh');
+  assert.equal(resolveAction(fakeEvent({ code: 'Enter' }), 'pane', {}, 'macos'), 'rename');
+  assert.equal(resolveAction(fakeEvent({ code: 'ArrowDown', metaKey: true }), 'pane', {}, 'macos'), 'open');
+  assert.equal(resolveAction(fakeEvent({ code: 'Backspace', metaKey: true }), 'pane', {}, 'macos'), 'delete');
+  assert.equal(resolveAction(fakeEvent({ code: 'Backspace', metaKey: true, altKey: true }), 'pane', {}, 'macos'), 'delete-permanent');
+
+  // Aliases on macOS
+  assert.equal(resolveAction(fakeEvent({ code: 'F5' }), 'global', {}, 'macos'), 'refresh');
+  assert.equal(resolveAction(fakeEvent({ code: 'F2' }), 'pane', {}, 'macos'), 'rename');
+  assert.equal(resolveAction(fakeEvent({ code: 'KeyO', metaKey: true }), 'pane', {}, 'macos'), 'open');
+  assert.equal(resolveAction(fakeEvent({ code: 'BracketRight', metaKey: true, shiftKey: true }), 'global', {}, 'macos'), 'next-tab');
+  assert.equal(resolveAction(fakeEvent({ code: 'BracketLeft', metaKey: true, shiftKey: true }), 'global', {}, 'macos'), 'prev-tab');
+  assert.equal(resolveAction(fakeEvent({ code: 'F6' }), 'pane', {}, 'macos'), 'move-to');
+  assert.equal(resolveAction(fakeEvent({ code: 'F7' }), 'pane', {}, 'macos'), 'new-folder');
+  assert.equal(resolveAction(fakeEvent({ code: 'F7', shiftKey: true }), 'pane', {}, 'macos'), 'new-file');
+  assert.equal(resolveAction(fakeEvent({ code: 'F8' }), 'pane', {}, 'macos'), 'copy-to-other-pane');
+});
+
+test('resolveDropAction respects macOS Option key for copying', () => {
+  const source = {
+    ...makePane('a', 'local'),
+    path: 'C:\\work',
+    entries: [{ name: 'folder', isDirectory: true, size: 0 }],
+  };
+  const target = { ...makePane('b', 'local'), path: 'C:\\other' };
+
+  // Windows: ctrlKey copies, altKey does not
+  assert.equal(
+    resolveDropAction(source, target, null, ['folder'], { ctrlKey: false, shiftKey: false, altKey: true }, 'windows'),
+    'move',
+  );
+  assert.equal(
+    resolveDropAction(source, target, null, ['folder'], { ctrlKey: true, shiftKey: false }, 'windows'),
+    'copy',
+  );
+
+  // macOS: altKey copies, ctrlKey does not
+  assert.equal(
+    resolveDropAction(source, target, null, ['folder'], { ctrlKey: false, shiftKey: false, altKey: true }, 'macos'),
+    'copy',
+  );
+  assert.equal(
+    resolveDropAction(source, target, null, ['folder'], { ctrlKey: true, shiftKey: false, altKey: false }, 'macos'),
+    'move',
+  );
 });

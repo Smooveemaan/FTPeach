@@ -29,7 +29,7 @@ export interface FileClipboardModel {
   cutToClipboard: (id: PaneId, pane: PaneState) => void;
   canPaste: (targetPane: PaneState) => boolean;
   cutNames: (pane: PaneState) => ReadonlySet<string> | undefined;
-  pasteClipboard: (targetId: PaneId, targetPane: PaneState) => void;
+  pasteClipboard: (targetId: PaneId, targetPane: PaneState, options?: { move?: boolean }) => void;
   copySelectedWithConfirm: (
     sourcePane: PaneState,
     targetPane: PaneState,
@@ -48,43 +48,33 @@ export interface FileClipboardModel {
 }
 
 export function useFileClipboard({ browser, transfers }: FileClipboardOptions): FileClipboardModel {
+  const { t } = useTranslation();
   const { panes, canCopyBetween, refreshPaneIfAt } = browser;
   const { copyEntries } = transfers;
-  const { t } = useTranslation();
-  const copySelectedWithConfirm = async (
-    sourcePane: PaneState,
-    targetPane: PaneState,
-    refreshSource: () => unknown,
-    refreshTarget: () => unknown,
-  ) => {
-    await copyEntries({
-      sourcePane,
-      targetPane,
-      names: [...sourcePane.selected],
-      move: false,
-      refreshSource,
-      refreshTarget,
-    });
-  };
 
   const [clipboard, setClipboard] = useState<ClipboardState | null>(null);
-  const copyToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'copy' });
+
+  const copyToClipboard = (id: PaneId, pane: PaneState) =>
+    setClipboard({ id, pane, mode: 'copy' });
+
   const cutToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'cut' });
-  /** The names a cut is holding in this folder, which the list shows paler. */
+
   const cutNames = (pane: PaneState): ReadonlySet<string> | undefined =>
-    clipboard?.mode === 'cut' &&
-    clipboard.pane.kind === pane.kind &&
-    clipboard.pane.path === pane.path &&
-    clipboard.pane.connectionId === pane.connectionId
+    clipboard && clipboard.mode === 'cut' && clipboard.pane.path === pane.path
       ? clipboard.pane.selected
       : undefined;
   const canPaste = (targetPane: PaneState) =>
     !!clipboard && clipboard.pane.selected.size > 0 && canCopyBetween(clipboard.pane, targetPane);
-  const pasteClipboard = (targetId: PaneId, targetPane: PaneState) => {
+  const pasteClipboard = (
+    targetId: PaneId,
+    targetPane: PaneState,
+    options?: { move?: boolean },
+  ) => {
     if (!clipboard) return;
     const { id: sourceId, pane: sourcePane, mode } = clipboard;
+    const isMove = options?.move ?? mode === 'cut';
     // The cut stays on the clipboard, so the user can still copy it instead.
-    if (mode === 'cut' && !canMoveBetween(sourcePane, targetPane)) {
+    if (isMove && !canMoveBetween(sourcePane, targetPane)) {
       reportAsyncFailure(t('errors.moveBetweenEndpoints'));
       return;
     }
@@ -93,13 +83,13 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
         sourcePane,
         targetPane,
         names: [...sourcePane.selected],
-        move: mode === 'cut',
+        move: isMove,
         refreshSource: () => refreshPaneIfAt(sourceId, sourcePane.path),
         refreshTarget: () => refreshPaneIfAt(targetId, targetPane.path),
       })
         .then((result) => {
           // A skipped or refused move leaves the cut available for another try.
-          if (mode === 'cut' && result.ok && !result.sourceRetained) setClipboard(null);
+          if (isMove && result.ok && !result.sourceRetained) setClipboard(null);
         })
         .catch((error: unknown) => console.error('Paste failed', error)),
     );
@@ -203,7 +193,22 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
     canPaste,
     cutNames,
     pasteClipboard,
-    copySelectedWithConfirm,
+    copySelectedWithConfirm: async (
+      sourcePane,
+      targetPane,
+      refreshSource,
+      refreshTarget,
+    ) => {
+      if (!canCopyBetween(sourcePane, targetPane)) return;
+      await copyEntries({
+        sourcePane,
+        targetPane,
+        names: [...sourcePane.selected],
+        move: false,
+        refreshSource,
+        refreshTarget,
+      });
+    },
     dragMove,
     outboundDragRef,
   };

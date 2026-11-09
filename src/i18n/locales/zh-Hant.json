@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "電腦",
     "untitledTab": "新分頁",
-    "newTabTooltip": "新增分頁（Ctrl+T）",
+    "newTabTooltip": "新增分頁（{{shortcut}}）",
     "rename": "分頁名稱"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "恢復所有暫停的傳輸",
     "stopActive": "停止進行中的傳輸",
     "retryAllStopped": "重試所有已停止的傳輸",
-    "refreshPanesTooltip": "重新整理兩個窗格（F5）",
+    "refreshPanesTooltip": "重新整理兩個窗格（{{shortcut}}）",
     "lockVault": "鎖定密碼庫",
     "unlockVault": "解鎖密碼庫"
   },

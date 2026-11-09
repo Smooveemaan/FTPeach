@@ -969,7 +969,7 @@
   "tabStrip": {
     "localComputer": "Computer",
     "untitledTab": "Nuova scheda",
-    "newTabTooltip": "Nuova scheda (Ctrl+T)",
+    "newTabTooltip": "Nuova scheda ({{shortcut}})",
     "rename": "Nome della scheda"
   },
   "toolbarOverflowMenu": {
@@ -1020,7 +1020,7 @@
     "resumeAllPaused": "Riprendi tutti i trasferimenti messi in pausa",
     "stopActive": "Interrompi i trasferimenti attivi",
     "retryAllStopped": "Riprova tutti i trasferimenti interrotti",
-    "refreshPanesTooltip": "Aggiorna entrambi i riquadri (F5)",
+    "refreshPanesTooltip": "Aggiorna entrambi i riquadri ({{shortcut}})",
     "lockVault": "Blocca la cassaforte",
     "unlockVault": "Sblocca la cassaforte"
   },

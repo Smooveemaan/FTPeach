@@ -24,7 +24,7 @@ interface UseFilePaneKeyboardOptions {
   onCopyToOtherPane?: (() => unknown) | undefined;
   onCopySelection?: (() => unknown) | undefined;
   onCutSelection?: (() => unknown) | undefined;
-  onPaste?: (() => unknown) | undefined;
+  onPaste?: ((options?: { move?: boolean }) => unknown) | undefined;
   onOpenEntry: (entry: FileEntry) => unknown;
   clearSelection: () => void;
   moveActive: (delta: number, extend: boolean) => void;
@@ -63,6 +63,18 @@ export default function useFilePaneKeyboard({
   return useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
       if (event.defaultPrevented || isTextInput(event.target)) return;
+      if (
+        event.code === 'KeyV' &&
+        event.metaKey &&
+        event.altKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        onPaste
+      ) {
+        onPaste({ move: true });
+        event.preventDefault();
+        return;
+      }
       const action = resolveAction(event.nativeEvent, 'pane', keyboardShortcuts);
 
       if (action === 'select-all') {

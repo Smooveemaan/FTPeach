@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Υπολογιστής",
     "untitledTab": "Νέα καρτέλα",
-    "newTabTooltip": "Νέα καρτέλα (Ctrl+T)",
+    "newTabTooltip": "Νέα καρτέλα ({{shortcut}})",
     "rename": "Όνομα καρτέλας"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Συνέχιση όλων των μεταφορών σε παύση",
     "stopActive": "Διακοπή ενεργών μεταφορών",
     "retryAllStopped": "Επανάληψη όλων των μεταφορών που διακόπηκαν",
-    "refreshPanesTooltip": "Ανανέωση και των δύο πλαισίων (F5)",
+    "refreshPanesTooltip": "Ανανέωση και των δύο πλαισίων ({{shortcut}})",
     "lockVault": "Κλείδωμα θησαυροφυλακίου",
     "unlockVault": "Ξεκλείδωμα θησαυροφυλακίου"
   },

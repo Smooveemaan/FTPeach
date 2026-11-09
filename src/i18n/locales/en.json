@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Computer",
     "untitledTab": "New Tab",
-    "newTabTooltip": "New Tab (Ctrl+T)",
+    "newTabTooltip": "New Tab ({{shortcut}})",
     "rename": "Tab name"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Resume all paused transfers",
     "stopActive": "Stop active transfers",
     "retryAllStopped": "Retry all stopped transfers",
-    "refreshPanesTooltip": "Refresh both panes (F5)",
+    "refreshPanesTooltip": "Refresh both panes ({{shortcut}})",
     "lockVault": "Lock vault",
     "unlockVault": "Unlock vault"
   },

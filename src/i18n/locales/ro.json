@@ -969,7 +969,7 @@
   "tabStrip": {
     "localComputer": "Calculator",
     "untitledTab": "Filă nouă",
-    "newTabTooltip": "Filă nouă (Ctrl+T)",
+    "newTabTooltip": "Filă nouă ({{shortcut}})",
     "rename": "Numele filei"
   },
   "toolbarOverflowMenu": {
@@ -1020,7 +1020,7 @@
     "resumeAllPaused": "Reia toate transferurile puse pe pauză",
     "stopActive": "Oprește transferurile active",
     "retryAllStopped": "Reîncearcă toate transferurile oprite",
-    "refreshPanesTooltip": "Reîmprospătează ambele panouri (F5)",
+    "refreshPanesTooltip": "Reîmprospătează ambele panouri ({{shortcut}})",
     "lockVault": "Blochează seiful",
     "unlockVault": "Deblochează seiful"
   },

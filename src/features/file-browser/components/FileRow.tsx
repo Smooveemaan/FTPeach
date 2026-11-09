@@ -1,3 +1,4 @@
+import { hostPlatform } from '../../../platform/os.ts';
 import { memo } from 'react';
 import Icon from '../../../components/Icon.tsx';
 import { COLUMN_DEFS, fileIconName } from './fileListModel.ts';
@@ -80,7 +81,10 @@ function FileRow({
       aria-label={`${isolate(entry.name)}, ${t(entry.isDirectory ? 'filePane.fileTypeFolder' : 'filePane.fileTypeGeneric')}`}
       data-name={entry.name}
       data-index={index}
-      onMouseDown={(e) => onRowMouseDown?.(entry, e)}
+      onMouseDown={(e) => {
+        if (hostPlatform() === 'macos' && e.ctrlKey && !e.metaKey && e.button === 0) return;
+        onRowMouseDown?.(entry, e);
+      }}
       className={`row ${entry.isDirectory ? 'is-dir' : ''} ${selected ? 'selected' : ''} ${entry.isHidden || entry.name.startsWith('.') ? 'is-hidden' : ''} ${dragTarget ? 'drag-target' : ''} ${cut ? 'is-cut' : ''}`}
       style={
         {
@@ -96,7 +100,13 @@ function FileRow({
           '--name-cell-width': `${28 + nameWidth}px`,
         } as CSSProperties
       }
-      onClick={(e) => onRowClick?.(index, e)}
+      onClick={(e) => {
+        if (hostPlatform() === 'macos' && e.ctrlKey && !e.metaKey && e.button === 0) {
+          onRowContextMenu?.(e, entry, index);
+          return;
+        }
+        onRowClick?.(index, e);
+      }}
       onContextMenu={(e) => onRowContextMenu?.(e, entry, index)}
     >
       <span className="icon">

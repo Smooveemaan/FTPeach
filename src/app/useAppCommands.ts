@@ -29,7 +29,12 @@ export function dispatchAppCommand(action: string, commands: AppCommands): boole
 }
 
 function resolveGlobalAction(event: KeyboardEvent, keyboardShortcuts?: ShortcutOverrides | null) {
-  if (event.code === 'F12') return 'open-devtools';
+  if (
+    event.code === 'F12' ||
+    (event.altKey && event.metaKey && !event.ctrlKey && !event.shiftKey && event.code === 'KeyI')
+  ) {
+    return 'open-devtools';
+  }
   return resolveAction(event, 'global', keyboardShortcuts);
 }
 

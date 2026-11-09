@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "计算机",
     "untitledTab": "新标签页",
-    "newTabTooltip": "新标签页（Ctrl+T）",
+    "newTabTooltip": "新标签页（{{shortcut}}）",
     "rename": "标签页名称"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "恢复所有已暂停的传输",
     "stopActive": "停止正在进行的传输",
     "retryAllStopped": "重试所有已停止的传输",
-    "refreshPanesTooltip": "刷新两个窗格（F5）",
+    "refreshPanesTooltip": "刷新两个窗格（{{shortcut}}）",
     "lockVault": "锁定密码库",
     "unlockVault": "解锁密码库"
   },

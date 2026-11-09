@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Dator",
     "untitledTab": "Ny flik",
-    "newTabTooltip": "Ny flik (Ctrl+T)",
+    "newTabTooltip": "Ny flik ({{shortcut}})",
     "rename": "Fliknamn"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Återuppta alla pausade överföringar",
     "stopActive": "Stoppa aktiva överföringar",
     "retryAllStopped": "Försök igen med alla stoppade överföringar",
-    "refreshPanesTooltip": "Uppdatera båda panelerna (F5)",
+    "refreshPanesTooltip": "Uppdatera båda panelerna ({{shortcut}})",
     "lockVault": "Lås valvet",
     "unlockVault": "Lås upp valvet"
   },

@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Máy tính",
     "untitledTab": "Tab mới",
-    "newTabTooltip": "Tab mới (Ctrl+T)",
+    "newTabTooltip": "Tab mới ({{shortcut}})",
     "rename": "Tên tab"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Tiếp tục tất cả các lượt truyền đang tạm dừng",
     "stopActive": "Dừng các lượt truyền đang thực hiện",
     "retryAllStopped": "Thử lại tất cả các lượt truyền đã dừng",
-    "refreshPanesTooltip": "Làm mới cả hai khung (F5)",
+    "refreshPanesTooltip": "Làm mới cả hai khung ({{shortcut}})",
     "lockVault": "Khóa kho bảo mật",
     "unlockVault": "Mở khóa kho bảo mật"
   },

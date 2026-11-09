@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Komputer",
     "untitledTab": "Tab Baru",
-    "newTabTooltip": "Tab Baru (Ctrl+T)",
+    "newTabTooltip": "Tab Baru ({{shortcut}})",
     "rename": "Nama tab"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Lanjutkan semua transfer yang dijeda",
     "stopActive": "Hentikan transfer aktif",
     "retryAllStopped": "Coba ulang semua transfer yang terhenti",
-    "refreshPanesTooltip": "Segarkan kedua panel (F5)",
+    "refreshPanesTooltip": "Segarkan kedua panel ({{shortcut}})",
     "lockVault": "Kunci brankas",
     "unlockVault": "Buka kunci brankas"
   },

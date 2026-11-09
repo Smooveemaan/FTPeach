@@ -517,6 +517,7 @@ export default function Application() {
         colored={settings.interface.coloredTabs}
         disabled={tabDialogOpen}
         lastActivePaneId={browser.lastActivePaneId}
+        keyboardShortcuts={settings.shortcuts.keyboardShortcuts}
       />
 
       <ViewToolbar

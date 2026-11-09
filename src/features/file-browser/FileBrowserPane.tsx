@@ -199,7 +199,14 @@ function FileBrowserPane({
       onCopySelection={() => clipboard.copyToClipboard(id, pane)}
       onCutSelection={() => clipboard.cutToClipboard(id, pane)}
       cutNames={clipboard.cutNames(pane)}
-      onPaste={clipboard.canPaste(pane) ? () => clipboard.pasteClipboard(id, pane) : undefined}
+      onPaste={
+        clipboard.canPaste(pane)
+          ? (options?: { move?: boolean }) =>
+              options
+                ? clipboard.pasteClipboard(id, pane, options)
+                : clipboard.pasteClipboard(id, pane)
+          : undefined
+      }
       onPathSubmit={(path) =>
         browser.navigatePane(
           id,

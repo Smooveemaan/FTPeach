@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "컴퓨터",
     "untitledTab": "새 탭",
-    "newTabTooltip": "새 탭 (Ctrl+T)",
+    "newTabTooltip": "새 탭 ({{shortcut}})",
     "rename": "탭 이름"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "일시 중지된 모든 전송 재개",
     "stopActive": "활성 전송 중지",
     "retryAllStopped": "중지된 모든 전송 다시 시도",
-    "refreshPanesTooltip": "두 창 모두 새로 고침 (F5)",
+    "refreshPanesTooltip": "두 창 모두 새로 고침 ({{shortcut}})",
     "lockVault": "보관소 잠그기",
     "unlockVault": "보관소 잠금 해제"
   },

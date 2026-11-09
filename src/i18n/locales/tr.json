@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Bilgisayar",
     "untitledTab": "Yeni Sekme",
-    "newTabTooltip": "Yeni Sekme (Ctrl+T)",
+    "newTabTooltip": "Yeni Sekme ({{shortcut}})",
     "rename": "Sekme adı"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Duraklatılmış tüm aktarımları sürdür",
     "stopActive": "Etkin aktarımları durdur",
     "retryAllStopped": "Durdurulmuş tüm aktarımları yeniden dene",
-    "refreshPanesTooltip": "Her iki bölmeyi de yenile (F5)",
+    "refreshPanesTooltip": "Her iki bölmeyi de yenile ({{shortcut}})",
     "lockVault": "Kasayı kilitle",
     "unlockVault": "Kasanın kilidini aç"
   },

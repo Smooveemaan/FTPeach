@@ -963,7 +963,7 @@
   "tabStrip": {
     "localComputer": "Computer",
     "untitledTab": "Neuer Tab",
-    "newTabTooltip": "Neuer Tab (Strg+T)",
+    "newTabTooltip": "Neuer Tab ({{shortcut}})",
     "rename": "Tab-Name"
   },
   "toolbarOverflowMenu": {
@@ -1014,7 +1014,7 @@
     "resumeAllPaused": "Alle pausierten Übertragungen fortsetzen",
     "stopActive": "Aktive Übertragungen stoppen",
     "retryAllStopped": "Alle gestoppten Übertragungen wiederholen",
-    "refreshPanesTooltip": "Beide Bereiche aktualisieren (F5)",
+    "refreshPanesTooltip": "Beide Bereiche aktualisieren ({{shortcut}})",
     "lockVault": "Tresor sperren",
     "unlockVault": "Tresor entsperren"
   },

@@ -4,6 +4,7 @@ import { DIVIDER_WIDTH, ITEM_WIDTH } from '../../../hooks/useOverflowFold.ts';
 import { useDateFormatter } from '../../settings/index.ts';
 import type { PaneId } from '../panes/paneModel.ts';
 import type { Translate } from './fileListModel.ts';
+import type { ShortcutOverrides } from '../../../shortcuts/resolve.ts';
 import SearchFilter from './SearchFilter.tsx';
 
 interface PaneSourceMinWidthOptions {
@@ -31,6 +32,7 @@ interface PaneTitleBarProps {
   toolbar?: ReactNode | undefined;
   sourceRef?: Ref<HTMLElement> | undefined;
   t: Translate;
+  keyboardShortcuts?: ShortcutOverrides | null | undefined;
 }
 
 export interface PaneSourceMinWidthModel {
@@ -108,6 +110,7 @@ export default function PaneTitleBar({
   toolbar,
   sourceRef,
   t,
+  keyboardShortcuts,
 }: PaneTitleBarProps) {
   const formatDate = useDateFormatter();
   const measuredTitleSlot =
@@ -137,6 +140,7 @@ export default function PaneTitleBar({
         onClose={search.close}
         onChange={search.setText}
         t={t}
+        keyboardShortcuts={keyboardShortcuts}
       />
       {toolbar}
     </div>

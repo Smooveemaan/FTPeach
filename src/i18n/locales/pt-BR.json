@@ -969,7 +969,7 @@
   "tabStrip": {
     "localComputer": "Computador",
     "untitledTab": "Nova aba",
-    "newTabTooltip": "Nova aba (Ctrl+T)",
+    "newTabTooltip": "Nova aba ({{shortcut}})",
     "rename": "Nome da aba"
   },
   "toolbarOverflowMenu": {
@@ -1020,7 +1020,7 @@
     "resumeAllPaused": "Retomar todas as transferências pausadas",
     "stopActive": "Parar as transferências ativas",
     "retryAllStopped": "Tentar novamente todas as transferências paradas",
-    "refreshPanesTooltip": "Atualizar os dois painéis (F5)",
+    "refreshPanesTooltip": "Atualizar os dois painéis ({{shortcut}})",
     "lockVault": "Bloquear o cofre",
     "unlockVault": "Desbloquear o cofre"
   },

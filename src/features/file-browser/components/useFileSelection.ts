@@ -6,6 +6,7 @@ import type {
 import { useCallback, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
+import { hostPlatform } from '../../../platform/os.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
 import type { PaneId } from '../panes/paneModel.ts';
 import { DRAG_THRESHOLD_PX } from './fileListModel.ts';
@@ -121,8 +122,10 @@ export default function useFileSelection({
   };
 
   const handleRowClick = useCallback((index: number, e: ReactMouseEvent<HTMLElement>) => {
+    const isMac = hostPlatform() === 'macos';
+    if (isMac && e.ctrlKey && !e.metaKey) return;
     if (e.shiftKey) selectRangeTo(index);
-    else if (e.ctrlKey || e.metaKey) toggleAt(index);
+    else if (isMac ? e.metaKey : e.ctrlKey || e.metaKey) toggleAt(index);
     else selectSingle(index);
   }, []);
 
@@ -134,6 +137,8 @@ export default function useFileSelection({
 
   const startMarquee = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
+    const isMac = hostPlatform() === 'macos';
+    if (isMac && e.ctrlKey && !e.metaKey) return;
     if (
       e.target instanceof Element &&
       e.target.closest('.row, input, button, textarea, .col-resize-handle, .pane-empty')
@@ -156,7 +161,7 @@ export default function useFileSelection({
     const pointerId = e.pointerId;
     captureEl.setPointerCapture(pointerId);
 
-    const additive = e.ctrlKey || e.metaKey;
+    const additive = isMac ? e.metaKey : e.ctrlKey || e.metaKey;
     const marqueeEl = marqueeElRef.current;
     const listEl = document.querySelector<HTMLElement>(`.pane-list[data-side="${side}"]`);
     const state = {

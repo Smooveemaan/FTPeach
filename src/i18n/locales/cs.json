@@ -975,7 +975,7 @@
   "tabStrip": {
     "localComputer": "Počítač",
     "untitledTab": "Nová karta",
-    "newTabTooltip": "Nová karta (Ctrl+T)",
+    "newTabTooltip": "Nová karta ({{shortcut}})",
     "rename": "Název karty"
   },
   "toolbarOverflowMenu": {
@@ -1026,7 +1026,7 @@
     "resumeAllPaused": "Pokračovat ve všech pozastavených přenosech",
     "stopActive": "Zastavit aktivní přenosy",
     "retryAllStopped": "Zopakovat všechny zastavené přenosy",
-    "refreshPanesTooltip": "Obnovit oba panely (F5)",
+    "refreshPanesTooltip": "Obnovit oba panely ({{shortcut}})",
     "lockVault": "Zamknout trezor",
     "unlockVault": "Odemknout trezor"
   },

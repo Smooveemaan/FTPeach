@@ -781,8 +781,12 @@ mod macos {
             let dict = cf_dictionary(&keys, &values)?;
             SecItemDelete(dict.0)
         };
-        if status != 0 && status != -25300 /* errSecItemNotFound */ {
-            bail!("deleting Touch ID credential from Keychain failed: SecItemDelete status {status}");
+        if status != 0 && status != -25300
+        /* errSecItemNotFound */
+        {
+            bail!(
+                "deleting Touch ID credential from Keychain failed: SecItemDelete status {status}"
+            );
         }
         Ok(())
     }

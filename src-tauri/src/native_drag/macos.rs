@@ -439,16 +439,11 @@ mod macos_impl {
                             let rep = reporter.clone();
                             let t_id = id_for_progress.clone();
                             let current_base = transferred;
-                            let sink =
-                                Arc::new(move |info: ProgressInfo| {
-                                    if let ProgressInfo::Progress {
-                                        bytes,
-                                        ..
-                                    } = info
-                                    {
-                                        rep.progress(&t_id, current_base + bytes, None);
-                                    }
-                                });
+                            let sink = Arc::new(move |info: ProgressInfo| {
+                                if let ProgressInfo::Progress { bytes, .. } = info {
+                                    rep.progress(&t_id, current_base + bytes, None);
+                                }
+                            });
                             backend
                                 .download(&child_rem, &child_loc, false, sink)
                                 .await?;

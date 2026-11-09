@@ -324,6 +324,7 @@
     "help": {
       "supportProject": "FTPeach 후원",
       "title": "도움말",
+      "userGuide": "사용자 가이드",
       "documentation": "문서",
       "reportIssue": "문제 신고하기",
       "checkUpdates": "업데이트 확인",

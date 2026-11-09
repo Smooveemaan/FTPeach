@@ -324,6 +324,7 @@
     "help": {
       "supportProject": "支持 FTPeach",
       "title": "帮助",
+      "userGuide": "用户指南",
       "documentation": "文档",
       "reportIssue": "报告问题",
       "checkUpdates": "检查更新",

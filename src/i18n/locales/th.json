@@ -324,6 +324,7 @@
     "help": {
       "supportProject": "สนับสนุน FTPeach",
       "title": "ความช่วยเหลือ",
+      "userGuide": "คู่มือผู้ใช้",
       "documentation": "เอกสาร",
       "reportIssue": "แจ้งปัญหา",
       "checkUpdates": "ตรวจสอบการอัปเดต",

@@ -324,6 +324,7 @@
     "help": {
       "supportProject": "FTPeach を支援",
       "title": "ヘルプ",
+      "userGuide": "ユーザーガイド",
       "documentation": "ドキュメント",
       "reportIssue": "問題を報告",
       "checkUpdates": "アップデートを確認",

@@ -95,6 +95,7 @@ test('every supported locale resolves the transfer, About and support resources'
     'aboutDialog.sourceCode',
     'aboutDialog.reportIssue',
     'menu.help.supportProject',
+    'menu.help.userGuide',
   ];
   for (const { value: locale } of SUPPORTED_LANGUAGES) {
     await loadLanguage(locale);

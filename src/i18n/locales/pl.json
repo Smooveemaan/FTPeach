@@ -330,6 +330,7 @@
     "help": {
       "supportProject": "Wesprzyj FTPeach",
       "title": "Pomoc",
+      "userGuide": "Podręcznik użytkownika",
       "documentation": "Dokumentacja",
       "reportIssue": "Zgłoś problem",
       "checkUpdates": "Sprawdź dostępność aktualizacji",

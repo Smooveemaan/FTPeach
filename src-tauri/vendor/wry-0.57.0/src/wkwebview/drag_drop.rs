@@ -6,10 +6,12 @@ use std::{ffi::CStr, path::PathBuf};
 
 use objc2::{
   runtime::{Bool, ProtocolObject},
-  DeclaredClass,
+  ClassType, DeclaredClass,
 };
-use objc2_app_kit::{NSDragOperation, NSDraggingInfo, NSFilenamesPboardType};
-use objc2_foundation::{NSArray, NSPoint, NSRect, NSString};
+#[allow(deprecated)]
+use objc2_app_kit::NSFilenamesPboardType;
+use objc2_app_kit::{NSDragOperation, NSDraggingInfo};
+use objc2_foundation::{NSArray, NSPoint, NSRect, NSString, NSURL};
 
 use crate::DragDropEvent;
 
@@ -18,15 +20,46 @@ use super::WryWebView;
 pub(crate) unsafe fn collect_paths(drag_info: &ProtocolObject<dyn NSDraggingInfo>) -> Vec<PathBuf> {
   let pb = drag_info.draggingPasteboard();
   let mut drag_drop_paths = Vec::new();
-  let types = NSArray::arrayWithObject(NSFilenamesPboardType);
 
-  if pb.availableTypeFromArray(&types).is_some() {
-    let paths = pb.propertyListForType(NSFilenamesPboardType).unwrap();
-    let paths = paths.downcast::<NSArray>().unwrap();
-    for path in paths {
-      let path = path.downcast::<NSString>().unwrap();
-      let path = CStr::from_ptr(path.UTF8String()).to_string_lossy();
-      drag_drop_paths.push(PathBuf::from(path.into_owned()));
+  //  covers both sources publishing per-item
+  //  types and the legacy  payload,
+  // which  can fail to materialize even when
+  //  advertises it.
+  let url_classes = NSArray::from_slice(&[NSURL::class()]);
+  if let Some(items) = pb.readObjectsForClasses_options(&url_classes, None) {
+    for item in items.iter() {
+      if let Some(url) = item.downcast_ref::<NSURL>() {
+        if !url.isFileURL() {
+          continue;
+        }
+        //  resolves file reference URLs ()
+        // to file path URLs, and returns  when resolution fails.
+        if let Some(path) = url.filePathURL().and_then(|url| url.path()) {
+          let path = CStr::from_ptr(path.UTF8String()).to_string_lossy();
+          drag_drop_paths.push(PathBuf::from(path.into_owned()));
+        }
+      }
+    }
+    if !drag_drop_paths.is_empty() {
+      return drag_drop_paths;
+    }
+  }
+
+  #[allow(deprecated)]
+  {
+    let types = NSArray::arrayWithObject(NSFilenamesPboardType);
+
+    if pb.availableTypeFromArray(&types).is_some() {
+      if let Some(paths) = pb.propertyListForType(NSFilenamesPboardType) {
+        if let Ok(paths) = paths.downcast::<NSArray>() {
+          for path in paths {
+            if let Ok(path) = path.downcast::<NSString>() {
+              let path = CStr::from_ptr(path.UTF8String()).to_string_lossy();
+              drag_drop_paths.push(PathBuf::from(path.into_owned()));
+            }
+          }
+        }
+      }
     }
   }
   drag_drop_paths
@@ -37,7 +70,7 @@ pub(crate) fn dragging_entered(
   drag_info: &ProtocolObject<dyn NSDraggingInfo>,
 ) -> NSDragOperation {
   let paths = unsafe { collect_paths(drag_info) };
-  let dl: NSPoint = unsafe { drag_info.draggingLocation() };
+  let dl: NSPoint = drag_info.draggingLocation();
   let frame: NSRect = this.frame();
   let position = (dl.x as i32, (frame.size.height - dl.y) as i32);
 
@@ -56,7 +89,7 @@ pub(crate) fn dragging_updated(
   this: &WryWebView,
   drag_info: &ProtocolObject<dyn NSDraggingInfo>,
 ) -> NSDragOperation {
-  let dl: NSPoint = unsafe { drag_info.draggingLocation() };
+  let dl: NSPoint = drag_info.draggingLocation();
   let frame: NSRect = this.frame();
   let position = (dl.x as i32, (frame.size.height - dl.y) as i32);
 
@@ -91,7 +124,7 @@ pub(crate) fn perform_drag_operation(
   drag_info: &ProtocolObject<dyn NSDraggingInfo>,
 ) -> Bool {
   let paths = unsafe { collect_paths(drag_info) };
-  let dl: NSPoint = unsafe { drag_info.draggingLocation() };
+  let dl: NSPoint = drag_info.draggingLocation();
   let frame: NSRect = this.frame();
   let position = (dl.x as i32, (frame.size.height - dl.y) as i32);
 

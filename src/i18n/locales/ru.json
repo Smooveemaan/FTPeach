@@ -329,6 +329,7 @@
     },
     "help": {
       "title": "Справка",
+      "userGuide": "Руководство пользователя",
       "documentation": "Документация",
       "reportIssue": "Сообщить о проблеме",
       "supportProject": "Поддержать FTPeach",

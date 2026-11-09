@@ -383,6 +383,10 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
       label: t('menu.help.title'),
       items: [
         {
+          label: t('menu.help.userGuide'),
+          onClick: handler(() => api.app.openExternal('https://ftpeach.com/guide/')),
+        },
+        {
           label: t('menu.help.documentation'),
           onClick: handler(() =>
             api.app.openExternal(
@@ -398,7 +402,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         },
         {
           label: t('menu.help.supportProject'),
-          onClick: handler(() => api.app.openExternal('https://ko-fi.com/smooveemaan')),
+          onClick: handler(() => api.app.openExternal('https://ftpeach.com/#support')),
         },
         { separator: true },
         { label: t('menu.help.checkUpdates'), onClick: ctx.checkForUpdates },

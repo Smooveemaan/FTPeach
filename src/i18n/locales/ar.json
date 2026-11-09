@@ -336,6 +336,7 @@
     "help": {
       "supportProject": "دعم FTPeach",
       "title": "مساعدة",
+      "userGuide": "دليل المستخدم",
       "documentation": "الوثائق",
       "reportIssue": "الإبلاغ عن مشكلة",
       "checkUpdates": "التحقق من وجود تحديثات",

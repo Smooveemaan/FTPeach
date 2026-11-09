@@ -324,6 +324,7 @@
     "help": {
       "supportProject": "FTPeach'i Destekle",
       "title": "Yardım",
+      "userGuide": "Kullanıcı Kılavuzu",
       "documentation": "Belgeler",
       "reportIssue": "Bir Sorunu Bildir",
       "checkUpdates": "Güncellemeleri Kontrol Et",

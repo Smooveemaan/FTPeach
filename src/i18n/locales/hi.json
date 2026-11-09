@@ -324,6 +324,7 @@
     "help": {
       "supportProject": "FTPeach का समर्थन करें",
       "title": "सहायता",
+      "userGuide": "उपयोगकर्ता मार्गदर्शिका",
       "documentation": "दस्तावेज़ीकरण",
       "reportIssue": "किसी समस्या की रिपोर्ट करें",
       "checkUpdates": "अपडेट की जाँच करें",

@@ -197,24 +197,36 @@ fn field<'a>(text: &'a str, name: &str) -> anyhow::Result<&'a str> {
 
 fn appimage_version(bytes: &[u8]) -> anyhow::Result<String> {
     let offset = appimage_offset(bytes)?;
-    let fs = backhand::FilesystemReader::from_reader_with_offset_and_kind(
-        Cursor::new(bytes),
-        offset as u64,
-        backhand::kind::Kind::new_v4(&UPDATE_COMPRESSION),
-    )?;
-    let mut versions = fs.files().filter(|node| {
-        node.fullpath
-            .file_name()
-            .is_some_and(|name| name == APPIMAGE_VERSION)
-    });
-    let node = versions
-        .next()
-        .context("the AppImage carries no version file")?;
-    ensure!(versions.next().is_none(), "ambiguous AppImage version");
-    let backhand::InnerNode::File(file) = &node.inner else {
-        bail!("the AppImage version is not a regular file");
-    };
-    Ok(String::from_utf8(metadata(fs.file(file).reader())?)?)
+    let payload = bytes
+        .get(offset..)
+        .context("truncated AppImage SquashFS image")?;
+    let fs = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        backhand::FilesystemReader::from_reader_with_offset_and_kind(
+            Cursor::new(payload),
+            0,
+            backhand::kind::Kind::new_v4(&UPDATE_COMPRESSION),
+        )
+    }))
+    .map_err(|_| anyhow::anyhow!("corrupted SquashFS filesystem"))?
+    .context("invalid AppImage SquashFS filesystem")?;
+    let read_version = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+        || -> anyhow::Result<String> {
+            let mut versions = fs.files().filter(|node| {
+                node.fullpath
+                    .file_name()
+                    .is_some_and(|name| name == APPIMAGE_VERSION)
+            });
+            let node = versions
+                .next()
+                .context("the AppImage carries no version file")?;
+            ensure!(versions.next().is_none(), "ambiguous AppImage version");
+            let backhand::InnerNode::File(file) = &node.inner else {
+                bail!("the AppImage version is not a regular file");
+            };
+            Ok(String::from_utf8(metadata(fs.file(file).reader())?)?)
+        },
+    ));
+    read_version.map_err(|_| anyhow::anyhow!("corrupted AppImage SquashFS file read"))?
 }
 
 fn appimage_offset(bytes: &[u8]) -> anyhow::Result<usize> {

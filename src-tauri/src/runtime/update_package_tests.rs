@@ -150,6 +150,13 @@ fn package_metadata_and_elf_offsets_are_bounded() {
     let mut bytes = appimage("0.2.0", false);
     bytes[40..48].copy_from_slice(&u64::MAX.to_le_bytes());
     assert!(appimage_version(&bytes).is_err());
+    let mut malformed_squashfs = appimage("0.2.0", false);
+    let offset = appimage_offset(&malformed_squashfs).unwrap();
+    if malformed_squashfs.len() >= offset + 32 {
+        malformed_squashfs[offset + 8..offset + 16].copy_from_slice(&u64::MAX.to_le_bytes());
+        malformed_squashfs[offset + 16..offset + 24].copy_from_slice(&u64::MAX.to_le_bytes());
+    }
+    assert!(appimage_version(&malformed_squashfs).is_err());
     assert!(deb_version(b"!<arch>\ntruncated").is_err());
     let valid = deb("Package: ftpeach\nVersion: 0.2.0\n");
     for length in [0, 8, 60, valid.len() - 1] {

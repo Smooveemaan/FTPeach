@@ -3,6 +3,7 @@ import { api } from '../platform/api/index.ts';
 import type { ApplicationCommandContext } from './menus.ts';
 import { applicationShortcuts, buildMenus } from './menus.ts';
 import { useAppCommands } from './useAppCommands.ts';
+import { useNativeAppMenu } from './useNativeAppMenu.ts';
 
 /**
  * Registers the global shortcuts and builds the menu bar from one context, so
@@ -17,5 +18,7 @@ export function useApplicationMenuCommands(context: ApplicationCommandContext): 
     },
     context.settings.shortcuts.keyboardShortcuts,
   );
-  return buildMenus(context);
+  const menus = buildMenus(context);
+  useNativeAppMenu(menus);
+  return menus;
 }

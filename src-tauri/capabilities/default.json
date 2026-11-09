@@ -119,6 +119,7 @@
     "allow-updater-install",
     "allow-tray-set-model",
     "allow-tray-hide-window",
+    "allow-app-menu-set-model",
     "allow-smoke-backend-checks",
     "allow-smoke-finish",
     "allow-smoke-probe-confirmation-acl"

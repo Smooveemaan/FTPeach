@@ -13,6 +13,7 @@ import { createSitesApi } from './api/sites.ts';
 import { createTabsApi } from './api/tabs.ts';
 import { createTransferApi } from './api/transfers.ts';
 import { createTrayApi } from './api/tray.ts';
+import { createAppMenuApi } from './api/appMenu.ts';
 import { createUpdaterApi } from './api/updater.ts';
 import {
   checkedResponse,
@@ -474,6 +475,7 @@ export const tauriApi: Window['api'] = {
       voidOutcome(invoke, 'notifications_transfers_complete', { summary }),
   },
   tray: createTrayApi(invoke, onEvent),
+  appMenu: createAppMenuApi(invoke, onEvent),
 };
 
 /**

@@ -1,4 +1,5 @@
 pub mod app;
+pub mod app_menu;
 pub mod dialog;
 pub mod drag_out;
 pub mod fs;

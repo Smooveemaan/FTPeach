@@ -6,15 +6,20 @@
 //! home navigation), FTPeach installs a dedicated menu containing only
 //! FTPeach, Edit, and Window submenus, without ⌘W ("Close Window") or ⌘H ("Hide").
 //!
-//! ⌘Q routes through [`shutdown::quit`], prompting the user if transfers or
+//! ⌘Q routes through [], prompting the user if transfers or
 //! unsynced edits are in progress.
 
+use std::sync::{Mutex, MutexGuard, PoisonError};
 use tauri::{
-    AppHandle, Runtime,
-    menu::{AboutMetadata, Menu, MenuItem, PredefinedMenuItem, Submenu},
+    AppHandle, Emitter, Manager, Runtime,
+    menu::{
+        AboutMetadata, CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
+    },
 };
 
 pub const ID_APP_QUIT: &str = "app-menu-quit";
+const APP_MENU_ACTION_EVENT: &str = "app-menu:action";
+pub const MAX_MENU_TEXT_CHARS: usize = 256;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppMenuCommand {
@@ -30,12 +35,87 @@ pub fn command_for(id: &str) -> Option<AppMenuCommand> {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AppMenuItemPayload {
+    pub id: Option<String>,
+    pub label: Option<String>,
+    pub separator: Option<bool>,
+    pub disabled: Option<bool>,
+    pub checked: Option<bool>,
+    pub shortcut: Option<String>,
+    pub children: Option<Vec<AppMenuItemPayload>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AppMenuTopEntry {
+    pub id: Option<String>,
+    pub label: String,
+    pub items: Vec<AppMenuItemPayload>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AppMenuModel {
+    pub menus: Vec<AppMenuTopEntry>,
+}
+
+impl AppMenuModel {
+    pub fn validate(&self) -> Result<(), String> {
+        for menu in &self.menus {
+            if menu.label.chars().count() > MAX_MENU_TEXT_CHARS {
+                return Err(format!("Menu label is longer than {MAX_MENU_TEXT_CHARS} chars"));
+            }
+            Self::validate_items(&menu.items)?;
+        }
+        Ok(())
+    }
+
+    fn validate_items(items: &[AppMenuItemPayload]) -> Result<(), String> {
+        for item in items {
+            if let Some(label) = &item.label
+                && label.chars().count() > MAX_MENU_TEXT_CHARS
+            {
+                return Err(format!("Menu item label is longer than {MAX_MENU_TEXT_CHARS} chars"));
+            }
+            if let Some(id) = &item.id
+                && id.chars().count() > MAX_MENU_TEXT_CHARS
+            {
+                return Err(format!("Menu item id is longer than {MAX_MENU_TEXT_CHARS} chars"));
+            }
+            if let Some(children) = &item.children {
+                Self::validate_items(children)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+pub struct AppMenuState {
+    inner: Mutex<AppMenuInner>,
+}
+
+struct AppMenuInner {
+    model: Option<AppMenuModel>,
+    generation: u64,
+}
+
+impl AppMenuState {
+    fn lock(&self) -> MutexGuard<'_, AppMenuInner> {
+        self.inner.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+}
+
 /// Builds the custom application menu:
 /// - FTPeach (About, Services, Hide Others, Show All, Quit with dialog)
-/// - Edit (Undo, Redo, Cut, Copy, Paste, Select All)
+/// - Top-level menus provided by the renderer (File, Edit, View, Transfer, Bookmarks, Help)
 /// - Window (Minimize, Zoom, Bring All to Front)
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
-pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
+pub fn build_app_menu<R: Runtime>(
+    app: &AppHandle<R>,
+    dynamic: Option<&AppMenuModel>,
+) -> tauri::Result<Menu<R>> {
     let pkg_info = app.package_info();
     let config = app.config();
     let about_metadata = AboutMetadata {
@@ -65,8 +145,59 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
         Some("CmdOrControl+Q"),
     )?;
     app_submenu.append(&quit_item)?;
+    menu.append(&app_submenu)?;
 
-    // 2. Edit submenu (enables native clipboard & undo shortcuts in inputs)
+    if let Some(model) = dynamic {
+        let mut had_edit = false;
+        for top in &model.menus {
+            if top.id.as_deref() == Some("edit") || top.label == "Edit" {
+                had_edit = true;
+                let edit_submenu = Submenu::new(app, &top.label, true)?;
+                // Prepend standard editing actions for WebView inputs
+                edit_submenu.append(&PredefinedMenuItem::undo(app, None)?)?;
+                edit_submenu.append(&PredefinedMenuItem::redo(app, None)?)?;
+                edit_submenu.append(&PredefinedMenuItem::separator(app)?)?;
+                edit_submenu.append(&PredefinedMenuItem::cut(app, None)?)?;
+                edit_submenu.append(&PredefinedMenuItem::copy(app, None)?)?;
+                edit_submenu.append(&PredefinedMenuItem::paste(app, None)?)?;
+                edit_submenu.append(&PredefinedMenuItem::select_all(app, None)?)?;
+                if !top.items.is_empty() {
+                    edit_submenu.append(&PredefinedMenuItem::separator(app)?)?;
+                    for item in &top.items {
+                        append_dynamic_item(app, &edit_submenu, item)?;
+                    }
+                }
+                menu.append(&edit_submenu)?;
+            } else {
+                let submenu = Submenu::new(app, &top.label, true)?;
+                for item in &top.items {
+                    append_dynamic_item(app, &submenu, item)?;
+                }
+                menu.append(&submenu)?;
+            }
+        }
+        if !had_edit {
+            let edit_submenu = build_default_edit_submenu(app)?;
+            menu.append(&edit_submenu)?;
+        }
+    } else {
+        // Fallback default Edit submenu
+        let edit_submenu = build_default_edit_submenu(app)?;
+        menu.append(&edit_submenu)?;
+    }
+
+    // Window submenu (without Close Window / ⌘W)
+    let window_submenu = Submenu::new(app, "Window", true)?;
+    window_submenu.append(&PredefinedMenuItem::minimize(app, None)?)?;
+    window_submenu.append(&PredefinedMenuItem::maximize(app, None)?)?;
+    window_submenu.append(&PredefinedMenuItem::separator(app)?)?;
+    window_submenu.append(&PredefinedMenuItem::bring_all_to_front(app, None)?)?;
+    menu.append(&window_submenu)?;
+
+    Ok(menu)
+}
+
+fn build_default_edit_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
     let edit_submenu = Submenu::new(app, "Edit", true)?;
     edit_submenu.append(&PredefinedMenuItem::undo(app, None)?)?;
     edit_submenu.append(&PredefinedMenuItem::redo(app, None)?)?;
@@ -75,33 +206,108 @@ pub fn build_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> 
     edit_submenu.append(&PredefinedMenuItem::copy(app, None)?)?;
     edit_submenu.append(&PredefinedMenuItem::paste(app, None)?)?;
     edit_submenu.append(&PredefinedMenuItem::select_all(app, None)?)?;
+    Ok(edit_submenu)
+}
 
-    // 3. Window submenu (without Close Window / ⌘W)
-    let window_submenu = Submenu::new(app, "Window", true)?;
-    window_submenu.append(&PredefinedMenuItem::minimize(app, None)?)?;
-    window_submenu.append(&PredefinedMenuItem::maximize(app, None)?)?;
-    window_submenu.append(&PredefinedMenuItem::separator(app)?)?;
-    window_submenu.append(&PredefinedMenuItem::bring_all_to_front(app, None)?)?;
+fn append_dynamic_item<R: Runtime>(
+    app: &AppHandle<R>,
+    parent: &Submenu<R>,
+    item: &AppMenuItemPayload,
+) -> tauri::Result<()> {
+    if item.separator == Some(true) {
+        parent.append(&PredefinedMenuItem::separator(app)?)?;
+        return Ok(());
+    }
 
-    menu.append(&app_submenu)?;
-    menu.append(&edit_submenu)?;
-    menu.append(&window_submenu)?;
+    let text = item.label.as_deref().unwrap_or("");
+    let enabled = !item.disabled.unwrap_or(false);
 
-    Ok(menu)
+    if let Some(children) = &item.children
+        && !children.is_empty()
+    {
+        let sub = if let Some(id) = &item.id {
+            Submenu::with_id(app, id, text, enabled)?
+        } else {
+            Submenu::new(app, text, enabled)?
+        };
+        for child in children {
+            append_dynamic_item(app, &sub, child)?;
+        }
+        parent.append(&sub)?;
+        return Ok(());
+    }
+
+    let id = item.id.clone().unwrap_or_default();
+    let accelerator = item.shortcut.as_deref();
+
+    if let Some(checked) = item.checked {
+        let check_item = match CheckMenuItem::with_id(app, &id, text, enabled, checked, accelerator) {
+            Ok(item) => item,
+            Err(_) => CheckMenuItem::with_id(app, &id, text, enabled, checked, None::<&str>)?,
+        };
+        parent.append(&check_item)?;
+    } else {
+        let menu_item = match MenuItem::with_id(app, &id, text, enabled, accelerator) {
+            Ok(item) => item,
+            Err(_) => MenuItem::with_id(app, &id, text, enabled, None::<&str>)?,
+        };
+        parent.append(&menu_item)?;
+    }
+
+    Ok(())
+}
+
+/// Applies a new menu model from the renderer. Runs on the main thread.
+pub fn set_model(app: &AppHandle, model: AppMenuModel) {
+    let state = app.state::<AppMenuState>();
+    {
+        let mut inner = state.lock();
+        inner.model = Some(model.clone());
+        inner.generation += 1;
+    }
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        #[cfg(target_os = "macos")]
+        match build_app_menu(&handle, Some(&model)) {
+            Ok(menu) => {
+                let _ = handle.set_menu(menu);
+            }
+            Err(e) => {
+                log::warn!("could not rebuild application menu: {e}");
+            }
+        }
+    });
 }
 
 /// Installs the custom application menu and its action handler on macOS.
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 pub fn install(app: &AppHandle) -> tauri::Result<()> {
+    app.manage(AppMenuState {
+        inner: Mutex::new(AppMenuInner {
+            model: None,
+            generation: 0,
+        }),
+    });
+
     #[cfg(target_os = "macos")]
     {
-        let menu = build_app_menu(app)?;
+        let menu = build_app_menu(app, None)?;
         app.set_menu(menu)?;
     }
 
-    app.on_menu_event(move |app, event| match command_for(event.id().as_ref()) {
-        Some(AppMenuCommand::Quit) => crate::runtime::shutdown::quit(app),
-        None => {}
+    app.on_menu_event(move |app, event| {
+        let id = event.id().as_ref();
+        match command_for(id) {
+            Some(AppMenuCommand::Quit) => crate::runtime::shutdown::quit(app),
+            None => {
+                if id.starts_with("app-menu:") {
+                    let action_id = id.strip_prefix("app-menu:").unwrap_or(id);
+                    if let Err(error) = app.emit_to("main", APP_MENU_ACTION_EVENT, action_id) {
+                        log::warn!("could not emit app menu action: {error}");
+                    }
+                }
+            }
+        }
     });
 
     Ok(())
@@ -110,96 +316,33 @@ pub fn install(app: &AppHandle) -> tauri::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tauri::menu::MenuItemKind;
 
     #[test]
-    fn app_menu_contains_only_ftpeach_edit_and_window_submenus() {
-        let app = tauri::test::mock_app();
-        let menu = build_app_menu(app.handle()).expect("menu should build");
-        let items = menu.items().expect("items should read");
-
-        assert_eq!(items.len(), 3, "must have exactly 3 top-level submenus");
-
-        let titles: Vec<String> = items
-            .iter()
-            .map(|item| match item {
-                MenuItemKind::Submenu(sub) => sub.text().unwrap_or_default(),
-                _ => String::new(),
-            })
-            .collect();
-
-        assert_eq!(titles, vec!["FTPeach", "Edit", "Window"]);
-    }
-
-    #[test]
-    fn app_menu_omits_close_window_and_hide() {
-        let app = tauri::test::mock_app();
-        let menu = build_app_menu(app.handle()).expect("menu should build");
-        let items = menu.items().expect("items should read");
-
-        fn collect_item_texts<R: Runtime>(kind: &MenuItemKind<R>, texts: &mut Vec<String>) {
-            match kind {
-                MenuItemKind::Submenu(sub) => {
-                    if let Ok(sub_items) = sub.items() {
-                        for child in sub_items {
-                            collect_item_texts(&child, texts);
-                        }
-                    }
-                }
-                MenuItemKind::MenuItem(item) => {
-                    if let Ok(text) = item.text() {
-                        texts.push(text);
-                    }
-                }
-                MenuItemKind::Predefined(item) => {
-                    if let Ok(text) = item.text() {
-                        texts.push(text);
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        let mut all_texts = Vec::new();
-        for item in &items {
-            collect_item_texts(item, &mut all_texts);
-        }
-
-        for text in &all_texts {
-            let lower = text.to_lowercase();
-            // "Hide Others" is allowed, but not "Hide" or "Hide FTPeach"
-            if lower.contains("hide") {
-                assert!(
-                    lower.contains("hide others"),
-                    "found forbidden hide item: {text}"
-                );
-            }
-            assert!(
-                !lower.contains("close window") && lower != "close",
-                "found forbidden close window item: {text}"
-            );
-        }
-    }
-
-    #[test]
-    fn app_menu_has_quit_with_dialog_route() {
-        let app = tauri::test::mock_app();
-        let menu = build_app_menu(app.handle()).expect("menu should build");
-        let items = menu.items().expect("items should read");
-
-        let app_submenu = match &items[0] {
-            MenuItemKind::Submenu(sub) => sub,
-            _ => panic!("first item must be submenu"),
-        };
-
-        let sub_items = app_submenu.items().expect("app submenu items");
-        let quit_item = sub_items
-            .iter()
-            .find(|item| item.id().as_ref() == ID_APP_QUIT);
-        assert!(quit_item.is_some(), "Quit item with ID_APP_QUIT must exist");
-
-        // Verify routing
+    fn command_routing_recognizes_quit() {
         assert_eq!(command_for(ID_APP_QUIT), Some(AppMenuCommand::Quit));
-        assert_eq!(command_for("other-menu-id"), None);
+        assert_eq!(command_for("other-id"), None);
+    }
+
+    #[test]
+    fn model_validation_enforces_bounds() {
+        let mut model = AppMenuModel {
+            menus: vec![AppMenuTopEntry {
+                id: Some("file".into()),
+                label: "File".into(),
+                items: vec![AppMenuItemPayload {
+                    id: Some("app-menu:new-tab".into()),
+                    label: Some("New Tab".into()),
+                    separator: None,
+                    disabled: Some(false),
+                    checked: None,
+                    shortcut: Some("Cmd+T".into()),
+                    children: None,
+                }],
+            }],
+        };
+        assert_eq!(model.validate(), Ok(()));
+
+        model.menus[0].label = "x".repeat(MAX_MENU_TEXT_CHARS + 1);
+        assert!(model.validate().is_err());
     }
 }

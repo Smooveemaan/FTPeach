@@ -1,5 +1,8 @@
 /** IPC namespaces resolve at call time after platform initialization. */
 export const api: Window['api'] = {
+  get appMenu() {
+    return window.api.appMenu;
+  },
   get app() {
     return window.api.app;
   },

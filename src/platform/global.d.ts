@@ -1,3 +1,4 @@
+import type { createAppMenuApi } from './api/appMenu.ts';
 import type { createFilesystemApi } from './api/filesystem.ts';
 import type { createProxyApi } from './api/proxy.ts';
 import type { createSessionApi } from './api/session.ts';
@@ -120,6 +121,7 @@ declare global {
         quit: (preserveEdits?: boolean) => Promise<unknown>;
       };
       tray: ReturnType<typeof createTrayApi>;
+      appMenu: ReturnType<typeof createAppMenuApi>;
       openWith: {
         start: (
           connectionId: string,

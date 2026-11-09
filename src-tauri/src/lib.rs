@@ -201,6 +201,7 @@ pub fn run() {
             commands::updater::updater_install,
             commands::tray::tray_set_model,
             commands::tray::tray_hide_window,
+            commands::app_menu::app_menu_set_model,
             #[cfg(feature = "smoke-test")]
             commands::smoke::smoke_backend_checks,
             #[cfg(feature = "smoke-test")]

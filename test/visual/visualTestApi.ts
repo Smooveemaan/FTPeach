@@ -366,4 +366,8 @@ export const visualTestApi = {
       return unsubscribe;
     },
   },
+  appMenu: {
+    setModel: () => resolved(ok),
+    onAction: () => unsubscribe,
+  },
 } satisfies Window['api'];

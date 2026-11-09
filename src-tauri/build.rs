@@ -129,6 +129,7 @@ fn main() {
         "updater_install",
         "tray_set_model",
         "tray_hide_window",
+        "app_menu_set_model",
         "smoke_backend_checks",
         "smoke_finish",
         "smoke_probe_confirmation_acl",

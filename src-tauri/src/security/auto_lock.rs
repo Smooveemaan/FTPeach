@@ -7,7 +7,7 @@
 //! away from the machine. The decision is made here, from state the backend
 //! owns, and `runtime::vault_auto_lock` acts on it.
 //!
-//! This module only decides. Reading the Windows session state and locking
+//! This module only decides. Reading the OS session state and locking
 //! the vault are the runtime's job, so the policy stays testable without a
 //! window, a desktop session or a clock.
 use serde::Serialize;
@@ -21,7 +21,7 @@ use std::time::{Duration, Instant};
 pub enum LockReason {
     /// Nobody touched the application for the configured idle timeout.
     Idle,
-    /// Windows reported the desktop session as locked.
+    /// The OS reported the desktop session as locked (Windows, macOS).
     SessionLocked,
     /// The main window was hidden to the tray or minimized.
     WindowHidden,
@@ -33,8 +33,8 @@ pub enum LockReason {
 /// What the backend can see about the user at one moment.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Presence {
-    /// The Windows session is locked. Unknown counts as not locked: the
-    /// idle timeout still applies, and a probe that cannot answer must not
+    /// The desktop session is locked (Windows, macOS). Unknown counts as not locked:
+    /// the idle timeout still applies, and a probe that cannot answer must not
     /// lock the vault out from under a user who is sitting right there.
     pub session_locked: bool,
     /// The main window is hidden to the tray or minimized.

@@ -8,6 +8,7 @@ const FLUSH_INTERVAL_MS: u64 = 100;
 /// How long a row that was at work must wait before it reads Queued.
 const QUEUED_AFTER_WORK: Duration = Duration::from_secs(1);
 
+#[allow(unused_imports)]
 pub use crate::protocol::ProgressInfo;
 
 #[derive(Serialize, Clone)]

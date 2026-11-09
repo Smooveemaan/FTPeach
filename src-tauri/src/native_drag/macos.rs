@@ -14,7 +14,6 @@
 use super::DragOutFile;
 use super::report::TransferReporter;
 use crate::transfer::transfer_pool::TransferPool;
-use std::sync::Arc;
 use tauri::Window;
 
 /// Resolves the Apple Uniform Type Identifier (UTI) for a file name or directory.
@@ -69,7 +68,7 @@ mod macos_impl {
     use anyhow::{Context, Result, bail};
     use std::ffi::{CStr, CString, c_char, c_void};
     use std::path::PathBuf;
-    use std::sync::{Mutex, Once};
+    use std::sync::{Arc, Mutex, Once};
     use tokio::sync::oneshot;
 
     const OBJC_ASSOCIATION_ASSIGN: usize = 0;

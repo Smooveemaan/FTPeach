@@ -18,6 +18,10 @@
 //! registration at startup and [`show`] sends the toast under the same id.
 //! Every other platform keeps the plugin, which is correct there.
 //!
+//! On macOS and Linux, [`register_identity`] connects the plugin's action
+//! listener so that clicking a notification restores and focuses the window
+//! the same way Windows does.
+//!
 //! [1]: https://learn.microsoft.com/en-us/windows/win32/shell/appids
 use tauri::AppHandle;
 
@@ -25,7 +29,6 @@ use tauri::AppHandle;
 /// identity is derived from that field, and a toast sent under any other id is
 /// one Windows cannot tie back to FTPeach. `notification_tests` holds the two
 /// together.
-#[cfg_attr(not(windows), allow(dead_code))]
 pub const APP_USER_MODEL_ID: &str = "com.smooveemaan.ftpeach";
 
 /// The icon Windows puts on the toast, as it is named among the bundle
@@ -131,7 +134,48 @@ fn icon_uri(path: &std::path::Path) -> String {
 }
 
 #[cfg(not(windows))]
-pub fn register_identity(_app: &AppHandle) {}
+static ACTION_HANDLER_INSTALLED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+/// Registers the notification action handler on Unix platforms (macOS and Linux)
+/// so that clicking a delivered notification restores and focuses the window.
+#[cfg(not(windows))]
+pub fn register_identity(app: &AppHandle) {
+    install_action_handler(app);
+}
+
+#[cfg(not(windows))]
+fn install_action_handler(app: &AppHandle) {
+    use std::sync::atomic::Ordering;
+    use tauri_plugin_notification::NotificationExt;
+
+    if ACTION_HANDLER_INSTALLED
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return;
+    }
+
+    let handle = app.clone();
+    if let Err(error) = app.notification().on_action(move |_action| {
+        handle_notification_action(&handle);
+    }) {
+        ACTION_HANDLER_INSTALLED.store(false, Ordering::SeqCst);
+        log::warn!("could not register the notification action listener: {error}");
+    }
+}
+
+/// What action clicking a notification triggers.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum NotificationClickAction {
+    /// Restore the window from hidden/tray state and bring it to the foreground.
+    RestoreWindow,
+}
+
+/// Determines what action to take when a notification is clicked.
+pub fn notification_click_action() -> NotificationClickAction {
+    NotificationClickAction::RestoreWindow
+}
 
 /// Shows the toast. `title` and `body` arrive already localized. A click on
 /// it brings the window back the way the tray icon does, from the taskbar or
@@ -146,7 +190,7 @@ pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
         .text1(body)
         .duration(Duration::Short)
         .on_activated(move |_| {
-            crate::runtime::tray::restore(&app);
+            handle_notification_action(&app);
             Ok(())
         })
         .show()
@@ -157,12 +201,22 @@ pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
 pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
     use tauri_plugin_notification::NotificationExt;
 
+    install_action_handler(app);
     app.notification()
         .builder()
         .title(title)
         .body(body)
         .show()
         .map_err(|error| error.to_string())
+}
+
+/// Brings the main window back and focuses it when a notification is clicked or activated.
+pub fn handle_notification_action(app: &AppHandle) {
+    match notification_click_action() {
+        NotificationClickAction::RestoreWindow => {
+            crate::runtime::tray::restore(app);
+        }
+    }
 }
 
 #[cfg(test)]

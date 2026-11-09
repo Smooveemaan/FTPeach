@@ -9,12 +9,45 @@ fn config() -> serde_json::Value {
         .expect("tauri.conf.json should be valid JSON")
 }
 
+fn macos_config() -> serde_json::Value {
+    serde_json::from_str(include_str!("../../tauri.macos.conf.json"))
+        .expect("tauri.macos.conf.json should be valid JSON")
+}
+
 #[test]
 fn the_toast_identity_is_the_bundle_identifier() {
     assert_eq!(
         config()["identifier"].as_str(),
         Some(APP_USER_MODEL_ID),
         "the AppUserModelID must match tauri.conf.json's identifier"
+    );
+}
+
+#[test]
+fn macos_bundle_inherits_identifier_and_bundles_icns() {
+    let macos = macos_config();
+    assert!(
+        macos.get("identifier").is_none(),
+        "tauri.macos.conf.json must inherit bundle identifier from base config"
+    );
+    let base = config();
+    let icons = base["bundle"]["icon"]
+        .as_array()
+        .expect("bundle.icon should be an array");
+    assert!(
+        icons
+            .iter()
+            .any(|icon| icon.as_str() == Some("icons/icon.icns")),
+        "macOS application bundle requires icons/icon.icns for notifications and Finder display"
+    );
+}
+
+#[test]
+fn notification_click_action_is_restore_window() {
+    assert_eq!(
+        super::notification_click_action(),
+        super::NotificationClickAction::RestoreWindow,
+        "clicking a notification must restore the window"
     );
 }
 

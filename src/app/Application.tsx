@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import TitleBar from './TitleBar.tsx';
+import { hostPlatform } from '../platform/os.ts';
 import MenuBar from '../components/MenuBar.tsx';
 import ViewToolbar from './ViewToolbar.tsx';
 import { rememberConnectionLabels, useTransfers } from '../features/transfers/index.ts';
@@ -503,7 +504,7 @@ export default function Application() {
   return (
     <div className="app-shell">
       <TitleBar minimizeToTray={settings.interface.minimizeToTray} />
-      <MenuBar menus={menus} />
+      {hostPlatform() !== 'macos' && <MenuBar menus={menus} />}
 
       <TabStrip
         tabs={tabs}

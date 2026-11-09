@@ -85,6 +85,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if let Some(main_window) = app.get_webview_window("main") {
         #[cfg(windows)]
         super::window_resize::install(&main_window);
+        #[cfg(target_os = "macos")]
+        super::window_zoom::install(&main_window);
         super::window_scale::refresh(&main_window);
         let persister = window_bounds::BoundsPersister::new(store.clone());
         let window_for_events = main_window.clone();

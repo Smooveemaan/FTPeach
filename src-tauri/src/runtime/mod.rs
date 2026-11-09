@@ -19,6 +19,7 @@ pub(crate) mod window_bounds;
 #[cfg(windows)]
 pub(crate) mod window_resize;
 pub(crate) mod window_scale;
+pub(crate) mod window_zoom;
 
 pub(crate) mod confirmation_window;
 #[cfg(feature = "smoke-test")]

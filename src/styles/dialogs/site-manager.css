@@ -2,6 +2,9 @@
 
 /* Shared with SiteManagerDialog's own empty-folder state below. */
 .site-manager-empty {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
   padding: 14px 10px;
   color: var(--text-faint);
   font-size: 12px;
@@ -158,6 +161,9 @@
 }
 
 .site-manage-row {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -232,6 +238,9 @@
   min-width: 0;
 }
 .site-manage-row .site-name {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
   font-weight: 600;
   font-size: 12.5px;
   line-height: 1.4;

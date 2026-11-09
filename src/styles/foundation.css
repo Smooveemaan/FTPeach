@@ -83,6 +83,7 @@
 html, body, #root {
   height: 100%;
   margin: 0;
+  cursor: default;
 }
 
 body {
@@ -92,6 +93,7 @@ body {
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  -webkit-user-select: none;
   user-select: none;
 }
 

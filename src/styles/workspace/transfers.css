@@ -344,6 +344,9 @@ body.column-resize-active .transfer-col-header .transfer-resizable-header[data-r
 }
 
 .transfer-empty {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
   /* The UI font, also in the log, whose lines are monospaced. */
   font-family: var(--font-ui);
   display: flex;

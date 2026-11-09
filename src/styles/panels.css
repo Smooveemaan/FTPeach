@@ -90,6 +90,9 @@
 }
 
 .section-panel-header {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -184,6 +187,7 @@
   line-height: 1.3;
   color: var(--text-secondary);
 
+  -webkit-user-select: text;
   user-select: text;
   cursor: text;
 }

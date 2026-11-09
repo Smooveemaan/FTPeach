@@ -39,6 +39,7 @@ interface ViewToolbarProps {
   /** `null` until read; the lock shows only once a master password is set. */
   vault?: { configured: boolean; locked: boolean } | null;
   toggleVault?: Action;
+  openSettings?: Action | undefined;
 }
 
 export default function ViewToolbar({
@@ -67,6 +68,7 @@ export default function ViewToolbar({
   keyboardShortcuts,
   vault = null,
   toggleVault = () => undefined,
+  openSettings,
 }: ViewToolbarProps) {
   const { t } = useTranslation();
   const containerRef = useRef(null);
@@ -86,8 +88,9 @@ export default function ViewToolbar({
     { key: 'paneLeft', width: ITEM_WIDTH + DIVIDER_WIDTH },
   ];
   // Pinned: pause/resume, stop/retry (2 buttons; the divider between them
-  // and the panel-toggle group is conditional, see showDivider below).
-  const baseWidth = 2 * ITEM_WIDTH;
+  // and the panel-toggle group is conditional, see showDivider below), plus
+  // the settings button pinned to the right edge when provided.
+  const baseWidth = (openSettings ? 3 : 2) * ITEM_WIDTH;
   const { foldedKeys, hasOverflow } = useOverflowFold({ containerRef, baseWidth, foldOrder });
 
   // foldOrder folds a strict prefix ending in paneLeft — checking it alone
@@ -98,6 +101,11 @@ export default function ViewToolbar({
   const refreshPanesTooltip = refreshShortcut
     ? t('viewToolbar.refreshPanesTooltip', { shortcut: refreshShortcut })
     : t('menu.view.refreshBothPanes');
+
+  const settingsShortcut = formatBinding(effectiveBinding('open-settings', keyboardShortcuts));
+  const settingsTooltip = settingsShortcut
+    ? `${t('settings.shortcuts.actions.openSettings')} (${settingsShortcut})`
+    : t('settings.shortcuts.actions.openSettings');
 
   const overflowItems: MenuItem[] = [
     ...(foldedKeys.has('paneLeft')
@@ -307,6 +315,20 @@ export default function ViewToolbar({
       )}
       <span className="toolbar-spacer" />
       {hasOverflow && <ToolbarOverflowMenu items={overflowItems} />}
+      {openSettings && (
+        <button
+          type="button"
+          className="btn btn-icon view-toolbar-settings"
+          data-tooltip={settingsTooltip}
+          aria-label={t('settings.shortcuts.actions.openSettings')}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            openSettings();
+          }}
+        >
+          <Icon name="wrench" />
+        </button>
+      )}
     </div>
   );
 }

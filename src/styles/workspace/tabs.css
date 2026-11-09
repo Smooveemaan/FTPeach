@@ -11,6 +11,28 @@
   overflow: hidden;
 }
 
+.view-toolbar-settings {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-faint);
+  transition: color 0.15s ease;
+}
+
+.view-toolbar-settings:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+[inert] .view-toolbar-settings,
+[inert] .view-toolbar-settings:hover,
+body:has(.modal-overlay) .view-toolbar-settings,
+body:has(.modal-overlay) .view-toolbar-settings:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-faint);
+}
+
 
 .tab-strip {
   position: relative;

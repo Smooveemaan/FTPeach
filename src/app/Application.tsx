@@ -547,6 +547,7 @@ export default function Application() {
         keyboardShortcuts={settings.shortcuts.keyboardShortcuts}
         vault={vault}
         toggleVault={toggleVault}
+        openSettings={() => dialogs.setShowSettings(true)}
       />
 
       <AppBanners

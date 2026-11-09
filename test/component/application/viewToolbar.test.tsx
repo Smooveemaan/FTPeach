@@ -57,3 +57,38 @@ test('the vault lock shows once a master password is set, and says what a click 
     'is-unlocked',
   );
 });
+
+test('clicking the settings button opens the settings dialog', () => {
+  const openSettings = vi.fn();
+  const noop = () => undefined;
+  render(
+    <ViewToolbar
+      showLocalPane
+      toggleLocalPane={noop}
+      showRemotePane
+      toggleRemotePane={noop}
+      showTransferQueue
+      toggleTransferQueue={noop}
+      logEnabled={false}
+      toggleLog={noop}
+      effectivePaneOrientation="horizontal"
+      paneOrientation="horizontal"
+      windowNarrow={false}
+      togglePaneOrientation={noop}
+      hasActiveTransfers={false}
+      hasPausedTransfers={false}
+      hasPausableTransfers={false}
+      canResumeAllTransfers={false}
+      pauseAllTransfers={noop}
+      resumeAllTransfers={noop}
+      hasRetryableTransfers={false}
+      stopAllTransfers={noop}
+      retryAllTransfers={noop}
+      refreshBothPanes={noop}
+      openSettings={openSettings}
+    />,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: 'settings.shortcuts.actions.openSettings' }));
+  expect(openSettings).toHaveBeenCalledOnce();
+});

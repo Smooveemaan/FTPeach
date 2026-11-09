@@ -107,6 +107,45 @@ test('removed anchors and unmounted listeners cannot leave floating tooltips beh
   expect(vi.getTimerCount()).toBe(0);
 });
 
+test('pointer down dismisses active tooltip and allows redisplay on re-hover', () => {
+  render(<Harness />);
+  const anchor = screen.getByRole('button', { name: 'anchor' });
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(true);
+
+  fireEvent.pointerDown(anchor);
+  expect(visible()).toBe(false);
+
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(true);
+});
+
+test('inert container dismisses active tooltip and prevents re-hover until removed', async () => {
+  const { container } = render(<Harness />);
+  const anchor = screen.getByRole('button', { name: 'anchor' });
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(true);
+
+  await act(async () => {
+    container.setAttribute('inert', '');
+  });
+  expect(visible()).toBe(false);
+
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(false);
+
+  await act(async () => {
+    container.removeAttribute('inert');
+  });
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(true);
+});
+
 test('an empty tooltip does not display stale text from a previous anchor', () => {
   render(<Harness text="" />);
   fireEvent.mouseOver(screen.getByText('anchor'));

@@ -147,7 +147,7 @@ export function useTooltip(): void {
         event.target instanceof Element
           ? event.target.closest<HTMLElement>('[data-tooltip]')
           : null;
-      if (!anchor) return;
+      if (!anchor || anchor.closest('[inert]')) return;
       if (event.type === 'focusin' && anchor === blurredAnchor) {
         blurredAnchor = null;
         current = anchor;
@@ -166,7 +166,7 @@ export function useTooltip(): void {
       hoverX = event instanceof MouseEvent && event.type === 'mouseover' ? event.clientX : null;
       showTimer = setTimeout(() => {
         const text = anchor.getAttribute('data-tooltip');
-        if (!text) return;
+        if (!text || anchor.closest('[inert]')) return;
         if (hideTimer != null) clearTimeout(hideTimer); // don't let a pending flashTooltip() hide us right after we show
         position(anchor, text, !!anchor.closest('[data-tooltip-below]'), hoverX);
         ensureTooltipEl().classList.add('visible');
@@ -188,6 +188,8 @@ export function useTooltip(): void {
       hide();
     };
 
+    const onPointerDown = () => hide();
+
     const onWindowBlur = () => {
       blurredAnchor = document.activeElement?.closest<HTMLElement>('[data-tooltip]') ?? null;
     };
@@ -200,13 +202,20 @@ export function useTooltip(): void {
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseout', leave);
     document.addEventListener('focusout', leave);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('mousedown', onPointerDown, true);
     window.addEventListener('blur', onWindowBlur);
     window.addEventListener('focus', onWindowFocus);
 
     const observer = new MutationObserver(() => {
-      if (current && !current.isConnected) hide();
+      if (current && (!current.isConnected || current.closest('[inert]'))) hide();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['inert'],
+    });
 
     return () => {
       document.removeEventListener('mouseover', show);
@@ -214,6 +223,8 @@ export function useTooltip(): void {
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseout', leave);
       document.removeEventListener('focusout', leave);
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('mousedown', onPointerDown, true);
       window.removeEventListener('blur', onWindowBlur);
       window.removeEventListener('focus', onWindowFocus);
       observer.disconnect();

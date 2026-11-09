@@ -1,14 +1,15 @@
 //! Native OS drag-and-drop for dragging a remote file out of FTPeach onto
-//! the system file explorer. Windows-only for now (see
-//! `.local/docs/macos.md` for the macOS/Linux design notes) — every other
-//! platform simply doesn't offer the feature yet, handled by
-//! `commands::drag_out::drag_out_start`'s `#[cfg(not(windows))]` branch.
+//! the system file explorer (Windows Explorer, macOS Finder).
+pub mod macos;
 #[cfg(all(windows, not(feature = "test-utils")))]
 mod manifest;
 #[cfg(all(windows, feature = "test-utils"))]
 pub mod manifest;
+pub mod report;
 #[cfg(windows)]
 pub mod windows;
+#[allow(unused_imports)]
+pub use report::TransferReporter;
 
 use serde::Deserialize;
 
@@ -22,8 +23,6 @@ use serde::Deserialize;
 /// anything security-relevant.
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-// Only the Windows drag reads it so far (B-10, C-6).
-#[cfg_attr(not(windows), allow(dead_code))]
 pub struct DragOutFile {
     pub remote_path: String,
     pub name: String,

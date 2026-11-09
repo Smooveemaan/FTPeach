@@ -392,10 +392,17 @@ pub use wkwebview::{PrintMargin, PrintOptions, WryWebView};
 pub(crate) mod webview2;
 
 /// FTPeach patch: whether the spot under a file drag from another app takes
-/// the drop, so Windows shows a copy cursor or a "no" cursor there.
-#[cfg(target_os = "windows")]
+/// the drop, so Windows/macOS shows a copy cursor or a "no" cursor there.
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub static DROP_ALLOWED: std::sync::atomic::AtomicBool =
+  std::sync::atomic::AtomicBool::new(true);
+
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 pub fn set_drop_allowed(allowed: bool) {
+  #[cfg(target_os = "windows")]
   webview2::DROP_ALLOWED.store(allowed, std::sync::atomic::Ordering::Relaxed);
+  #[cfg(target_os = "macos")]
+  DROP_ALLOWED.store(allowed, std::sync::atomic::Ordering::Relaxed);
 }
 #[cfg(target_os = "windows")]
 pub use self::webview2::ScrollBarStyle;

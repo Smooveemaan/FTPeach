@@ -45,8 +45,10 @@ pub(crate) fn dragging_entered(
   if !listener(DragDropEvent::Enter { paths, position }) {
     // Reject the Wry file drop (invoke the OS default behaviour)
     unsafe { objc2::msg_send![super(this), draggingEntered: drag_info] }
-  } else {
+  } else if crate::DROP_ALLOWED.load(std::sync::atomic::Ordering::Relaxed) {
     NSDragOperation::Copy
+  } else {
+    NSDragOperation::None
   }
 }
 
@@ -59,21 +61,28 @@ pub(crate) fn dragging_updated(
   let position = (dl.x as i32, (frame.size.height - dl.y) as i32);
 
   let listener = &this.ivars().drag_drop_handler;
+  let drop_allowed = crate::DROP_ALLOWED.load(std::sync::atomic::Ordering::Relaxed);
   if !listener(DragDropEvent::Over { position }) {
     unsafe {
       let os_operation = objc2::msg_send![super(this), draggingUpdated: drag_info];
       if os_operation == NSDragOperation::None {
         // 0 will be returned for a drop on any arbitrary location on the webview.
-        // We'll override that with NSDragOperationCopy.
-        NSDragOperation::Copy
+        // We'll override that with NSDragOperationCopy or None depending on drop allowed.
+        if drop_allowed {
+          NSDragOperation::Copy
+        } else {
+          NSDragOperation::None
+        }
       } else {
         // A different NSDragOperation is returned when a file is hovered over something like
         // a <input type="file">, so we'll make sure to preserve that behaviour.
         os_operation
       }
     }
-  } else {
+  } else if drop_allowed {
     NSDragOperation::Copy
+  } else {
+    NSDragOperation::None
   }
 }
 
@@ -90,6 +99,8 @@ pub(crate) fn perform_drag_operation(
   if !listener(DragDropEvent::Drop { paths, position }) {
     // Reject the Wry drop (invoke the OS default behaviour)
     unsafe { objc2::msg_send![super(this), performDragOperation: drag_info] }
+  } else if !crate::DROP_ALLOWED.load(std::sync::atomic::Ordering::Relaxed) {
+    Bool::NO
   } else {
     Bool::YES
   }

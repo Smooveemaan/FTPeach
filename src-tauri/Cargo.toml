@@ -102,6 +102,11 @@ zip = { version = "9.0.5", default-features = false, features = ["deflate-flate2
 
 # Windows-only: kept out of the default [dependencies] table so the crate
 # and its integration tests still compile on Linux runners.
+[target.'cfg(any(windows, target_os = "macos"))'.dependencies]
+# The vendored copy under [patch.crates-io] below, already in the tree through
+# Tauri; named here only for wry::set_drop_allowed (vendor/wry-0.57.0/FTPEACH-PATCH.md).
+wry = { version = "0.57.0", default-features = false }
+
 [target.'cfg(windows)'.dependencies]
 # Toasts go out through these two rather than through
 # tauri-plugin-notification, which drops the AppUserModelID whenever the exe
@@ -114,9 +119,7 @@ windows = { version = "0.62.2", features = ["Foundation", "Win32_Security_Crypto
 windows-core = "0.62"
 windows-future = "0.3.2"
 webview2-com = "0.39.1"
-# The vendored copy under [patch.crates-io] below, already in the tree through
-# Tauri; named here only for wry::set_drop_allowed (vendor/wry-0.57.0/FTPEACH-PATCH.md).
-wry = { version = "0.57.0", default-features = false }
+
 
 [target.'cfg(not(windows))'.dependencies]
 keyring = { version = "3.6.3", default-features = false, features = ["apple-native", "sync-secret-service", "crypto-rust"] }

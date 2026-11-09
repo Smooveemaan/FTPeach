@@ -5,13 +5,13 @@ use crate::transfer::progress::ProgressEmitter;
 use tauri::{AppHandle, State, Window};
 
 /// Starts a native OS drag-and-drop session for one or more remote files,
-/// letting the user drop them onto Explorer (or any other drop target) to
+/// letting the user drop them onto Explorer (or Finder) to
 /// download them. Unlike a plain "download to a temp path first" approach,
 /// the actual transfer is lazy: the OS only pulls bytes from us once the
-/// drop target asks for them (see `native_drag::windows`), which is required
-/// for the native drag to work at all — `DoDragDrop` must be entered while
-/// the mouse button is still physically held, and any async work (like a
-/// download) attempted first almost always loses that race.
+/// drop target asks for them (see `native_drag::windows` and `native_drag::macos`),
+/// which is required for the native drag to work at all — the drag session must be
+/// entered while the mouse button is still physically held, and any async work
+/// (like a download) attempted first almost always loses that race.
 ///
 /// Resolves once the drag gesture itself completes (dropped or cancelled);
 /// the download a drop triggers keeps running in the background after that
@@ -43,7 +43,7 @@ pub async fn drag_out_start(
         // The address without the account, so a drop target can mark what
         // it writes as having come from this server.
         let origin_base = sessions.origin_base_for(&connection_id).await;
-        let reporter = crate::native_drag::windows::TransferReporter::new(
+        let reporter = crate::native_drag::report::TransferReporter::new(
             app,
             progress.inner().clone(),
             connection_id,
@@ -56,7 +56,23 @@ pub async fn drag_out_start(
             Err(err) => Err(CommandError::from_anyhow(&err)),
         }
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        let origin_base = sessions.origin_base_for(&connection_id).await;
+        let reporter = crate::native_drag::report::TransferReporter::new(
+            app,
+            progress.inner().clone(),
+            connection_id,
+            protocol,
+        );
+        match crate::native_drag::macos::start_drag(window, reporter, pool, files, origin_base)
+            .await
+        {
+            Ok(()) => Ok(()),
+            Err(err) => Err(CommandError::from_anyhow(&err)),
+        }
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = (window, app, progress, pool, connection_id, protocol, files);
         Err(CommandError::new(
@@ -67,7 +83,7 @@ pub async fn drag_out_start(
 }
 
 /// Starts a native OS drag-and-drop session for files that already exist on
-/// disk, so a local pane's selection can be dropped onto Explorer, the
+/// disk, so a local pane's selection can be dropped onto Explorer, Finder, the
 /// desktop, or any other drop target. Nothing is transferred through us —
 /// the shell copies the paths itself — so unlike `drag_out_start` there is
 /// no session, no lazy download and no Transfers row.
@@ -89,7 +105,14 @@ pub async fn drag_out_start_local(window: Window, paths: Vec<String>) -> Command
             Err(err) => Err(CommandError::from_anyhow(&err)),
         }
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        match crate::native_drag::macos::start_local_drag(window, paths).await {
+            Ok(()) => Ok(()),
+            Err(err) => Err(CommandError::from_anyhow(&err)),
+        }
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = (window, paths);
         Err(CommandError::new(

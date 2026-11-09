@@ -41,14 +41,10 @@
 //! sees any of it.
 use crate::ipc::{CommandError, ErrorCode};
 use crate::native_drag::DragOutFile;
-use crate::transfer::error_kind::transfer_error_kind;
-use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
 use crate::transfer::transfer_pool::{TaskFn, TransferPool};
-use serde::Serialize;
 use std::mem::ManuallyDrop;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex as StdMutex, Once, OnceLock, mpsc};
-use tauri::{AppHandle, Emitter};
 use tokio::io::{AsyncReadExt, DuplexStream};
 use tokio::sync::oneshot;
 use windows::{

@@ -6,12 +6,12 @@ use tauri::{AppHandle, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
 /// Whether the spot under a file drag from another app takes the drop, so
-/// Windows shows a copy or a "no" cursor there.
+/// Windows or macOS shows a copy or a "no" cursor there.
 #[tauri::command]
 pub fn app_set_drop_allowed(allowed: bool) {
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     wry::set_drop_allowed(allowed);
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     let _ = allowed;
 }
 

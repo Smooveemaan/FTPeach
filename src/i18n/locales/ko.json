@@ -122,7 +122,11 @@
     "deleteSelected_other": "삭제(파일 {{count}}개)",
     "deletePermanently": "영구 삭제",
     "deleteSelectedPermanently_one": "영구 삭제(파일 {{count}}개)",
-    "deleteSelectedPermanently_other": "영구 삭제(파일 {{count}}개)"
+    "deleteSelectedPermanently_other": "영구 삭제(파일 {{count}}개)",
+    "openWithSubmenu": {
+      "default": "{{name}}(기본)",
+      "other": "기타…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP 권한",

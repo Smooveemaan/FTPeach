@@ -124,7 +124,11 @@
     "deleteSelectedPermanently_one": "Șterge definitiv ({{count}} fișier)",
     "deleteSelectedPermanently_other": "Șterge definitiv ({{count}} de fișiere)",
     "deleteSelected_few": "Șterge ({{count}} fișiere)",
-    "deleteSelectedPermanently_few": "Șterge definitiv ({{count}} fișiere)"
+    "deleteSelectedPermanently_few": "Șterge definitiv ({{count}} fișiere)",
+    "openWithSubmenu": {
+      "default": "{{name}} (implicit)",
+      "other": "Altul…"
+    }
   },
   "chmodDialog": {
     "title": "Permisiuni SFTP",

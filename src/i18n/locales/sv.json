@@ -122,7 +122,11 @@
     "deleteSelected_other": "Ta bort ({{count}} filer)",
     "deletePermanently": "Ta bort permanent",
     "deleteSelectedPermanently_one": "Ta bort permanent ({{count}} fil)",
-    "deleteSelectedPermanently_other": "Ta bort permanent ({{count}} filer)"
+    "deleteSelectedPermanently_other": "Ta bort permanent ({{count}} filer)",
+    "openWithSubmenu": {
+      "default": "{{name}} (förval)",
+      "other": "Annat…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP-behörigheter",

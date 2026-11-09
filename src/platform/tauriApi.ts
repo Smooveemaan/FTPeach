@@ -19,6 +19,8 @@ import {
   commandFailure,
   describeUnknown,
   hasCommandOutcome,
+  type ApplicationCandidate,
+  isApplicationCandidateArray,
   isLogEntryArray,
   isOpenWithChange,
   isRecoveredEditArray,
@@ -309,6 +311,13 @@ export const tauriApi: Window['api'] = {
       ),
     revealRecoveredEdits: () => voidOutcome(invoke, 'open_with_reveal_recovered_edits'),
     discardRecoveredEdits: () => voidOutcome(invoke, 'open_with_discard_recovered_edits'),
+    applications: (fileName: string): Promise<ApplicationCandidate[]> =>
+      checkedResponse(
+        'open_with_applications',
+        invoke('open_with_applications', { fileName }),
+        isApplicationCandidateArray,
+        (): ApplicationCandidate[] => [],
+      ),
     onChanged: onEvent('openWith:changed', isOpenWithChange),
     onProgress: onEvent('openWith:progress', isOpenWithProgress),
   },

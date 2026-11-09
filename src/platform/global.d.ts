@@ -19,6 +19,7 @@ import type {
   CommandResult,
   OpenWithChange,
   OpenWithProgress,
+  ApplicationCandidate,
   RecoveredEdit,
   Unsubscribe,
   VaultLocked,
@@ -132,6 +133,7 @@ declare global {
         recoveredEdits: () => Promise<RecoveredEdit[]>;
         revealRecoveredEdits: () => Promise<CommandResult>;
         discardRecoveredEdits: () => Promise<CommandResult>;
+        applications: (fileName: string) => Promise<ApplicationCandidate[]>;
         onChanged: (callback: (payload: OpenWithChange) => void) => Unsubscribe;
         onProgress: (callback: (payload: OpenWithProgress) => void) => Unsubscribe;
       };

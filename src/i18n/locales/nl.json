@@ -122,7 +122,11 @@
     "deleteSelected_other": "Verwijderen ({{count}} bestanden)",
     "deletePermanently": "Definitief verwijderen",
     "deleteSelectedPermanently_one": "Definitief verwijderen ({{count}} bestand)",
-    "deleteSelectedPermanently_other": "Definitief verwijderen ({{count}} bestanden)"
+    "deleteSelectedPermanently_other": "Definitief verwijderen ({{count}} bestanden)",
+    "openWithSubmenu": {
+      "default": "{{name}} (standaard)",
+      "other": "Andere…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP-rechten",

@@ -122,7 +122,11 @@
     "deleteSelected_other": "ลบ ({{count}} ไฟล์)",
     "deletePermanently": "ลบอย่างถาวร",
     "deleteSelectedPermanently_one": "ลบอย่างถาวร ({{count}} ไฟล์)",
-    "deleteSelectedPermanently_other": "ลบอย่างถาวร ({{count}} ไฟล์)"
+    "deleteSelectedPermanently_other": "ลบอย่างถาวร ({{count}} ไฟล์)",
+    "openWithSubmenu": {
+      "default": "{{name}} (เริ่มต้น)",
+      "other": "อื่นๆ…"
+    }
   },
   "chmodDialog": {
     "title": "สิทธิ์การเข้าถึง SFTP",

@@ -1,5 +1,5 @@
 use super::{stronghold_snapshot, stronghold_snapshot::Secrets, vault_file};
-use crate::security::system_unlock::{HELLO_SCHEME, Keys, TOUCH_ID_SCHEME};
+use crate::security::system_unlock::Keys;
 use anyhow::{Context, Result, bail};
 use argon2::{Algorithm, Argon2, Params, Version};
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};

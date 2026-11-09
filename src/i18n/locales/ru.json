@@ -126,7 +126,11 @@
     "deleteSelectedPermanently_one": "Удалить навсегда ({{count}} файл)",
     "deleteSelectedPermanently_few": "Удалить навсегда ({{count}} файла)",
     "deleteSelectedPermanently_many": "Удалить навсегда ({{count}} файлов)",
-    "deleteSelectedPermanently_other": "Удалить навсегда ({{count}} файла)"
+    "deleteSelectedPermanently_other": "Удалить навсегда ({{count}} файла)",
+    "openWithSubmenu": {
+      "default": "{{name}} (по умолчанию)",
+      "other": "Другая…"
+    }
   },
   "chmodDialog": {
     "title": "Права доступа (SFTP)",

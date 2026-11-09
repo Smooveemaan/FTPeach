@@ -110,6 +110,7 @@
     "allow-open-with-recovered-edits",
     "allow-open-with-reveal-recovered-edits",
     "allow-open-with-discard-recovered-edits",
+    "allow-open-with-applications",
     "allow-drag-out-start",
     "allow-drag-out-start-local",
     "allow-updater-status",

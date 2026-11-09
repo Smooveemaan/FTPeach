@@ -124,7 +124,11 @@
     "deleteSelectedPermanently_one": "Elimina definitivamente ({{count}} file)",
     "deleteSelectedPermanently_other": "Elimina definitivamente ({{count}} file)",
     "deleteSelected_many": "Elimina ({{count}} file)",
-    "deleteSelectedPermanently_many": "Elimina definitivamente ({{count}} file)"
+    "deleteSelectedPermanently_many": "Elimina definitivamente ({{count}} file)",
+    "openWithSubmenu": {
+      "default": "{{name}} (predefinito)",
+      "other": "Altra…"
+    }
   },
   "chmodDialog": {
     "title": "Autorizzazioni SFTP",

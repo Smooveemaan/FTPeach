@@ -171,9 +171,40 @@ async fn open_in(
         .map_err(|err| CommandError::from_anyhow(&anyhow::anyhow!(err.to_string())))
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow::Result<()> {
+    use tauri::{Manager, State};
+    use tauri_plugin_dialog::DialogExt;
+    let app = window.app_handle();
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    app.dialog()
+        .file()
+        .set_directory("/Applications")
+        .add_filter("Applications", &["app"])
+        .add_filter("All files", &["*"])
+        .pick_file(move |chosen| {
+            let _ = tx.send(chosen);
+        });
+    let chosen = rx.await.ok().flatten();
+    if let Some(app_path) = chosen {
+        let file = crate::local_fs::local_open::shell_path(path);
+        let app_str = app_path.to_string();
+        let approved = window.state::<crate::local_fs::local_open::ApprovedLocalPaths>();
+        approved.approve_from_dialog(std::path::Path::new(&app_str));
+        let store = window.state::<crate::store::Store>();
+        if let Ok(program) = approved.canonical_application(std::path::Path::new(&app_str)) {
+            let _ = store.trust_application(&program).await;
+        }
+        app.opener()
+            .open_path(file, Some(app_str))
+            .map_err(|err| anyhow::anyhow!(err.to_string()))?;
+    }
+    Ok(())
+}
+
+#[cfg(all(not(windows), not(target_os = "macos")))]
 async fn open_with_chooser(_window: &tauri::WebviewWindow, _path: &Path) -> anyhow::Result<()> {
-    anyhow::bail!("the Open with chooser exists only on Windows")
+    anyhow::bail!("the Open with chooser exists only on Windows and macOS")
 }
 
 /// Opens `path` in a program the user picks in Windows' own Open with
@@ -318,6 +349,20 @@ pub async fn open_with_discard_recovered_edits(app: AppHandle) -> CommandResult<
         Ok(result) => Ok(result?),
         Err(error) => Err(CommandError::new(ErrorCode::Internal, error.to_string())),
     }
+}
+
+/// Returns application candidates capable of opening a file with the given name or extension.
+#[tauri::command]
+pub async fn open_with_applications(
+    file_name: String,
+) -> CommandResult<Vec<crate::local_fs::open_with_applications::ApplicationCandidate>> {
+    tokio::task::spawn_blocking(move || {
+        Ok(crate::local_fs::open_with_applications::query_applications(
+            &file_name,
+        ))
+    })
+    .await
+    .map_err(|error| CommandError::new(ErrorCode::Internal, error.to_string()))?
 }
 
 #[cfg(test)]

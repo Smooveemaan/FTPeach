@@ -122,7 +122,11 @@
     "deleteSelected_other": "Slet ({{count}} filer)",
     "deletePermanently": "Slet permanent",
     "deleteSelectedPermanently_one": "Slet permanent ({{count}} fil)",
-    "deleteSelectedPermanently_other": "Slet permanent ({{count}} filer)"
+    "deleteSelectedPermanently_other": "Slet permanent ({{count}} filer)",
+    "openWithSubmenu": {
+      "default": "{{name}} (standard)",
+      "other": "Andet…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP-rettigheder",

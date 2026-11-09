@@ -122,7 +122,11 @@
     "deleteSelected_other": "हटाएँ ({{count}} फ़ाइलें)",
     "deletePermanently": "स्थायी रूप से हटाएँ",
     "deleteSelectedPermanently_one": "स्थायी रूप से हटाएँ ({{count}} फ़ाइल)",
-    "deleteSelectedPermanently_other": "स्थायी रूप से हटाएँ ({{count}} फ़ाइलें)"
+    "deleteSelectedPermanently_other": "स्थायी रूप से हटाएँ ({{count}} फ़ाइलें)",
+    "openWithSubmenu": {
+      "default": "{{name}} (डिफ़ॉल्ट)",
+      "other": "अन्य…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP अनुमतियाँ",

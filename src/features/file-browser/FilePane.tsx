@@ -36,6 +36,7 @@ import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { PaneId, PaneKind } from './panes/paneModel.ts';
 import { getDoubleClickMs } from './doubleClick.ts';
+import { preloadExtensions } from '../open-with/index.ts';
 
 export interface FilePaneProps {
   side: PaneId;
@@ -176,6 +177,11 @@ function FilePane({
     if (wasRenamingRef.current && !rename.renamingName) paneRef.current?.focus();
     wasRenamingRef.current = !!rename.renamingName;
   }, [rename.renamingName]);
+  useEffect(() => {
+    if (hostPlatform() === 'macos') {
+      preloadExtensions(entries.map((e) => e.name));
+    }
+  }, [entries]);
   const {
     nameAscExplicit,
     sortDir,

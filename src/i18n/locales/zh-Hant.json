@@ -122,7 +122,11 @@
     "deleteSelected_other": "刪除（{{count}} 個檔案）",
     "deletePermanently": "永久刪除",
     "deleteSelectedPermanently_one": "永久刪除（{{count}} 個檔案）",
-    "deleteSelectedPermanently_other": "永久刪除（{{count}} 個檔案）"
+    "deleteSelectedPermanently_other": "永久刪除（{{count}} 個檔案）",
+    "openWithSubmenu": {
+      "default": "{{name}}（預設）",
+      "other": "其他…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP 權限",

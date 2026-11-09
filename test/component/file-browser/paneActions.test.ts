@@ -1,3 +1,7 @@
+import {
+  clearOpenWithCandidatesForTest,
+  setOpenWithCandidatesForTest,
+} from '../../../src/features/open-with/openWithApplications.ts';
 import { expect, test, vi } from 'vitest';
 import i18next from 'i18next';
 import en from '../../../src/i18n/locales/en.json';
@@ -424,4 +428,114 @@ test('Shift on this computer turns Delete into Delete permanently; a server has 
   expect(deleteLabel('a', false)).toBe('paneMenu.deleteSelected');
   expect(deleteLabel('a', true)).toBe('paneMenu.deleteSelectedPermanently');
   expect(deleteLabel('b', true)).toBe('paneMenu.delete');
+});
+
+test('on macOS, Open with creates a Finder-like submenu with default app, other apps, and Other...', async () => {
+  const ua = vi
+    .spyOn(navigator, 'userAgent', 'get')
+    .mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)');
+  try {
+    setOpenWithCandidatesForTest('txt', [
+      { name: 'TextEdit', path: '/System/Applications/TextEdit.app', isDefault: true },
+      {
+        name: 'Visual Studio Code',
+        path: '/Applications/Visual Studio Code.app',
+        isDefault: false,
+      },
+    ]);
+
+    const { options, menu } = setup();
+    const items = menu('b')(file);
+    const openWithItem = items.find((item) => item.label === 'paneMenu.openWith');
+    expect(openWithItem).toBeDefined();
+    expect(openWithItem?.disabled).toBeFalsy();
+    expect(openWithItem?.submenu).toBeDefined();
+
+    const submenu = openWithItem!.submenu!;
+    expect(submenu.map((s) => (s.separator ? '-' : s.label))).toEqual([
+      'paneMenu.openWithSubmenu.default',
+      '-',
+      'Visual Studio Code',
+      '-',
+      'paneMenu.openWithSubmenu.other',
+    ]);
+
+    // Clicking default app
+    submenu[0]!.onClick!();
+    expect(options.setOpenWithTarget).toHaveBeenCalledWith({
+      path: '/target/file.txt',
+      application: '/System/Applications/TextEdit.app',
+      size: 42,
+      connectionId: 'session',
+      paneId: 'b',
+      tabId: 'tab',
+    });
+
+    // Clicking other app
+    submenu[2]!.onClick!();
+    expect(options.setOpenWithTarget).toHaveBeenCalledWith({
+      path: '/target/file.txt',
+      application: '/Applications/Visual Studio Code.app',
+      size: 42,
+      connectionId: 'session',
+      paneId: 'b',
+      tabId: 'tab',
+    });
+
+    // Clicking Other... prompts app picker
+    const selectFn = vi.fn().mockResolvedValue('/Applications/Sublime Text.app');
+    (window as any).api = {
+      ...(window as any).api,
+      fsLocal: { selectApplication: selectFn },
+    };
+    submenu[4]!.onClick!();
+    await vi.waitFor(() => expect(selectFn).toHaveBeenCalledOnce());
+    expect(options.setOpenWithTarget).toHaveBeenCalledWith({
+      path: '/target/file.txt',
+      application: '/Applications/Sublime Text.app',
+      size: 42,
+      connectionId: 'session',
+      paneId: 'b',
+      tabId: 'tab',
+    });
+  } finally {
+    clearOpenWithCandidatesForTest();
+    ua.mockRestore();
+  }
+});
+
+test('on macOS, Open with submenu contains only Other... when no candidates are cached', () => {
+  const ua = vi
+    .spyOn(navigator, 'userAgent', 'get')
+    .mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)');
+  try {
+    clearOpenWithCandidatesForTest();
+    const { menu } = setup();
+    const items = menu('b')(file);
+    const openWithItem = items.find((item) => item.label === 'paneMenu.openWith');
+    expect(openWithItem).toBeDefined();
+    expect(openWithItem?.submenu).toEqual([
+      {
+        label: 'paneMenu.openWithSubmenu.other',
+        onClick: expect.any(Function),
+      },
+    ]);
+  } finally {
+    ua.mockRestore();
+  }
+});
+
+test('on macOS, Open with item is disabled when remote pane is disconnected', () => {
+  const ua = vi
+    .spyOn(navigator, 'userAgent', 'get')
+    .mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)');
+  try {
+    const { tab, menu } = setup();
+    tab.panes.b.connectionId = null;
+    const items = menu('b')(file);
+    const openWithItem = items.find((item) => item.label === 'paneMenu.openWith');
+    expect(openWithItem?.disabled).toBe(true);
+  } finally {
+    ua.mockRestore();
+  }
 });

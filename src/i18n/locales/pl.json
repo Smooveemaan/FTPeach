@@ -126,7 +126,11 @@
     "deleteSelected_few": "Usuń ({{count}} pliki)",
     "deleteSelected_many": "Usuń ({{count}} plików)",
     "deleteSelectedPermanently_few": "Usuń na stałe ({{count}} pliki)",
-    "deleteSelectedPermanently_many": "Usuń na stałe ({{count}} plików)"
+    "deleteSelectedPermanently_many": "Usuń na stałe ({{count}} plików)",
+    "openWithSubmenu": {
+      "default": "{{name}} (domyślny)",
+      "other": "Inny…"
+    }
   },
   "chmodDialog": {
     "title": "Uprawnienia SFTP",

@@ -124,7 +124,11 @@
     "deleteSelectedPermanently_one": "מחק לצמיתות ({{count}} קובץ)",
     "deleteSelectedPermanently_other": "מחק לצמיתות ({{count}} קבצים)",
     "deleteSelected_two": "מחק ({{count}} קבצים)",
-    "deleteSelectedPermanently_two": "מחק לצמיתות ({{count}} קבצים)"
+    "deleteSelectedPermanently_two": "מחק לצמיתות ({{count}} קבצים)",
+    "openWithSubmenu": {
+      "default": "{{name}} (ברירת מחדל)",
+      "other": "אחר…"
+    }
   },
   "chmodDialog": {
     "title": "הרשאות SFTP",

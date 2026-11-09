@@ -122,7 +122,11 @@
     "deleteSelected_other": "削除（{{count}} 個のファイル）",
     "deletePermanently": "完全に削除",
     "deleteSelectedPermanently_one": "完全に削除（{{count}} 個のファイル）",
-    "deleteSelectedPermanently_other": "完全に削除（{{count}} 個のファイル）"
+    "deleteSelectedPermanently_other": "完全に削除（{{count}} 個のファイル）",
+    "openWithSubmenu": {
+      "default": "{{name}}（デフォルト）",
+      "other": "その他…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP のアクセス権",

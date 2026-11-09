@@ -1,7 +1,9 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import type { MenuItem } from '../../../components/MenuItems.tsx';
+import { hostPlatform } from '../../../platform/os.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
+import { preloadOpenWithCandidates } from '../../open-with/index.ts';
 import type { ColumnKey, Translate } from './fileListModel.ts';
 
 interface RenameController {
@@ -75,6 +77,23 @@ export default function useFileContextMenu({
       : [];
     if (items.length === 0) return;
     setMenu({ x: event.clientX, y: event.clientY, items });
+
+    if (entry && !entry.isDirectory && hostPlatform() === 'macos') {
+      void preloadOpenWithCandidates(entry.name).then((candidates) => {
+        if (candidates.length > 0) {
+          const currentItems = optionsRef.current.getContextMenuItems?.(entry, {
+            permanent: event.shiftKey,
+            folderOrder: optionsRef.current.folderOrder,
+            rename: optionsRef.current.onRename
+              ? () => optionsRef.current.rename.start(entry)
+              : undefined,
+          });
+          if (currentItems) {
+            setMenu((current) => (current ? { ...current, items: currentItems } : null));
+          }
+        }
+      });
+    }
   }, []);
 
   const openColumns = (event: ReactMouseEvent<HTMLElement>) => {

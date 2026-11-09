@@ -122,7 +122,11 @@
     "deleteSelected_other": "Διαγραφή ({{count}} αρχεία)",
     "deletePermanently": "Οριστική διαγραφή",
     "deleteSelectedPermanently_one": "Οριστική διαγραφή ({{count}} αρχείο)",
-    "deleteSelectedPermanently_other": "Οριστική διαγραφή ({{count}} αρχεία)"
+    "deleteSelectedPermanently_other": "Οριστική διαγραφή ({{count}} αρχεία)",
+    "openWithSubmenu": {
+      "default": "{{name}} (προεπιλογή)",
+      "other": "Άλλο…"
+    }
   },
   "chmodDialog": {
     "title": "Δικαιώματα SFTP",

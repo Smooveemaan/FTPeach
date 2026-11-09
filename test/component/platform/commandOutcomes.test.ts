@@ -208,6 +208,7 @@ const cases: Case[] = [
   voidCase('openWith.discardRecoveredEdits', 'open_with_discard_recovered_edits', () =>
     api.openWith.discardRecoveredEdits(),
   ),
+
   // Drag out
   voidCase('dragOut.start', 'drag_out_start', () => api.dragOut.start('c', 'sftp', [])),
   voidCase('dragOut.startLocal', 'drag_out_start_local', () => api.dragOut.startLocal([])),

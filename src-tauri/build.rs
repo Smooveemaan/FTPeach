@@ -120,6 +120,7 @@ fn main() {
         "open_with_recovered_edits",
         "open_with_reveal_recovered_edits",
         "open_with_discard_recovered_edits",
+        "open_with_applications",
         "drag_out_start",
         "drag_out_start_local",
         "updater_status",

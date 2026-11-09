@@ -6,6 +6,7 @@ pub(crate) mod local_create;
 pub(crate) mod local_open;
 pub(crate) mod mutations;
 pub(crate) mod open_with;
+pub(crate) mod open_with_applications;
 pub(crate) mod portable;
 pub(crate) mod provenance;
 pub(crate) mod recycle_bin;

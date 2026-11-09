@@ -293,6 +293,7 @@ export const visualTestApi = {
     recoveredEdits: () => resolved(recoveredEdits()),
     revealRecoveredEdits: () => resolved(ok),
     discardRecoveredEdits: () => resolved(ok),
+    applications: () => resolved([]),
     onChanged: () => unsubscribe,
     onProgress: () => unsubscribe,
   },

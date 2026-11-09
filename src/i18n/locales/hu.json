@@ -122,7 +122,11 @@
     "deleteSelected_other": "Törlés ({{count}} fájl)",
     "deletePermanently": "Végleges törlés",
     "deleteSelectedPermanently_one": "Végleges törlés ({{count}} fájl)",
-    "deleteSelectedPermanently_other": "Végleges törlés ({{count}} fájl)"
+    "deleteSelectedPermanently_other": "Végleges törlés ({{count}} fájl)",
+    "openWithSubmenu": {
+      "default": "{{name}} (alapértelmezett)",
+      "other": "Egyéb…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP-jogosultságok",

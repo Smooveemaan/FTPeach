@@ -173,3 +173,24 @@
 .path-hidden-menu .move-to-list {
   max-width: min(552px, calc(var(--app-viewport-w) - 48px));
 }
+
+.menu-item-row {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.menu-item-arrow {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  padding-inline-start: 12px;
+  color: var(--text-faint);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.context-submenu {
+  position: fixed;
+  z-index: 250;
+}

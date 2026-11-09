@@ -372,6 +372,7 @@ mod macos {
     use sha2::{Digest, Sha256};
     use std::ffi::c_void;
 
+    #[allow(dead_code)]
     pub const TOUCH_ID_SCHEME: &str = "touch-id-v1";
     const K_CF_STRING_ENCODING_UTF8: u32 = 0x08000100;
     const K_SEC_ACCESS_CONTROL_USER_PRESENCE: usize = 1 << 0;
@@ -800,6 +801,7 @@ pub use macos::*;
 /// another computer; its keys cannot, so the vault asks which of its
 /// credentials this computer holds. Tests stand in for Windows Hello here.
 pub const HELLO_SCHEME: &str = "windows-hello-v1";
+#[allow(dead_code)]
 pub const TOUCH_ID_SCHEME: &str = "touch-id-v1";
 
 pub trait Keys: Send + Sync {
@@ -875,7 +877,11 @@ mod tests {
 
     #[test]
     fn platform_keys_scheme_matches_expected() {
+        #[cfg(not(target_os = "macos"))]
+        use super::HELLO_SCHEME;
         use super::Keys;
+        #[cfg(target_os = "macos")]
+        use super::TOUCH_ID_SCHEME;
         let keys = super::PlatformKeys;
         #[cfg(target_os = "macos")]
         assert_eq!(keys.scheme(), TOUCH_ID_SCHEME);

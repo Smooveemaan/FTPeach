@@ -186,6 +186,13 @@ export interface RecoveredEdit {
   savedAt: string;
 }
 
+/** An application candidate capable of opening a file. */
+export interface ApplicationCandidate {
+  name: string;
+  path: string;
+  isDefault: boolean;
+}
+
 export type InvokeArgs = Record<string, unknown>;
 export type InvokeResult<T = unknown> = T | CommandResult;
 export type InvokeFn = <T = unknown>(
@@ -488,4 +495,17 @@ function isLogEntry(value: unknown): value is LogEntry {
 
 export function isLogEntryArray(value: unknown): value is LogEntry[] {
   return Array.isArray(value) && value.every(isLogEntry);
+}
+
+export function isApplicationCandidate(value: unknown): value is ApplicationCandidate {
+  return (
+    isRecord(value) &&
+    typeof value.name === 'string' &&
+    typeof value.path === 'string' &&
+    typeof value.isDefault === 'boolean'
+  );
+}
+
+export function isApplicationCandidateArray(value: unknown): value is ApplicationCandidate[] {
+  return Array.isArray(value) && value.every(isApplicationCandidate);
 }

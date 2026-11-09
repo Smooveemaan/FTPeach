@@ -130,7 +130,11 @@
     "deleteSelectedPermanently_zero": "حذف نهائيًا ({{count}} ملف)",
     "deleteSelectedPermanently_two": "حذف نهائيًا ({{count}} ملفين)",
     "deleteSelectedPermanently_few": "حذف نهائيًا ({{count}} ملفات)",
-    "deleteSelectedPermanently_many": "حذف نهائيًا ({{count}} ملفًا)"
+    "deleteSelectedPermanently_many": "حذف نهائيًا ({{count}} ملفًا)",
+    "openWithSubmenu": {
+      "default": "{{name}} (افتراضي)",
+      "other": "أخرى…"
+    }
   },
   "chmodDialog": {
     "title": "أذونات SFTP",

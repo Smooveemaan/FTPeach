@@ -122,7 +122,11 @@
     "deleteSelected_other": "Xóa ({{count}} tệp)",
     "deletePermanently": "Xóa vĩnh viễn",
     "deleteSelectedPermanently_one": "Xóa vĩnh viễn ({{count}} tệp)",
-    "deleteSelectedPermanently_other": "Xóa vĩnh viễn ({{count}} tệp)"
+    "deleteSelectedPermanently_other": "Xóa vĩnh viễn ({{count}} tệp)",
+    "openWithSubmenu": {
+      "default": "{{name}} (mặc định)",
+      "other": "Khác…"
+    }
   },
   "chmodDialog": {
     "title": "Quyền truy cập SFTP",

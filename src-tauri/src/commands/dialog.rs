@@ -120,13 +120,29 @@ pub async fn dialog_select_application(
     store: tauri::State<'_, crate::store::Store>,
 ) -> Result<Option<String>, crate::ipc::CommandError> {
     let selected = picked(|tx| {
-        app.dialog()
-            .file()
-            .add_filter("Applications", &["exe", "com", "bat", "cmd"])
-            .add_filter("All files", &["*"])
-            .pick_file(move |path| {
-                let _ = tx.send(path);
-            })
+        let mut builder = app.dialog().file();
+        #[cfg(target_os = "macos")]
+        {
+            builder = builder
+                .set_directory("/Applications")
+                .add_filter("Applications", &["app"])
+                .add_filter("All files", &["*"]);
+        }
+        #[cfg(windows)]
+        {
+            builder = builder
+                .add_filter("Applications", &["exe", "com", "bat", "cmd"])
+                .add_filter("All files", &["*"]);
+        }
+        #[cfg(all(not(windows), not(target_os = "macos")))]
+        {
+            builder = builder
+                .add_filter("Applications", &["desktop", "appimage", "sh"])
+                .add_filter("All files", &["*"]);
+        }
+        builder.pick_file(move |path| {
+            let _ = tx.send(path);
+        })
     })
     .await;
     if let Some(path) = selected.as_deref() {

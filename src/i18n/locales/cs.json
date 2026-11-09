@@ -126,7 +126,11 @@
     "deleteSelected_few": "Odstranit ({{count}} soubory)",
     "deleteSelected_many": "Odstranit ({{count}} souboru)",
     "deleteSelectedPermanently_few": "Trvale odstranit ({{count}} soubory)",
-    "deleteSelectedPermanently_many": "Trvale odstranit ({{count}} souboru)"
+    "deleteSelectedPermanently_many": "Trvale odstranit ({{count}} souboru)",
+    "openWithSubmenu": {
+      "default": "{{name}} (výchozí)",
+      "other": "Jiné…"
+    }
   },
   "chmodDialog": {
     "title": "Oprávnění SFTP",

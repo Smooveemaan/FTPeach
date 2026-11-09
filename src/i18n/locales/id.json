@@ -122,7 +122,11 @@
     "deleteSelected_other": "Hapus ({{count}} file)",
     "deletePermanently": "Hapus permanen",
     "deleteSelectedPermanently_one": "Hapus permanen ({{count}} file)",
-    "deleteSelectedPermanently_other": "Hapus permanen ({{count}} file)"
+    "deleteSelectedPermanently_other": "Hapus permanen ({{count}} file)",
+    "openWithSubmenu": {
+      "default": "{{name}} (standar)",
+      "other": "Lainnya…"
+    }
   },
   "chmodDialog": {
     "title": "Izin SFTP",

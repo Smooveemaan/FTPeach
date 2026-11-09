@@ -122,7 +122,11 @@
     "deleteSelected_other": "Löschen ({{count}} Dateien)",
     "deletePermanently": "Endgültig löschen",
     "deleteSelectedPermanently_one": "Endgültig löschen ({{count}} Datei)",
-    "deleteSelectedPermanently_other": "Endgültig löschen ({{count}} Dateien)"
+    "deleteSelectedPermanently_other": "Endgültig löschen ({{count}} Dateien)",
+    "openWithSubmenu": {
+      "default": "{{name}} (Standard)",
+      "other": "Andere…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP-Berechtigungen",

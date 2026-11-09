@@ -122,7 +122,11 @@
     "deleteSelected_other": "Sil ({{count}} dosya)",
     "deletePermanently": "Kalıcı olarak sil",
     "deleteSelectedPermanently_one": "Kalıcı olarak sil ({{count}} dosya)",
-    "deleteSelectedPermanently_other": "Kalıcı olarak sil ({{count}} dosya)"
+    "deleteSelectedPermanently_other": "Kalıcı olarak sil ({{count}} dosya)",
+    "openWithSubmenu": {
+      "default": "{{name}} (varsayılan)",
+      "other": "Diğer…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP izinleri",

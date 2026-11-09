@@ -192,6 +192,7 @@ pub fn run() {
             commands::open_with::open_with_recovered_edits,
             commands::open_with::open_with_reveal_recovered_edits,
             commands::open_with::open_with_discard_recovered_edits,
+            commands::open_with::open_with_applications,
             commands::drag_out::drag_out_start,
             commands::drag_out::drag_out_start_local,
             commands::updater::updater_status,

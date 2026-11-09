@@ -122,7 +122,11 @@
     "deleteSelected_other": "Delete ({{count}} files)",
     "deletePermanently": "Delete permanently",
     "deleteSelectedPermanently_one": "Delete permanently ({{count}} file)",
-    "deleteSelectedPermanently_other": "Delete permanently ({{count}} files)"
+    "deleteSelectedPermanently_other": "Delete permanently ({{count}} files)",
+    "openWithSubmenu": {
+      "default": "{{name}} (default)",
+      "other": "Other…"
+    }
   },
   "chmodDialog": {
     "title": "SFTP permissions",

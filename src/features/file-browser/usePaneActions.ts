@@ -13,6 +13,7 @@ import { formatBinding } from '../../shortcuts/bindings.ts';
 import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
 import { effectiveBinding } from '../../shortcuts/resolve.ts';
 import type { OpenWithTarget } from '../open-with/index.ts';
+import { getOpenWithCandidates } from '../open-with/index.ts';
 import type { TransfersModel } from '../transfers/index.ts';
 import type { DroppedFile } from './components/useFileDragDrop.ts';
 import type { PaneId, PaneState } from './panes/paneModel.ts';
@@ -27,6 +28,7 @@ interface MenuItem {
   danger?: boolean;
   separator?: boolean;
   onClick?: () => unknown;
+  submenu?: MenuItem[] | undefined;
 }
 interface PaneMenuOptions {
   permanent?: boolean;
@@ -246,22 +248,101 @@ export function usePaneActions({
             });
           },
         });
-        open.push({
-          label: t('paneMenu.openWith'),
-          disabled: !pane.connectionId,
-          onClick: () => {
-            const connectionId = pane.connectionId;
-            if (!connectionId) return;
-            shell.openWith.setTarget({
-              path: paneJoin(pane, entry.name),
-              choose: true,
-              size: entry.size,
-              connectionId,
-              paneId: id,
-              tabId: activeTabId,
+        if (hostPlatform() === 'macos') {
+          const candidates = getOpenWithCandidates(entry.name);
+          const defaultApp = candidates.find((c) => c.isDefault);
+          const otherApps = candidates.filter((c) => !c.isDefault);
+
+          const submenu: MenuItem[] = [];
+          if (defaultApp) {
+            submenu.push({
+              label: t('paneMenu.openWithSubmenu.default', { name: defaultApp.name }),
+              onClick: () => {
+                const connectionId = pane.connectionId;
+                if (!connectionId) return;
+                shell.openWith.setTarget({
+                  path: paneJoin(pane, entry.name),
+                  application: defaultApp.path,
+                  size: entry.size,
+                  connectionId,
+                  paneId: id,
+                  tabId: activeTabId,
+                });
+              },
             });
-          },
-        });
+            if (otherApps.length > 0) {
+              submenu.push({ separator: true });
+            }
+          }
+
+          for (const app of otherApps) {
+            submenu.push({
+              label: app.name,
+              onClick: () => {
+                const connectionId = pane.connectionId;
+                if (!connectionId) return;
+                shell.openWith.setTarget({
+                  path: paneJoin(pane, entry.name),
+                  application: app.path,
+                  size: entry.size,
+                  connectionId,
+                  paneId: id,
+                  tabId: activeTabId,
+                });
+              },
+            });
+          }
+
+          if (submenu.length > 0) {
+            submenu.push({ separator: true });
+          }
+
+          submenu.push({
+            label: t('paneMenu.openWithSubmenu.other'),
+            onClick: () => {
+              const connectionId = pane.connectionId;
+              if (!connectionId) return;
+              api.fsLocal
+                .selectApplication()
+                .then((chosen) => {
+                  if (chosen) {
+                    shell.openWith.setTarget({
+                      path: paneJoin(pane, entry.name),
+                      application: chosen,
+                      size: entry.size,
+                      connectionId,
+                      paneId: id,
+                      tabId: activeTabId,
+                    });
+                  }
+                })
+                .catch(reportAsyncFailure);
+            },
+          });
+
+          open.push({
+            label: t('paneMenu.openWith'),
+            disabled: !pane.connectionId,
+            submenu,
+          });
+        } else {
+          open.push({
+            label: t('paneMenu.openWith'),
+            disabled: !pane.connectionId,
+            onClick: () => {
+              const connectionId = pane.connectionId;
+              if (!connectionId) return;
+              shell.openWith.setTarget({
+                path: paneJoin(pane, entry.name),
+                choose: true,
+                size: entry.size,
+                connectionId,
+                paneId: id,
+                tabId: activeTabId,
+              });
+            },
+          });
+        }
       }
 
       if (pane.kind === 'local') {

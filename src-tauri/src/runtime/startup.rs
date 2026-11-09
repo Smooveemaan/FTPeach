@@ -22,7 +22,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // portable copy can keep the WebView2 profile beside the program. Left to
     // Tauri, the profile and its folder go under %LOCALAPPDATA%.
     let mut main_window =
-        tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?;
+        tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?
+            .accept_first_mouse(true);
     if let Some(root) = local_fs::portable::root() {
         main_window = main_window.data_directory(local_fs::portable::webview_dir(root));
     }

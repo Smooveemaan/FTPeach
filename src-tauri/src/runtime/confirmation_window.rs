@@ -331,6 +331,7 @@ pub(crate) fn create(
     .minimizable(false)
     .decorations(false)
     .shadow(false)
+    .accept_first_mouse(true)
     .initialization_script(appearance.script())
     .theme(Some(appearance.theme()))
     .background_color(appearance.background())

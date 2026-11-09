@@ -15,7 +15,8 @@
         "hiddenTitle": true,
         "backgroundColor": "#141312",
         "zoomHotkeysEnabled": false,
-        "visible": false
+        "visible": false,
+        "acceptFirstMouse": true
       }
     ]
   },

@@ -31,6 +31,18 @@ stop verifying when the certificate expires). Adding a certificate therefore
 needs no change to the gate, only `bundle.windows.certificateThumbprint` (or a
 `signCommand`) plus `timestampUrl` in `tauri.conf.json`.
 
+## macOS Developer ID and Notarization
+
+Starting with `0.7.0`, macOS builds are signed with Apple Developer ID
+Application certificates, notarized via Apple's notary service (`notarytool`),
+and stapled for offline Gatekeeper verification. Universal packages
+(`universal-apple-darwin`) bundle both `arm64` and `x86_64` slices.
+
+Hardened runtime is enabled by default. To support moving items to Trash via
+Finder AppleScript (task A-5), `Entitlements.plist` declares
+`com.apple.security.automation.apple-events`, and `Info.plist` declares
+`NSAppleEventsUsageDescription`.
+
 ## The release environment
 
 The signing secrets are scoped to the GitHub `release` environment, restricted

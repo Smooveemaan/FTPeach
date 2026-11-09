@@ -78,6 +78,7 @@ that follow explain security behavior rather than repeat command groupings.
 | `log_recent` | app | Yes | No |
 | `log_save` | app | Yes | No |
 | `notifications_transfers_complete` | app | Yes | No |
+| `open_with_applications` | app | Yes | No |
 | `open_with_discard_recovered_edits` | app | Yes | No |
 | `open_with_mark_synced` | app | Yes | No |
 | `open_with_recovered_edits` | app | Yes | No |

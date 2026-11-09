@@ -146,14 +146,8 @@ test('macOS default bindings and formatting round-trip', () => {
 });
 
 test('bindingFromEvent separates Cmd and Ctrl on macOS', () => {
-  assert.equal(
-    bindingFromEvent(fakeEvent({ code: 'KeyF', metaKey: true }), 'macos'),
-    'Cmd+KeyF',
-  );
-  assert.equal(
-    bindingFromEvent(fakeEvent({ code: 'KeyF', ctrlKey: true }), 'macos'),
-    'Ctrl+KeyF',
-  );
+  assert.equal(bindingFromEvent(fakeEvent({ code: 'KeyF', metaKey: true }), 'macos'), 'Cmd+KeyF');
+  assert.equal(bindingFromEvent(fakeEvent({ code: 'KeyF', ctrlKey: true }), 'macos'), 'Ctrl+KeyF');
   assert.equal(
     bindingFromEvent(fakeEvent({ code: 'KeyF', metaKey: true, shiftKey: true }), 'macos'),
     'Shift+Cmd+KeyF',
@@ -162,10 +156,7 @@ test('bindingFromEvent separates Cmd and Ctrl on macOS', () => {
     bindingFromEvent(fakeEvent({ code: 'KeyV', metaKey: true, altKey: true }), 'macos'),
     'Alt+Cmd+KeyV',
   );
-  assert.equal(
-    bindingFromEvent(fakeEvent({ code: 'Tab', ctrlKey: true }), 'macos'),
-    'Ctrl+Tab',
-  );
+  assert.equal(bindingFromEvent(fakeEvent({ code: 'Tab', ctrlKey: true }), 'macos'), 'Ctrl+Tab');
 });
 
 test('formatBinding displays macOS modifier symbols in ⌃⌥⇧⌘ order and replaces special keys', () => {
@@ -192,23 +183,73 @@ test('formatBinding displays macOS modifier symbols in ⌃⌥⇧⌘ order and re
 
 test('resolveAction resolves macOS defaults and aliases', () => {
   // Defaults on macOS
-  assert.equal(resolveAction(fakeEvent({ code: 'KeyF', metaKey: true }), 'global', {}, 'macos'), 'search-local');
-  assert.equal(resolveAction(fakeEvent({ code: 'KeyF', metaKey: true, shiftKey: true }), 'global', {}, 'macos'), 'search-remote');
-  assert.equal(resolveAction(fakeEvent({ code: 'KeyR', metaKey: true }), 'global', {}, 'macos'), 'refresh');
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'KeyF', metaKey: true }), 'global', {}, 'macos'),
+    'search-local',
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'KeyF', metaKey: true, shiftKey: true }),
+      'global',
+      {},
+      'macos',
+    ),
+    'search-remote',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'KeyR', metaKey: true }), 'global', {}, 'macos'),
+    'refresh',
+  );
   assert.equal(resolveAction(fakeEvent({ code: 'Enter' }), 'pane', {}, 'macos'), 'rename');
-  assert.equal(resolveAction(fakeEvent({ code: 'ArrowDown', metaKey: true }), 'pane', {}, 'macos'), 'open');
-  assert.equal(resolveAction(fakeEvent({ code: 'Backspace', metaKey: true }), 'pane', {}, 'macos'), 'delete');
-  assert.equal(resolveAction(fakeEvent({ code: 'Backspace', metaKey: true, altKey: true }), 'pane', {}, 'macos'), 'delete-permanent');
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'ArrowDown', metaKey: true }), 'pane', {}, 'macos'),
+    'open',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'Backspace', metaKey: true }), 'pane', {}, 'macos'),
+    'delete',
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'Backspace', metaKey: true, altKey: true }),
+      'pane',
+      {},
+      'macos',
+    ),
+    'delete-permanent',
+  );
 
   // Aliases on macOS
   assert.equal(resolveAction(fakeEvent({ code: 'F5' }), 'global', {}, 'macos'), 'refresh');
   assert.equal(resolveAction(fakeEvent({ code: 'F2' }), 'pane', {}, 'macos'), 'rename');
-  assert.equal(resolveAction(fakeEvent({ code: 'KeyO', metaKey: true }), 'pane', {}, 'macos'), 'open');
-  assert.equal(resolveAction(fakeEvent({ code: 'BracketRight', metaKey: true, shiftKey: true }), 'global', {}, 'macos'), 'next-tab');
-  assert.equal(resolveAction(fakeEvent({ code: 'BracketLeft', metaKey: true, shiftKey: true }), 'global', {}, 'macos'), 'prev-tab');
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'KeyO', metaKey: true }), 'pane', {}, 'macos'),
+    'open',
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'BracketRight', metaKey: true, shiftKey: true }),
+      'global',
+      {},
+      'macos',
+    ),
+    'next-tab',
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'BracketLeft', metaKey: true, shiftKey: true }),
+      'global',
+      {},
+      'macos',
+    ),
+    'prev-tab',
+  );
   assert.equal(resolveAction(fakeEvent({ code: 'F6' }), 'pane', {}, 'macos'), 'move-to');
   assert.equal(resolveAction(fakeEvent({ code: 'F7' }), 'pane', {}, 'macos'), 'new-folder');
-  assert.equal(resolveAction(fakeEvent({ code: 'F7', shiftKey: true }), 'pane', {}, 'macos'), 'new-file');
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'F7', shiftKey: true }), 'pane', {}, 'macos'),
+    'new-file',
+  );
   assert.equal(resolveAction(fakeEvent({ code: 'F8' }), 'pane', {}, 'macos'), 'copy-to-other-pane');
 });
 
@@ -222,21 +263,49 @@ test('resolveDropAction respects macOS Option key for copying', () => {
 
   // Windows: ctrlKey copies, altKey does not
   assert.equal(
-    resolveDropAction(source, target, null, ['folder'], { ctrlKey: false, shiftKey: false, altKey: true }, 'windows'),
+    resolveDropAction(
+      source,
+      target,
+      null,
+      ['folder'],
+      { ctrlKey: false, shiftKey: false, altKey: true },
+      'windows',
+    ),
     'move',
   );
   assert.equal(
-    resolveDropAction(source, target, null, ['folder'], { ctrlKey: true, shiftKey: false }, 'windows'),
+    resolveDropAction(
+      source,
+      target,
+      null,
+      ['folder'],
+      { ctrlKey: true, shiftKey: false },
+      'windows',
+    ),
     'copy',
   );
 
   // macOS: altKey copies, ctrlKey does not
   assert.equal(
-    resolveDropAction(source, target, null, ['folder'], { ctrlKey: false, shiftKey: false, altKey: true }, 'macos'),
+    resolveDropAction(
+      source,
+      target,
+      null,
+      ['folder'],
+      { ctrlKey: false, shiftKey: false, altKey: true },
+      'macos',
+    ),
     'copy',
   );
   assert.equal(
-    resolveDropAction(source, target, null, ['folder'], { ctrlKey: true, shiftKey: false, altKey: false }, 'macos'),
+    resolveDropAction(
+      source,
+      target,
+      null,
+      ['folder'],
+      { ctrlKey: true, shiftKey: false, altKey: false },
+      'macos',
+    ),
     'move',
   );
 });

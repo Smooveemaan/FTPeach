@@ -18,6 +18,7 @@ const rustLicensesPath = new URL('../../docs/legal/RUST_THIRD_PARTY_LICENSES.txt
 const releaseWorkflowPath = new URL('../../.github/workflows/release.yml', import.meta.url);
 const checksWorkflowPath = new URL('../../.github/workflows/checks.yml', import.meta.url);
 const installerHooksPath = new URL('../../src-tauri/installer/hooks.nsh', import.meta.url);
+const toolchainPath = new URL('../../rust-toolchain.toml', import.meta.url);
 const [
   configSource,
   macosConfigSource,
@@ -34,6 +35,7 @@ const [
   releaseWorkflow,
   checksWorkflow,
   installerHooks,
+  toolchain,
 ] = await Promise.all([
   readFile(configPath, 'utf8'),
   readFile(macosConfigPath, 'utf8'),
@@ -50,6 +52,7 @@ const [
   readFile(releaseWorkflowPath, 'utf8'),
   readFile(checksWorkflowPath, 'utf8'),
   readFile(installerHooksPath, 'utf8'),
+  readFile(toolchainPath, 'utf8'),
   readFile(npmLicensesPath, 'utf8'),
   readFile(rustLicensesPath, 'utf8'),
 ]);
@@ -187,6 +190,10 @@ assert.ok(
   entitlementsPlist.includes('com.apple.security.automation.apple-events'),
   'Entitlements.plist must declare com.apple.security.automation.apple-events',
 );
+assert.ok(
+  toolchain.includes('aarch64-apple-darwin') && toolchain.includes('x86_64-apple-darwin'),
+  'rust-toolchain.toml must declare universal macOS targets (aarch64-apple-darwin and x86_64-apple-darwin)',
+);
 
 assert.equal(typeof updaterPublicKey, 'string', 'Updater public key must be configured');
 assert.ok(updaterPublicKey.trim().length > 0, 'Updater public key must not be empty');
@@ -310,6 +317,9 @@ const requiredWorkflowEntries: [string, string, string][] = [
   ],
   [releaseWorkflow, 'release.yml', 'ftpeach-npm.cdx.json'],
   [releaseWorkflow, 'release.yml', 'ftpeach-cargo.cdx.json'],
+  [releaseWorkflow, 'release.yml', 'APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}'],
+  [releaseWorkflow, 'release.yml', 'APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}'],
+  [releaseWorkflow, 'release.yml', 'xcrun stapler validate'],
   [checksWorkflow, 'checks.yml', '  rust-test:'],
   [checksWorkflow, 'checks.yml', '  packaged-smoke:'],
   [checksWorkflow, 'checks.yml', 'run: npm run check:release-config'],

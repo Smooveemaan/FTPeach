@@ -54,8 +54,7 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
 
   const [clipboard, setClipboard] = useState<ClipboardState | null>(null);
 
-  const copyToClipboard = (id: PaneId, pane: PaneState) =>
-    setClipboard({ id, pane, mode: 'copy' });
+  const copyToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'copy' });
 
   const cutToClipboard = (id: PaneId, pane: PaneState) => setClipboard({ id, pane, mode: 'cut' });
 
@@ -193,12 +192,7 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
     canPaste,
     cutNames,
     pasteClipboard,
-    copySelectedWithConfirm: async (
-      sourcePane,
-      targetPane,
-      refreshSource,
-      refreshTarget,
-    ) => {
+    copySelectedWithConfirm: async (sourcePane, targetPane, refreshSource, refreshTarget) => {
       if (!canCopyBetween(sourcePane, targetPane)) return;
       await copyEntries({
         sourcePane,

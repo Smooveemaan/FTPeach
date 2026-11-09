@@ -29,6 +29,7 @@ use tauri::AppHandle;
 /// identity is derived from that field, and a toast sent under any other id is
 /// one Windows cannot tie back to FTPeach. `notification_tests` holds the two
 /// together.
+#[allow(dead_code)]
 pub const APP_USER_MODEL_ID: &str = "com.smooveemaan.ftpeach";
 
 /// The icon Windows puts on the toast, as it is named among the bundle

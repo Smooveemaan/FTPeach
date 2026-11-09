@@ -13,6 +13,7 @@
 /// The key in the macOS CoreGraphics session dictionary indicating whether
 /// the screen is currently locked.
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+#[allow(dead_code)]
 pub const CGS_SESSION_SCREEN_IS_LOCKED: &str = "CGSSessionScreenIsLocked";
 
 /// Interprets the screen lock state from whether `CGSSessionScreenIsLocked` was
@@ -74,7 +75,7 @@ mod macos {
 
     #[link(name = "CoreGraphics", kind = "framework")]
     #[link(name = "CoreFoundation", kind = "framework")]
-    extern "C" {
+    unsafe extern "C" {
         fn CGSessionCopyCurrentDictionary() -> *const c_void;
         fn CFDictionaryGetValueIfPresent(
             the_dict: *const c_void,

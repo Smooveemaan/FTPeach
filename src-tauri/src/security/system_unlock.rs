@@ -380,7 +380,7 @@ mod macos {
     #[link(name = "Security", kind = "framework")]
     #[link(name = "CoreFoundation", kind = "framework")]
     #[link(name = "LocalAuthentication", kind = "framework")]
-    extern "C" {
+    unsafe extern "C" {
         static kSecClass: *const c_void;
         static kSecClassGenericPassword: *const c_void;
         static kSecAttrService: *const c_void;
@@ -681,24 +681,24 @@ mod macos {
         let value = cf_data(plaintext)?;
 
         // SAFETY: Creates access control requiring user presence (Touch ID or device passcode).
-        let access = unsafe {
+        let ptr = unsafe {
             let mut error: *const c_void = std::ptr::null();
-            let ptr = SecAccessControlCreateWithFlags(
+            SecAccessControlCreateWithFlags(
                 std::ptr::null(),
                 kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
                 K_SEC_ACCESS_CONTROL_USER_PRESENCE,
                 &mut error,
-            );
-            if ptr.is_null() {
-                bail!("creating access control for Keychain item failed");
-            }
-            CfRef(ptr)
-        }?;
+            )
+        };
+        if ptr.is_null() {
+            bail!("creating access control for Keychain item failed");
+        }
+        let access = CfRef(ptr);
 
         let _ = revoke(name);
 
         // SAFETY: Adds Keychain generic password item sealed with user presence access control.
-        unsafe {
+        let status = unsafe {
             let keys = [
                 kSecClass,
                 kSecAttrService,
@@ -714,12 +714,11 @@ mod macos {
                 value.0,
             ];
             let dict = cf_dictionary(&keys, &values)?;
-            let status = SecItemAdd(dict.0, std::ptr::null_mut());
-            if status != 0 {
-                bail!("SecItemAdd failed with status {status}");
-            }
+            SecItemAdd(dict.0, std::ptr::null_mut())
+        };
+        if status != 0 {
+            bail!("registering Touch ID credential in Keychain failed: SecItemAdd status {status}");
         }
-        .context("registering Touch ID credential in Keychain")?;
 
         let wrapped = Sha256::digest(plaintext).to_vec();
         Ok(wrapped)
@@ -731,7 +730,7 @@ mod macos {
         let prompt = cf_string("Confirm system unlock for the FTPeach vault")?;
 
         // SAFETY: SecItemCopyMatching prompts user for biometric or passcode via kSecAccessControlUserPresence.
-        let data = unsafe {
+        let (result_ptr, status) = unsafe {
             let keys = [
                 kSecClass,
                 kSecAttrService,
@@ -751,18 +750,17 @@ mod macos {
             let dict = cf_dictionary(&keys, &values)?;
             let mut result: *const c_void = std::ptr::null();
             let status = SecItemCopyMatching(dict.0, &mut result);
-            if status != 0 || result.is_null() {
-                bail!("Touch ID verification was canceled or failed (status {status})");
-            }
-            let result = CfRef(result);
-            let len = CFDataGetLength(result.0);
-            let ptr = CFDataGetBytePtr(result.0);
-            if len <= 0 || ptr.is_null() {
-                bail!("invalid key data in Keychain");
-            }
-            std::slice::from_raw_parts(ptr, len as usize).to_vec()
+            (result, status)
+        };
+        if status != 0 || result_ptr.is_null() {
+            bail!("Touch ID verification was canceled or failed (status {status})");
         }
-        .context("Touch ID verification was canceled or failed")?;
+        let result = CfRef(result_ptr);
+        let (len, ptr) = unsafe { (CFDataGetLength(result.0), CFDataGetBytePtr(result.0)) };
+        if len <= 0 || ptr.is_null() {
+            bail!("invalid key data in Keychain");
+        }
+        let data = unsafe { std::slice::from_raw_parts(ptr, len as usize).to_vec() };
 
         if !ciphertext.is_empty() {
             let digest = Sha256::digest(&data);
@@ -777,20 +775,16 @@ mod macos {
         let service = service_name()?;
         let account = cf_string(name)?;
         // SAFETY: Deletes matching generic password item from Keychain without user prompt.
-        unsafe {
+        let status = unsafe {
             let keys = [kSecClass, kSecAttrService, kSecAttrAccount];
             let values = [kSecClassGenericPassword, service.0, account.0];
             let dict = cf_dictionary(&keys, &values)?;
-            let status = SecItemDelete(dict.0);
-            if status == 0 || status == -25300
-            /* errSecItemNotFound */
-            {
-                Ok(())
-            } else {
-                bail!("SecItemDelete failed with status {status}")
-            }
+            SecItemDelete(dict.0)
+        };
+        if status != 0 && status != -25300 /* errSecItemNotFound */ {
+            bail!("deleting Touch ID credential from Keychain failed: SecItemDelete status {status}");
         }
-        .context("deleting Touch ID credential from Keychain")
+        Ok(())
     }
 }
 

@@ -20,7 +20,7 @@ mod macos {
 
     #[link(name = "CoreServices", kind = "framework")]
     #[link(name = "CoreFoundation", kind = "framework")]
-    extern "C" {
+    unsafe extern "C" {
         fn CFURLCreateWithFileSystemPath(
             allocator: *const c_void,
             file_path: *const c_void,
@@ -235,7 +235,7 @@ mod macos {
         }
 
         // Sort others alphabetically by display name (case-insensitive)
-        others.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        others.sort_by_key(|a| a.name.to_lowercase());
 
         let mut result = Vec::new();
         if let Some(def) = default_candidate {

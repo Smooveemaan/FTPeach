@@ -173,7 +173,7 @@ async fn open_in(
 
 #[cfg(target_os = "macos")]
 async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow::Result<()> {
-    use tauri::{Manager, State};
+    use tauri::Manager;
     use tauri_plugin_dialog::DialogExt;
     let app = window.app_handle();
     let (tx, rx) = tokio::sync::oneshot::channel();

@@ -64,11 +64,11 @@ pub fn clean_file_name(name: &str) -> String {
 mod macos_impl {
     use super::*;
     use crate::ipc::{CommandError, ErrorCode};
+    use crate::transfer::progress::ProgressInfo;
     use crate::transfer::transfer_pool::TaskFn;
     use anyhow::{Context, Result, bail};
-    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
     use std::ffi::{CStr, CString, c_char, c_void};
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
     use std::sync::{Mutex, Once};
     use tokio::sync::oneshot;
 
@@ -79,7 +79,7 @@ mod macos_impl {
     #[link(name = "AppKit", kind = "framework")]
     #[link(name = "CoreFoundation", kind = "framework")]
     #[link(name = "objc", kind = "dylib")]
-    extern "C" {
+    unsafe extern "C" {
         fn objc_getClass(name: *const c_char) -> *const c_void;
         fn sel_registerName(name: *const c_char) -> *const c_void;
         fn objc_msgSend();
@@ -109,6 +109,7 @@ mod macos_impl {
             c_str: *const c_char,
             encoding: u32,
         ) -> *const c_void;
+        #[allow(dead_code)]
         fn CFURLCreateWithFileSystemPath(
             allocator: *const c_void,
             file_path: *const c_void,
@@ -126,6 +127,13 @@ mod macos_impl {
 
         fn _Block_copy(block: *const c_void) -> *const c_void;
         fn _Block_release(block: *const c_void);
+    }
+
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    struct NSPoint {
+        x: f64,
+        y: f64,
     }
 
     #[repr(C)]
@@ -190,13 +198,15 @@ mod macos_impl {
 
     unsafe fn invoke_completion_handler(handler: *const c_void, error: *const c_void) {
         if !handler.is_null() {
-            let block = &*(handler as *const BlockLiteral);
-            (block.invoke)(handler, error);
+            unsafe {
+                let block = &*(handler as *const BlockLiteral);
+                (block.invoke)(handler, error);
+            }
         }
     }
 
     unsafe fn create_ns_error(description: &str) -> *const c_void {
-        let cls_nserror = objc_getClass(c"NSError".as_ptr());
+        let cls_nserror = unsafe { objc_getClass(c"NSError".as_ptr()) };
         if cls_nserror.is_null() {
             return std::ptr::null();
         }
@@ -207,16 +217,18 @@ mod macos_impl {
             *const c_void,
             isize,
             *const c_void,
-        ) -> *const c_void = std::mem::transmute(objc_msgSend as *const ());
-        let sel_error = sel_registerName(c"errorWithDomain:code:userInfo:".as_ptr());
+        ) -> *const c_void = unsafe { std::mem::transmute(objc_msgSend as *const ()) };
+        let sel_error = unsafe { sel_registerName(c"errorWithDomain:code:userInfo:".as_ptr()) };
         let _ = description;
-        msg_send_error(
-            cls_nserror,
-            sel_error,
-            domain.map_or(std::ptr::null(), |d| d.0),
-            1,
-            std::ptr::null(),
-        )
+        unsafe {
+            msg_send_error(
+                cls_nserror,
+                sel_error,
+                domain.map_or(std::ptr::null(), |d| d.0),
+                1,
+                std::ptr::null(),
+            )
+        }
     }
 
     static DRAG_SOURCE_KEY: u8 = 0;
@@ -230,7 +242,7 @@ mod macos_impl {
     struct PromiseContext {
         file: DragOutFile,
         reporter: TransferReporter,
-        pool: Arc<TransferPool>,
+        pool: TransferPool,
         origin_base: String,
     }
 
@@ -247,7 +259,7 @@ mod macos_impl {
         this: *const c_void,
         _sel: *const c_void,
         _session: *const c_void,
-        _ended_at: [f64; 2],
+        _ended_at: NSPoint,
         _operation: usize,
     ) {
         unsafe {
@@ -291,48 +303,51 @@ mod macos_impl {
         url: *const c_void,
         completion_handler: *const c_void,
     ) {
-        unsafe {
-            let ptr =
-                objc_getAssociatedObject(this, &PROMISE_CONTEXT_KEY as *const _ as *const c_void);
-            if ptr.is_null() || completion_handler.is_null() {
-                if !completion_handler.is_null() {
+        let ptr = unsafe {
+            objc_getAssociatedObject(this, &PROMISE_CONTEXT_KEY as *const _ as *const c_void)
+        };
+        if ptr.is_null() || completion_handler.is_null() {
+            if !completion_handler.is_null() {
+                unsafe {
                     let err = create_ns_error("Internal error in drag-out context");
+                    invoke_completion_handler(completion_handler, err);
+                }
+            }
+            return;
+        }
+        let ctx_arc: Arc<PromiseContext> = unsafe {
+            let raw = ptr as *const PromiseContext;
+            Arc::increment_strong_count(raw);
+            Arc::from_raw(raw)
+        };
+        let dest_path = match cf_url_to_path(url) {
+            Some(p) => p,
+            None => {
+                unsafe {
+                    let err = create_ns_error("Invalid destination URL from Finder");
                     invoke_completion_handler(completion_handler, err);
                 }
                 return;
             }
-            let ctx_arc: Arc<PromiseContext> = {
-                let raw = ptr as *const PromiseContext;
-                Arc::increment_strong_count(raw);
-                Arc::from_raw(raw)
-            };
-            let dest_path = match cf_url_to_path(url) {
-                Some(p) => p,
-                None => {
-                    let err = create_ns_error("Invalid destination URL from Finder");
-                    invoke_completion_handler(completion_handler, err);
-                    return;
-                }
-            };
-            let retained_handler = _Block_copy(completion_handler);
+        };
+        let retained_handler = unsafe { _Block_copy(completion_handler) as usize };
 
-            tauri::async_runtime::spawn(async move {
-                let handler = retained_handler;
-                let outcome = perform_promise_download(ctx_arc, dest_path).await;
-                unsafe {
-                    match outcome {
-                        Ok(()) => {
-                            invoke_completion_handler(handler, std::ptr::null());
-                        }
-                        Err(err) => {
-                            let ns_err = create_ns_error(&err.to_string());
-                            invoke_completion_handler(handler, ns_err);
-                        }
+        tauri::async_runtime::spawn(async move {
+            let outcome = perform_promise_download(ctx_arc, dest_path).await;
+            let handler = retained_handler as *const c_void;
+            unsafe {
+                match outcome {
+                    Ok(()) => {
+                        invoke_completion_handler(handler, std::ptr::null());
                     }
-                    _Block_release(handler);
+                    Err(err) => {
+                        let ns_err = create_ns_error(&err.to_string());
+                        invoke_completion_handler(handler, ns_err);
+                    }
                 }
-            });
-        }
+                _Block_release(handler);
+            }
+        });
     }
 
     async fn perform_promise_download(ctx: Arc<PromiseContext>, dest_path: PathBuf) -> Result<()> {
@@ -358,9 +373,9 @@ mod macos_impl {
         let total = ctx.file.size;
         let reporter = ctx.reporter.clone();
         let id_for_progress = transfer_id.clone();
-        let sink = Arc::new(move |info: crate::transfer::progress::ProgressInfo| {
-            if let crate::transfer::progress::ProgressInfo::Progress { bytes, total } = info {
-                reporter.progress(&id_for_progress, bytes, total);
+        let sink = Arc::new(move |info: ProgressInfo| {
+            if let ProgressInfo::Progress { bytes, total } = info {
+                reporter.progress(&id_for_progress, bytes, Some(total));
             }
         });
 
@@ -425,8 +440,8 @@ mod macos_impl {
                             let t_id = id_for_progress.clone();
                             let current_base = transferred;
                             let sink =
-                                Arc::new(move |info: crate::transfer::progress::ProgressInfo| {
-                                    if let crate::transfer::progress::ProgressInfo::Progress {
+                                Arc::new(move |info: ProgressInfo| {
+                                    if let ProgressInfo::Progress {
                                         bytes,
                                         ..
                                     } = info
@@ -530,7 +545,7 @@ mod macos_impl {
     pub async fn start_drag(
         window: Window,
         reporter: TransferReporter,
-        pool: Arc<TransferPool>,
+        pool: TransferPool,
         files: Vec<DragOutFile>,
         origin_base: String,
     ) -> Result<()> {
@@ -691,10 +706,8 @@ mod macos_impl {
                 }
             })();
 
-            if let Err(e) = res {
-                if let Some(sender) = context_for_drag.sender.lock().unwrap().take() {
-                    let _ = sender.send(Err(e));
-                }
+            if let (Err(e), Some(sender)) = (res, context_for_drag.sender.lock().unwrap().take()) {
+                let _ = sender.send(Err(e));
             }
         })?;
 
@@ -830,10 +843,8 @@ mod macos_impl {
                 }
             })();
 
-            if let Err(e) = res {
-                if let Some(sender) = context_for_drag.sender.lock().unwrap().take() {
-                    let _ = sender.send(Err(e));
-                }
+            if let (Err(e), Some(sender)) = (res, context_for_drag.sender.lock().unwrap().take()) {
+                let _ = sender.send(Err(e));
             }
         })?;
 
@@ -850,7 +861,7 @@ pub use macos_impl::*;
 pub async fn start_drag(
     _window: Window,
     _reporter: TransferReporter,
-    _pool: Arc<TransferPool>,
+    _pool: TransferPool,
     _files: Vec<DragOutFile>,
     _origin_base: String,
 ) -> anyhow::Result<()> {

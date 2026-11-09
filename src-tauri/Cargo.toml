@@ -45,6 +45,8 @@ all = { level = "deny", priority = -1 }
 # and owned `String` parameters are required by the framework, so the rule would
 # only buy a scattering of `#[allow]` attributes.
 redundant_clone = "deny"
+# Standard macOS framework linkage uses multiple #[link(name = "...", kind = "framework")] attributes on the same extern block.
+duplicated_attributes = "allow"
 
 [build-dependencies]
 tauri-build = { version = "2.7.1", features = [] }

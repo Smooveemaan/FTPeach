@@ -219,25 +219,45 @@ async fn setup_lock_unlock_and_password_change_preserve_secrets() {
 
 /// One computer's key store. A key wraps nothing here; what matters is that
 /// only the store that registered a name can use it, as with a platform key.
-#[derive(Default)]
-struct ComputerKeys(std::sync::Mutex<std::collections::HashSet<String>>);
+struct ComputerKeys {
+    keys: std::sync::Mutex<std::collections::HashSet<String>>,
+    scheme: &'static str,
+}
+
+impl Default for ComputerKeys {
+    fn default() -> Self {
+        Self {
+            keys: std::sync::Mutex::default(),
+            scheme: crate::security::system_unlock::HELLO_SCHEME,
+        }
+    }
+}
 
 impl ComputerKeys {
+    fn with_scheme(scheme: &'static str) -> Self {
+        Self {
+            keys: std::sync::Mutex::default(),
+            scheme,
+        }
+    }
     fn count(&self) -> usize {
-        self.0.lock().unwrap().len()
+        self.keys.lock().unwrap().len()
     }
     /// What a TPM reset or a reinstalled Windows leaves behind.
     fn lose_everything(&self) {
-        self.0.lock().unwrap().clear();
+        self.keys.lock().unwrap().clear();
     }
 }
 
 impl Keys for ComputerKeys {
+    fn scheme(&self) -> &'static str {
+        self.scheme
+    }
     fn exists(&self, name: &str) -> bool {
-        self.0.lock().unwrap().contains(name)
+        self.keys.lock().unwrap().contains(name)
     }
     fn register(&self, name: &str, plaintext: &[u8], _: isize) -> Result<Vec<u8>> {
-        self.0.lock().unwrap().insert(name.to_owned());
+        self.keys.lock().unwrap().insert(name.to_owned());
         Ok(plaintext.to_vec())
     }
     fn unwrap(&self, name: &str, ciphertext: &[u8], _: isize) -> Result<Vec<u8>> {
@@ -246,7 +266,7 @@ impl Keys for ComputerKeys {
     }
     fn revoke(&self, name: &str) -> Result<()> {
         anyhow::ensure!(
-            self.0.lock().unwrap().remove(name),
+            self.keys.lock().unwrap().remove(name),
             "no such key on this computer"
         );
         Ok(())
@@ -379,7 +399,10 @@ fn vault_of_0_5() -> (PathBuf, Vault, Arc<ComputerKeys>) {
     }
     let (vault, keys) = computer(&dir);
     let credential = std::fs::read_to_string(fixture.join("hello-key-name.txt")).unwrap();
-    keys.0.lock().unwrap().insert(credential.trim().to_owned());
+    keys.keys
+        .lock()
+        .unwrap()
+        .insert(credential.trim().to_owned());
     (dir, vault, keys)
 }
 
@@ -581,4 +604,44 @@ async fn the_list_of_computers_is_bounded_and_the_oldest_gives_way() {
     first.unlock(PASSWORD).await.unwrap();
     first.reset().await.unwrap();
     let _ = std::fs::remove_dir_all(dir);
+}
+
+#[tokio::test]
+async fn cross_platform_windows_hello_and_touch_id_coexist() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-vault-cross-{}", uuid::Uuid::new_v4()));
+    let win_keys = Arc::new(ComputerKeys::with_scheme(
+        crate::security::system_unlock::HELLO_SCHEME,
+    ));
+    let mac_keys = Arc::new(ComputerKeys::with_scheme(
+        crate::security::system_unlock::TOUCH_ID_SCHEME,
+    ));
+    let win = Vault::with_keys(dir.clone(), win_keys.clone());
+    let mac = Vault::with_keys(dir.clone(), mac_keys.clone());
+
+    win.setup(PASSWORD).await.unwrap();
+    win.enable_system_unlock(0).await.unwrap();
+
+    assert!(win.status().await.system_unlock_enabled);
+    assert!(!mac.status().await.system_unlock_enabled);
+
+    // On macOS, unlock with master password and enable Touch ID
+    mac.unlock(PASSWORD).await.unwrap();
+    mac.enable_system_unlock(0).await.unwrap();
+
+    assert!(win.status().await.system_unlock_enabled);
+    assert!(mac.status().await.system_unlock_enabled);
+
+    // Both can unlock using their respective system credentials
+    win.lock().await;
+    mac.lock().await;
+    assert!(win.unlock_system(0).await.is_ok());
+    assert!(mac.unlock_system(0).await.is_ok());
+
+    // Disabling on Mac revokes Mac credential but leaves Windows intact
+    mac.disable_system_unlock().await.unwrap();
+    assert!(!mac.status().await.system_unlock_enabled);
+    assert!(win.status().await.system_unlock_enabled);
+
+    win.lock().await;
+    assert!(win.unlock_system(0).await.is_ok());
 }

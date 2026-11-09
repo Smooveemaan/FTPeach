@@ -1,4 +1,4 @@
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 use anyhow::{Result, bail};
 
 #[cfg(windows)]
@@ -366,10 +366,447 @@ mod platform {
 #[cfg(windows)]
 pub use platform::*;
 
+#[cfg(target_os = "macos")]
+mod macos {
+    use anyhow::{Context, Result, bail, ensure};
+    use sha2::{Digest, Sha256};
+    use std::ffi::c_void;
+
+    pub const TOUCH_ID_SCHEME: &str = "touch-id-v1";
+    const K_CF_STRING_ENCODING_UTF8: u32 = 0x08000100;
+    const K_SEC_ACCESS_CONTROL_USER_PRESENCE: usize = 1 << 0;
+
+    #[link(name = "Security", kind = "framework")]
+    #[link(name = "CoreFoundation", kind = "framework")]
+    #[link(name = "LocalAuthentication", kind = "framework")]
+    extern "C" {
+        static kSecClass: *const c_void;
+        static kSecClassGenericPassword: *const c_void;
+        static kSecAttrService: *const c_void;
+        static kSecAttrAccount: *const c_void;
+        static kSecAttrAccessControl: *const c_void;
+        static kSecAttrAccessibleWhenUnlockedThisDeviceOnly: *const c_void;
+        static kSecValueData: *const c_void;
+        static kSecReturnData: *const c_void;
+        static kSecReturnAttributes: *const c_void;
+        static kSecMatchLimit: *const c_void;
+        static kSecMatchLimitOne: *const c_void;
+        static kSecUseAuthenticationUI: *const c_void;
+        static kSecUseAuthenticationUIFail: *const c_void;
+        static kSecUseOperationPrompt: *const c_void;
+
+        fn SecAccessControlCreateWithFlags(
+            allocator: *const c_void,
+            protection: *const c_void,
+            flags: usize,
+            error: *mut *const c_void,
+        ) -> *const c_void;
+
+        fn SecItemAdd(attributes: *const c_void, result: *mut *const c_void) -> i32;
+        fn SecItemCopyMatching(query: *const c_void, result: *mut *const c_void) -> i32;
+        fn SecItemDelete(query: *const c_void) -> i32;
+
+        static kCFTypeDictionaryKeyCallBacks: c_void;
+        static kCFTypeDictionaryValueCallBacks: c_void;
+        static kCFBooleanTrue: *const c_void;
+
+        fn CFDictionaryCreate(
+            allocator: *const c_void,
+            keys: *const *const c_void,
+            values: *const *const c_void,
+            num_values: isize,
+            key_callbacks: *const c_void,
+            value_callbacks: *const c_void,
+        ) -> *const c_void;
+
+        fn CFStringCreateWithCString(
+            alloc: *const c_void,
+            c_str: *const std::ffi::c_char,
+            encoding: u32,
+        ) -> *const c_void;
+
+        fn CFDataCreate(allocator: *const c_void, bytes: *const u8, length: isize)
+        -> *const c_void;
+        fn CFDataGetLength(the_data: *const c_void) -> isize;
+        fn CFDataGetBytePtr(the_data: *const c_void) -> *const u8;
+
+        fn CFRelease(cf: *const c_void);
+
+        fn objc_getClass(name: *const std::ffi::c_char) -> *const c_void;
+        fn sel_registerName(name: *const std::ffi::c_char) -> *const c_void;
+        fn objc_msgSend();
+        static _NSConcreteStackBlock: [*const c_void; 32];
+    }
+
+    struct CfRef(*const c_void);
+    impl Drop for CfRef {
+        fn drop(&mut self) {
+            if !self.0.is_null() {
+                // SAFETY: self.0 is a non-null retained CoreFoundation object owned solely by this CfRef.
+                unsafe { CFRelease(self.0) };
+            }
+        }
+    }
+
+    fn cf_string(s: &str) -> Result<CfRef> {
+        let c_str = std::ffi::CString::new(s).context("converting string to CString")?;
+        // SAFETY: CFStringCreateWithCString allocates a retained CFStringRef from a valid NUL-terminated C string.
+        let ptr = unsafe {
+            CFStringCreateWithCString(std::ptr::null(), c_str.as_ptr(), K_CF_STRING_ENCODING_UTF8)
+        };
+        if ptr.is_null() {
+            bail!("allocating CFString failed");
+        }
+        Ok(CfRef(ptr))
+    }
+
+    fn cf_data(bytes: &[u8]) -> Result<CfRef> {
+        // SAFETY: CFDataCreate allocates a retained CFDataRef copying bytes from the slice.
+        let ptr = unsafe { CFDataCreate(std::ptr::null(), bytes.as_ptr(), bytes.len() as isize) };
+        if ptr.is_null() {
+            bail!("allocating CFData failed");
+        }
+        Ok(CfRef(ptr))
+    }
+
+    fn cf_dictionary(keys: &[*const c_void], values: &[*const c_void]) -> Result<CfRef> {
+        ensure!(keys.len() == values.len(), "keys and values count mismatch");
+        // SAFETY: CFDictionaryCreate retains each key and value using standard CF callbacks.
+        let ptr = unsafe {
+            CFDictionaryCreate(
+                std::ptr::null(),
+                keys.as_ptr(),
+                values.as_ptr(),
+                keys.len() as isize,
+                &kCFTypeDictionaryKeyCallBacks,
+                &kCFTypeDictionaryValueCallBacks,
+            )
+        };
+        if ptr.is_null() {
+            bail!("allocating CFDictionary failed");
+        }
+        Ok(CfRef(ptr))
+    }
+
+    fn service_name() -> Result<CfRef> {
+        let service = format!("{}.vault", crate::app_config::identifier());
+        cf_string(&service)
+    }
+
+    pub fn available() -> bool {
+        // SAFETY: Invokes [LAContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:]
+        // via Objective-C runtime message dispatch. All object pointers are checked non-null.
+        unsafe {
+            let cls = objc_getClass(c"LAContext".as_ptr());
+            if cls.is_null() {
+                return false;
+            }
+            let sel_alloc = sel_registerName(c"alloc".as_ptr());
+            let sel_init = sel_registerName(c"init".as_ptr());
+            let sel_can_eval = sel_registerName(c"canEvaluatePolicy:error:".as_ptr());
+            let sel_release = sel_registerName(c"release".as_ptr());
+
+            let msg_send_id: unsafe extern "C" fn(*const c_void, *const c_void) -> *const c_void =
+                std::mem::transmute(objc_msgSend as *const ());
+            let ctx = msg_send_id(cls, sel_alloc);
+            if ctx.is_null() {
+                return false;
+            }
+            let ctx = msg_send_id(ctx, sel_init);
+            if ctx.is_null() {
+                return false;
+            }
+
+            let msg_send_can: unsafe extern "C" fn(
+                *const c_void,
+                *const c_void,
+                isize,
+                *mut *const c_void,
+            ) -> u8 = std::mem::transmute(objc_msgSend as *const ());
+
+            let mut error: *const c_void = std::ptr::null();
+            // LAPolicyDeviceOwnerAuthentication = 2: Touch ID or Mac user password.
+            let can_eval = msg_send_can(ctx, sel_can_eval, 2, &mut error);
+
+            let msg_send_void: unsafe extern "C" fn(*const c_void, *const c_void) =
+                std::mem::transmute(objc_msgSend as *const ());
+            msg_send_void(ctx, sel_release);
+
+            can_eval != 0
+        }
+    }
+
+    #[repr(C)]
+    struct BlockDescriptor {
+        reserved: usize,
+        size: usize,
+    }
+
+    static BLOCK_DESCRIPTOR: BlockDescriptor = BlockDescriptor {
+        reserved: 0,
+        size: std::mem::size_of::<AuthBlock>(),
+    };
+
+    #[repr(C)]
+    struct AuthBlock<'a> {
+        isa: *const c_void,
+        flags: i32,
+        reserved: i32,
+        invoke: unsafe extern "C" fn(*mut AuthBlock<'a>, bool, *const c_void),
+        descriptor: &'static BlockDescriptor,
+        tx: &'a std::sync::mpsc::SyncSender<bool>,
+    }
+
+    unsafe extern "C" fn auth_block_invoke(
+        block: *mut AuthBlock<'_>,
+        success: bool,
+        _error: *const c_void,
+    ) {
+        // SAFETY: Invoked by LocalAuthentication runtime when verification finishes;
+        // 	x lives on the calling thread's stack in erify_user while waiting.
+        let block = unsafe { &*block };
+        let _ = block.tx.send(success);
+    }
+
+    fn verify_user() -> Result<()> {
+        if !available() {
+            bail!("Touch ID or Mac password is not available");
+        }
+
+        let reason = cf_string("Confirm system unlock for the FTPeach vault")?;
+        let (tx, rx) = std::sync::mpsc::sync_channel(1);
+
+        // SAFETY: Allocates LAContext, constructs a stack block literal, and evaluates policy.
+        unsafe {
+            let cls = objc_getClass(c"LAContext".as_ptr());
+            if cls.is_null() {
+                bail!("LAContext class unavailable");
+            }
+            let sel_alloc = sel_registerName(c"alloc".as_ptr());
+            let sel_init = sel_registerName(c"init".as_ptr());
+            let sel_eval = sel_registerName(c"evaluatePolicy:localizedReason:reply:".as_ptr());
+            let sel_release = sel_registerName(c"release".as_ptr());
+
+            let msg_send_id: unsafe extern "C" fn(*const c_void, *const c_void) -> *const c_void =
+                std::mem::transmute(objc_msgSend as *const ());
+            let ctx = msg_send_id(cls, sel_alloc);
+            if ctx.is_null() {
+                bail!("allocating LAContext failed");
+            }
+            let ctx = msg_send_id(ctx, sel_init);
+            if ctx.is_null() {
+                bail!("initializing LAContext failed");
+            }
+
+            let block = AuthBlock {
+                isa: _NSConcreteStackBlock.as_ptr().cast(),
+                flags: 0,
+                reserved: 0,
+                invoke: auth_block_invoke,
+                descriptor: &BLOCK_DESCRIPTOR,
+                tx: &tx,
+            };
+
+            let msg_send_eval: unsafe extern "C" fn(
+                *const c_void,
+                *const c_void,
+                isize,
+                *const c_void,
+                *const c_void,
+            ) = std::mem::transmute(objc_msgSend as *const ());
+
+            msg_send_eval(
+                ctx,
+                sel_eval,
+                2, // LAPolicyDeviceOwnerAuthentication
+                reason.0,
+                &block as *const _ as *const c_void,
+            );
+
+            let msg_send_void: unsafe extern "C" fn(*const c_void, *const c_void) =
+                std::mem::transmute(objc_msgSend as *const ());
+            msg_send_void(ctx, sel_release);
+        }
+
+        match rx.recv_timeout(std::time::Duration::from_secs(300)) {
+            Ok(true) => Ok(()),
+            Ok(false) => bail!("Touch ID verification was canceled or failed"),
+            Err(_) => bail!("Touch ID verification timed out"),
+        }
+    }
+
+    pub fn exists(name: &str) -> bool {
+        let Ok(service) = service_name() else {
+            return false;
+        };
+        let Ok(account) = cf_string(name) else {
+            return false;
+        };
+        // SAFETY: Queries Keychain item attributes with UI forbidden to test presence silently.
+        unsafe {
+            let keys = [
+                kSecClass,
+                kSecAttrService,
+                kSecAttrAccount,
+                kSecReturnAttributes,
+                kSecMatchLimit,
+                kSecUseAuthenticationUI,
+            ];
+            let values = [
+                kSecClassGenericPassword,
+                service.0,
+                account.0,
+                kCFBooleanTrue,
+                kSecMatchLimitOne,
+                kSecUseAuthenticationUIFail,
+            ];
+            let Ok(dict) = cf_dictionary(&keys, &values) else {
+                return false;
+            };
+            let mut result: *const c_void = std::ptr::null();
+            let status = SecItemCopyMatching(dict.0, &mut result);
+            if !result.is_null() {
+                CFRelease(result);
+            }
+            // 0 (errSecSuccess), -25293 (errSecAuthFailed), or -25308 (errSecInteractionNotAllowed)
+            status == 0 || status == -25293 || status == -25308
+        }
+    }
+
+    pub fn register(name: &str, plaintext: &[u8], _hwnd: isize) -> Result<Vec<u8>> {
+        verify_user()?;
+        let service = service_name()?;
+        let account = cf_string(name)?;
+        let value = cf_data(plaintext)?;
+
+        // SAFETY: Creates access control requiring user presence (Touch ID or device passcode).
+        let access = unsafe {
+            let mut error: *const c_void = std::ptr::null();
+            let ptr = SecAccessControlCreateWithFlags(
+                std::ptr::null(),
+                kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+                K_SEC_ACCESS_CONTROL_USER_PRESENCE,
+                &mut error,
+            );
+            if ptr.is_null() {
+                bail!("creating access control for Keychain item failed");
+            }
+            CfRef(ptr)
+        }?;
+
+        let _ = revoke(name);
+
+        // SAFETY: Adds Keychain generic password item sealed with user presence access control.
+        unsafe {
+            let keys = [
+                kSecClass,
+                kSecAttrService,
+                kSecAttrAccount,
+                kSecAttrAccessControl,
+                kSecValueData,
+            ];
+            let values = [
+                kSecClassGenericPassword,
+                service.0,
+                account.0,
+                access.0,
+                value.0,
+            ];
+            let dict = cf_dictionary(&keys, &values)?;
+            let status = SecItemAdd(dict.0, std::ptr::null_mut());
+            if status != 0 {
+                bail!("SecItemAdd failed with status {status}");
+            }
+        }
+        .context("registering Touch ID credential in Keychain")?;
+
+        let wrapped = Sha256::digest(plaintext).to_vec();
+        Ok(wrapped)
+    }
+
+    pub fn unwrap(name: &str, ciphertext: &[u8], _hwnd: isize) -> Result<Vec<u8>> {
+        let service = service_name()?;
+        let account = cf_string(name)?;
+        let prompt = cf_string("Confirm system unlock for the FTPeach vault")?;
+
+        // SAFETY: SecItemCopyMatching prompts user for biometric or passcode via kSecAccessControlUserPresence.
+        let data = unsafe {
+            let keys = [
+                kSecClass,
+                kSecAttrService,
+                kSecAttrAccount,
+                kSecReturnData,
+                kSecMatchLimit,
+                kSecUseOperationPrompt,
+            ];
+            let values = [
+                kSecClassGenericPassword,
+                service.0,
+                account.0,
+                kCFBooleanTrue,
+                kSecMatchLimitOne,
+                prompt.0,
+            ];
+            let dict = cf_dictionary(&keys, &values)?;
+            let mut result: *const c_void = std::ptr::null();
+            let status = SecItemCopyMatching(dict.0, &mut result);
+            if status != 0 || result.is_null() {
+                bail!("Touch ID verification was canceled or failed (status {status})");
+            }
+            let result = CfRef(result);
+            let len = CFDataGetLength(result.0);
+            let ptr = CFDataGetBytePtr(result.0);
+            if len <= 0 || ptr.is_null() {
+                bail!("invalid key data in Keychain");
+            }
+            std::slice::from_raw_parts(ptr, len as usize).to_vec()
+        }
+        .context("Touch ID verification was canceled or failed")?;
+
+        if !ciphertext.is_empty() {
+            let digest = Sha256::digest(&data);
+            if digest.as_slice() != ciphertext {
+                bail!("Keychain credential does not match the expected vault key");
+            }
+        }
+        Ok(data)
+    }
+
+    pub fn revoke(name: &str) -> Result<()> {
+        let service = service_name()?;
+        let account = cf_string(name)?;
+        // SAFETY: Deletes matching generic password item from Keychain without user prompt.
+        unsafe {
+            let keys = [kSecClass, kSecAttrService, kSecAttrAccount];
+            let values = [kSecClassGenericPassword, service.0, account.0];
+            let dict = cf_dictionary(&keys, &values)?;
+            let status = SecItemDelete(dict.0);
+            if status == 0 || status == -25300
+            /* errSecItemNotFound */
+            {
+                Ok(())
+            } else {
+                bail!("SecItemDelete failed with status {status}")
+            }
+        }
+        .context("deleting Touch ID credential from Keychain")
+    }
+}
+
+#[cfg(target_os = "macos")]
+pub use macos::*;
+
 /// The computer's key store as the vault uses it. A vault can be carried to
 /// another computer; its keys cannot, so the vault asks which of its
 /// credentials this computer holds. Tests stand in for Windows Hello here.
+pub const HELLO_SCHEME: &str = "windows-hello-v1";
+pub const TOUCH_ID_SCHEME: &str = "touch-id-v1";
+
 pub trait Keys: Send + Sync {
+    /// The scheme identifier for this provider (e.g. "windows-hello-v1" or "touch-id-v1").
+    fn scheme(&self) -> &'static str {
+        HELLO_SCHEME
+    }
     /// Whether this computer holds the key named `name`. Asks nothing of the user.
     fn exists(&self, name: &str) -> bool;
     fn register(&self, name: &str, plaintext: &[u8], hwnd: isize) -> anyhow::Result<Vec<u8>>;
@@ -381,6 +818,16 @@ pub trait Keys: Send + Sync {
 pub struct PlatformKeys;
 
 impl Keys for PlatformKeys {
+    fn scheme(&self) -> &'static str {
+        #[cfg(target_os = "macos")]
+        {
+            TOUCH_ID_SCHEME
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            HELLO_SCHEME
+        }
+    }
     fn exists(&self, name: &str) -> bool {
         exists(name)
     }
@@ -395,23 +842,23 @@ impl Keys for PlatformKeys {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn available() -> bool {
     false
 }
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn exists(_: &str) -> bool {
     false
 }
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn register(_: &str, _: &[u8], _: isize) -> Result<Vec<u8>> {
     bail!("system unlock is unavailable on this platform")
 }
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn unwrap(_: &str, _: &[u8], _: isize) -> Result<Vec<u8>> {
     bail!("system unlock is unavailable on this platform")
 }
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn revoke(_: &str) -> Result<()> {
     bail!("system unlock is unavailable on this platform")
 }
@@ -424,5 +871,15 @@ mod tests {
     fn a_key_nobody_registered_does_not_exist() {
         let name = format!("FTPeach-vault-test-{}", uuid::Uuid::new_v4());
         assert!(!super::exists(&name));
+    }
+
+    #[test]
+    fn platform_keys_scheme_matches_expected() {
+        use super::Keys;
+        let keys = super::PlatformKeys;
+        #[cfg(target_os = "macos")]
+        assert_eq!(keys.scheme(), TOUCH_ID_SCHEME);
+        #[cfg(not(target_os = "macos"))]
+        assert_eq!(keys.scheme(), HELLO_SCHEME);
     }
 }

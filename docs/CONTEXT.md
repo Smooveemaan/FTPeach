@@ -9,7 +9,7 @@ The latest published FTPeach release. Security fixes ship only as a new release 
 _Avoid_: supported version, main branch
 
 **System protection**:
-The secret-storage mode in which saved secrets are encrypted for the signed-in Windows account, with no master password. Anyone acting as that Windows user can read them.
+The secret-storage mode in which saved secrets are encrypted for the signed-in Windows account, Keychain, or Secret Service, with no master password. Anyone acting as that user can read them.
 _Avoid_: Windows account protection, DPAPI mode, legacy storage
 
 **Enhanced protection**:
@@ -25,7 +25,7 @@ A password or passphrase FTPeach keeps between launches: a saved site's password
 _Avoid_: credential, stored password
 
 **System unlock**:
-Unlocking the vault with Windows Hello instead of the master password. It belongs to enhanced protection and is unrelated to system protection despite the similar name.
+Unlocking the vault with Windows Hello or Touch ID instead of the master password. It belongs to enhanced protection and is unrelated to system protection despite the similar name.
 _Avoid_: Windows Hello unlock, biometric unlock
 
 **Accepted risk**:

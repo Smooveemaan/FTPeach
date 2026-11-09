@@ -1,5 +1,5 @@
 use super::{stronghold_snapshot, stronghold_snapshot::Secrets, vault_file};
-use crate::security::system_unlock::Keys;
+use crate::security::system_unlock::{HELLO_SCHEME, Keys, TOUCH_ID_SCHEME};
 use anyhow::{Context, Result, bail};
 use argon2::{Algorithm, Argon2, Params, Version};
 use base64::{Engine, engine::general_purpose::STANDARD as BASE64};
@@ -92,7 +92,6 @@ struct VaultMetadata {
     system_unlocks: Vec<SystemUnlockMetadata>,
 }
 
-const HELLO_SCHEME: &str = "windows-hello-v1";
 /// Each credential is about half a kilobyte and `vault.json` is read whole
 /// under a size budget, so the list is bounded. Past the bound the oldest
 /// entry gives way; its computer opens the vault with the master password
@@ -104,7 +103,7 @@ impl VaultMetadata {
     fn system_unlock_here(&self, keys: &dyn Keys) -> Option<&SystemUnlockMetadata> {
         self.system_unlocks
             .iter()
-            .find(|entry| entry.scheme == HELLO_SCHEME && keys.exists(&entry.credential))
+            .find(|entry| entry.scheme == keys.scheme() && keys.exists(&entry.credential))
     }
 }
 
@@ -574,7 +573,7 @@ impl Vault {
         // A credential of a scheme this version cannot use is replaced where
         // its key is; entries of other computers stay for those computers.
         metadata.system_unlocks.retain(|entry| {
-            entry.scheme == HELLO_SCHEME || self.keys.revoke(&entry.credential).is_err()
+            entry.scheme == self.keys.scheme() || self.keys.revoke(&entry.credential).is_err()
         });
         let credential = format!("FTPeach-vault-{}", uuid::Uuid::new_v4());
         let wrapped = self.keys.register(&credential, &unlocked.data_key, hwnd)?;
@@ -582,7 +581,7 @@ impl Vault {
             metadata.system_unlocks.remove(0);
         }
         metadata.system_unlocks.push(SystemUnlockMetadata {
-            scheme: HELLO_SCHEME.into(),
+            scheme: self.keys.scheme().into(),
             credential: credential.clone(),
             wrapped_key: BASE64.encode(wrapped),
         });
@@ -631,7 +630,7 @@ impl Vault {
         let unlocked = state.as_ref().ok_or_else(crate::ipc::vault_locked)?;
         anyhow::ensure!(
             key.as_slice() == unlocked.data_key.as_slice(),
-            "the Windows Hello credential does not open this vault"
+            "the system credential does not open this vault"
         );
         Ok(())
     }
@@ -640,10 +639,10 @@ impl Vault {
     /// computers registered stays: their keys cannot be reached from here.
     pub async fn disable_system_unlock(&self) -> Result<()> {
         let mut metadata = self.read_metadata().await?;
-        let (here, elsewhere): (Vec<_>, Vec<_>) = metadata
-            .system_unlocks
-            .into_iter()
-            .partition(|entry| self.keys.exists(&entry.credential));
+        let (here, elsewhere): (Vec<_>, Vec<_>) =
+            metadata.system_unlocks.into_iter().partition(|entry| {
+                entry.scheme == self.keys.scheme() && self.keys.exists(&entry.credential)
+            });
         if here.is_empty() {
             return Ok(());
         }

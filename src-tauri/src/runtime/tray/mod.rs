@@ -252,6 +252,27 @@ pub fn restore(app: &AppHandle) {
     });
 }
 
+/// Configuration for the tray/menu-bar icon behavior per platform.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct TrayIconConfig {
+    /// On macOS, status bar extra icons must be configured as template images
+    /// so the system automatically adjusts contrast for light/dark menu bar modes.
+    pub is_template: bool,
+    /// On macOS, clicking the menu bar icon always displays its menu.
+    /// On Windows, right-click displays the menu while left-click restores the window.
+    pub show_menu_on_left_click: bool,
+    /// Whether left-click on the tray icon restores the window.
+    pub restore_on_left_click: bool,
+}
+
+pub fn tray_icon_config(is_macos: bool) -> TrayIconConfig {
+    TrayIconConfig {
+        is_template: is_macos,
+        show_menu_on_left_click: is_macos,
+        restore_on_left_click: !is_macos,
+    }
+}
+
 fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
     let live = LiveMenu::build(app, model)?;
     let scale = app
@@ -259,14 +280,19 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
         .ok()
         .flatten()
         .map_or(1.0, |monitor| monitor.scale_factor());
-    TrayIconBuilder::with_id(TRAY_ID)
+    let config = tray_icon_config(cfg!(target_os = "macos"));
+    let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon_for_scale(scale))
         .menu(live.menu())
         .tooltip(live.tooltip())
+        .icon_as_template(config.is_template)
+        .show_menu_on_left_click(config.show_menu_on_left_click);
+
+    if config.restore_on_left_click {
         // Left click brings the window back; the menu opens on right click,
-        // same as Windows' own tray convention.
-        .show_menu_on_left_click(false)
-        .on_tray_icon_event(|tray, event| {
+        // same as Windows' own tray convention. On macOS, left click opens the
+        // menu bar extra directly.
+        builder = builder.on_tray_icon_event(|tray, event| {
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,
@@ -275,8 +301,10 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
             {
                 restore(tray.app_handle());
             }
-        })
-        .build(app)?;
+        });
+    }
+
+    builder.build(app)?;
     Ok(live)
 }
 
@@ -305,7 +333,7 @@ fn icon_for_scale(scale: f64) -> Image<'static> {
 
 #[cfg(test)]
 mod tests {
-    use super::icon_for_scale;
+    use super::*;
 
     #[test]
     fn the_tray_icon_matches_the_display_scale() {
@@ -326,5 +354,33 @@ mod tests {
                 "at scale {scale}"
             );
         }
+    }
+
+    #[test]
+    fn tray_icon_configuration_matches_platform_conventions() {
+        let macos = tray_icon_config(true);
+        assert!(
+            macos.is_template,
+            "macOS menu bar extra must be a template icon"
+        );
+        assert!(
+            macos.show_menu_on_left_click,
+            "macOS left click must open menu"
+        );
+        assert!(
+            !macos.restore_on_left_click,
+            "macOS left click should not restore window directly"
+        );
+
+        let windows = tray_icon_config(false);
+        assert!(!windows.is_template, "Windows tray icon is not a template");
+        assert!(
+            !windows.show_menu_on_left_click,
+            "Windows left click does not show menu (right click does)"
+        );
+        assert!(
+            windows.restore_on_left_click,
+            "Windows left click restores window"
+        );
     }
 }

@@ -2,6 +2,7 @@ pub(crate) mod app_log;
 pub(crate) mod app_menu;
 #[cfg(windows)]
 pub(crate) mod browser_keys;
+pub(crate) mod dock;
 pub(crate) mod log_emitter;
 pub(crate) mod log_messages;
 pub(crate) mod notification;

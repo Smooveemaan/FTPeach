@@ -210,10 +210,18 @@ pub fn run() {
         .setup(runtime::startup::setup)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|_app, event| {
-            if matches!(event, tauri::RunEvent::Exit) && local_fs::portable::root().is_some() {
+        .run(|_app, event| match event {
+            tauri::RunEvent::Exit if local_fs::portable::root().is_some() => {
                 runtime::notification::unregister_identity();
             }
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen {
+                has_visible_windows,
+                ..
+            } => {
+                runtime::dock::handle_reopen(_app, has_visible_windows);
+            }
+            _ => {}
         });
 }
 /// Where this copy keeps its data: `data\` beside a portable program,

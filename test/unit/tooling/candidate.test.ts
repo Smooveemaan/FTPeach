@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
@@ -98,9 +99,9 @@ test('MSIX builder writes a 4-part full-trust AppxManifest and invokes makeappx 
     packedArgs = args;
     const layoutIndex = args.indexOf('/d') + 1;
     const outIndex = args.indexOf('/p') + 1;
-    return readFile(path.join(args[layoutIndex]!, 'AppxManifest.xml')).then((content) =>
-      writeFile(args[outIndex]!, content),
-    ) as unknown as Buffer;
+    const content = readFileSync(path.join(args[layoutIndex]!, 'AppxManifest.xml'));
+    writeFileSync(args[outIndex]!, content);
+    return Buffer.from('');
   }) as typeof execFileSync);
   assert.ok(out.endsWith('FTPeach_0.7.0_x64.msix'));
   assert.equal(packedArgs[0], 'pack');

@@ -77,12 +77,48 @@ pub fn quit_route(active_transfers: u32, unsynced_edits: usize) -> QuitRoute {
     }
 }
 
+/// What a close request means for the window and application.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum CloseAction {
+    /// Window is hidden to tray (or hidden with tray menu bar icon).
+    HideToTray,
+    /// Window is hidden without quitting (standard macOS behavior).
+    HideWindow,
+    /// Prompt user before quitting because of running transfers or unsynced edits.
+    AskQuit,
+    /// Shut down the application.
+    Shutdown,
+}
+
+/// Decides what closing the window should do.
+///
+/// On macOS, closing the window hides it without terminating the process: the app
+/// remains alive in the Dock, and background transfers continue uninterrupted.
+/// On Windows and Linux, closing the window without `closeToTray` initiates application
+/// shutdown, prompting the user if transfers or edits are in flight.
+pub fn close_action(
+    is_macos: bool,
+    close_to_tray: bool,
+    active_transfers: u32,
+    unsynced_edits: usize,
+) -> CloseAction {
+    if close_to_tray {
+        CloseAction::HideToTray
+    } else if is_macos {
+        CloseAction::HideWindow
+    } else if quit_route(active_transfers, unsynced_edits) == QuitRoute::Ask {
+        CloseAction::AskQuit
+    } else {
+        CloseAction::Shutdown
+    }
+}
+
 /// What a close request means.
 ///
 /// With `closeToTray` on, closing the window hides it to the tray; otherwise it shuts the
-/// application down, asking first while transfers run. Reading that setting and choosing between the two is a
-/// decision, not wiring, so it lives with shutdown rather than inside
-/// `run()`'s window-event closure.
+/// application down (or hides the window on macOS), asking first while transfers run.
+/// Reading that setting and choosing between the options is a decision, not wiring,
+/// so it lives with shutdown rather than inside `run()`'s window-event closure.
 pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: Store) {
     // The close-to-tray preference itself may still be debounced in the UI, so
     // ask for it to be stored before reading it -- briefly, because the window
@@ -95,20 +131,29 @@ pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: St
         .get("closeToTray")
         .and_then(|value| value.as_bool())
         .unwrap_or(false);
-    if close_to_tray {
-        tray::hide_to_tray(window);
-        return;
-    }
-    if quit_route(
+    let action = close_action(
+        cfg!(target_os = "macos"),
+        close_to_tray,
         tray::active_transfers(&app),
         app.state::<OpenWithWatchers>().unsynced_count(),
-    ) == QuitRoute::Ask
-    {
-        ask_window(&app);
-        return;
-    }
-    if app.state::<ShutdownCoordinator>().begin() {
-        run(app.clone(), window).await;
+    );
+    match action {
+        CloseAction::HideToTray => {
+            tray::hide_to_tray(window);
+        }
+        CloseAction::HideWindow => {
+            let _ = window.hide();
+            crate::runtime::confirmation_window::close_all(&app);
+            crate::runtime::vault_auto_lock::enforce_now(&app);
+        }
+        CloseAction::AskQuit => {
+            ask_window(&app);
+        }
+        CloseAction::Shutdown => {
+            if app.state::<ShutdownCoordinator>().begin() {
+                run(app.clone(), window).await;
+            }
+        }
     }
 }
 
@@ -275,6 +320,24 @@ mod tests {
         assert_eq!(quit_route(1, 0), QuitRoute::Ask);
         assert_eq!(quit_route(u32::MAX, 0), QuitRoute::Ask);
         assert_eq!(quit_route(0, 1), QuitRoute::Ask);
+    }
+
+    #[test]
+    fn close_action_respects_platform_and_preferences() {
+        // With closeToTray enabled, both macOS and non-macOS hide to tray
+        assert_eq!(close_action(false, true, 0, 0), CloseAction::HideToTray);
+        assert_eq!(close_action(false, true, 5, 2), CloseAction::HideToTray);
+        assert_eq!(close_action(true, true, 0, 0), CloseAction::HideToTray);
+        assert_eq!(close_action(true, true, 5, 2), CloseAction::HideToTray);
+
+        // On macOS without closeToTray, closing hides the window without quitting or prompting
+        assert_eq!(close_action(true, false, 0, 0), CloseAction::HideWindow);
+        assert_eq!(close_action(true, false, 5, 2), CloseAction::HideWindow);
+
+        // On Windows/Linux without closeToTray, closing shuts down or asks if busy
+        assert_eq!(close_action(false, false, 0, 0), CloseAction::Shutdown);
+        assert_eq!(close_action(false, false, 1, 0), CloseAction::AskQuit);
+        assert_eq!(close_action(false, false, 0, 1), CloseAction::AskQuit);
     }
 
     #[test]

@@ -7,10 +7,15 @@ import { effectiveBinding } from '../shortcuts/resolve.ts';
 import { formatBinding } from '../shortcuts/bindings.ts';
 import type { ShortcutOverrides } from '../shortcuts/resolve.ts';
 import type { MenuItem } from '../components/MenuItems.tsx';
+import { preloadSettingsDialog } from './AppDialogs.tsx';
 
 type PaneOrientation = 'horizontal' | 'vertical';
 type Action = () => unknown;
 type RefreshAction = () => unknown;
+
+const preloadSettings = () => {
+  void preloadSettingsDialog();
+};
 
 interface ViewToolbarProps {
   showLocalPane: boolean;
@@ -321,6 +326,8 @@ export default function ViewToolbar({
           className="btn btn-icon view-toolbar-settings"
           data-tooltip={settingsTooltip}
           aria-label={t('settings.shortcuts.actions.openSettings')}
+          onPointerEnter={preloadSettings}
+          onFocus={preloadSettings}
           onClick={(e) => {
             e.currentTarget.blur();
             openSettings();

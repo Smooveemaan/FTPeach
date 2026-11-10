@@ -15,7 +15,12 @@ export default defineConfig({
     strictPort: true,
     // Transform the startup graph while Cargo prepares the native process.
     warmup: {
-      clientFiles: ['./src/main.tsx', './src/App.tsx', './src/platform/tauriApi.ts'],
+      clientFiles: [
+        './src/main.tsx',
+        './src/App.tsx',
+        './src/platform/tauriApi.ts',
+        './src/features/settings/ui.ts',
+      ],
     },
     watch: {
       ignored: [

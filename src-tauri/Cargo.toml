@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "FTPeach"
 version = "0.6.1"
 description = "A lightweight FTP, FTPS, SFTP and WebDAV client for Windows"
 authors = ["Smooveemaan"]

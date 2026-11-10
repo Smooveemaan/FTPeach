@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -34,18 +34,33 @@ const RecoveredEditsDialog = lazy(() =>
     default: RecoveredEditsDialog,
   })),
 );
-const SettingsDialog = lazy(() =>
-  import('../features/settings/ui.ts').then(({ SettingsDialog }) => ({
-    default: SettingsDialog,
-  })),
-);
+
+let loadedSettingsDialog: (typeof import('../features/settings/ui.ts'))['SettingsDialog'] | null =
+  null;
+let settingsDialogPromise: Promise<{
+  default: (typeof import('../features/settings/ui.ts'))['SettingsDialog'];
+}> | null = null;
+
+export function preloadSettingsDialog(): Promise<{
+  default: (typeof import('../features/settings/ui.ts'))['SettingsDialog'];
+}> {
+  if (!settingsDialogPromise) {
+    settingsDialogPromise = import('../features/settings/ui.ts').then(({ SettingsDialog }) => {
+      loadedSettingsDialog = SettingsDialog;
+      return { default: SettingsDialog };
+    });
+  }
+  return settingsDialogPromise;
+}
+
+const LazySettingsDialog = lazy(preloadSettingsDialog);
 const SiteManagerDialog = lazy(() =>
   import('../features/sites/ui.ts').then(({ SiteManagerDialog }) => ({
     default: SiteManagerDialog,
   })),
 );
 
-type SettingsDialogProps = ComponentProps<typeof SettingsDialog>;
+type SettingsDialogProps = ComponentProps<typeof LazySettingsDialog>;
 type SettingsValues = Omit<
   SettingsDialogProps,
   | 'updateStatus'
@@ -157,6 +172,21 @@ interface AppDialogsProps {
 }
 
 export default function AppDialogs({ model }: AppDialogsProps) {
+  const [activeSettingsDialog, setActiveSettingsDialog] = useState(() => loadedSettingsDialog);
+
+  useEffect(() => {
+    if (loadedSettingsDialog) {
+      setActiveSettingsDialog(() => loadedSettingsDialog);
+      return;
+    }
+    const timer = setTimeout(() => {
+      void preloadSettingsDialog().then(({ default: Component }) => {
+        setActiveSettingsDialog(() => Component);
+      });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   const { t } = useTranslation();
   const {
     settings,
@@ -174,6 +204,8 @@ export default function AppDialogs({ model }: AppDialogsProps) {
   } = model;
   const changed = openWith.changed;
   const changedWatch = changed ? openWith.watches[changed.id] : undefined;
+
+  const SettingsDialog = activeSettingsDialog ?? LazySettingsDialog;
 
   return (
     <Suspense fallback={null}>

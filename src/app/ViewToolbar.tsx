@@ -323,9 +323,10 @@ export default function ViewToolbar({
       {openSettings && (
         <button
           type="button"
-          className="btn btn-icon view-toolbar-settings"
+          className="btn btn-ghost btn-icon view-toolbar-settings"
           data-tooltip={settingsTooltip}
           aria-label={t('settings.shortcuts.actions.openSettings')}
+          aria-haspopup="dialog"
           onPointerEnter={preloadSettings}
           onFocus={preloadSettings}
           onClick={(e) => {
@@ -333,7 +334,7 @@ export default function ViewToolbar({
             openSettings();
           }}
         >
-          <Icon name="wrench" />
+          <Icon name="settings" />
         </button>
       )}
     </div>

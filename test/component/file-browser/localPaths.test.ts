@@ -57,7 +57,7 @@ for (const [os, agent] of Object.entries(agents)) {
       updatePane: vi.fn(),
     });
     expect(navigation.crumbsFor({ ...tab.panes.a, path: root })).toEqual([
-      { label: windows ? 'C:' : '/', path: root },
+      { label: windows ? 'C:' : os === 'macos' ? 'Macintosh HD' : '/', path: root },
     ]);
     const crumbs = navigation.crumbsFor({ ...tab.panes.a, path: nested });
     expect(crumbs.at(-1)).toEqual({ label: 'work', path: nested });
@@ -70,6 +70,18 @@ for (const [os, agent] of Object.entries(agents)) {
     refreshPane.mockClear();
     navigation.paneParent('a');
     expect(refreshPane).not.toHaveBeenCalled();
+    if (os === 'macos') {
+      const volumePath = '/Volumes/USB/work';
+      const volumeCrumbs = navigation.crumbsFor({ ...tab.panes.a, path: volumePath });
+      expect(volumeCrumbs).toEqual([
+        { label: 'USB', path: '/Volumes/USB' },
+        { label: 'work', path: volumePath },
+      ]);
+      tab.panes.a.path = '/Volumes/USB';
+      refreshPane.mockClear();
+      navigation.paneParent('a');
+      expect(refreshPane).not.toHaveBeenCalled();
+    }
     const source = { ...tab.panes.a, path: home, entries: [{ name: 'work', isDirectory: true }] };
     const target = { ...source, path: nested };
     const keys = { ctrlKey: false, shiftKey: false };

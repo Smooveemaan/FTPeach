@@ -30,6 +30,16 @@ export interface SelectedSshKey {
   isRsa: boolean;
 }
 
+let rootDriveLabel = 'Macintosh HD';
+
+export function getRootDriveLabel(): string {
+  return rootDriveLabel;
+}
+
+export function setRootDriveLabel(label: string): void {
+  if (label) rootDriveLabel = label;
+}
+
 function onOsDragDrop(callback: (payload: OsDragDropPayload) => void) {
   let unlisten: (() => void) | null = null;
   let cancelled = false;
@@ -134,13 +144,17 @@ export function createFilesystemApi(invoke: InvokeFn) {
         (value): value is string => typeof value === 'string' && value !== '',
         () => null,
       ),
-    drives: (): Promise<LocalDrive[]> =>
-      checkedResponse(
+    drives: async (): Promise<LocalDrive[]> => {
+      const list = await checkedResponse(
         'fs_drives',
         invoke('fs_drives'),
         (value): value is LocalDrive[] => Array.isArray(value) && value.every(isLocalDrive),
         () => [],
-      ),
+      );
+      const root = list.find((d) => d.path === '/');
+      if (root?.label) setRootDriveLabel(root.label);
+      return list;
+    },
     mkdir: (localPath: string) => voidOutcome(invoke, 'fs_mkdir', { localPath }),
     rename: (oldPath: string, newPath: string, overwrite: boolean) =>
       voidOutcome(invoke, 'fs_rename', {

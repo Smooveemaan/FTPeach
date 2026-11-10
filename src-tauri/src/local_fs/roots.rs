@@ -1,10 +1,10 @@
-//! Local navigation roots: drive letters on Windows, home and mount folders on Unix.
+//! Local navigation roots: drive letters on Windows, filesystem root and mount folders on Unix.
 
 use serde::Serialize;
 use std::path::PathBuf;
 
 /// A local navigation destination and its menu label.
-#[derive(Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Drive {
     path: String,
     label: String,
@@ -33,7 +33,7 @@ pub(crate) async fn drives() -> Vec<Drive> {
 }
 
 #[cfg(unix)]
-/// The filesystem root, home, and folders under the platform's mount locations.
+/// The filesystem root and folders under the platform's mount locations.
 pub(crate) async fn drives() -> Vec<Drive> {
     #[cfg(target_os = "macos")]
     let parents = vec![PathBuf::from("/Volumes")];
@@ -49,42 +49,66 @@ pub(crate) async fn drives() -> Vec<Drive> {
         }
         parents
     };
-    unix_roots(home(), &parents).await
+    unix_roots(&parents).await
 }
 
 #[cfg(unix)]
-async fn unix_roots(home: Option<PathBuf>, parents: &[PathBuf]) -> Vec<Drive> {
-    let mut paths = vec![PathBuf::from("/")];
-    paths.extend(home);
-    let mut mounts = Vec::new();
+async fn unix_roots(parents: &[PathBuf]) -> Vec<Drive> {
+    #[cfg(target_os = "macos")]
+    let mut root_label = "Macintosh HD".to_string();
+    #[cfg(not(target_os = "macos"))]
+    let mut root_label = "/".to_string();
+
+    let mut mounts: Vec<(PathBuf, String)> = Vec::new();
     for parent in parents {
         let Ok(mut entries) = tokio::fs::read_dir(parent).await else {
             continue;
         };
         while let Ok(Some(entry)) = entries.next_entry().await {
-            // Mounted folders may be symlinks (for example the system volume on macOS).
-            if tokio::fs::metadata(entry.path())
+            let path = entry.path();
+            // On macOS, the system root volume is typically symlinked in /Volumes (e.g. Macintosh HD -> /).
+            if tokio::fs::read_link(&path)
+                .await
+                .is_ok_and(|target| target == std::path::Path::new("/"))
+            {
+                if let Some(name) = entry.file_name().to_str() {
+                    root_label = name.to_string();
+                }
+                // Skip adding this symlink as a separate mount since / is already the root.
+                continue;
+            }
+
+            // Mounted folders may be symlinks (for example external volumes).
+            if tokio::fs::metadata(&path)
                 .await
                 .is_ok_and(|meta| meta.is_dir())
             {
-                mounts.push(entry.path());
+                let label = entry.file_name().to_string_lossy().into_owned();
+                mounts.push((path, label));
             }
         }
     }
-    mounts.sort();
-    paths.extend(mounts);
+    mounts.sort_by(|a, b| a.0.cmp(&b.0));
+
+    let mut drives = Vec::new();
     let mut seen = std::collections::HashSet::new();
-    paths
-        .into_iter()
-        .filter(|path| seen.insert(path.clone()))
-        .map(|path| {
-            let path = path.to_string_lossy().into_owned();
-            Drive {
-                label: path.clone(),
-                path,
-            }
-        })
-        .collect()
+
+    seen.insert(PathBuf::from("/"));
+    drives.push(Drive {
+        path: "/".to_string(),
+        label: root_label,
+    });
+
+    for (path, label) in mounts {
+        if seen.insert(path.clone()) {
+            drives.push(Drive {
+                path: path.to_string_lossy().into_owned(),
+                label,
+            });
+        }
+    }
+
+    drives
 }
 
 #[cfg(test)]
@@ -99,18 +123,16 @@ mod tests {
         #[cfg(unix)]
         {
             assert_eq!(roots[0].path, "/");
-            let home = home().unwrap();
-            assert!(
-                roots
-                    .iter()
-                    .any(|drive| std::path::Path::new(&drive.path) == home.as_path())
-            );
+            #[cfg(target_os = "macos")]
+            assert_eq!(roots[0].label, "Macintosh HD");
+            #[cfg(not(target_os = "macos"))]
+            assert_eq!(roots[0].label, "/");
         }
     }
 
     #[cfg(unix)]
     #[tokio::test]
-    async fn roots_include_home_and_sorted_mount_folders_once() {
+    async fn roots_include_sorted_mount_folders_once() {
         let root = std::env::temp_dir().join(format!("ftpeach-roots-{}", uuid::Uuid::new_v4()));
         let parents: Vec<_> = ["Volumes", "media/user", "run/media/user", "mnt"]
             .iter()
@@ -128,13 +150,12 @@ mod tests {
             root.join("absent"),
             parents[0].join("file"),
         ]);
-        let home = parents[0].join("disk");
-        let mut expected = vec![PathBuf::from("/"), home.clone()];
+        let mut expected = vec![PathBuf::from("/")];
         let mut mounts: Vec<_> = parents.iter().map(|parent| parent.join("disk")).collect();
         mounts.push(parents[0].join("link"));
         mounts.sort();
-        expected.extend(mounts.into_iter().filter(|path| path != &home));
-        let roots = unix_roots(Some(home), &inputs).await;
+        expected.extend(mounts);
+        let roots = unix_roots(&inputs).await;
         assert_eq!(
             roots
                 .iter()
@@ -142,9 +163,43 @@ mod tests {
                 .collect::<Vec<_>>(),
             expected
         );
-        assert!(roots.iter().all(|drive| drive.label == drive.path));
-        assert_eq!(unix_roots(None, &[]).await[0].path, "/");
-        assert_eq!(unix_roots(Some(PathBuf::from("/")), &[]).await.len(), 1);
+        assert_eq!(roots[0].path, "/");
+        #[cfg(target_os = "macos")]
+        assert_eq!(roots[0].label, "Macintosh HD");
+        #[cfg(not(target_os = "macos"))]
+        assert_eq!(roots[0].label, "/");
+
+        for drive in &roots[1..] {
+            let file_name = std::path::Path::new(&drive.path)
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap();
+            assert_eq!(drive.label, file_name);
+        }
+        assert_eq!(unix_roots(&[]).await[0].path, "/");
+        assert_eq!(unix_roots(&[]).await.len(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn roots_detect_symlink_to_root_as_system_volume() {
+        let root = std::env::temp_dir().join(format!("ftpeach-roots-{}", uuid::Uuid::new_v4()));
+        let volumes = root.join("Volumes");
+        std::fs::create_dir_all(&volumes).unwrap();
+        std::os::unix::fs::symlink("/", volumes.join("Macintosh HD")).unwrap();
+        std::fs::create_dir_all(volumes.join("External")).unwrap();
+
+        let roots = unix_roots(&[volumes]).await;
+        assert_eq!(roots[0].path, "/");
+        assert_eq!(roots[0].label, "Macintosh HD");
+        assert_eq!(roots.len(), 2);
+        assert_eq!(roots[1].label, "External");
+        assert_eq!(
+            roots[1].path,
+            root.join("Volumes/External").to_string_lossy()
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 }

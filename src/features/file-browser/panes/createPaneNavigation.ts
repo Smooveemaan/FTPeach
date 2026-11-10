@@ -13,6 +13,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { PathCrumb } from '../components/PathBar.tsx';
 import type { PaneId, PaneState, TabState } from './paneModel.ts';
 import type { PaneRefreshes } from './usePaneRefresh.ts';
+import { getRootDriveLabel } from '../../../platform/api/filesystem.ts';
 
 type SyncAnchors = Record<string, Record<PaneId, string>>;
 type PanePatch = Partial<PaneState> | ((pane: PaneState) => Partial<PaneState>);
@@ -57,6 +58,27 @@ export function createPaneNavigation({
 }: PaneNavigationOptions) {
   const localCrumbsFor = (path: string): PathCrumb[] => {
     if (!path) return [{ label: '…', path }];
+    if (hostPlatform() === 'macos') {
+      const parts = localPathParts(path);
+      if (parts[0] === 'Volumes' && parts.length > 1) {
+        const volumeName = parts[1];
+        let acc = `/Volumes/${volumeName}`;
+        const crumbs: PathCrumb[] = [{ label: volumeName, path: acc }];
+        for (const label of parts.slice(2)) {
+          acc += `/${label}`;
+          crumbs.push({ label, path: acc });
+        }
+        return crumbs;
+      }
+      let acc = '';
+      return [
+        { label: getRootDriveLabel(), path: '/' },
+        ...parts.map((label) => {
+          acc += `/${label}`;
+          return { label, path: acc };
+        }),
+      ];
+    }
     if (hostPlatform() !== 'windows') {
       let acc = '';
       return [
@@ -101,6 +123,10 @@ export function createPaneNavigation({
     }
     if (!pane.path) return;
     if (hostPlatform() !== 'windows') {
+      if (hostPlatform() === 'macos' && pane.path.startsWith('/Volumes/')) {
+        const parts = pane.path.split('/').filter(Boolean);
+        if (parts.length <= 2) return; // already at a volume root
+      }
       if (pane.path !== '/') reportRejection(navigatePane(id, parentRemotePath(pane.path)));
       return;
     }

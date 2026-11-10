@@ -18,10 +18,14 @@ for (const language of languages) {
     await expect(page.locator('.pane-list').first()).toBeVisible();
     // The language switch re-renders the menu bar; opening a menu before it
     // lands can lose the click.
-    const editMenu = page.locator('.menu-bar-trigger').nth(1);
-    await expect(editMenu).toHaveText(strings.menu.edit.title);
-    await editMenu.click();
-    await page.locator('.menu-dropdown .menu-item').first().click();
+    const editMenu = page.locator('.menu-bar-trigger[data-menu="edit"]');
+    if (await editMenu.isVisible()) {
+      await expect(editMenu).toHaveText(strings.menu.edit.title);
+      await editMenu.click();
+      await page.locator('.menu-dropdown .menu-item[data-action="open-settings"]').click();
+    } else {
+      await page.locator('.view-toolbar-settings').click();
+    }
     await expect(page.locator('.settings-nav-footer')).toBeVisible({ timeout: 30_000 });
     await page.evaluate(() => document.fonts.ready);
 

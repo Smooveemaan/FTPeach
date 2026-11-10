@@ -170,6 +170,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         : t('paneSide.right');
 
   const saveSiteItems = (['a', 'b'] as const).map((id) => ({
+    id: `save-site-${id}`,
     label: t(
       panes[id].kind === 'local' ? 'menu.file.savePathSide' : 'menu.file.saveConnectionSide',
       {
@@ -186,6 +187,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
   const disconnectItems =
     connected.length > 1
       ? connected.map((pane) => ({
+          id: `disconnect-${pane.id}`,
           label: t('paneSide.labelWithSide', {
             base: t('menu.file.disconnect'),
             side: paneSideWord(pane.id),
@@ -194,6 +196,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         }))
       : [
           {
+            id: 'disconnect',
             label: t('menu.file.disconnect'),
             disabled: connected.length === 0,
             onClick: () => {
@@ -205,21 +208,25 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
 
   return [
     {
+      id: 'file',
       label: t('menu.file.title'),
       items: [
         {
+          id: 'new-tab',
           label: t('menu.file.newTab'),
           shortcut: shortcutLabel('new-tab'),
           disabled: modalOpen,
           onClick: browser.openNewTab,
         },
         {
+          id: 'close-tab',
           label: t('menu.file.closeTab'),
           shortcut: shortcutLabel('close-tab'),
           disabled: modalOpen || tabs.length === 1,
           onClick: () => browser.closeTab(browser.activeTabId),
         },
         {
+          id: 'reopen-closed-tab',
           label: t('menu.file.reopenClosedTab'),
           shortcut: shortcutLabel('reopen-closed-tab'),
           disabled: modalOpen || !browser.canReopenClosedTab,
@@ -227,6 +234,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         },
         { separator: true },
         ...(['a', 'b'] as const).map((id) => ({
+          id: `new-connection-${id}`,
           label: t('paneSide.labelWithSide', {
             base: t('menu.file.newConnection'),
             side: paneSideWord(id),
@@ -237,45 +245,53 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         ...disconnectItems,
         { separator: true },
         {
+          id: 'export-settings',
           label: t('menu.file.exportSettings'),
           onClick: () => dialogs.setShowExportSettings(true),
         },
         {
+          id: 'import-settings',
           label: t('menu.file.importSettings'),
           onClick: () => dialogs.setShowImportSettings(true),
         },
         { separator: true },
-        { label: t('menu.file.quit'), onClick: () => ctx.quit.request() },
+        { id: 'quit', label: t('menu.file.quit'), onClick: () => ctx.quit.request() },
       ],
     },
     {
+      id: 'edit',
       label: t('menu.edit.title'),
       items: [
         {
+          id: 'open-settings',
           label: t('menu.edit.settings'),
           shortcut: shortcutLabel('open-settings'),
           onClick: commands.openSettings,
         },
         { separator: true },
-        { label: t('menu.edit.resetLayout'), onClick: ctx.resetLayout },
+        { id: 'reset-layout', label: t('menu.edit.resetLayout'), onClick: ctx.resetLayout },
       ],
     },
     {
+      id: 'view',
       label: t('menu.view.title'),
       items: [
         {
+          id: 'theme-light',
           label: t('menu.view.lightTheme'),
           checked: settings.interface.theme === 'light',
           radio: true,
           onClick: () => ctx.applicationSettings.changeTheme('light'),
         },
         {
+          id: 'theme-dark',
           label: t('menu.view.darkTheme'),
           checked: settings.interface.theme === 'dark',
           radio: true,
           onClick: () => ctx.applicationSettings.changeTheme('dark'),
         },
         {
+          id: 'theme-system',
           label: t('menu.view.systemTheme'),
           checked: settings.interface.theme === 'system',
           radio: true,
@@ -283,12 +299,14 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         },
         { separator: true },
         {
+          id: 'sync-browsing',
           label: t('menu.view.syncBrowsing'),
           checked: browser.syncBrowsing,
           disabled: !browser.syncEligible,
           onClick: browser.toggleSync,
         },
         {
+          id: 'show-hidden-files',
           label: t('menu.view.showHiddenFiles'),
           shortcut: shortcutLabel('toggle-hidden-files'),
           checked: settings.layout.showHiddenFiles,
@@ -296,28 +314,33 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         },
         { separator: true },
         {
+          id: 'toggle-left-pane',
           label: t('menu.view.leftPane'),
           checked: settings.layout.showLocalPane,
           disabled: settings.layout.showLocalPane && !settings.layout.showRemotePane,
           onClick: workspace.toggleLocalPane,
         },
         {
+          id: 'toggle-right-pane',
           label: t('menu.view.rightPane'),
           checked: settings.layout.showRemotePane,
           disabled: settings.layout.showRemotePane && !settings.layout.showLocalPane,
           onClick: workspace.toggleRemotePane,
         },
         {
+          id: 'toggle-transfer-queue',
           label: t('menu.view.transferQueue'),
           checked: settings.layout.showTransferQueue,
           onClick: workspace.toggleTransferQueue,
         },
         {
+          id: 'toggle-log',
           label: t('menu.view.log'),
           checked: settings.logging.logEnabled,
           onClick: workspace.toggleLog,
         },
         {
+          id: 'toggle-stacked-panes',
           label: t('menu.view.stackedPanes'),
           checked: effectivePaneOrientation === 'vertical',
           disabled: workspace.windowNarrow,
@@ -325,6 +348,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         },
         { separator: true },
         {
+          id: 'refresh-both-panes',
           label: t('menu.view.refreshBothPanes'),
           shortcut: shortcutLabel('refresh'),
           onClick: browser.refreshBothPanes,
@@ -332,9 +356,11 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
       ],
     },
     {
+      id: 'transfer',
       label: t('menu.transfer.title'),
       items: [
         {
+          id: 'copy-selected-right',
           label: t('menu.transfer.copySelectedRight'),
           disabled: !browser.canCopyBetween(panes.a, panes.b) || panes.a.selected.size === 0,
           onClick: () =>
@@ -346,6 +372,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
             ),
         },
         {
+          id: 'copy-selected-left',
           label: t('menu.transfer.copySelectedLeft'),
           disabled: !browser.canCopyBetween(panes.b, panes.a) || panes.b.selected.size === 0,
           onClick: () =>
@@ -358,6 +385,7 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         },
         { separator: true },
         {
+          id: 'clear-completed',
           label: t('menu.transfer.clearCompleted'),
           disabled: !transfers.hasCompletedTransfers,
           onClick: transfers.clearCompletedTransfers,
@@ -365,13 +393,16 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
       ],
     },
     {
+      id: 'bookmarks',
       label: t('menu.bookmarks.title'),
       items: [
         {
+          id: 'manage-bookmarks',
           label: t('menu.file.manageBookmarks'),
           onClick: () => dialogs.setShowSiteManagerDialog(true),
         },
         {
+          id: 'manage-local-paths',
           label: t('siteManagerDialog.manageLocalPaths'),
           onClick: () => dialogs.setShowLocalPathManagerDialog(true),
         },
@@ -380,13 +411,16 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
       ],
     },
     {
+      id: 'help',
       label: t('menu.help.title'),
       items: [
         {
+          id: 'user-guide',
           label: t('menu.help.userGuide'),
           onClick: handler(() => api.app.openExternal('https://ftpeach.com/guide/')),
         },
         {
+          id: 'documentation',
           label: t('menu.help.documentation'),
           onClick: handler(() =>
             api.app.openExternal(
@@ -395,18 +429,20 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
           ),
         },
         {
+          id: 'report-issue',
           label: t('menu.help.reportIssue'),
           onClick: handler(() =>
             api.app.openExternal('https://github.com/Smooveemaan/ftpeach/issues/new/choose'),
           ),
         },
         {
+          id: 'support-project',
           label: t('menu.help.supportProject'),
           onClick: handler(() => api.app.openExternal('https://ftpeach.com/#support')),
         },
         { separator: true },
-        { label: t('menu.help.checkUpdates'), onClick: ctx.checkForUpdates },
-        { label: t('menu.help.about'), onClick: () => dialogs.setShowAbout(true) },
+        { id: 'check-updates', label: t('menu.help.checkUpdates'), onClick: ctx.checkForUpdates },
+        { id: 'about', label: t('menu.help.about'), onClick: () => dialogs.setShowAbout(true) },
       ],
     },
   ];

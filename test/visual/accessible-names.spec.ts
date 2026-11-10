@@ -121,7 +121,7 @@ for (const [name, search] of [
 
 test('every control in the connection bar has a name for each protocol', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
-  const pane = page.locator('.pane').nth(1);
+  const pane = page.locator('.pane[data-side="b"]');
   await expect(pane).toBeVisible();
   // The bar's fields only show while no connection is open.
   await pane.getByRole('button', { name: 'Disconnect' }).click();
@@ -142,8 +142,7 @@ test('every control in the connection bar has a name for each protocol', async (
 test('every control in every settings section has an accessible name', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
   await expect(page.locator('.pane-list').first()).toBeVisible();
-  await page.locator('.menu-bar-trigger').nth(1).click();
-  await page.locator('.menu-dropdown .menu-item').first().click();
+  await page.locator('.view-toolbar-settings').click();
   const sections = page.locator('.settings-nav-item');
   await expect(sections.first()).toBeVisible();
   for (let index = 0; index < (await sections.count()); index += 1) {
@@ -156,14 +155,21 @@ test('every control in the site manager has an accessible name, and the rest is 
   page,
 }) => {
   await page.goto('/test/visual/visual.html');
-  await page.locator('.pane').nth(1).getByRole('button', { name: 'Manage Bookmarks…' }).click();
+  await page
+    .locator('.pane[data-side="b"]')
+    .getByRole('button', { name: 'Manage Bookmarks…' })
+    .click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   expect(await unnamedControls(page)).toEqual([]);
   // Behind the dialog nothing takes focus, but the window can still be moved.
   expect(
     await page.evaluate(() =>
-      Boolean(document.querySelector('.menu-bar-trigger')?.closest('[inert]')),
+      Boolean(
+        (
+          document.querySelector('.menu-bar-trigger') ?? document.querySelector('.view-toolbar')
+        )?.closest('[inert]'),
+      ),
     ),
   ).toBe(true);
   expect(

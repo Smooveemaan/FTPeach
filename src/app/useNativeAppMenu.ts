@@ -85,7 +85,7 @@ export function useNativeAppMenu(menus: readonly MenuBarEntry[], onAbout?: () =>
       if (item.separator) {
         return { separator: true };
       }
-      const id = `item_${idCounter++}`;
+      const id = item.id ?? `item_${idCounter++}`;
       if (item.onClick) {
         callbacks.set(id, item.onClick);
       }
@@ -105,7 +105,7 @@ export function useNativeAppMenu(menus: readonly MenuBarEntry[], onAbout?: () =>
 
     const model: AppMenuModel = {
       menus: menus.map((entry, index) => ({
-        id: TOP_MENU_IDS[index] ?? `menu_${index}`,
+        id: entry.id ?? TOP_MENU_IDS[index] ?? `menu_${index}`,
         label: toTopLabel(entry.label),
         items: entry.items.map(convertItem),
       })),

@@ -94,6 +94,7 @@ export default function SettingsNav({
                 key={c.key}
                 type="button"
                 className={`settings-nav-item ${category === c.key ? 'active' : ''}`}
+                data-category={c.key}
                 data-label={c.label}
                 aria-current={category === c.key ? 'true' : undefined}
                 onFocus={() => revealSettingsTab(index)}

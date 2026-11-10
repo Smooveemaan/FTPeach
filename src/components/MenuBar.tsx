@@ -6,6 +6,7 @@ import useDismissableOverlay from '../hooks/useDismissableOverlay.ts';
 import { useAnchoredOverlay } from '../hooks/useMenuPosition.ts';
 
 export interface MenuBarEntry {
+  id?: string | undefined;
   label: ReactNode;
   items: readonly MenuItem[];
 }
@@ -52,7 +53,7 @@ export default function MenuBar({ menus }: MenuBarProps) {
   return (
     <div className="menu-bar" role="menubar" ref={rootRef}>
       {menus.map((menu, i) => (
-        <div className="menu-bar-item" key={i}>
+        <div className="menu-bar-item" key={menu.id ?? i}>
           <button
             type="button"
             ref={(el) => {
@@ -61,6 +62,7 @@ export default function MenuBar({ menus }: MenuBarProps) {
             role="menuitem"
             aria-haspopup="menu"
             aria-expanded={openIndex === i}
+            data-menu={menu.id}
             className={`menu-bar-trigger ${openIndex === i ? 'active' : ''}`}
             onClick={() => setOpenIndex((prev) => (prev === i ? null : i))}
             onKeyDown={handleTriggerKeyDown(i)}

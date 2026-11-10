@@ -178,13 +178,25 @@ async function openSecurity(page: Page, language: string, prompt: string) {
   await page.evaluate(() => document.fonts.ready);
 }
 
-const menu = async (page: Page, index: number) => {
-  await page.locator('.menu-bar-trigger').nth(index).click();
+const menu = async (page: Page, target: number | string) => {
+  const trigger =
+    typeof target === 'string'
+      ? page.locator(`.menu-bar-trigger[data-menu="${target}"]`)
+      : page.locator('.menu-bar-trigger').nth(target);
+  await trigger.click();
   await expect(page.locator('.menu-dropdown')).toBeVisible();
 };
-const menuItem = async (page: Page, menuIndex: number, itemIndex: number) => {
-  await menu(page, menuIndex);
-  await page.locator('.menu-dropdown .menu-item').nth(itemIndex).click();
+const menuItem = async (
+  page: Page,
+  menuTarget: number | string,
+  actionOrIndex: number | string,
+) => {
+  await menu(page, menuTarget);
+  const item =
+    typeof actionOrIndex === 'string'
+      ? page.locator(`.menu-dropdown .menu-item[data-action="${actionOrIndex}"]`)
+      : page.locator('.menu-dropdown .menu-item').nth(actionOrIndex);
+  await item.click();
 };
 const dialog = (page: Page) => page.locator('[role="dialog"], [role="alertdialog"]').last();
 const contextMenu = async (page: Page, target: ReturnType<Page['locator']>) => {
@@ -193,7 +205,14 @@ const contextMenu = async (page: Page, target: ReturnType<Page['locator']>) => {
 };
 
 const ROW = '.pane-list .row:not(.row-header)';
-const MENU = { file: 0, edit: 1, view: 2, transfer: 3, bookmarks: 4, help: 5 };
+const MENU = {
+  file: 'file',
+  edit: 'edit',
+  view: 'view',
+  transfer: 'transfer',
+  bookmarks: 'bookmarks',
+  help: 'help',
+} as const;
 
 /** Every screen worth a look. Each takes one or more snapshots. */
 const SCREENS: Record<
@@ -272,8 +291,8 @@ const SCREENS: Record<
   },
   menus: {
     run: async ({ page, snap }) => {
-      for (const [name, index] of Object.entries(MENU)) {
-        await menu(page, index);
+      for (const [name, target] of Object.entries(MENU)) {
+        await menu(page, target);
         await snap(`menu/${name}`);
         await page.keyboard.press('Escape');
       }
@@ -281,10 +300,9 @@ const SCREENS: Record<
   },
   'context-menus': {
     run: async ({ page, snap }) => {
-      const panes = page.locator('.pane');
       for (const [side, pane] of [
-        ['local', panes.nth(0)],
-        ['remote', panes.nth(1)],
+        ['local', page.locator('.pane[data-side="a"]')],
+        ['remote', page.locator('.pane[data-side="b"]')],
       ] as const) {
         await contextMenu(page, pane.locator(ROW).nth(2));
         await snap(`context/${side}-file`);
@@ -314,9 +332,9 @@ const SCREENS: Record<
   },
   'connect-bar': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.file, 5);
-      const pane = page.locator('.pane').nth(1);
-      await expect(page.locator('.pane-quicklist-row').first()).toBeVisible();
+      await menuItem(page, MENU.file, 'disconnect');
+      const pane = page.locator('.pane[data-side="b"]');
+      await expect(pane.locator('.pane-quicklist-row').first()).toBeVisible();
       await snap('connect/empty-state');
       const protocol = pane.locator('.protocol-select-trigger');
       for (let index = 0; index < 4; index += 1) {
@@ -329,7 +347,7 @@ const SCREENS: Record<
   },
   settings: {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.edit, 0);
+      await menuItem(page, MENU.edit, 'open-settings');
       const sections = page.locator('.settings-nav-item');
       await expect(sections.first()).toBeVisible();
       for (let index = 0; index < (await sections.count()); index += 1) {
@@ -355,7 +373,7 @@ const SCREENS: Record<
           if (platform === 'macos') {
             await page.locator('.view-toolbar-settings').click();
           } else {
-            await menuItem(page, MENU.edit, 0);
+            await menuItem(page, MENU.edit, 'open-settings');
           }
           await page
             .getByRole('button', { name: t('settings.categories.security'), exact: true })
@@ -381,8 +399,8 @@ const SCREENS: Record<
   ),
   'settings-unsaved': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.edit, 0);
-      await page.locator('.settings-nav-item').nth(2).click();
+      await menuItem(page, MENU.edit, 'open-settings');
+      await page.locator('.settings-nav-item[data-category="interface"]').click();
       await dialog(page).locator('input[type="checkbox"]').first().click();
       await dialog(page).locator('.modal-close').click();
       await expect(page.locator('[role="dialog"], [role="alertdialog"]')).toHaveCount(2);
@@ -396,8 +414,8 @@ const SCREENS: Record<
         const status = window.api.vault.status;
         window.api.vault.status = async () => ({ ...(await status()), damaged: true });
       });
-      await menuItem(page, MENU.edit, 0);
-      await page.locator('.settings-nav-item').nth(4).click();
+      await menuItem(page, MENU.edit, 'open-settings');
+      await page.locator('.settings-nav-item[data-category="security"]').click();
       await expect(dialog(page).locator('.settings-danger-zone [role="alert"]')).toBeVisible();
       await snap('settings/vault-damaged');
     },
@@ -415,25 +433,25 @@ const SCREENS: Record<
   },
   'settings-transfer': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.file, 6);
+      await menuItem(page, MENU.file, 'export-settings');
       await expect(dialog(page)).toBeVisible();
       await snap('export-settings');
       await page.keyboard.press('Escape');
-      await menuItem(page, MENU.file, 7);
+      await menuItem(page, MENU.file, 'import-settings');
       await expect(dialog(page)).toBeVisible();
       await snap('import-settings');
     },
   },
   quit: {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.file, 8);
+      await menuItem(page, MENU.file, 'quit');
       await expect(dialog(page)).toBeVisible();
       await snap('quit');
     },
   },
   'reset-layout': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.edit, 1);
+      await menuItem(page, MENU.edit, 'reset-layout');
       await expect(dialog(page)).toBeVisible();
       await snap('reset-layout');
     },
@@ -454,10 +472,10 @@ const SCREENS: Record<
           };
         };
       });
-      const target = page.locator('.pane').nth(1);
+      const target = page.locator('.pane[data-side="b"]');
       await target.locator(ROW).first().press('F5');
       await expect(target.getByText('release-notes.md', { exact: true })).toBeVisible();
-      const source = page.locator('.pane').first();
+      const source = page.locator('.pane[data-side="a"]');
       await source.locator(ROW).filter({ hasText: 'release-notes.md' }).click();
       await source
         .locator(ROW)
@@ -473,14 +491,14 @@ const SCREENS: Record<
   },
   about: {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.help, 5);
+      await menuItem(page, MENU.help, 'about');
       await expect(dialog(page)).toBeVisible();
       await snap('about');
     },
   },
   'site-manager': {
     run: async ({ page, t, snap }) => {
-      await menuItem(page, MENU.bookmarks, 0);
+      await menuItem(page, MENU.bookmarks, 'manage-bookmarks');
       await expect(dialog(page)).toBeVisible();
       await snap('sites/list');
       const sort = page.locator('.site-manage-sort-trigger');
@@ -511,21 +529,21 @@ const SCREENS: Record<
   },
   'site-manager-context': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.bookmarks, 0);
+      await menuItem(page, MENU.bookmarks, 'manage-bookmarks');
       await contextMenu(page, dialog(page).locator('.site-manage-row').first());
       await snap('sites/context-menu');
     },
   },
   'local-paths': {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.bookmarks, 1);
+      await menuItem(page, MENU.bookmarks, 'manage-local-paths');
       await expect(dialog(page)).toBeVisible();
       await snap('local-paths/list');
     },
   },
   prompts: {
     run: async ({ page, t, snap }) => {
-      const remote = page.locator('.pane').nth(1);
+      const remote = page.locator('.pane[data-side="b"]');
       const item = (key: string) =>
         page.locator('.context-menu .menu-item-label').getByText(t(key), { exact: true });
       for (const [name, key] of [
@@ -589,7 +607,7 @@ const SCREENS: Record<
           systemUnlockEnabled: false,
         });
       });
-      await menuItem(page, MENU.bookmarks, 0);
+      await menuItem(page, MENU.bookmarks, 'manage-bookmarks');
       const row = dialog(page).locator('.site-manage-row').first();
       await row.hover();
       await row.getByRole('button', { name: t('siteManagerDialog.titleEdit') }).click();
@@ -603,8 +621,8 @@ const SCREENS: Record<
   'drag-menu': {
     run: async ({ page, snap }) => {
       // Dropping with the right button asks whether to copy or move.
-      const from = (await page.locator('.pane').first().locator(ROW).nth(2).boundingBox())!;
-      const to = (await page.locator('.pane').nth(1).locator('.pane-list').boundingBox())!;
+      const from = (await page.locator('.pane[data-side="a"]').locator(ROW).nth(2).boundingBox())!;
+      const to = (await page.locator('.pane[data-side="b"]').locator('.pane-list').boundingBox())!;
       await page.mouse.move(from.x + 40, from.y + from.height / 2);
       await page.mouse.down({ button: 'right' });
       await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 });

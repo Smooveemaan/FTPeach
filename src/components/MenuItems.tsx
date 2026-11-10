@@ -5,6 +5,7 @@ import TruncatedText from './TruncatedText.tsx';
 import { getInterfaceScale } from '../platform/interfaceScale.ts';
 
 export interface MenuItem {
+  id?: string | undefined;
   label?: ReactNode | undefined;
   separator?: boolean | undefined;
   danger?: boolean | undefined;
@@ -152,6 +153,7 @@ export default function MenuItems({ items, onAction, onCloseSubmenu }: MenuItems
           aria-expanded={hasSubmenu ? isOpen : undefined}
           aria-checked={item.checked}
           aria-keyshortcuts={item.shortcut?.replace(/\bCtrl\b/, 'Control') || undefined}
+          data-action={item.id}
           className={`menu-item ${item.danger ? 'danger' : ''} ${item.className || ''}`}
           disabled={item.disabled}
           onClick={() => {

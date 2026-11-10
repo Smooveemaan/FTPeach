@@ -98,6 +98,8 @@
     "paneConnectEmptyState.quicklistLabel",
     "paneMenu.deleteSelected",
     "paneMenu.deleteSelectedPermanently",
+    "paneMenu.openWithSubmenu.default",
+    "paneMenu.openWithSubmenu.other",
     "paneMenu.revealLocation.linux",
     "paneMenu.revealLocation.macos",
     "paneSide.bottom",

@@ -40,6 +40,7 @@ that follow explain security behavior rather than repeat command groupings.
 | `app_import_apply` | sensitive | Yes | No |
 | `app_import_discard` | sensitive | Yes | No |
 | `app_import_preview` | sensitive | Yes | No |
+| `app_menu_set_model` | app | Yes | No |
 | `app_open_external` | app | Yes | No |
 | `app_quit` | app | Yes | No |
 | `app_reset_layout` | app | Yes | No |

@@ -5,7 +5,11 @@
 //! Drives the resize asynchronously via Core Animation (`NSAnimationContext` + `window.animator().setFrame:`),
 //! allowing WKWebView to continuously receive viewport updates and reflow content during zoom.
 
+#![cfg_attr(not(target_os = "macos"), allow(dead_code))]
+
+#[cfg(target_os = "macos")]
 use std::ffi::{c_char, c_void};
+#[cfg(target_os = "macos")]
 use std::sync::Once;
 use tauri::WebviewWindow;
 
@@ -30,11 +34,13 @@ pub struct NSRect {
     pub size: NSSize,
 }
 
+#[cfg(target_os = "macos")]
 struct ZoomContext {
     window: *mut c_void,
     target_frame: NSRect,
 }
 
+#[cfg(target_os = "macos")]
 #[link(name = "objc", kind = "dylib")]
 unsafe extern "C" {
     fn sel_registerName(name: *const c_char) -> *const c_void;
@@ -49,6 +55,7 @@ unsafe extern "C" {
     ) -> u8;
 }
 
+#[cfg(target_os = "macos")]
 unsafe extern "C" {
     static _dispatch_main_q: c_void;
     fn dispatch_async_f(
@@ -58,6 +65,7 @@ unsafe extern "C" {
     );
 }
 
+#[cfg(target_os = "macos")]
 static HOOK_INIT: Once = Once::new();
 
 /// Installs the smooth zoom handler on the window's Cocoa delegate.
@@ -262,6 +270,7 @@ unsafe fn animate_window_to_frame(window: *mut c_void, target_frame: NSRect) {
     unsafe { msg_send_void(cls_anim_context, sel_end_grouping) };
 }
 
+#[cfg(target_os = "macos")]
 #[link(name = "CoreFoundation", kind = "framework")]
 unsafe extern "C" {
     fn CFRelease(cf: *const c_void);

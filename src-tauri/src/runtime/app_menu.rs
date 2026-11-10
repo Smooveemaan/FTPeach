@@ -260,23 +260,25 @@ fn append_dynamic_item<R: Runtime>(
 /// Applies a new menu model from the renderer. Runs on the main thread.
 pub fn set_model(app: &AppHandle, model: AppMenuModel) {
     let state = app.state::<AppMenuState>();
+    #[cfg(target_os = "macos")]
+    let menu_model = model.clone();
     {
         let mut inner = state.lock();
-        inner.model = Some(model.clone());
+        inner.model = Some(model);
         inner.generation += 1;
     }
-    let handle = app.clone();
-    let _ = app.run_on_main_thread(move || {
-        #[cfg(target_os = "macos")]
-        match build_app_menu(&handle, Some(&model)) {
+    #[cfg(target_os = "macos")]
+    {
+        let handle = app.clone();
+        let _ = app.run_on_main_thread(move || match build_app_menu(&handle, Some(&menu_model)) {
             Ok(menu) => {
                 let _ = handle.set_menu(menu);
             }
             Err(e) => {
                 log::warn!("could not rebuild application menu: {e}");
             }
-        }
-    });
+        });
+    }
 }
 
 /// Installs the custom application menu and its action handler on macOS.

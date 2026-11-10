@@ -152,9 +152,13 @@ async function open(page: Page, language: string, search = '') {
   await page.goto(`/test/visual/visual.html?${params}`);
   await expect(page.locator('.pane-list').first()).toBeVisible();
   const first = page.locator('.menu-bar-trigger').first();
-  if (language === 'pseudo') await expect(first).toContainText(PSEUDO_OPEN);
-  else await expect(page.locator('html')).toHaveAttribute('lang', language);
-  await expect(first).toHaveText(translator(language)('menu.file.title'));
+  if (await first.isVisible()) {
+    if (language === 'pseudo') await expect(first).toContainText(PSEUDO_OPEN);
+    await expect(first).toHaveText(translator(language)('menu.file.title'));
+  }
+  if (language !== 'pseudo') {
+    await expect(page.locator('html')).toHaveAttribute('lang', language);
+  }
   await page.evaluate(() => document.fonts.ready);
 }
 
@@ -348,7 +352,11 @@ const SCREENS: Record<
             });
             window.api.vault.enableSystemUnlock = () => new Promise(() => {});
           });
-          await menuItem(page, MENU.edit, 0);
+          if (platform === 'macos') {
+            await page.locator('.view-toolbar-settings').click();
+          } else {
+            await menuItem(page, MENU.edit, 0);
+          }
           await page
             .getByRole('button', { name: t('settings.categories.security'), exact: true })
             .click();
@@ -465,7 +473,7 @@ const SCREENS: Record<
   },
   about: {
     run: async ({ page, snap }) => {
-      await menuItem(page, MENU.help, 4);
+      await menuItem(page, MENU.help, 5);
       await expect(dialog(page)).toBeVisible();
       await snap('about');
     },

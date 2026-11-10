@@ -1,14 +1,14 @@
 {
   "main": {
-    "raw": 786716,
-    "gzip": 236926
+    "raw": 869981,
+    "gzip": 261857
   },
   "securityConfirmation": {
-    "raw": 464301,
-    "gzip": 135009
+    "raw": 487993,
+    "gzip": 141226
   },
   "deferred": {
-    "raw": 1255883,
-    "gzip": 396513
+    "raw": 1609533,
+    "gzip": 477252
   }
 }

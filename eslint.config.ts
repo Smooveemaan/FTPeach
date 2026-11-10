@@ -26,6 +26,7 @@ export default [
       'vendor/**',
       'src-tauri/target/**',
       'coverage/**',
+      'private/**',
     ],
   },
 

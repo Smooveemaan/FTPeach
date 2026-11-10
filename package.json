@@ -68,7 +68,10 @@
     "site:social": "node --experimental-strip-types scripts/site/social.ts",
     "rust:check-linux": "node --experimental-strip-types scripts/checks/rust-check-linux.ts",
     "check:supply-chain": "npm audit --audit-level=high && cargo deny --manifest-path src-tauri/Cargo.toml check advisories licenses",
-    "check:sast": "node --experimental-strip-types scripts/checks/sast.ts"
+    "check:sast": "node --experimental-strip-types scripts/checks/sast.ts",
+    "preflight": "node --experimental-strip-types scripts/checks/preflight.ts",
+    "generate:all": "npm run docs:generate && npm run licenses:generate",
+    "check:bundle-budget": "node --experimental-strip-types scripts/checks/check-bundle-budget.ts"
   },
   "author": "Smooveemaan",
   "license": "Apache-2.0",

@@ -11,6 +11,36 @@ async function openHarness(page: Page, language?: string) {
   await expect(page.getByText('Production', { exact: true }).first()).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
 }
+async function disconnectPane(page: Page, side: 'a' | 'b' = 'b') {
+  const pane = page.locator(`.pane[data-side="${side}"]`);
+  const disconnectBtn = pane.locator('.connect-toggle-btn.state-connected');
+  if (await disconnectBtn.isVisible()) {
+    await disconnectBtn.click();
+    return;
+  }
+  const fileMenu = page.locator('.menu-bar-trigger[data-menu="file"]');
+  if (await fileMenu.isVisible()) {
+    await fileMenu.click();
+    await page.locator('.menu-item[data-action="disconnect"]').click();
+  }
+}
+
+async function openBookmarks(page: Page) {
+  const bookmarksMenu = page.locator('.menu-bar-trigger[data-menu="bookmarks"]');
+  if (await bookmarksMenu.isVisible()) {
+    await bookmarksMenu.click();
+    await page.locator('.menu-item[data-action="manage-bookmarks"]').click();
+    return;
+  }
+  const paneB = page.locator('.pane[data-side="b"]');
+  const bookmarkIconBtn = paneB.locator('.pane-source-wrap button:has(.icon-bookmark)');
+  if (await bookmarkIconBtn.isVisible()) {
+    await bookmarkIconBtn.click();
+    return;
+  }
+  await disconnectPane(page, 'b');
+  await page.locator('.pane[data-side="b"] .pane-connect-empty button').first().click();
+}
 
 /** The app applies `dir` asynchronously, once `changeLanguage` resolves — so a
  * screenshot taken before that lands would be a left-to-right render under an
@@ -40,11 +70,8 @@ test('startup defers optional dialogs until they are opened', async ({ page }) =
   });
   await openHarness(page);
   const atStart = new Set(scripts);
-  expect(
-    scripts.filter((url) => /(SettingsDialog|SiteManagerDialog|OpenWithDialog)/.test(url)),
-  ).toEqual([]);
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
-  await page.getByRole('menuitem', { name: 'Settings…' }).click();
+  expect(scripts.filter((url) => /(SiteManagerDialog|OpenWithDialog)/.test(url))).toEqual([]);
+  await page.locator(`button[data-tooltip="${en.menu.file.saveConnection}"]`).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   expect(scripts.filter((url) => !atStart.has(url)).length).toBeGreaterThan(0);
 });
@@ -257,8 +284,7 @@ for (const { name, picker: selector } of [
 ]) {
   test(`${name.toLowerCase()} picker shows a scrollable 3 by 3 grid`, async ({ page }) => {
     await openHarness(page);
-    await page.getByRole('menuitem', { name: 'Bookmarks' }).click();
-    await page.getByRole('menuitem', { name: 'Manage Bookmarks…' }).click();
+    await openBookmarks(page);
     await page.getByRole('button', { name: 'New Bookmark' }).click();
     await page.getByRole('button', { name }).click();
 
@@ -314,8 +340,7 @@ test('sort field fits the longest translated option', async ({ page }) => {
     { language: 'ru', menu: ru.menu.bookmarks.title, manage: ru.menu.file.manageBookmarks },
   ]) {
     await openHarness(page, locale.language);
-    await page.getByRole('menuitem', { name: locale.menu, exact: true }).click();
-    await page.getByRole('menuitem', { name: locale.manage, exact: true }).click();
+    await openBookmarks(page);
     const trigger = page.locator('.site-manage-sort-trigger');
     await expect(trigger).toBeVisible();
     const width = await trigger.evaluate((button) => button.getBoundingClientRect().width);
@@ -346,8 +371,7 @@ test('three recent connections fit a disconnected pane in the default layout', a
   await page.setViewportSize({ width: 1180, height: 740 });
   await openHarness(page);
   await page.locator(`[data-tooltip="${en.viewToolbar.toggleLog}"]`).first().click();
-  await page.getByRole('menuitem', { name: en.menu.file.title, exact: true }).click();
-  await page.getByRole('menuitem', { name: en.menu.file.disconnect, exact: true }).click();
+  await disconnectPane(page, 'b');
   await expect(page.locator('.pane-quicklist-row')).toHaveCount(3);
 
   const list = page.locator('.pane-list-empty-scrollable');
@@ -391,9 +415,8 @@ test('three recent connections fit a disconnected pane in the default layout', a
 test('a narrowed disconnected pane keeps its port field whole', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 740 });
   await openHarness(page);
-  await page.getByRole('menuitem', { name: en.menu.file.title, exact: true }).click();
-  await page.getByRole('menuitem', { name: en.menu.file.disconnect, exact: true }).click();
-  const pane = page.locator('.pane').nth(1);
+  await disconnectPane(page, 'b');
+  const pane = page.locator('.pane[data-side="b"]');
   const divider = page.locator('.pane-resizer:not(.vertical)').first();
   const cut = () =>
     pane.locator('.field-port, .field-webdav-url').evaluate((field) => {
@@ -454,7 +477,11 @@ test('file operation errors use the dismissible error banner', async ({ page }) 
     .locator('.pane-list .row:not(.row-header)')
     .filter({ hasText: 'release-notes.md' });
   await row.click();
-  await row.press('Delete');
+  await page
+    .locator('.pane')
+    .first()
+    .locator(`button[data-tooltip="${en.paneMenu.delete}"]`)
+    .click();
   const confirmation = page.getByRole('dialog');
   await expect(confirmation).toBeVisible();
   await confirmation.locator('.modal-footer button').last().click();

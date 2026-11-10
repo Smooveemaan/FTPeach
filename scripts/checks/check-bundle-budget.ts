@@ -101,6 +101,7 @@ const delta = (now: number, then: number | undefined) =>
     : `${now >= then ? '+' : ''}${(((now - then) / then) * 100).toFixed(1)}%`;
 
 async function main() {
+  const writeBaseline = process.argv.includes('--write');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as ViteManifest;
   const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as Record<string, Size>;
   const allFiles = new Set(
@@ -161,8 +162,16 @@ async function main() {
     await appendFile(process.env.GITHUB_STEP_SUMMARY, `### Startup bundle\n\n${table}\n\n`);
   }
 
+  if (writeBaseline) {
+    await writeFile(baselinePath, `${JSON.stringify(measured, null, 2)}\n`);
+    console.log(`Updated bundle baseline in ${path.relative(projectRoot, baselinePath)}`);
+    return;
+  }
+
   if (violations.length > 0) {
-    console.error(`Bundle budget exceeded:\n${violations.map((item) => `- ${item}`).join('\n')}`);
+    console.error(
+      `Bundle budget exceeded:\n${violations.map((item) => `- ${item}`).join('\n')}\n\nHint: If the size increase is intentional and justified, update the baseline with:\n  npm run check:bundle-budget -- --write\n`,
+    );
     process.exitCode = 1;
   } else {
     console.log('Bundle budget passed.');

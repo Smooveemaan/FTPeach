@@ -27,9 +27,8 @@ for (const theme of ['dark', 'light'] as const) {
   for (const [scheme, label] of PALETTES) {
     test(label + ' palette in ' + theme + ' mode @snapshot', async ({ page }) => {
       await page.goto('/test/visual/visual.html');
-      await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
-      await page.getByRole('menuitem', { name: 'Settings…' }).click();
-      await page.getByRole('button', { name: 'Interface', exact: true }).click();
+      await page.locator('.view-toolbar-settings').click();
+      await page.locator('.settings-nav-item[data-category="interface"]').click();
       await page
         .getByRole('radio', { name: theme === 'dark' ? 'Dark' : 'Light', exact: true })
         .click();
@@ -128,9 +127,8 @@ for (const theme of ['dark', 'light'] as const) {
 
 test('system mode follows OS changes without losing the palette', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
-  await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Settings…' }).click();
-  await page.getByRole('button', { name: 'Interface', exact: true }).click();
+  await page.locator('.view-toolbar-settings').click();
+  await page.locator('.settings-nav-item[data-category="interface"]').click();
   await page.getByRole('radio', { name: 'System', exact: true }).click();
   await page.getByRole('button', { name: 'Color scheme', exact: true }).click();
   await page.getByRole('option', { name: 'Ocean', exact: true }).click();

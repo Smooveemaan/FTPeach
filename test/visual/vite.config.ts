@@ -10,6 +10,7 @@ export default mergeConfig(
       outDir: 'test-results/visual-build',
       emptyOutDir: true,
       manifest: false,
+      modulePreload: false,
       rollupOptions: { input: 'test/visual/visual.html' },
     },
     preview: { host: '127.0.0.1', port: 4173, strictPort: true },

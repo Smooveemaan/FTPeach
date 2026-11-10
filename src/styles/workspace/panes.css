@@ -304,23 +304,21 @@
 }
 .crumb-drive-chev {
   margin-inline-start: 2px;
-  padding: 1px 2px;
+  padding: 1px 3px;
   border-radius: 2px;
   font-size: 8px;
   opacity: 0.65;
+  cursor: pointer;
   /* The ▾ glyph sits near the top of its own em box in var(--font-mono),
      so flex-centering the crumb alone leaves it looking too high. */
   position: relative;
   top: 1px;
 }
-.crumb-drive:hover .crumb-drive-chev { opacity: 1; }
-/* Half the drive tile's own width, not just the tiny chevron glyph —
-   the glyph alone was too small a target to hit reliably. */
-.crumb-drive-hitzone {
-  position: absolute;
-  inset: 0;
-  inset-inline-start: 50%;
-  cursor: pointer;
+.crumb-drive:hover .crumb-drive-chev { opacity: 0.85; }
+.crumb-drive-chev:hover {
+  opacity: 1;
+  background: var(--bg-panel);
+  color: var(--text-primary);
 }
 
 /* Rendered off-screen to measure the untruncated trail's real widths

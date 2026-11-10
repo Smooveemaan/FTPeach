@@ -396,7 +396,7 @@ describe('moving and copying the selection', () => {
 
 describe('the drive menu', () => {
   const click = (rect: Partial<DOMRect>) =>
-    ({ currentTarget: { getBoundingClientRect: () => rect } }) as never;
+    ({ currentTarget: { getBoundingClientRect: () => rect, closest: () => null } }) as never;
 
   test('lists the drives under the crumb, ticks the current one and navigates', async () => {
     const h = harness({ a: localPane({ path: 'd:\\music' }) });

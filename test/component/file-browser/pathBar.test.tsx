@@ -69,3 +69,33 @@ test('the path field hands the keys to the list on Enter and back to the bar on 
   expect(document.activeElement).toBe(bar);
   expect(onPathSubmit).toHaveBeenCalledOnce();
 });
+
+test('clicking the drive crumb navigates to root, while clicking chevron opens drive menu', () => {
+  const onCrumbClick = vi.fn();
+  const onDriveMenuOpen = vi.fn();
+  render(
+    <PathBar
+      kind="local"
+      crumbs={[
+        { path: '/', label: 'Macintosh HD' },
+        { path: '/Users', label: 'Users' },
+      ]}
+      onCrumbClick={onCrumbClick}
+      onDriveMenuOpen={onDriveMenuOpen}
+      onPathSubmit={vi.fn()}
+    />,
+  );
+
+  const driveCrumb = document.querySelector('.pane-path:not(.pane-path-measure) .crumb-drive')!;
+  const chevron = driveCrumb.querySelector('.crumb-drive-chev')!;
+
+  fireEvent.click(driveCrumb);
+  expect(onCrumbClick).toHaveBeenCalledExactlyOnceWith('/');
+  expect(onDriveMenuOpen).not.toHaveBeenCalled();
+
+  onCrumbClick.mockClear();
+
+  fireEvent.click(chevron);
+  expect(onDriveMenuOpen).toHaveBeenCalledOnce();
+  expect(onCrumbClick).not.toHaveBeenCalled();
+});

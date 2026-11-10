@@ -138,17 +138,22 @@ export default function PathBar({
           }
         >
           {crumb.icon ? <Icon name={crumb.icon} size={13} /> : <bdi>{crumb.label}</bdi>}
-          {isDriveCrumb && <span className="crumb-drive-chev">▾</span>}
-          {isDriveCrumb && !measured && (
+          {isDriveCrumb && (
             <span
-              className="crumb-drive-hitzone"
-              data-tooltip={t('filePane.changeDriveTooltip')}
+              className="crumb-drive-chev"
+              data-tooltip={!measured ? t('filePane.changeDriveTooltip') : undefined}
               onMouseDown={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDriveMenuOpen!(event);
-              }}
-            />
+              onClick={
+                measured
+                  ? undefined
+                  : (event) => {
+                      event.stopPropagation();
+                      onDriveMenuOpen!(event);
+                    }
+              }
+            >
+              ▾
+            </span>
           )}
         </span>
       </React.Fragment>

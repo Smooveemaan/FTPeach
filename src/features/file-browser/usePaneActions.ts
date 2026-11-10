@@ -467,7 +467,8 @@ export function usePaneActions({
       setDriveMenu(null);
       return;
     }
-    const rect = event.currentTarget.getBoundingClientRect();
+    const anchor = event.currentTarget.closest('.crumb-drive') ?? event.currentTarget;
+    const rect = anchor.getBoundingClientRect();
     const drives = await api.fsLocal.drives();
     const currentRoot = currentLocalRoot(
       panes[id].path || '',

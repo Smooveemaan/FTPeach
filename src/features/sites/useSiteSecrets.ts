@@ -20,7 +20,7 @@ export interface SiteSecretsController {
   readSecrets: () => SiteFormSecrets;
   resetSecrets: () => void;
   revealSavedSecret: (field: SecretField) => Promise<boolean>;
-  secretsChanged: () => boolean;
+  secretsChanged: (field?: SecretField) => boolean;
 }
 
 const causeMessage = (cause: unknown): string =>
@@ -98,11 +98,15 @@ export function useSiteSecrets({
     [],
   );
 
-  const secretsChanged = useCallback(() => {
-    const current = readSecrets();
-    const known = knownSecretsRef.current;
-    return current.password !== known.password || current.keyPassphrase !== known.keyPassphrase;
-  }, [readSecrets]);
+  const secretsChanged = useCallback(
+    (field?: SecretField) => {
+      const current = readSecrets();
+      const known = knownSecretsRef.current;
+      if (field) return current[field] !== known[field];
+      return current.password !== known.password || current.keyPassphrase !== known.keyPassphrase;
+    },
+    [readSecrets],
+  );
 
   const revealSavedSecret = useCallback(
     async (field: SecretField) => {

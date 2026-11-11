@@ -571,6 +571,7 @@ export default function SiteManagerDialog({
             onChooseCaCertFile={chooseCaCertFile}
             onChooseLocalPath={chooseLocalPath}
             onRevealSecret={revealSavedSecret}
+            secretsChanged={secretsChanged}
             rsaKeySelected={rsaKeySelected}
             passwordRef={passwordRef}
             keyPassphraseRef={keyPassphraseRef}

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Files dragged out of FTPeach can be brought back into its panes during the same drag.
 - External file drags on macOS no longer show an extra Copy badge beside the system indicator.
 - Files dragged into the app on macOS target the folder under the cursor at every interface scale.

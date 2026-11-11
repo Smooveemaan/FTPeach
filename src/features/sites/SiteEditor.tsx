@@ -59,6 +59,7 @@ interface SiteEditorProps {
   onChooseCaCertFile: () => void | Promise<void>;
   onChooseLocalPath: () => void | Promise<void>;
   onRevealSecret: (field: SecretField) => boolean | Promise<boolean>;
+  secretsChanged: (field: SecretField) => boolean;
   rsaKeySelected: boolean;
   passwordRef: RefObject<HTMLInputElement | null>;
   keyPassphraseRef: RefObject<HTMLInputElement | null>;
@@ -77,6 +78,7 @@ export default function SiteEditor({
   onChooseCaCertFile,
   onChooseLocalPath,
   onRevealSecret,
+  secretsChanged,
   rsaKeySelected,
   passwordRef,
   keyPassphraseRef,
@@ -137,10 +139,12 @@ export default function SiteEditor({
   const handleSecretInput =
     (field: SecretField, removeField: SecretRemovalField) =>
     (event: ChangeEvent<HTMLInputElement>) => {
-      const typed = event.target.value !== '';
+      const changed = secretsChanged(field);
+      const typed = changed && event.target.value !== '';
       setTypedSecrets((current) =>
         current[field] === typed ? current : { ...current, [field]: typed },
       );
+      if (!changed) return;
       setForm((current) => (current[removeField] ? { ...current, [removeField]: false } : current));
       // Typing over a removed secret replaces it instead, so the field stays
       // open for the rest of the typing rather than locking after one key.

@@ -329,6 +329,8 @@ describe('Site Manager workflows', () => {
 
     await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
     await waitFor(() => expect(input.value).toBe('revealed-bookmark-secret'));
+    expect(input.readOnly).toBe(true);
+    expect(screen.queryByText('siteManagerDialog.savedSecretReplaceHint')).toBeNull();
     window.dispatchEvent(new Event('blur'));
     await waitFor(() => expect(input.value).toBe(''));
 
@@ -364,6 +366,7 @@ describe('Site Manager workflows', () => {
 
   test('a saved password stays locked until its edit button is pressed', async () => {
     const user = userEvent.setup({ delay: null });
+    vi.mocked(window.api.sites.revealSecret).mockResolvedValue({ ok: true, value: 'saved-secret' });
     const { props } = renderManager();
     const row = screen.getByText('Production').closest('.site-manage-row');
     await user.click(
@@ -378,6 +381,11 @@ describe('Site Manager workflows', () => {
     expect(input.readOnly).toBe(false);
     expect(document.activeElement).toBe(input);
     expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    await waitFor(() => expect(input.value).toBe('saved-secret'));
+    expect(screen.queryByText('siteManagerDialog.savedSecretReplaceHint')).toBeNull();
+    expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
+    await user.clear(input);
     await user.type(input, 'draft');
     expect(screen.getByText('siteManagerDialog.savedSecretReplaceHint')).toBeTruthy();
 

@@ -69,6 +69,69 @@
 }
 .modal-close:hover { color: var(--text-primary); background: var(--bg-raised); }
 
+:root[data-platform='macos'] .modal-header {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) 12px;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  min-height: var(--title-bar-height);
+  flex-shrink: 0;
+  padding: 0 14px;
+  background: var(--bg-base);
+}
+
+:root[data-platform='macos'] .modal-header-left {
+  display: contents;
+}
+
+:root[data-platform='macos'] .modal-title {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: normal;
+  color: var(--text-faint);
+  opacity: 0.6;
+}
+
+:root[data-platform='macos'] .modal-close {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 12%);
+  border-radius: 50%;
+  background: #ff5f57;
+  font-size: 0;
+}
+
+:root[data-platform='macos'] .modal-close:not(:disabled):is(:hover, :focus-visible)::before,
+:root[data-platform='macos'] .modal-close:not(:disabled):is(:hover, :focus-visible)::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 4px;
+  width: 6px;
+  height: 1px;
+  background: #4c0902;
+  transform: rotate(45deg);
+}
+
+:root[data-platform='macos'] .modal-close:not(:disabled):is(:hover, :focus-visible)::after {
+  transform: rotate(-45deg);
+}
+
+:root[data-platform='macos'] .modal-close:disabled {
+  background: var(--text-faint);
+  opacity: 0.4;
+}
+
 .modal-body {
   padding: 14px;
   font-size: 12.5px;

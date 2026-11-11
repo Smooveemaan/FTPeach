@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The toolbar has a Settings button to open Settings directly.
 - The Help menu includes a direct link to the User Guide.
 
+### Changed
+
+- Dialogs on macOS use centered titles and a round close button on the left.
+
 ### Fixed
 
 - Security confirmations on macOS appear fully drawn and accept input without blocking the application.

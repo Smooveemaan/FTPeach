@@ -40,7 +40,7 @@ body,
 
 .security-confirmation__content p {
   width: max-content;
-  max-width: min(680px, calc(100vw - 28px));
+  max-width: min(680px, 100%);
   margin: 0;
   overflow-wrap: anywhere;
   line-height: 1.45;

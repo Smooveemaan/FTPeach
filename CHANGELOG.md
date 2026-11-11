@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Security confirmations on macOS appear fully drawn and accept input without blocking the application.
 - Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
 - Clicking any button or control dismisses open tooltips immediately.
 - Resetting the window layout while fullscreen restores the window to its centered size.

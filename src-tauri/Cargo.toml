@@ -145,6 +145,9 @@ zstd = { version = "=0.14.3", default-features = false }
 # Already in the tree through `trash`: whether a volume has a Trash
 # (local_fs/recycle_bin.rs).
 [target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6.2"
+objc2-web-kit = { version = "0.3.2", default-features = false, features = ["std", "block2", "objc2-app-kit", "WKWebView", "WKSnapshotConfiguration"] }
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "block2", "NSApplication", "NSWindow", "NSResponder"] }
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSProcessInfo", "NSString", "NSURL"] }
 
 [dev-dependencies]

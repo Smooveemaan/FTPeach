@@ -21,7 +21,7 @@ impl InterfaceScale {
         Ok(())
     }
 
-    fn get(&self) -> f64 {
+    pub(crate) fn get(&self) -> f64 {
         *self.0.lock().unwrap_or_else(|e| e.into_inner())
     }
 }

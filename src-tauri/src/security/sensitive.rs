@@ -400,17 +400,31 @@ fn reject_pending(state: &AuthorizationState, request_id: &str) {
     }
 }
 
+/// Confirmation content with the scale applied to its native WebView.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScaledConfirmationPrompt {
+    #[serde(flatten)]
+    prompt: ConfirmationPrompt,
+    interface_scale: f64,
+}
+
 #[tauri::command]
 pub async fn sensitive_confirmation_prompt(
     window: tauri::WebviewWindow,
     state: State<'_, AuthorizationState>,
     request_id: String,
-) -> CommandResult<ConfirmationPrompt> {
+) -> CommandResult<ScaledConfirmationPrompt> {
     let prompt = pending_prompt(&state, window.label(), &request_id)?;
     // At the interface scale before the page measures its question, which
     // it does once it has the prompt.
     crate::runtime::confirmation_window::scale_to_interface(&window).await;
-    Ok(prompt)
+    Ok(ScaledConfirmationPrompt {
+        prompt,
+        interface_scale: window
+            .state::<crate::runtime::window_scale::InterfaceScale>()
+            .get(),
+    })
 }
 
 #[tauri::command]
@@ -420,6 +434,10 @@ pub async fn sensitive_confirmation_ready(
     request_id: String,
 ) -> CommandResult<()> {
     pending_prompt(&state, window.label(), &request_id)?;
+    #[cfg(target_os = "macos")]
+    crate::runtime::confirmation_window::wait_until_rendered(&window)
+        .await
+        .map_err(denied)?;
     crate::runtime::confirmation_window::show(&window).map_err(denied)
 }
 

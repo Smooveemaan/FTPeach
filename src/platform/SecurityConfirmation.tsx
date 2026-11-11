@@ -61,6 +61,7 @@ interface HostKeyFingerprints {
 }
 
 interface ConfirmationPrompt {
+  interfaceScale?: number;
   kind: ConfirmationKind;
   locale: string;
   target?: string | null;
@@ -130,24 +131,40 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
     }
     let cancelled = false;
     const resizeToContent = async () => {
+      await document.fonts.ready;
       const content = contentRef.current;
       if (!content || cancelled) return;
       const titlebar = content.previousElementSibling as HTMLElement | null;
       const actions = content.nextElementSibling as HTMLElement | null;
       const message = content.querySelector('p');
       // Measured in CSS pixels, which the interface scale enlarges; a CSS
-      // pixel is devicePixelRatio physical ones. No larger than the screen,
-      // where the message scrolls instead.
-      const { availWidth, availHeight } = window.screen;
+      // pixel also includes WKWebView pageZoom on macOS; WebView2 includes
+      // that zoom in devicePixelRatio already.
+      const interfaceScale = hostPlatform() === 'macos' ? (prompt.interfaceScale ?? 1) : 1;
+      const pixelScale = window.devicePixelRatio * interfaceScale;
+      const availWidth = window.screen.availWidth / interfaceScale;
+      const availHeight = window.screen.availHeight / interfaceScale;
       const size = (width: number, height: number) =>
         new PhysicalSize(
-          Math.ceil(Math.min(width, availWidth) * window.devicePixelRatio),
-          Math.ceil(Math.min(height, availHeight) * window.devicePixelRatio),
+          Math.ceil(
+            Math.min(
+              Math.max(hostPlatform() === 'macos' ? 400 / interfaceScale : 0, width),
+              availWidth,
+            ) * pixelScale,
+          ),
+          Math.ceil(
+            Math.min(
+              Math.max(hostPlatform() === 'macos' ? 160 / interfaceScale : 0, height),
+              availHeight,
+            ) * pixelScale,
+          ),
         );
       // As wide as the unlock dialog, unless the message needs more.
       const availableWidth = Math.max(440, availWidth - 48);
       const messageWidth = message?.scrollWidth ?? 0;
       const width = Math.ceil(Math.min(720, availableWidth, Math.max(440, messageWidth + 28)));
+      const modal = content.parentElement;
+      if (modal) modal.style.width = `${size(width, 170).width / pixelScale}px`;
       await getCurrentWindow().setSize(size(width, Math.max(170, window.innerHeight)));
       // Set by this effect's cleanup, which the compiler does not model.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -162,17 +179,19 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
               currentContent.scrollHeight +
               (actions?.offsetHeight ?? 0),
           );
-          await getCurrentWindow().setSize(size(width, height));
+          const finalSize = size(width, height);
+          if (modal) modal.style.height = `${finalSize.height / pixelScale}px`;
+          await getCurrentWindow().setSize(finalSize);
           // Set by this effect's cleanup, which the compiler does not model.
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (cancelled) return;
           await invoke('plugin:sensitive|sensitive_confirmation_ready', { requestId }).catch(() =>
             getCurrentWindow().close(),
           );
-        })();
+        })().catch(() => getCurrentWindow().close());
       });
     };
-    void resizeToContent();
+    void resizeToContent().catch(() => getCurrentWindow().close());
     return () => {
       cancelled = true;
     };

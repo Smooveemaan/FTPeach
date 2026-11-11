@@ -93,32 +93,67 @@ pub(crate) fn show(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
         .app_handle()
         .get_webview_window("main")
         .ok_or("Parent window unavailable")?;
-    let appearance = window
-        .state::<AppearanceState>()
-        .0
-        .lock()
-        .unwrap_or_else(|error| error.into_inner())
-        .clone();
-    appearance
-        .apply(window)
-        .map_err(|_| "Confirmation appearance could not be applied")?;
     center_over_parent(&parent, window);
     // Modal, as Windows Hello is: the main window ignores the pointer and the
     // keyboard until the question is answered.
+    #[cfg(not(target_os = "macos"))]
     enable_main(&parent, false).map_err(|_| "Parent window could not be disabled")?;
     // Centred over a main window that sits off screen; it must not take the
     // focus from whoever works at the desktop either.
     #[cfg(feature = "smoke-test")]
     if super::e2e_browser::active() {
+        #[cfg(target_os = "macos")]
+        {
+            let ready = window.clone();
+            window
+                .run_on_main_thread(move || {
+                    if let Ok(handle) = ready.ns_window() {
+                        // SAFETY: the live NSWindow is accessed on AppKit's main thread.
+                        unsafe { (&*handle.cast::<objc2_app_kit::NSWindow>()).setAlphaValue(1.0) };
+                    }
+                })
+                .map_err(|_| "Confirmation could not be displayed")?;
+        }
         super::e2e_browser::show_without_focus(window);
         return Ok(());
     }
+    #[cfg(target_os = "macos")]
+    set_sheet(window, true).map_err(|_| "Confirmation could not be displayed")?;
+    #[cfg(not(target_os = "macos"))]
     window
         .show()
         .map_err(|_| "Confirmation could not be displayed")?;
     window
         .set_focus()
         .map_err(|_| "Confirmation could not be focused")
+}
+
+#[cfg(target_os = "macos")]
+/// Waits for WebKit to render the hidden confirmation before AppKit presents it.
+pub(crate) async fn wait_until_rendered(window: &tauri::WebviewWindow) -> Result<(), &'static str> {
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    window
+        .with_webview(move |webview| {
+            let tx = std::cell::RefCell::new(Some(tx));
+            let completed = block2::RcBlock::new(
+                move |image: *mut objc2_app_kit::NSImage, error: *mut objc2_foundation::NSError| {
+                    if let Some(tx) = tx.borrow_mut().take() {
+                        let _ = tx.send(!image.is_null() && error.is_null());
+                    }
+                },
+            );
+            // SAFETY: Tauri supplies a live WKWebView on the main thread. WebKit
+            // renders the hidden window before completing; the image is discarded.
+            unsafe {
+                let view = &*webview.inner().cast::<objc2_web_kit::WKWebView>();
+                view.takeSnapshotWithConfiguration_completionHandler(None, &completed);
+            }
+        })
+        .map_err(|_| "Confirmation rendering could not be started")?;
+    match rx.await {
+        Ok(true) => Ok(()),
+        _ => Err("Confirmation could not be rendered"),
+    }
 }
 
 /// Gives the window the interface zoom, which it no longer takes from the
@@ -158,12 +193,12 @@ pub(crate) fn center_over_parent(parent: &tauri::WebviewWindow, child: &tauri::W
 
 /// Turns the main window's input on or off; a disabled window drops clicks
 /// and keys until the last confirmation closes.
+#[cfg(not(target_os = "macos"))]
 fn enable_main(main: &tauri::WebviewWindow, enabled: bool) -> tauri::Result<()> {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
     let window = main.clone();
     main.run_on_main_thread(move || {
-        // Check and change together: concurrent prompts must not attach two
-        // blocking sheets on macOS, or leave input disabled after closing.
+        // Check and change together so concurrent prompts cannot leave input disabled.
         let result = window.is_enabled().and_then(|current| {
             if current != enabled {
                 window.set_enabled(enabled)
@@ -177,8 +212,42 @@ fn enable_main(main: &tauri::WebviewWindow, enabled: bool) -> tauri::Result<()> 
         .map_err(|_| tauri::Error::FailedToReceiveMessage)?
 }
 
+#[cfg(target_os = "macos")]
+fn set_sheet(window: &tauri::WebviewWindow, shown: bool) -> tauri::Result<()> {
+    let parent = window
+        .app_handle()
+        .get_webview_window("main")
+        .ok_or(tauri::Error::WindowNotFound)?;
+    let child = window.clone();
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    window.run_on_main_thread(move || {
+        let result = (|| {
+            let parent = parent.ns_window()?.cast::<objc2_app_kit::NSWindow>();
+            let child = child.ns_window()?.cast::<objc2_app_kit::NSWindow>();
+            // SAFETY: both handles are live NSWindows, used on AppKit's main thread.
+            unsafe {
+                let parent = &*parent;
+                let child = &*child;
+                let sheet_parent = child.sheetParent();
+                if shown && sheet_parent.is_none() {
+                    // Tauri's set_enabled(false) installs an empty blocking sheet;
+                    // the confirmation itself must be the sheet to receive input.
+                    parent.beginSheet_completionHandler(child, None);
+                    child.setAlphaValue(1.0);
+                } else if !shown && let Some(parent) = sheet_parent {
+                    parent.endSheet(child);
+                }
+            }
+            Ok(())
+        })();
+        let _ = tx.send(result);
+    })?;
+    rx.recv()
+        .map_err(|_| tauri::Error::FailedToReceiveMessage)?
+}
+
 #[cfg(windows)]
-fn enable_native_rounding(window: &tauri::WebviewWindow) {
+fn configure_native_window(window: &tauri::WebviewWindow) {
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
     use windows::Win32::{
         Foundation::HWND,
@@ -202,8 +271,19 @@ fn enable_native_rounding(window: &tauri::WebviewWindow) {
     }
 }
 
-#[cfg(not(windows))]
-fn enable_native_rounding(_: &tauri::WebviewWindow) {}
+#[cfg(target_os = "macos")]
+fn configure_native_window(window: &tauri::WebviewWindow) {
+    let hidden = window.clone();
+    let _ = window.run_on_main_thread(move || {
+        if let Ok(handle) = hidden.ns_window() {
+            // Keep AppKit activation from exposing the initial React template.
+            unsafe { (&*handle.cast::<objc2_app_kit::NSWindow>()).setAlphaValue(0.0) };
+        }
+    });
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
+fn configure_native_window(_: &tauri::WebviewWindow) {}
 
 const WIDTH: f64 = 460.0;
 const HEIGHT: f64 = 170.0;
@@ -335,6 +415,7 @@ pub(crate) fn create(
     .initialization_script(appearance.script())
     .theme(Some(appearance.theme()))
     .background_color(appearance.background())
+    .focused(false)
     .visible(false);
     // The same WebView2 profile as the main window, which a portable copy
     // keeps beside the program.
@@ -345,10 +426,13 @@ pub(crate) fn create(
     if let Some(args) = super::e2e_browser::args() {
         builder = builder.additional_browser_args(&args);
     }
-    // Owned on Windows, a child on macOS, transient on Linux.
-    builder = builder.parent(&main)?;
+    // AppKit attaches the confirmation as a sheet when it is ready to show.
+    #[cfg(not(target_os = "macos"))]
+    {
+        builder = builder.parent(&main)?;
+    }
     let window = builder.build()?;
-    enable_native_rounding(&window);
+    configure_native_window(&window);
     // F5 or Ctrl+R would reload the question away, Ctrl+P print it. Left on
     // under the smoke test, as in the main window.
     #[cfg(windows)]
@@ -369,15 +453,22 @@ pub(crate) fn create(
         // before this one goes, or Windows finds the owner disabled and hands
         // the activation to another program.
         tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed => {
-            let app = rescaled.app_handle();
-            let others = app
-                .webview_windows()
-                .into_keys()
-                .any(|label| label.starts_with(LABEL_PREFIX) && label != rescaled.label());
-            if let (false, Some(main)) = (others, app.get_webview_window("main"))
-                && let Err(error) = enable_main(&main, true)
+            #[cfg(target_os = "macos")]
+            if let Err(error) = set_sheet(&rescaled, false) {
+                log::error!("Could not dismiss confirmation sheet: {error}");
+            }
+            #[cfg(not(target_os = "macos"))]
             {
-                log::error!("Could not restore main window input: {error}");
+                let app = rescaled.app_handle();
+                let others = app
+                    .webview_windows()
+                    .into_keys()
+                    .any(|label| label.starts_with(LABEL_PREFIX) && label != rescaled.label());
+                if let (false, Some(main)) = (others, app.get_webview_window("main"))
+                    && let Err(error) = enable_main(&main, true)
+                {
+                    log::error!("Could not restore main window input: {error}");
+                }
             }
         }
         _ => {}

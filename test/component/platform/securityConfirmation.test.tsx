@@ -30,6 +30,10 @@ vi.mock('react-i18next', () => ({
 const prefix = 'plugin:sensitive|';
 beforeEach(() => {
   vi.clearAllMocks();
+  Object.defineProperty(document, 'fonts', {
+    configurable: true,
+    value: { ready: Promise.resolve() },
+  });
   mocks.respond.mockResolvedValue(undefined);
   mocks.close.mockResolvedValue(undefined);
   mocks.setSize.mockResolvedValue(undefined);
@@ -101,6 +105,55 @@ test('a hidden window reports ready without waiting for an animation frame', asy
   expect(mocks.invoke).toHaveBeenCalledWith(`${prefix}sensitive_confirmation_ready`, {
     requestId: 'request-1',
   });
+});
+
+test.each([0.8, 1, 1.5])(
+  'macOS prepares the complete layout at interface scale %s without viewport events',
+  async (interfaceScale) => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Macintosh');
+    vi.spyOn(window, 'devicePixelRatio', 'get').mockReturnValue(2);
+    vi.spyOn(window.screen, 'availWidth', 'get').mockReturnValue(1920);
+    vi.spyOn(window.screen, 'availHeight', 'get').mockReturnValue(1080);
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(460);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(170);
+    const view = await open({ interfaceScale });
+    const modal = view.container.querySelector<HTMLElement>('.security-confirmation')!;
+    const finalSize = mocks.setSize.mock.lastCall![0];
+    expect(finalSize.width).toBe(Math.max(440 * interfaceScale, 400) * 2);
+    expect(finalSize.height).toBe(320);
+    expect(Number.parseFloat(modal.style.width)).toBeCloseTo(Math.max(440, 400 / interfaceScale));
+    expect(Number.parseFloat(modal.style.height)).toBeCloseTo(160 / interfaceScale);
+    expect(window.innerWidth).toBe(460);
+    expect(window.innerHeight).toBe(170);
+  },
+);
+
+test('waits for fonts before sizing and reporting the confirmation ready', async () => {
+  let fontsReady!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    fontsReady = resolve;
+  });
+  const originalFonts = Object.getOwnPropertyDescriptor(document, 'fonts');
+  Object.defineProperty(document, 'fonts', { configurable: true, value: { ready } });
+  try {
+    mocks.invoke.mockResolvedValue({ kind: 'trustHostKey', locale: 'en' });
+    render(<SecurityConfirmation requestId="request-1" />);
+    await screen.findByText('securityConfirmation.title');
+    expect(mocks.setSize).not.toHaveBeenCalled();
+    expect(mocks.invoke).not.toHaveBeenCalledWith(`${prefix}sensitive_confirmation_ready`, {
+      requestId: 'request-1',
+    });
+    fontsReady();
+    await waitFor(() =>
+      expect(mocks.invoke).toHaveBeenCalledWith(`${prefix}sensitive_confirmation_ready`, {
+        requestId: 'request-1',
+      }),
+    );
+    expect(mocks.setSize).toHaveBeenCalledTimes(2);
+  } finally {
+    if (originalFonts) Object.defineProperty(document, 'fonts', originalFonts);
+    else Reflect.deleteProperty(document, 'fonts');
+  }
 });
 
 test('a missing prompt closes the window without authorizing anything', async () => {

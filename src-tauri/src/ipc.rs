@@ -407,7 +407,11 @@ impl CommandError {
         } else if lower.contains("530 ")
             || lower.contains("login incorrect")
             || lower.contains("auth fail")
-            || lower.contains("401")
+            || lower.contains("401 unauthorized")
+            || lower.contains("http 401")
+            || lower.contains("status 401")
+            || lower.contains("status: 401")
+            || lower.contains(" 401 ")
         {
             ErrorCode::AuthFailed
         } else if lower.contains("10061") || lower.contains("connection refused") {
@@ -437,7 +441,11 @@ impl CommandError {
             ErrorCode::ProxyFailed
         } else if lower.contains("permission denied")
             || lower.contains("(os error 5)")
-            || lower.contains("403")
+            || lower.contains("403 forbidden")
+            || lower.contains("http 403")
+            || lower.contains("status 403")
+            || lower.contains("status: 403")
+            || lower.contains(" 403 ")
         {
             ErrorCode::PermissionDenied
         } else if lower.contains("not found")
@@ -772,9 +780,35 @@ mod tests {
             assert_eq!(code(raw), expected, "os error {raw}");
         }
         // Only text reaches the last-resort matcher, where "os error 3" used
-        // to match inside "os error 32".
+        // to match inside "os error 32", and "-34018" matched inside "401".
         let text = anyhow::anyhow!("{}", std::io::Error::from_raw_os_error(32));
         assert_eq!(CommandError::from_anyhow(&text).code, ErrorCode::Internal);
+        let keychain_error = anyhow::anyhow!("SecItemAdd status -34018");
+        assert_ne!(
+            CommandError::from_anyhow(&keychain_error).code,
+            ErrorCode::AuthFailed
+        );
+    }
+
+    #[test]
+    fn http_status_text_is_distinct_from_keychain_status_numbers() {
+        for (message, expected) in [
+            ("401 Unauthorized", ErrorCode::AuthFailed),
+            ("HTTP 401", ErrorCode::AuthFailed),
+            ("status: 401", ErrorCode::AuthFailed),
+            ("403 Forbidden", ErrorCode::PermissionDenied),
+            ("HTTP 403", ErrorCode::PermissionDenied),
+            ("status: 403", ErrorCode::PermissionDenied),
+            ("SecItemAdd status -34018", ErrorCode::Internal),
+            ("native status -3403", ErrorCode::Internal),
+        ] {
+            let error = anyhow::anyhow!("{message}");
+            assert_eq!(
+                CommandError::from_anyhow(&error).code,
+                expected,
+                "{message}"
+            );
+        }
     }
 
     #[cfg(unix)]

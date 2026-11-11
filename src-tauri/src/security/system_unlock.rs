@@ -383,6 +383,7 @@ mod macos {
     unsafe extern "C" {
         static kSecClass: *const c_void;
         static kSecClassGenericPassword: *const c_void;
+        static kSecUseDataProtectionKeychain: *const c_void;
         static kSecAttrService: *const c_void;
         static kSecAttrAccount: *const c_void;
         static kSecAttrAccessControl: *const c_void;
@@ -436,7 +437,6 @@ mod macos {
         fn objc_getClass(name: *const std::ffi::c_char) -> *const c_void;
         fn sel_registerName(name: *const std::ffi::c_char) -> *const c_void;
         fn objc_msgSend();
-        static _NSConcreteStackBlock: [*const c_void; 32];
     }
 
     struct CfRef(*const c_void);
@@ -537,105 +537,6 @@ mod macos {
         }
     }
 
-    #[repr(C)]
-    struct BlockDescriptor {
-        reserved: usize,
-        size: usize,
-    }
-
-    static BLOCK_DESCRIPTOR: BlockDescriptor = BlockDescriptor {
-        reserved: 0,
-        size: std::mem::size_of::<AuthBlock>(),
-    };
-
-    #[repr(C)]
-    struct AuthBlock<'a> {
-        isa: *const c_void,
-        flags: i32,
-        reserved: i32,
-        invoke: unsafe extern "C" fn(*mut AuthBlock<'a>, bool, *const c_void),
-        descriptor: &'static BlockDescriptor,
-        tx: &'a std::sync::mpsc::SyncSender<bool>,
-    }
-
-    unsafe extern "C" fn auth_block_invoke(
-        block: *mut AuthBlock<'_>,
-        success: bool,
-        _error: *const c_void,
-    ) {
-        // SAFETY: Invoked by LocalAuthentication runtime when verification finishes;
-        // 	x lives on the calling thread's stack in erify_user while waiting.
-        let block = unsafe { &*block };
-        let _ = block.tx.send(success);
-    }
-
-    fn verify_user() -> Result<()> {
-        if !available() {
-            bail!("Touch ID or Mac password is not available");
-        }
-
-        let reason = cf_string("Confirm system unlock for the FTPeach vault")?;
-        let (tx, rx) = std::sync::mpsc::sync_channel(1);
-
-        // SAFETY: Allocates LAContext, constructs a stack block literal, and evaluates policy.
-        unsafe {
-            let cls = objc_getClass(c"LAContext".as_ptr());
-            if cls.is_null() {
-                bail!("LAContext class unavailable");
-            }
-            let sel_alloc = sel_registerName(c"alloc".as_ptr());
-            let sel_init = sel_registerName(c"init".as_ptr());
-            let sel_eval = sel_registerName(c"evaluatePolicy:localizedReason:reply:".as_ptr());
-            let sel_release = sel_registerName(c"release".as_ptr());
-
-            let msg_send_id: unsafe extern "C" fn(*const c_void, *const c_void) -> *const c_void =
-                std::mem::transmute(objc_msgSend as *const ());
-            let ctx = msg_send_id(cls, sel_alloc);
-            if ctx.is_null() {
-                bail!("allocating LAContext failed");
-            }
-            let ctx = msg_send_id(ctx, sel_init);
-            if ctx.is_null() {
-                bail!("initializing LAContext failed");
-            }
-
-            let block = AuthBlock {
-                isa: _NSConcreteStackBlock.as_ptr().cast(),
-                flags: 0,
-                reserved: 0,
-                invoke: auth_block_invoke,
-                descriptor: &BLOCK_DESCRIPTOR,
-                tx: &tx,
-            };
-
-            let msg_send_eval: unsafe extern "C" fn(
-                *const c_void,
-                *const c_void,
-                isize,
-                *const c_void,
-                *const c_void,
-            ) = std::mem::transmute(objc_msgSend as *const ());
-
-            msg_send_eval(
-                ctx,
-                sel_eval,
-                2, // LAPolicyDeviceOwnerAuthentication
-                reason.0,
-                &block as *const _ as *const c_void,
-            );
-
-            let msg_send_void: unsafe extern "C" fn(*const c_void, *const c_void) =
-                std::mem::transmute(objc_msgSend as *const ());
-            msg_send_void(ctx, sel_release);
-        }
-
-        match rx.recv_timeout(std::time::Duration::from_secs(300)) {
-            Ok(true) => Ok(()),
-            Ok(false) => bail!("Touch ID verification was canceled or failed"),
-            Err(_) => bail!("Touch ID verification timed out"),
-        }
-    }
-
     pub fn exists(name: &str) -> bool {
         let Ok(service) = service_name() else {
             return false;
@@ -647,6 +548,7 @@ mod macos {
         unsafe {
             let keys = [
                 kSecClass,
+                kSecUseDataProtectionKeychain,
                 kSecAttrService,
                 kSecAttrAccount,
                 kSecReturnAttributes,
@@ -655,6 +557,7 @@ mod macos {
             ];
             let values = [
                 kSecClassGenericPassword,
+                kCFBooleanTrue,
                 service.0,
                 account.0,
                 kCFBooleanTrue,
@@ -675,7 +578,6 @@ mod macos {
     }
 
     pub fn register(name: &str, plaintext: &[u8], _hwnd: isize) -> Result<Vec<u8>> {
-        verify_user()?;
         let service = service_name()?;
         let account = cf_string(name)?;
         let value = cf_data(plaintext)?;
@@ -701,6 +603,7 @@ mod macos {
         let status = unsafe {
             let keys = [
                 kSecClass,
+                kSecUseDataProtectionKeychain,
                 kSecAttrService,
                 kSecAttrAccount,
                 kSecAttrAccessControl,
@@ -708,6 +611,7 @@ mod macos {
             ];
             let values = [
                 kSecClassGenericPassword,
+                kCFBooleanTrue,
                 service.0,
                 account.0,
                 access.0,
@@ -717,10 +621,17 @@ mod macos {
             SecItemAdd(dict.0, std::ptr::null_mut())
         };
         if status != 0 {
+            if status == -34018 {
+                bail!(
+                    "registering Touch ID credential in Keychain failed: errSecMissingEntitlement (-34018; Touch ID requires a signed application with Keychain entitlements and a matching provisioning profile)"
+                );
+            }
             bail!("registering Touch ID credential in Keychain failed: SecItemAdd status {status}");
         }
 
         let wrapped = Sha256::digest(plaintext).to_vec();
+        // Confirm access to the protected item before enabling system unlock.
+        super::confirm_registration(|| unwrap(name, &wrapped, 0).map(|_| ()), || revoke(name))?;
         Ok(wrapped)
     }
 
@@ -733,6 +644,7 @@ mod macos {
         let (result_ptr, status) = unsafe {
             let keys = [
                 kSecClass,
+                kSecUseDataProtectionKeychain,
                 kSecAttrService,
                 kSecAttrAccount,
                 kSecReturnData,
@@ -741,6 +653,7 @@ mod macos {
             ];
             let values = [
                 kSecClassGenericPassword,
+                kCFBooleanTrue,
                 service.0,
                 account.0,
                 kCFBooleanTrue,
@@ -753,6 +666,14 @@ mod macos {
             (result, status)
         };
         if status != 0 || result_ptr.is_null() {
+            if status == -34018 {
+                bail!(
+                    "Touch ID verification failed: errSecMissingEntitlement (-34018; Touch ID requires a signed application with Keychain entitlements and a matching provisioning profile)"
+                );
+            }
+            if status == -128 {
+                bail!("Touch ID verification was canceled");
+            }
             bail!("Touch ID verification was canceled or failed (status {status})");
         }
         let result = CfRef(result_ptr);
@@ -776,8 +697,18 @@ mod macos {
         let account = cf_string(name)?;
         // SAFETY: Deletes matching generic password item from Keychain without user prompt.
         let status = unsafe {
-            let keys = [kSecClass, kSecAttrService, kSecAttrAccount];
-            let values = [kSecClassGenericPassword, service.0, account.0];
+            let keys = [
+                kSecClass,
+                kSecUseDataProtectionKeychain,
+                kSecAttrService,
+                kSecAttrAccount,
+            ];
+            let values = [
+                kSecClassGenericPassword,
+                kCFBooleanTrue,
+                service.0,
+                account.0,
+            ];
             let dict = cf_dictionary(&keys, &values)?;
             SecItemDelete(dict.0)
         };
@@ -885,5 +816,42 @@ mod tests {
         assert_eq!(keys.scheme(), TOUCH_ID_SCHEME);
         #[cfg(not(target_os = "macos"))]
         assert_eq!(keys.scheme(), HELLO_SCHEME);
+    }
+}
+
+#[cfg(any(target_os = "macos", test))]
+fn confirm_registration(
+    confirm: impl FnOnce() -> anyhow::Result<()>,
+    revoke: impl FnOnce() -> anyhow::Result<()>,
+) -> anyhow::Result<()> {
+    if let Err(error) = confirm() {
+        let _ = revoke();
+        return Err(error);
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod registration_tests {
+    use super::confirm_registration;
+
+    #[test]
+    fn failed_confirmation_revokes_the_new_credential() {
+        let mut revoked = false;
+        let error = confirm_registration(
+            || anyhow::bail!("authentication cancelled"),
+            || {
+                revoked = true;
+                anyhow::bail!("cleanup failed")
+            },
+        )
+        .unwrap_err();
+        assert!(revoked);
+        assert_eq!(error.to_string(), "authentication cancelled");
+    }
+
+    #[test]
+    fn confirmed_credential_is_kept() {
+        confirm_registration(|| Ok(()), || panic!("confirmed credential must remain")).unwrap();
     }
 }

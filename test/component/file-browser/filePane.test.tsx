@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { FilePane } from '../../../src/features/file-browser/index.ts';
 import type { FilePaneProps } from '../../../src/features/file-browser/FilePane.tsx';
 import * as fileListModel from '../../../src/features/file-browser/components/fileListModel.ts';
+import * as platform from '../../../src/platform/os.ts';
 import { tauriApi } from '../../../src/platform/tauriApi.ts';
 import type { FileEntry } from '../../../src/shared/paneContracts.ts';
 
@@ -81,47 +82,65 @@ describe('FilePane interactions', () => {
     };
   });
 
-  test('external breadcrumb drop highlights the segment and copies once to its absolute path', () => {
-    const { container, props } = renderPane({ crumbs: [{ label: 'parent', path: 'C:\\parent' }] });
-    const crumb = requireHtml(container.querySelector('[data-drop-path]'));
-    const file = new File(['hello'], 'hello.txt');
-    const dataTransfer = { dropEffect: 'none', files: [file], items: [] };
-    fireEvent.dragOver(crumb, { dataTransfer, clientX: 40, clientY: 40 });
-    expect(dataTransfer.dropEffect).toBe('copy');
-    expect(crumb.classList.contains('drag-target')).toBe(true);
-    expect(container.querySelector('.drag-move-ghost')?.textContent).toBe('dragMove.modeCopy');
-    fireEvent.drop(crumb, { dataTransfer });
-    expect(props.onDropFiles).toHaveBeenCalledTimes(1);
-    expect(props.onDropFiles).toHaveBeenCalledWith(expect.any(Array), 'C:\\parent');
-    expect(crumb.classList.contains('drag-target')).toBe(false);
-    expect(props.onCrumbClick).not.toHaveBeenCalled();
-  });
-
-  test('native Explorer drop uses the hovered address segment', async () => {
-    const { container, props } = renderPane({ crumbs: [{ label: 'parent', path: 'C:\\parent' }] });
-    const crumb = requireHtml(container.querySelector('[data-drop-path]'));
-    const hit = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
-    Object.defineProperty(document, 'elementFromPoint', {
-      configurable: true,
-      value: vi.fn(() => crumb),
-    });
-    const listener = vi.mocked(window.api.fsLocal.onOsDragDrop).mock.calls.at(-1)![0];
-    try {
-      await act(async () => {
-        await listener({ type: 'over', paths: null, point: { x: 40, y: 40 } });
+  test.each(['macos', 'windows', 'linux'] as const)(
+    'external breadcrumb drop on %s highlights the segment and copies once',
+    (os) => {
+      vi.spyOn(platform, 'hostPlatform').mockReturnValue(os);
+      const { container, props } = renderPane({
+        crumbs: [{ label: 'parent', path: 'C:\\parent' }],
       });
+      const crumb = requireHtml(container.querySelector('[data-drop-path]'));
+      const file = new File(['hello'], 'hello.txt');
+      const dataTransfer = { dropEffect: 'none', files: [file], items: [] };
+      fireEvent.dragOver(crumb, { dataTransfer, clientX: 40, clientY: 40 });
+      expect(dataTransfer.dropEffect).toBe('copy');
       expect(crumb.classList.contains('drag-target')).toBe(true);
-      await act(async () => {
-        await listener({ type: 'drop', paths: ['C:\\drop\\hello.txt'], point: { x: 40, y: 40 } });
-      });
+      expect(container.querySelector('.drag-move-ghost')?.textContent).toBe('dragMove.modeCopy');
+      expect(container.querySelector('.drag-move-ghost')?.classList.contains('active')).toBe(
+        os !== 'macos',
+      );
+      fireEvent.drop(crumb, { dataTransfer });
       expect(props.onDropFiles).toHaveBeenCalledTimes(1);
       expect(props.onDropFiles).toHaveBeenCalledWith(expect.any(Array), 'C:\\parent');
       expect(crumb.classList.contains('drag-target')).toBe(false);
-    } finally {
-      if (hit) Object.defineProperty(document, 'elementFromPoint', hit);
-      else Reflect.deleteProperty(document, 'elementFromPoint');
-    }
-  });
+      expect(props.onCrumbClick).not.toHaveBeenCalled();
+    },
+  );
+
+  test.each(['macos', 'windows', 'linux'] as const)(
+    'native %s drop uses the hovered address segment',
+    async (os) => {
+      vi.spyOn(platform, 'hostPlatform').mockReturnValue(os);
+      const { container, props } = renderPane({
+        crumbs: [{ label: 'parent', path: 'C:\\parent' }],
+      });
+      const crumb = requireHtml(container.querySelector('[data-drop-path]'));
+      const hit = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
+      Object.defineProperty(document, 'elementFromPoint', {
+        configurable: true,
+        value: vi.fn(() => crumb),
+      });
+      const listener = vi.mocked(window.api.fsLocal.onOsDragDrop).mock.calls.at(-1)![0];
+      try {
+        await act(async () => {
+          await listener({ type: 'over', paths: null, point: { x: 40, y: 40 } });
+        });
+        expect(crumb.classList.contains('drag-target')).toBe(true);
+        expect(container.querySelector('.drag-move-ghost')?.classList.contains('active')).toBe(
+          os !== 'macos',
+        );
+        await act(async () => {
+          await listener({ type: 'drop', paths: ['C:\\drop\\hello.txt'], point: { x: 40, y: 40 } });
+        });
+        expect(props.onDropFiles).toHaveBeenCalledTimes(1);
+        expect(props.onDropFiles).toHaveBeenCalledWith(expect.any(Array), 'C:\\parent');
+        expect(crumb.classList.contains('drag-target')).toBe(false);
+      } finally {
+        if (hit) Object.defineProperty(document, 'elementFromPoint', hit);
+        else Reflect.deleteProperty(document, 'elementFromPoint');
+      }
+    },
+  );
 
   test('an Explorer drag over a column header keeps the drag classes on <body>, without the wash', async () => {
     const { container } = renderPane();

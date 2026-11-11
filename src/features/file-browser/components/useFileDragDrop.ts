@@ -7,6 +7,7 @@ import type {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { OsDragDropPayload } from '../../../platform/api/filesystem.ts';
 import { api } from '../../../platform/api/index.ts';
+import { hostPlatform } from '../../../platform/os.ts';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
 import { handler } from '../../../shared/asyncFailure.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
@@ -70,7 +71,7 @@ export default function useFileDragDrop({
   const [showGhost, setShowGhost] = useState(false);
   const ghostRef = useRef<HTMLDivElement | null>(null);
   const moveGhost = (point: { x: number; y: number } | null) => {
-    setShowGhost(!!point);
+    setShowGhost(!!point && hostPlatform() !== 'macos');
     const el = ghostRef.current;
     if (!el || !point) return;
     const scale = getInterfaceScale();

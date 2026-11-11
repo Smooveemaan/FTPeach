@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- External file drags on macOS no longer show an extra Copy badge beside the system indicator.
 - Files dragged into the app on macOS target the folder under the cursor at every interface scale.
 - Scrolling log messages no longer overlap the log toolbar.
 - Security confirmations on macOS appear fully drawn and accept input without blocking the application.

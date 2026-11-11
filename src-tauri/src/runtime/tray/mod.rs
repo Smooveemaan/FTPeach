@@ -17,12 +17,13 @@ const TRAY_ID: &str = "main";
 const ACTION_EVENT: &str = "tray:action";
 const MENU_CALLBACK_SETTLE: Duration = Duration::from_millis(100);
 
-/// The tray icon only exists while the main window is hidden to the tray, so
-/// it is created and removed at runtime; this keeps what it needs in between.
+/// Keeps the tray menu and icon state across window visibility changes.
+#[derive(Default)]
 pub struct TrayState {
     inner: Mutex<TrayInner>,
 }
 
+#[derive(Default)]
 struct TrayInner {
     /// What the renderer last asked the icon to show; `None` until it has.
     model: Option<TrayModel>,
@@ -142,19 +143,8 @@ fn show_and_focus(app: &AppHandle) {
     }
 }
 
-/// Registers what the tray needs for the life of the app; `quit` runs from
-/// the icon's menu. The icon itself comes and goes with [`hide_to_tray`] and
-/// [`restore`].
+/// Installs tray menu callbacks; [`TrayState`] must be registered before plugins start.
 pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
-    app.manage(TrayState {
-        inner: Mutex::new(TrayInner {
-            model: None,
-            generation: 0,
-            live: None,
-            hidden: false,
-            last_menu_event: None,
-        }),
-    });
     // Once, here: a menu handler given to the tray builder is added to a
     // global list on every build, so each re-created icon would stack another.
     app.on_menu_event(move |app, event: MenuEvent| {
@@ -218,6 +208,13 @@ pub fn hide_to_tray(window: WebviewWindow) {
                 }
             }
         }
+        if let Some(tray) = handle.tray_by_id(TRAY_ID)
+            && let Err(error) = tray.set_visible(true)
+        {
+            log::warn!("could not show the tray icon: {error}");
+            let _ = window.minimize();
+            return;
+        }
         inner.hidden = true;
         let _ = window.hide();
         crate::runtime::confirmation_window::close_all(&handle);
@@ -228,33 +225,51 @@ pub fn hide_to_tray(window: WebviewWindow) {
     }
 }
 
-/// Brings the window back and takes the icon out of the tray. Anything that
-/// reopens the window, such as a second launch, goes through here.
+/// Restores the window and hides its tray icon.
 pub fn restore(app: &AppHandle) {
     app.state::<TrayState>().lock().hidden = false;
     show_and_focus(app);
-    // Removing the icon from inside its native menu callback can strand that
-    // menu on screen; let Windows finish the invocation first.
+    let keep_registered =
+        tray_icon_config(cfg!(target_os = "macos"), cfg!(target_os = "linux")).keep_registered;
     let handle = app.clone();
-    tauri::async_runtime::spawn(async move {
-        tokio::time::sleep(MENU_CALLBACK_SETTLE).await;
+    let update = move || {
         let app = handle.clone();
         let result = app.run_on_main_thread(move || {
             let state = handle.state::<TrayState>();
             let mut inner = state.lock();
-            if !inner.hidden && inner.live.take().is_some() {
-                drop(handle.remove_tray_by_id(TRAY_ID));
+            if !inner.hidden && inner.live.is_some() {
+                if keep_registered {
+                    if let Some(tray) = handle.tray_by_id(TRAY_ID)
+                        && let Err(error) = tray.set_visible(false)
+                    {
+                        log::warn!("could not hide the tray icon: {error}");
+                    }
+                } else {
+                    drop(inner.live.take());
+                    drop(handle.remove_tray_by_id(TRAY_ID));
+                }
             }
         });
         if let Err(error) = result {
             log::warn!("could not remove the tray icon: {error}");
         }
-    });
+    };
+    if keep_registered {
+        update();
+    } else {
+        // Destroying the icon inside its native menu callback can strand the menu.
+        tauri::async_runtime::spawn(async move {
+            tokio::time::sleep(MENU_CALLBACK_SETTLE).await;
+            update();
+        });
+    }
 }
 
 /// Configuration for the tray/menu-bar icon behavior per platform.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct TrayIconConfig {
+    /// AppIndicator keeps its D-Bus object exported after the icon is dropped.
+    pub keep_registered: bool,
     /// On macOS, status bar extra icons must be configured as template images
     /// so the system automatically adjusts contrast for light/dark menu bar modes.
     pub is_template: bool,
@@ -265,8 +280,9 @@ pub struct TrayIconConfig {
     pub restore_on_left_click: bool,
 }
 
-pub fn tray_icon_config(is_macos: bool) -> TrayIconConfig {
+pub fn tray_icon_config(is_macos: bool, is_linux: bool) -> TrayIconConfig {
     TrayIconConfig {
+        keep_registered: is_linux,
         is_template: is_macos,
         show_menu_on_left_click: is_macos,
         restore_on_left_click: !is_macos,
@@ -280,7 +296,7 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
         .ok()
         .flatten()
         .map_or(1.0, |monitor| monitor.scale_factor());
-    let config = tray_icon_config(cfg!(target_os = "macos"));
+    let config = tray_icon_config(cfg!(target_os = "macos"), cfg!(target_os = "linux"));
     let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon_for_scale(scale))
         .menu(live.menu())
@@ -358,7 +374,8 @@ mod tests {
 
     #[test]
     fn tray_icon_configuration_matches_platform_conventions() {
-        let macos = tray_icon_config(true);
+        let macos = tray_icon_config(true, false);
+        assert!(!macos.keep_registered);
         assert!(
             macos.is_template,
             "macOS menu bar extra must be a template icon"
@@ -372,7 +389,8 @@ mod tests {
             "macOS left click should not restore window directly"
         );
 
-        let windows = tray_icon_config(false);
+        let windows = tray_icon_config(false, false);
+        assert!(!windows.keep_registered);
         assert!(!windows.is_template, "Windows tray icon is not a template");
         assert!(
             !windows.show_menu_on_left_click,
@@ -381,6 +399,12 @@ mod tests {
         assert!(
             windows.restore_on_left_click,
             "Windows left click restores window"
+        );
+
+        let linux = tray_icon_config(false, true);
+        assert!(
+            linux.keep_registered,
+            "Linux must reuse its AppIndicator after Show FTPeach to avoid duplicate D-Bus objects"
         );
     }
 }

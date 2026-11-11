@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Launching FTPeach again while it is starting no longer crashes the running application.
 - Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Files dragged out of FTPeach can be brought back into its panes during the same drag.
 - External file drags on macOS no longer show an extra Copy badge beside the system indicator.

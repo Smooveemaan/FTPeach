@@ -109,6 +109,8 @@ pub fn run() {
         .manage(shutdown::ShutdownCoordinator::default())
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
+        // Single-instance callbacks can arrive before setup creates the window.
+        .manage(runtime::tray::TrayState::default())
         .manage(runtime::window_scale::InterfaceScale::default())
         .manage(runtime::confirmation_window::AppearanceState::default())
         .manage(AutoLock::default())

@@ -10,6 +10,7 @@ import type { InvokeFn } from '../ipcContracts.ts';
 import type { CommandResult } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
+import { hostPlatform } from '../os.ts';
 
 export interface FilesystemListResult extends CommandResult {
   path: string;
@@ -46,7 +47,11 @@ function onOsDragDrop(callback: (payload: OsDragDropPayload) => void) {
   getCurrentWebview()
     .onDragDropEvent((event) => {
       const payload = event.payload;
-      const ratio = window.devicePixelRatio || 1;
+      // workaround: Wry's WKWebView drag events use AppKit points, not physical pixels.
+      const ratio =
+        hostPlatform() === 'macos'
+          ? Number(document.documentElement.dataset.interfaceScale || 100) / 100
+          : window.devicePixelRatio || 1;
       const position = 'position' in payload ? payload.position : null;
       const paths = 'paths' in payload ? payload.paths : null;
       const point = position ? { x: position.x / ratio, y: position.y / ratio } : null;

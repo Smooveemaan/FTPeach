@@ -215,3 +215,28 @@ test('returning a native drag to its source directory is rejected', () => {
     else Reflect.deleteProperty(document, 'elementFromPoint');
   }
 });
+
+test('leaving the window clears a retained row target and modifier keys cannot restore it', () => {
+  const { result, crumb, drop } = start();
+  fireEvent.mouseMove(crumb, { clientX: -10, clientY: 40 });
+  expect(crumb.classList.contains('drag-target')).toBe(false);
+  expect(result.current.dragInfo).toBeNull();
+  fireEvent.keyDown(document, { key: 'Control', ctrlKey: true });
+  expect(crumb.classList.contains('drag-target')).toBe(false);
+  act(() => result.current.cancelDrag());
+  expect(drop).not.toHaveBeenCalled();
+});
+
+test('native handoff clears the old highlight before any native pointer event arrives', () => {
+  const { result, crumb } = start();
+  act(() => result.current.beginNativeDrag());
+  expect(crumb.classList.contains('drag-target')).toBe(false);
+  expect(result.current.dragInfo).toBeNull();
+});
+
+test('unmounting during a drag clears highlights and drag body classes', () => {
+  const { crumb, unmount } = start();
+  unmount();
+  expect(crumb.classList.contains('drag-target')).toBe(false);
+  expect(document.body.classList.contains('drag-move-active')).toBe(false);
+});

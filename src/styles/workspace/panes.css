@@ -396,7 +396,8 @@
   opacity: 0.5;
 }
 
-body.drag-move-active .row:hover:not(.selected) {
+body.drag-move-active .row:hover:not(.selected),
+body.native-drag-active .row:hover:not(.selected) {
   background: none;
 }
 /* A column drag or resize is in progress — nothing should light up under

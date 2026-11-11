@@ -76,6 +76,10 @@ interface DragMoveOptions {
   onDragLeaveWindow?: (payload: DragLeaveWindowPayload) => void;
 }
 
+function outsideWindow(x: number, y: number): boolean {
+  return x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight;
+}
+
 function closestElement(target: EventTarget | null, selector: string): HTMLElement | null {
   return target instanceof Element ? target.closest<HTMLElement>(selector) : null;
 }
@@ -113,8 +117,10 @@ export function useDragMove(
   onDragLeaveWindowRef.current = onDragLeaveWindow;
   const finishDragRef = useRef<((e: MouseEvent | undefined, commit: boolean) => void) | null>(null);
 
+  const clearVisualsRef = useRef(() => {});
   const beginNativeDrag = useCallback(() => {
     if (dragRef.current) dragRef.current.native = true;
+    clearVisualsRef.current();
     setDragInfo(null);
   }, []);
   const nativeMotionRef = useRef<(motion: DragOutMotion) => void>(() => {});
@@ -196,6 +202,7 @@ export function useDragMove(
     };
 
     const resolveTarget = (e: MouseEvent): DropTarget | null => {
+      if (outsideWindow(e.clientX, e.clientY)) return null;
       const crumb = closestElement(e.target, '[data-drop-path]');
       if (crumb)
         return {
@@ -218,6 +225,14 @@ export function useDragMove(
     };
 
     let lastPointer: MouseEvent | null = null;
+    const clearVisuals = () => {
+      lastPointer = null;
+      stopAutoScroll();
+      clearWash();
+      setFolderTarget(null);
+      document.body.classList.remove('drag-drop-forbidden');
+    };
+    clearVisualsRef.current = clearVisuals;
     const actionFor = (drag: ActiveDrag, target: DropTarget | null, keys: DropKeys): DropAction => {
       if (!target?.side) return null;
       if (!target.row && target.side === drag.side) return null;
@@ -273,12 +288,8 @@ export function useDragMove(
       // Active by now either way: the block above starts the drag when the
       // threshold is crossed and returns when it is not.
       // A right drag stays in the app: the native drag-out only follows the left button.
+      const outOfBounds = outsideWindow(e.clientX, e.clientY);
       if (!drag.leftWindow && drag.button === 0) {
-        const outOfBounds =
-          e.clientX < 0 ||
-          e.clientY < 0 ||
-          e.clientX > window.innerWidth ||
-          e.clientY > window.innerHeight;
         if (outOfBounds) {
           drag.leftWindow = true;
           onDragLeaveWindowRef.current?.({
@@ -290,6 +301,12 @@ export function useDragMove(
         }
       }
 
+      if (outOfBounds) {
+        clearVisuals();
+        setDragInfo(null);
+        return;
+      }
+      startAutoScroll();
       if (ghostRef.current) {
         const scale = getInterfaceScale();
         const inlineOffset = document.documentElement.dir === 'rtl' ? -14 : 14;
@@ -400,7 +417,9 @@ export function useDragMove(
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleModifierKey);
-      stopAutoScroll();
+      clearVisuals();
+      dragRef.current = null;
+      document.body.classList.remove('drag-move-active', 'drag-drop-forbidden');
     };
   }, []);
 

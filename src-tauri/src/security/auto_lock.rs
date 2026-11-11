@@ -21,7 +21,7 @@ use std::time::{Duration, Instant};
 pub enum LockReason {
     /// Nobody touched the application for the configured idle timeout.
     Idle,
-    /// The OS reported the desktop session as locked (Windows, macOS).
+    /// The OS reported the desktop session as locked.
     SessionLocked,
     /// The main window was hidden to the tray or minimized.
     WindowHidden,
@@ -33,7 +33,7 @@ pub enum LockReason {
 /// What the backend can see about the user at one moment.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Presence {
-    /// The desktop session is locked (Windows, macOS). Unknown counts as not locked:
+    /// The desktop session is locked. Unknown counts as not locked:
     /// the idle timeout still applies, and a probe that cannot answer must not
     /// lock the vault out from under a user who is sitting right there.
     pub session_locked: bool,

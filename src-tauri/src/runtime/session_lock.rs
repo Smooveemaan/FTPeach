@@ -1,14 +1,5 @@
-//! Whether the desktop session is locked (Windows and macOS).
-//!
-//! The vault's auto-lock asks this instead of trusting the renderer's
-//! `visibilitychange`: a WebView that has stopped running its event loop
-//! reports nothing at all, and a secure-desktop switch or screen lock is
-//! exactly the moment the vault must not stay open.
-//!
-//! This polls rather than subscribing to OS session notification events,
-//! because handling them requires window procedures or run-loop hooks that
-//! are owned by Tauri. The auto-lock already runs on a timer, so a query
-//! costs one call per tick.
+//! Reads the desktop session lock state independently of the renderer.
+//! The vault timer polls this even when the WebView stops reporting events.
 
 /// The key in the macOS CoreGraphics session dictionary indicating whether
 /// the screen is currently locked.
@@ -146,7 +137,15 @@ mod macos {
     }
 }
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(target_os = "linux")]
+mod linux;
+
+#[cfg(target_os = "linux")]
+pub fn session_locked() -> Option<bool> {
+    linux::session_locked()
+}
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 pub fn session_locked() -> Option<bool> {
     None
 }

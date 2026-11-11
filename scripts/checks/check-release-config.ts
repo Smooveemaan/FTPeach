@@ -181,6 +181,25 @@ assert.deepEqual(linuxConfig?.bundle?.linux?.deb?.depends, [
   'libwebkit2gtk-4.1-0',
   'libayatana-appindicator3-1',
 ]);
+assert.equal(linuxConfig?.bundle?.category, 'Utility', 'Linux desktop entry needs a menu category');
+assert.ok(
+  linuxConfig?.bundle?.shortDescription?.trim(),
+  'Linux desktop entry and Debian package need a description',
+);
+assert.equal(linuxConfig?.bundle?.linux?.deb?.section, 'net');
+const linuxIcons: string[] = linuxConfig?.bundle?.icon ?? config?.bundle?.icon ?? [];
+const iconSizes = new Set<number>();
+for (const icon of linuxIcons.filter((icon) => icon.endsWith('.png'))) {
+  const png = await readFile(new URL(`../../src-tauri/${icon}`, import.meta.url));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', `Invalid PNG icon: ${icon}`);
+  assert.equal(png.toString('ascii', 12, 16), 'IHDR', `Missing PNG header: ${icon}`);
+  const width = png.readUInt32BE(16);
+  assert.equal(width, png.readUInt32BE(20), `Linux icon must be square: ${icon}`);
+  iconSizes.add(width);
+}
+for (const size of [32, 128, 256]) {
+  assert.ok(iconSizes.has(size), `Linux bundles need a ${size}px PNG icon`);
+}
 assert.ok(
   infoPlist.includes('NSAppleEventsUsageDescription') &&
     infoPlist.includes('NSLocalNetworkUsageDescription'),

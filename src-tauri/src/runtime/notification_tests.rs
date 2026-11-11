@@ -51,6 +51,23 @@ fn notification_click_action_is_restore_window() {
     );
 }
 
+#[test]
+fn linux_launcher_and_notification_icon_are_bundled() {
+    let linux: serde_json::Value =
+        serde_json::from_str(include_str!("../../tauri.linux.conf.json")).unwrap();
+    assert_eq!(
+        linux["bundle"]["linux"]["deb"]["desktopTemplate"],
+        "linux/FTPeach.desktop"
+    );
+    let desktop = include_str!("../../linux/FTPeach.desktop");
+    assert!(desktop.lines().any(|line| line == "StartupNotify=false"));
+    assert!(desktop.lines().any(|line| line == "StartupWMClass=FTPeach"));
+    assert_eq!(
+        config()["bundle"]["resources"]["icons/128x128.png"],
+        "icons/app-icon.png"
+    );
+}
+
 /// A prefixed path is not an error anywhere in the chain — the key takes it,
 /// the file is really there, and the toast simply arrives with no icon.
 #[cfg(windows)]

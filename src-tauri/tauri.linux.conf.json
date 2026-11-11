@@ -5,6 +5,7 @@
     "shortDescription": "FTP, FTPS, SFTP and WebDAV file transfer client",
     "linux": {
       "deb": {
+        "desktopTemplate": "linux/FTPeach.desktop",
         "section": "net",
         "depends": ["libwebkit2gtk-4.1-0", "libayatana-appindicator3-1"]
       }

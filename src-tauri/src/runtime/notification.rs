@@ -1,28 +1,5 @@
-//! The system notification FTPeach shows when its transfer queue drains.
-//!
-//! Windows attributes every toast to an [AppUserModelID][1], and an
-//! unpackaged desktop app has to supply that id twice over: the toast is sent
-//! through a notifier created with it, and the name and icon Windows draws in
-//! the toast header come from that id's registration under
-//! `HKCU\Software\Classes\AppUserModelId`. Miss either half and the toast
-//! still appears, wearing somebody else's identity.
-//!
-//! Both halves were missing. `tauri-plugin-notification` skips the app id
-//! whenever the running exe sits in `target/debug` or `target/release`, and
-//! `tauri-winrt-notification` then falls back to a stock PowerShell id — so a
-//! `npm run dev` FTPeach announced its finished transfers as "Windows
-//! PowerShell", PowerShell icon included. An installed build passed the id
-//! along but never registered it, leaving Windows nothing to draw.
-//!
-//! So Windows gets its own path here: [`register_identity`] writes the
-//! registration at startup and [`show`] sends the toast under the same id.
-//! Every other platform keeps the plugin, which is correct there.
-//!
-//! On macOS and Linux, [`register_identity`] connects the plugin's action
-//! listener so that clicking a notification restores and focuses the window
-//! the same way Windows does.
-//!
-//! [1]: https://learn.microsoft.com/en-us/windows/win32/shell/appids
+//! Delivers transfer notifications under the application's desktop identity.
+//! Linux tracks D-Bus actions and activation tokens; other platforms use their native notifier.
 use tauri::AppHandle;
 
 /// Must stay equal to `identifier` in `tauri.conf.json` — the installed app's
@@ -134,18 +111,18 @@ fn icon_uri(path: &std::path::Path) -> String {
     text.strip_prefix(r"\\?\").unwrap_or(&text).to_string()
 }
 
-#[cfg(not(windows))]
+#[cfg(all(not(windows), not(target_os = "linux")))]
 static ACTION_HANDLER_INSTALLED: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(false);
 
-/// Registers the notification action handler on Unix platforms (macOS and Linux)
+/// Registers the notification action handler on Unix platforms other than Linux
 /// so that clicking a delivered notification restores and focuses the window.
-#[cfg(not(windows))]
+#[cfg(all(not(windows), not(target_os = "linux")))]
 pub fn register_identity(app: &AppHandle) {
     install_action_handler(app);
 }
 
-#[cfg(not(windows))]
+#[cfg(all(not(windows), not(target_os = "linux")))]
 fn install_action_handler(app: &AppHandle) {
     use std::sync::atomic::Ordering;
     use tauri_plugin_notification::NotificationExt;
@@ -198,7 +175,7 @@ pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
-#[cfg(not(windows))]
+#[cfg(all(not(windows), not(target_os = "linux")))]
 pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
     use tauri_plugin_notification::NotificationExt;
 
@@ -210,6 +187,12 @@ pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
         .show()
         .map_err(|error| error.to_string())
 }
+
+#[cfg(target_os = "linux")]
+mod linux;
+
+#[cfg(target_os = "linux")]
+pub use linux::{clear_delivered, register_identity, show};
 
 /// Brings the main window back and focuses it when a notification is clicked or activated.
 pub fn handle_notification_action(app: &AppHandle) {

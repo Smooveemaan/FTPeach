@@ -92,6 +92,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
         let persister = window_bounds::BoundsPersister::new(store.clone());
         let window_for_events = main_window.clone();
         main_window.on_window_event(move |event| match event {
+            #[cfg(target_os = "linux")]
+            tauri::WindowEvent::Focused(true) => {
+                notification::clear_delivered(window_for_events.app_handle());
+            }
             tauri::WindowEvent::ScaleFactorChanged { .. } => {
                 super::window_scale::refresh(&window_for_events);
             }

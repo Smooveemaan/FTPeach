@@ -47,6 +47,7 @@
       "gen/ftpeach-update-version": "ftpeach-update-version",
       "../NOTICE": "NOTICE",
       "icons/icon.ico": "icons/app-icon.ico",
+      "icons/128x128.png": "icons/app-icon.png",
       "../docs/legal/ASSET_PROVENANCE.md": "licenses/ASSET_PROVENANCE.md",
       "../docs/legal/THIRD_PARTY_NOTICES.txt": "licenses/THIRD_PARTY_NOTICES.txt",
       "../docs/legal/NPM_THIRD_PARTY_LICENSES.txt": "licenses/NPM_THIRD_PARTY_LICENSES.txt",

@@ -8,7 +8,9 @@
 //! issued for opening a document cannot launch another server's file or be
 //! handed to a different program.
 use crate::ipc::{CommandError, CommandResult, ErrorCode};
-use crate::local_fs::local_open::{ApprovedLocalPaths, is_executable_name};
+use crate::local_fs::local_open::{
+    ApprovedLocalPaths, OpenKind, is_executable, is_executable_name,
+};
 use crate::security::connection_guard::safe_temp_name;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
@@ -24,6 +26,84 @@ pub struct OpenWithIntent {
     pub executable: bool,
     /// The canonical program, or `None` for the file's default handler.
     pub application: Option<PathBuf>,
+}
+
+/// A local Open with grant binds both the file and its canonical program.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalOpenWithIntent {
+    pub local_path: PathBuf,
+    pub application: Option<PathBuf>,
+    pub executable: bool,
+}
+
+impl LocalOpenWithIntent {
+    /// Resolves a listed file and an optional application before authorization.
+    pub fn resolve(
+        approved: &ApprovedLocalPaths,
+        path: &Path,
+        application: Option<&Path>,
+    ) -> CommandResult<Self> {
+        let local_path = approved.validate(path, OpenKind::Reveal)?;
+        Ok(Self {
+            executable: is_executable(&local_path),
+            local_path,
+            application: application
+                .map(|path| approved.canonical_application(path))
+                .transpose()?,
+        })
+    }
+
+    /// Parses and resolves the renderer's local Open with request.
+    pub fn from_request(target: &str, approved: &ApprovedLocalPaths) -> CommandResult<Self> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct Request {
+            local_path: PathBuf,
+            application: Option<PathBuf>,
+        }
+        let request: Request = serde_json::from_str(target).map_err(|_| {
+            CommandError::new(
+                ErrorCode::PermissionDenied,
+                "Invalid local Open with request",
+            )
+        })?;
+        Self::resolve(
+            approved,
+            &request.local_path,
+            request.application.as_deref(),
+        )
+    }
+
+    /// The exact file and program authorized by the grant.
+    pub fn grant_target(&self) -> String {
+        serde_json::to_string(self).unwrap_or_default()
+    }
+
+    /// Rechecks the file class and program immediately before launching.
+    pub fn recheck(&self, approved: &ApprovedLocalPaths) -> CommandResult<()> {
+        let kind = if self.executable {
+            OpenKind::Execute
+        } else {
+            OpenKind::Document
+        };
+        let path = PathBuf::from(crate::local_fs::local_open::shell_path(&self.local_path));
+        if approved.validate(&path, kind)? != self.local_path {
+            return Err(CommandError::new(
+                ErrorCode::PermissionDenied,
+                "The selected file changed",
+            ));
+        }
+        if let Some(application) = &self.application
+            && approved.recheck_application(application)? != *application
+        {
+            return Err(CommandError::new(
+                ErrorCode::PermissionDenied,
+                "The selected application changed",
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// What the renderer names when it asks for an Open with grant.
@@ -92,6 +172,29 @@ impl OpenWithIntent {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn local_document_grants_refuse_a_file_that_becomes_executable() {
+        use std::os::unix::fs::PermissionsExt;
+        let path = std::env::temp_dir().join(format!("ftpeach-local-{}.txt", uuid::Uuid::new_v4()));
+        std::fs::write(&path, b"test").unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+        let approved = ApprovedLocalPaths::default();
+        approved.approve_from_listing(&path);
+        let intent = LocalOpenWithIntent::resolve(&approved, &path, None).unwrap();
+        assert!(!intent.executable);
+        intent.recheck(&approved).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+        assert!(intent.recheck(&approved).is_err());
+        assert_ne!(
+            intent.grant_target(),
+            LocalOpenWithIntent::resolve(&approved, &path, None)
+                .unwrap()
+                .grant_target()
+        );
+        std::fs::remove_file(path).unwrap();
+    }
 
     fn intent(remote_path: &str) -> OpenWithIntent {
         OpenWithIntent::resolve("c1", remote_path, None, &ApprovedLocalPaths::default()).unwrap()

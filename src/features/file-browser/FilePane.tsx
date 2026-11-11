@@ -178,9 +178,7 @@ function FilePane({
     wasRenamingRef.current = !!rename.renamingName;
   }, [rename.renamingName]);
   useEffect(() => {
-    if (hostPlatform() === 'macos') {
-      preloadExtensions(entries.map((e) => e.name));
-    }
+    preloadExtensions(entries.filter((entry) => !entry.isDirectory).map((entry) => entry.name));
   }, [entries]);
   const {
     nameAscExplicit,

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   and copies the SSH fingerprint when available.
 - The toolbar has a Settings button to open Settings directly.
 - The Help menu includes a direct link to the User Guide.
+- Open with offers the same application submenu for local and remote files on Windows, macOS and Linux.
 
 ### Changed
 

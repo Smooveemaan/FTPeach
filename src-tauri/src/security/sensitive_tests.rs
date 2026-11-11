@@ -1,5 +1,91 @@
 use super::*;
 
+#[tokio::test]
+async fn local_open_with_binds_the_file_and_program_and_confirms_untrusted_programs() {
+    let root = std::env::temp_dir().join(format!("ftpeach-local-open-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let document = root.join("notes.txt");
+    let other = root.join("other.txt");
+    let program = root.join("editor.exe");
+    let executable = root.join("run.cmd");
+    for path in [&document, &other, &program, &executable] {
+        std::fs::write(path, b"test").unwrap();
+    }
+    let approved = ApprovedLocalPaths::default();
+    for path in [&document, &other, &executable] {
+        approved.approve_from_listing(path);
+    }
+    let store = Store::new_at(root.join("profile"));
+    let request = |path: &Path, application: Option<&Path>| {
+        serde_json::json!({ "localPath": path, "application": application }).to_string()
+    };
+    let default =
+        plans::plan_local_open_with(&store, &approved, &request(&document, None), "en".into())
+            .await
+            .unwrap();
+    assert!(!default.required);
+    let editor = plans::plan_local_open_with(
+        &store,
+        &approved,
+        &request(&document, Some(&program)),
+        "en".into(),
+    )
+    .await
+    .unwrap();
+    assert!(editor.required);
+    assert_eq!(
+        editor.prompt.as_ref().unwrap().kind,
+        ConfirmationKind::OpenWithApplication
+    );
+    store
+        .trust_application(editor.trusts_application.as_ref().unwrap())
+        .await
+        .unwrap();
+    let trusted = plans::plan_local_open_with(
+        &store,
+        &approved,
+        &request(&document, Some(&program)),
+        "en".into(),
+    )
+    .await
+    .unwrap();
+    assert!(!trusted.required);
+    let execute = plans::plan_local_open_with(
+        &store,
+        &approved,
+        &request(&executable, Some(&program)),
+        "en".into(),
+    )
+    .await
+    .unwrap();
+    assert!(execute.required);
+    assert_eq!(
+        execute.prompt.unwrap().kind,
+        ConfirmationKind::ExecuteLocalFile
+    );
+    for target in [
+        default.target,
+        LocalOpenWithIntent::resolve(&approved, &other, Some(&program))
+            .unwrap()
+            .grant_target(),
+        execute.target,
+    ] {
+        let state = AuthorizationState::default();
+        grant(
+            &state,
+            "token",
+            Op::FsOpenWith,
+            &editor.target,
+            Instant::now() + TOKEN_TTL,
+        );
+        assert!(consume_for_label("main", &state, "token", Op::FsOpenWith, &target).is_err());
+    }
+    let unlisted = root.join("unlisted.txt");
+    std::fs::write(&unlisted, b"test").unwrap();
+    assert!(LocalOpenWithIntent::resolve(&approved, &unlisted, None).is_err());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 fn grant(
     state: &AuthorizationState,
     token: &str,

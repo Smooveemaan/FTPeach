@@ -225,124 +225,56 @@ export function usePaneActions({
           label: t('paneMenu.open'),
           onClick: () => navigatePane(id, paneJoin(pane, entry.name)),
         });
-      } else if (pane.kind === 'local') {
-        // Same as a double click.
-        open.push({
-          label: t('paneMenu.open'),
-          onClick: () => void openLocalFile(paneJoin(pane, entry.name)),
-        });
       } else {
-        // Same as a double click: the associated or the system's program.
+        const path = paneJoin(pane, entry.name);
+        const openFile = (application?: string, choose = false) => {
+          if (pane.kind === 'local') {
+            return api.fsLocal.openWith(path, application || undefined, choose).then((result) => {
+              if (!result.ok && result.errorCode !== 'cancelled')
+                shell.reportError(commandResultError(result));
+            });
+          }
+          if (!pane.connectionId) return undefined;
+          shell.openWith.setTarget({
+            path,
+            ...(application !== undefined ? { application } : {}),
+            ...(choose ? { choose: true } : {}),
+            size: entry.size,
+            connectionId: pane.connectionId,
+            paneId: id,
+            tabId: activeTabId,
+          });
+          return undefined;
+        };
         open.push({
           label: t('paneMenu.open'),
-          disabled: !pane.connectionId,
-          onClick: () => {
-            const connectionId = pane.connectionId;
-            if (!connectionId) return;
-            shell.openWith.setTarget({
-              path: paneJoin(pane, entry.name),
-              size: entry.size,
-              connectionId,
-              paneId: id,
-              tabId: activeTabId,
-            });
-          },
+          disabled: disabledForRemote,
+          onClick: () => (pane.kind === 'local' ? openLocalFile(path) : openFile()),
         });
-        if (hostPlatform() === 'macos') {
-          const candidates = getOpenWithCandidates(entry.name);
-          const defaultApp = candidates.find((c) => c.isDefault);
-          const otherApps = candidates.filter((c) => !c.isDefault);
-
-          const submenu: MenuItem[] = [];
-          if (defaultApp) {
-            submenu.push({
-              label: t('paneMenu.openWithSubmenu.default', { name: defaultApp.name }),
-              onClick: () => {
-                const connectionId = pane.connectionId;
-                if (!connectionId) return;
-                shell.openWith.setTarget({
-                  path: paneJoin(pane, entry.name),
-                  application: defaultApp.path,
-                  size: entry.size,
-                  connectionId,
-                  paneId: id,
-                  tabId: activeTabId,
-                });
-              },
-            });
-            if (otherApps.length > 0) {
-              submenu.push({ separator: true });
-            }
-          }
-
-          for (const app of otherApps) {
-            submenu.push({
-              label: app.name,
-              onClick: () => {
-                const connectionId = pane.connectionId;
-                if (!connectionId) return;
-                shell.openWith.setTarget({
-                  path: paneJoin(pane, entry.name),
-                  application: app.path,
-                  size: entry.size,
-                  connectionId,
-                  paneId: id,
-                  tabId: activeTabId,
-                });
-              },
-            });
-          }
-
-          if (submenu.length > 0) {
-            submenu.push({ separator: true });
-          }
-
+        const candidates = getOpenWithCandidates(entry.name);
+        const defaultApp = candidates.find((app) => app.isDefault);
+        const otherApps = candidates.filter((app) => !app.isDefault);
+        const submenu: MenuItem[] = [];
+        if (defaultApp) {
           submenu.push({
-            label: t('paneMenu.openWithSubmenu.other'),
-            onClick: () => {
-              const connectionId = pane.connectionId;
-              if (!connectionId) return;
-              api.fsLocal
-                .selectApplication()
-                .then((chosen) => {
-                  if (chosen) {
-                    shell.openWith.setTarget({
-                      path: paneJoin(pane, entry.name),
-                      application: chosen,
-                      size: entry.size,
-                      connectionId,
-                      paneId: id,
-                      tabId: activeTabId,
-                    });
-                  }
-                })
-                .catch(reportAsyncFailure);
-            },
+            label: t('paneMenu.openWithSubmenu.default', { name: defaultApp.name }),
+            onClick: () => openFile(defaultApp.path),
           });
-
-          open.push({
-            label: t('paneMenu.openWith'),
-            disabled: !pane.connectionId,
-            submenu,
-          });
-        } else {
-          open.push({
-            label: t('paneMenu.openWith'),
-            disabled: !pane.connectionId,
-            onClick: () => {
-              const connectionId = pane.connectionId;
-              if (!connectionId) return;
-              shell.openWith.setTarget({
-                path: paneJoin(pane, entry.name),
-                choose: true,
-                size: entry.size,
-                connectionId,
-                paneId: id,
-                tabId: activeTabId,
-              });
-            },
-          });
+          if (otherApps.length > 0) submenu.push({ separator: true });
         }
+        for (const app of otherApps) {
+          submenu.push({ label: app.name, onClick: () => openFile(app.path) });
+        }
+        if (submenu.length > 0) submenu.push({ separator: true });
+        submenu.push({
+          label: t('paneMenu.openWithSubmenu.other'),
+          onClick: () => openFile(undefined, true),
+        });
+        open.push({
+          label: t('paneMenu.openWith'),
+          disabled: disabledForRemote || (pane.kind === 'remote' && !pane.connectionId),
+          submenu,
+        });
       }
 
       if (pane.kind === 'local') {
@@ -428,13 +360,14 @@ export function usePaneActions({
     return site ? () => browser.siteConnectPane(id, site) : browser.connectPane(id);
   };
 
-  const openLocalFile = (path: string) =>
-    api.fsLocal.openPath(path).then((result) => {
+  const openLocalFile = (path: string) => {
+    return api.fsLocal.openPath(path).then((result) => {
       // Declining the backend's confirmation is not a failure to report: the
       // user cancelled it themselves and nothing was run.
       if (!result.ok && result.errorCode !== 'cancelled')
         shell.reportError(commandResultError(result));
     });
+  };
 
   const dropFiles = async (id: PaneId, files: DroppedFile[], targetFolder: string | null) => {
     const pane = panes[id];

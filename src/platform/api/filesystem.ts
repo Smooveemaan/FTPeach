@@ -175,6 +175,8 @@ export function createFilesystemApi(invoke: InvokeFn) {
       voidOutcome(invoke, 'fs_delete', { localPath, permanent }),
     createFile: (localPath: string) => voidOutcome(invoke, 'fs_create_file', { localPath }),
     revealPath: (localPath: string) => voidOutcome(invoke, 'fs_reveal_path', { localPath }),
+    openWith: (localPath: string, application?: string, choose = false) =>
+      voidOutcome(invoke, 'fs_open_with', { localPath, application, choose }),
     openPath: async (localPath: string): Promise<CommandResult> => {
       const executable = await checkedResponse(
         'fs_is_executable',

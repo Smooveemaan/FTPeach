@@ -2,17 +2,51 @@ use crate::ipc::{CommandError, CommandResult, ErrorCode, NO_SESSION};
 use crate::local_fs::edit_recovery;
 use crate::local_fs::local_open::{ApprovedLocalPaths, OpenKind};
 use crate::local_fs::open_with::{self, OpenWithSession, OpenWithWatchers};
-use crate::security::open_with_intent::OpenWithIntent;
+use crate::security::open_with_intent::{LocalOpenWithIntent, OpenWithIntent};
 use crate::session::Sessions;
 use crate::transfer::transfer_pool::TaskFn;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
 // Admission includes the download and registration, so concurrent opens
 // cannot all pass the same remaining storage budget.
 static OPEN_ADMISSION: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+/// Opens a listed local file with an authorized application or the native chooser.
+#[tauri::command]
+pub async fn fs_open_with<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    authorization: State<'_, crate::security::sensitive::AuthorizationState>,
+    approved: State<'_, ApprovedLocalPaths>,
+    authorization_token: String,
+    local_path: String,
+    application: Option<String>,
+    choose: bool,
+) -> CommandResult<()> {
+    let intent = LocalOpenWithIntent::resolve(
+        &approved,
+        Path::new(&local_path),
+        application.as_deref().map(Path::new),
+    )?;
+    crate::security::sensitive::consume(
+        &window,
+        &authorization,
+        &authorization_token,
+        crate::security::sensitive::SensitiveOperation::FsOpenWith,
+        &intent.grant_target(),
+    )?;
+    intent.recheck(&approved)?;
+    open_in(
+        window.app_handle(),
+        &window,
+        &intent.local_path,
+        intent.application,
+        choose,
+    )
+    .await
+}
 
 /// Where the copy an editor was opened on lives.
 #[derive(Serialize)]
@@ -39,7 +73,7 @@ pub async fn open_with_start(
     remote_path: String,
     id: String,
     application: Option<String>,
-    // Windows' own chooser picks the program, for a file with none given.
+    // The native chooser picks the program when none was supplied.
     choose: bool,
 ) -> CommandResult<OpenWithStarted> {
     if let Some(program) = application.as_deref() {
@@ -143,9 +177,9 @@ pub async fn open_with_start(
     })
 }
 
-async fn open_in(
-    app: &AppHandle,
-    window: &tauri::WebviewWindow,
+async fn open_in<R: tauri::Runtime>(
+    app: &AppHandle<R>,
+    window: &tauri::WebviewWindow<R>,
     local_path: &Path,
     application: Option<PathBuf>,
     choose: bool,
@@ -163,6 +197,13 @@ async fn open_in(
             .await
             .map_err(|err| CommandError::from_anyhow(&err));
     }
+    #[cfg(target_os = "linux")]
+    if let Some(application) = application.as_deref()
+        && application.extension().is_some_and(|ext| ext == "desktop")
+    {
+        return crate::local_fs::open_with_applications::linux::launch(application, local_path)
+            .map_err(|err| CommandError::from_anyhow(&err));
+    }
     // Both as people read them: many programs cannot open a `\\?\` path.
     let file = crate::local_fs::local_open::shell_path(local_path);
     let application = application.map(|path| crate::local_fs::local_open::shell_path(&path));
@@ -172,8 +213,10 @@ async fn open_in(
 }
 
 #[cfg(target_os = "macos")]
-async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow::Result<()> {
-    use tauri::Manager;
+async fn open_with_chooser<R: tauri::Runtime>(
+    window: &tauri::WebviewWindow<R>,
+    path: &Path,
+) -> anyhow::Result<()> {
     use tauri_plugin_dialog::DialogExt;
     let app = window.app_handle();
     let (tx, rx) = tokio::sync::oneshot::channel();
@@ -202,9 +245,20 @@ async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow
     Ok(())
 }
 
-#[cfg(all(not(windows), not(target_os = "macos")))]
-async fn open_with_chooser(_window: &tauri::WebviewWindow, _path: &Path) -> anyhow::Result<()> {
-    anyhow::bail!("the Open with chooser exists only on Windows and macOS")
+#[cfg(target_os = "linux")]
+async fn open_with_chooser<R: tauri::Runtime>(
+    window: &tauri::WebviewWindow<R>,
+    path: &Path,
+) -> anyhow::Result<()> {
+    crate::local_fs::open_with_applications::linux::choose(window, path).await
+}
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+async fn open_with_chooser<R: tauri::Runtime>(
+    _window: &tauri::WebviewWindow<R>,
+    _path: &Path,
+) -> anyhow::Result<()> {
+    anyhow::bail!("the Open with chooser is unavailable on this platform")
 }
 
 /// Opens `path` in a program the user picks in Windows' own Open with
@@ -212,7 +266,10 @@ async fn open_with_chooser(_window: &tauri::WebviewWindow, _path: &Path) -> anyh
 /// this app" box is hidden: a pick here must not change the program Windows
 /// opens this type of file with. Closing the chooser opens nothing.
 #[cfg(windows)]
-async fn open_with_chooser(window: &tauri::WebviewWindow, path: &Path) -> anyhow::Result<()> {
+async fn open_with_chooser<R: tauri::Runtime>(
+    window: &tauri::WebviewWindow<R>,
+    path: &Path,
+) -> anyhow::Result<()> {
     use windows::Win32::Foundation::{ERROR_CANCELLED, HWND};
     use windows::Win32::UI::Shell::{
         OAIF_EXEC, OAIF_HIDE_REGISTRATION, OPENASINFO, SHOpenWithDialog,
@@ -368,6 +425,38 @@ pub async fn open_with_applications(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn local_open_with_cannot_launch_without_its_grant() {
+        let app = tauri::test::mock_app();
+        app.manage(ApprovedLocalPaths::default());
+        app.manage(crate::security::sensitive::AuthorizationState::default());
+        let window = tauri::WebviewWindowBuilder::new(
+            &app,
+            "main",
+            tauri::WebviewUrl::App("index.html".into()),
+        )
+        .build()
+        .unwrap();
+        let root = workspace();
+        let file = root.join("notes.txt");
+        std::fs::write(&file, b"test").unwrap();
+        app.state::<ApprovedLocalPaths>()
+            .approve_from_listing(&file);
+        let error = fs_open_with(
+            window,
+            app.state(),
+            app.state(),
+            "no grant".into(),
+            file.to_string_lossy().into_owned(),
+            None,
+            true,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error.code, ErrorCode::PermissionDenied);
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     fn workspace() -> PathBuf {
         let dir = std::env::temp_dir().join(format!("ftpeach-launch-{}", uuid::Uuid::new_v4()));

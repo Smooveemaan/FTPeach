@@ -71,6 +71,7 @@ that follow explain security behavior rather than repeat command groupings.
 | `fs_list` | app | Yes | No |
 | `fs_mkdir` | app | Yes | No |
 | `fs_open_document` | sensitive | Yes | No |
+| `fs_open_with` | sensitive | Yes | No |
 | `fs_rename` | app | Yes | No |
 | `fs_reveal_path` | sensitive | Yes | No |
 | `fs_validate_copy` | app | Yes | No |

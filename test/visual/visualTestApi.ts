@@ -209,6 +209,7 @@ export const visualTestApi = {
     createFile: () => resolved(ok),
     revealPath: () => resolved(ok),
     openPath: () => resolved(ok),
+    openWith: () => resolved(ok),
     selectDir: () => resolved(null),
     selectKeyFile: () => resolved(null),
     selectCaCertFile: () => resolved(null),

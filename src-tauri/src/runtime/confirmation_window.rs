@@ -4,7 +4,9 @@ use tauri::{WebviewUrl, WebviewWindowBuilder};
 
 /// The native handle a Windows Hello prompt or a system dialog is shown over.
 #[cfg(windows)]
-pub(crate) fn window_handle(window: &tauri::WebviewWindow) -> anyhow::Result<isize> {
+pub(crate) fn window_handle<R: tauri::Runtime>(
+    window: &tauri::WebviewWindow<R>,
+) -> anyhow::Result<isize> {
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
     match window.window_handle()?.as_raw() {
         RawWindowHandle::Win32(handle) => Ok(handle.hwnd.get()),
@@ -13,7 +15,9 @@ pub(crate) fn window_handle(window: &tauri::WebviewWindow) -> anyhow::Result<isi
 }
 
 #[cfg(not(windows))]
-pub(crate) fn window_handle(_: &tauri::WebviewWindow) -> anyhow::Result<isize> {
+pub(crate) fn window_handle<R: tauri::Runtime>(
+    _: &tauri::WebviewWindow<R>,
+) -> anyhow::Result<isize> {
     Ok(0)
 }
 

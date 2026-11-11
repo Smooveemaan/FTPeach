@@ -22,6 +22,7 @@ fn main() {
         "fs_open_document",
         "fs_execute_path",
         "open_with_start",
+        "fs_open_with",
         "session_trust_host_key",
         "app_export_settings",
         "app_import_preview",

@@ -1,7 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import type { MenuItem } from '../../../components/MenuItems.tsx';
-import { hostPlatform } from '../../../platform/os.ts';
 import type { FileEntry } from '../../../shared/paneContracts.ts';
 import { preloadOpenWithCandidates } from '../../open-with/index.ts';
 import type { ColumnKey, Translate } from './fileListModel.ts';
@@ -78,7 +77,7 @@ export default function useFileContextMenu({
     if (items.length === 0) return;
     setMenu({ x: event.clientX, y: event.clientY, items });
 
-    if (entry && !entry.isDirectory && hostPlatform() === 'macos') {
+    if (entry && !entry.isDirectory) {
       void preloadOpenWithCandidates(entry.name).then((candidates) => {
         if (candidates.length > 0) {
           const currentItems = optionsRef.current.getContextMenuItems?.(entry, {

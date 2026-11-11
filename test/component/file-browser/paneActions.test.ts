@@ -97,6 +97,94 @@ const file: FileEntry = { name: 'file.txt', isDirectory: false, size: 42 };
 const shape = (items: { label?: string; separator?: boolean }[]) =>
   items.map((item) => (item.separator ? '-' : item.label));
 
+test.each(['Windows NT 10.0', 'Macintosh; Intel Mac OS X', 'Linux'])(
+  'Open with has the same submenu and actions in both panes on %s',
+  async (agent) => {
+    const ua = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(agent);
+    const previous = window.api;
+    try {
+      const openWith = vi.fn().mockResolvedValue({ ok: true });
+      window.api = { fsLocal: { openWith } } as unknown as Window['api'];
+      const defaultPath = agent.startsWith('Windows') ? '' : '/apps/editor';
+      setOpenWithCandidatesForTest('txt', [
+        { name: 'Editor', path: defaultPath, isDefault: true },
+        { name: 'Alternate Editor', path: '/apps/alternate', isDefault: false },
+      ]);
+      const { tab, options, menu } = setup();
+      if (!agent.startsWith('Windows')) tab.panes.a.path = '/home/test';
+      const localPath = agent.startsWith('Windows')
+        ? 'C:\\source\\file.txt'
+        : '/home/test/file.txt';
+      const local = menu('a')(file).find((item) => item.label === 'paneMenu.openWith')!.submenu!;
+      const remote = menu('b')(file).find((item) => item.label === 'paneMenu.openWith')!.submenu!;
+      expect(shape(local)).toEqual([
+        'paneMenu.openWithSubmenu.default',
+        '-',
+        'Alternate Editor',
+        '-',
+        'paneMenu.openWithSubmenu.other',
+      ]);
+      expect(shape(remote)).toEqual(shape(local));
+      await local.find((item) => item.label === 'paneMenu.openWithSubmenu.default')!.onClick!();
+      expect(openWith).toHaveBeenLastCalledWith(localPath, defaultPath || undefined, false);
+      await local.find((item) => item.label === 'Alternate Editor')!.onClick!();
+      expect(openWith).toHaveBeenLastCalledWith(localPath, '/apps/alternate', false);
+      await local.find((item) => item.label === 'paneMenu.openWithSubmenu.other')!.onClick!();
+      expect(openWith).toHaveBeenLastCalledWith(localPath, undefined, true);
+      remote.find((item) => item.label === 'paneMenu.openWithSubmenu.default')!.onClick!();
+      expect(options.setOpenWithTarget).toHaveBeenLastCalledWith(
+        expect.objectContaining({ application: defaultPath }),
+      );
+      remote.find((item) => item.label === 'paneMenu.openWithSubmenu.other')!.onClick!();
+      expect(options.setOpenWithTarget).toHaveBeenLastCalledWith(
+        expect.objectContaining({ choose: true }),
+      );
+      expect(
+        menu('a')({ ...file, isDirectory: true }).some(
+          (item) => item.label === 'paneMenu.openWith',
+        ),
+      ).toBe(false);
+    } finally {
+      clearOpenWithCandidatesForTest();
+      window.api = previous;
+      ua.mockRestore();
+    }
+  },
+);
+
+test('Linux remote Open with uses desktop candidates and Other opens the system chooser', () => {
+  const ua = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Linux');
+  try {
+    setOpenWithCandidatesForTest('txt', [
+      { name: 'Text Editor', path: '/usr/share/applications/editor.desktop', isDefault: true },
+      { name: 'Other Editor', path: '/usr/share/applications/other.desktop', isDefault: false },
+    ]);
+    const { tab, options, menu } = setup();
+    const submenu = menu('b')(file).find((item) => item.label === 'paneMenu.openWith')!.submenu!;
+    submenu.find((item) => item.label === 'Other Editor')!.onClick!();
+    expect(options.setOpenWithTarget).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        path: '/target/file.txt',
+        application: '/usr/share/applications/other.desktop',
+      }),
+    );
+    submenu.find((item) => item.label === 'paneMenu.openWithSubmenu.other')!.onClick!();
+    expect(options.setOpenWithTarget).toHaveBeenLastCalledWith({
+      path: '/target/file.txt',
+      choose: true,
+      size: 42,
+      connectionId: 'session',
+      paneId: 'b',
+      tabId: 'tab',
+    });
+    tab.panes.b.connectionId = null;
+    expect(menu('b')(file).find((item) => item.label === 'paneMenu.openWith')!.disabled).toBe(true);
+  } finally {
+    clearOpenWithCandidatesForTest();
+    ua.mockRestore();
+  }
+});
+
 test('the menus follow the order of the Explorer menu', () => {
   const { tab, menu } = setup();
   tab.panes.b.form.protocol = 'sftp';
@@ -138,6 +226,7 @@ test('the menus follow the order of the Explorer menu', () => {
   // A pane that cannot rename gets no Rename.
   expect(shape(menu('a')(file))).toEqual([
     'paneMenu.open',
+    'paneMenu.openWith',
     'paneMenu.revealLocation.windows',
     '-',
     'paneMenu.uploadToOtherPane',
@@ -226,7 +315,6 @@ test('Reveal location targets only the clicked local file or folder', async () =
       tab.panes.a.selected = new Set(selected);
       const items = menu('a')(entry);
       const reveal = items.find((item) => item.label === 'paneMenu.revealLocation.windows')!;
-      expect(items.indexOf(reveal)).toBe(1);
       await reveal.onClick!();
       expect(revealPath).toHaveBeenLastCalledWith(`C:\\source\\${entry.name}`);
     }
@@ -272,9 +360,9 @@ test.each([
       resources: { en: { translation: en }, ru: { translation: ru } },
     });
     options.t = (key) => translator.t(key);
-    expect(actions(options).buildPaneMenu('a')(file)[1]!.label).toBe(english);
+    expect(shape(actions(options).buildPaneMenu('a')(file))).toContain(english);
     await translator.changeLanguage('ru');
-    expect(actions(options).buildPaneMenu('a')(file)[1]!.label).toBe(russian);
+    expect(shape(actions(options).buildPaneMenu('a')(file))).toContain(russian);
   } finally {
     userAgent.mockRestore();
   }
@@ -368,7 +456,9 @@ test('SFTP permissions and open-with retain the entry and its original session',
   const items = menu('b')(entry);
   items.find((item) => item.label === 'paneMenu.permissions')!.onClick!();
   expect(options.setChmodTarget).toHaveBeenCalledWith({ id: 'b', entry, mode: '750' });
-  items.find((item) => item.label === 'paneMenu.openWith')!.onClick!();
+  items
+    .find((item) => item.label === 'paneMenu.openWith')!
+    .submenu!.find((item) => item.label === 'paneMenu.openWithSubmenu.other')!.onClick!();
   expect(options.setOpenWithTarget).toHaveBeenCalledWith({
     path: '/target/file.txt',
     choose: true,
@@ -380,7 +470,7 @@ test('SFTP permissions and open-with retain the entry and its original session',
   tab.panes.b.connectionId = null;
   const disconnected = menu('b')(entry).find((item) => item.label === 'paneMenu.openWith')!;
   expect(disconnected.disabled).toBe(true);
-  disconnected.onClick!();
+  disconnected.submenu!.find((item) => item.label === 'paneMenu.openWithSubmenu.other')!.onClick!();
   expect(options.setOpenWithTarget).toHaveBeenCalledOnce();
 });
 
@@ -482,17 +572,10 @@ test('on macOS, Open with creates a Finder-like submenu with default app, other 
       tabId: 'tab',
     });
 
-    // Clicking Other... prompts app picker
-    const selectFn = vi.fn().mockResolvedValue('/Applications/Sublime Text.app');
-    (window as any).api = {
-      ...(window as any).api,
-      fsLocal: { selectApplication: selectFn },
-    };
-    submenu[4]!.onClick!();
-    await vi.waitFor(() => expect(selectFn).toHaveBeenCalledOnce());
-    expect(options.setOpenWithTarget).toHaveBeenCalledWith({
+    submenu.find((item) => item.label === 'paneMenu.openWithSubmenu.other')!.onClick!();
+    expect(options.setOpenWithTarget).toHaveBeenLastCalledWith({
       path: '/target/file.txt',
-      application: '/Applications/Sublime Text.app',
+      choose: true,
       size: 42,
       connectionId: 'session',
       paneId: 'b',

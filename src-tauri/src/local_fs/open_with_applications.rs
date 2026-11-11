@@ -1,6 +1,5 @@
 //! Discovers applications that can open a file or extension for the Open with menu.
-//! On macOS, uses LaunchServices (LSCopyDefaultApplicationURLForURL, LSCopyApplicationURLsForURL,
-//! and LSCopyDisplayNameForURL). On other platforms, returns an empty list.
+//! Uses Windows associations, LaunchServices on macOS and GIO on Linux.
 
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +7,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct ApplicationCandidate {
     pub name: String,
+    /// A program path, or empty to dispatch through the system default association.
     pub path: String,
     pub is_default: bool,
 }
@@ -246,7 +246,16 @@ mod macos {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
+pub(crate) mod linux;
+
+#[cfg(windows)]
+mod windows;
+
+#[cfg(windows)]
+pub use windows::query_applications;
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 mod non_macos {
     use super::ApplicationCandidate;
 
@@ -258,7 +267,10 @@ mod non_macos {
 #[cfg(target_os = "macos")]
 pub use macos::query_applications;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
+pub use linux::query_applications;
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 pub use non_macos::query_applications;
 
 #[cfg(test)]
@@ -279,11 +291,9 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     fn non_macos_query_returns_empty_list() {
-        #[cfg(not(target_os = "macos"))]
-        {
-            let apps = query_applications("readme.txt");
-            assert!(apps.is_empty());
-        }
+        let apps = query_applications("readme.txt");
+        assert!(apps.is_empty());
     }
 }

@@ -4,7 +4,7 @@ use crate::security::credential_scope::{
     SecretTransfer, is_site_kind, proxy_transfer, site_request_transfer, site_save_target,
     site_save_transfer,
 };
-use crate::security::open_with_intent::OpenWithIntent;
+use crate::security::open_with_intent::{LocalOpenWithIntent, OpenWithIntent};
 use crate::security::security_policy::{self, Weakening};
 use crate::security::vault::Vault;
 use crate::security::vault_guard::VaultGuard;
@@ -32,6 +32,7 @@ pub enum SensitiveOperation {
     FsOpenDocument,
     FsExecutePath,
     OpenWithStart,
+    FsOpenWith,
     AppExportSettings,
     AppImportPreview,
     AppImportApply,
@@ -45,15 +46,15 @@ pub enum SensitiveOperation {
 use SensitiveOperation as Op;
 mod plans;
 use self::plans::{
-    Plan, plan_host_key, plan_open_with, plan_operation, plan_protected_settings, plan_site_save,
-    unlock_before_moving_password,
+    Plan, plan_host_key, plan_local_open_with, plan_open_with, plan_operation,
+    plan_protected_settings, plan_site_save, unlock_before_moving_password,
 };
 #[cfg(test)]
 use self::plans::{confirmation_prompt, open_with_prompt};
 pub use self::plans::{host_key_from_request, security_patch_from_request, site_save_transfer_for};
 
 impl SensitiveOperation {
-    const ALL: [Self; 16] = [
+    const ALL: [Self; 17] = [
         Op::SitesRevealSecret,
         Op::SettingsRevealProxyPassword,
         Op::VaultReset,
@@ -62,6 +63,7 @@ impl SensitiveOperation {
         Op::FsOpenDocument,
         Op::FsExecutePath,
         Op::OpenWithStart,
+        Op::FsOpenWith,
         Op::AppExportSettings,
         Op::AppImportPreview,
         Op::AppImportApply,
@@ -83,6 +85,7 @@ impl SensitiveOperation {
             Op::FsOpenDocument => "fs_open_document",
             Op::FsExecutePath => "fs_execute_path",
             Op::OpenWithStart => "open_with_start",
+            Op::FsOpenWith => "fs_open_with",
             Op::AppExportSettings => "app_export_settings",
             Op::AppImportPreview => "app_import_preview",
             Op::AppImportApply => "app_import_apply",
@@ -584,6 +587,7 @@ pub async fn authorize_sensitive(
     let locale = prompt_locale(locale.as_deref(), &settings);
     let plan = match operation {
         Op::OpenWithStart => plan_open_with(&store, &approved_paths, &target, locale).await?,
+        Op::FsOpenWith => plan_local_open_with(&store, &approved_paths, &target, locale).await?,
         Op::SettingsSetSecurity => {
             plan_protected_settings(&settings, vault.is_configured(), &target, locale)?
         }

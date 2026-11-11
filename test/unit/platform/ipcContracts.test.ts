@@ -434,6 +434,20 @@ test('opening a local path follows backend classification including extensionles
   ]);
 });
 
+test('local Open with names the file, application and native chooser explicitly', async () => {
+  const calls: [string, InvokeArgs | undefined][] = [];
+  const api = createFilesystemApi(async <T>(command: string, args?: InvokeArgs) => {
+    calls.push([command, args]);
+    return { ok: true } as InvokeResult<T>;
+  });
+  await api.openWith('/notes.txt', '/apps/editor');
+  await api.openWith('/notes.txt', undefined, true);
+  assert.deepEqual(calls, [
+    ['fs_open_with', { localPath: '/notes.txt', application: '/apps/editor', choose: false }],
+    ['fs_open_with', { localPath: '/notes.txt', application: undefined, choose: true }],
+  ]);
+});
+
 test('failed or malformed executable classification never launches a path', async () => {
   for (const response of [{ ok: false, errorCode: 'permissionDenied' }, null, 'true', {}]) {
     const commands: string[] = [];

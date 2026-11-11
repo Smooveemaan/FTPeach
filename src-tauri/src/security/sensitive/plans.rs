@@ -183,6 +183,40 @@ pub(super) async fn plan_open_with(
     })
 }
 
+pub(super) async fn plan_local_open_with(
+    store: &Store,
+    approved_paths: &ApprovedLocalPaths,
+    target: &str,
+    locale: String,
+) -> CommandResult<Plan> {
+    let intent = LocalOpenWithIntent::from_request(target, approved_paths)?;
+    let mut untrusted_application = None;
+    if let Some(application) = &intent.application
+        && !store.is_trusted_application(application).await
+    {
+        untrusted_application = Some(application.clone());
+    }
+    let mut prompt = confirmation_prompt(
+        Op::FsExecutePath,
+        &intent.local_path.to_string_lossy(),
+        locale,
+        false,
+    )?;
+    if !intent.executable {
+        prompt.kind = ConfirmationKind::OpenWithApplication;
+    }
+    prompt.application = intent
+        .application
+        .as_ref()
+        .map(|path| crate::local_fs::local_open::shell_path(path));
+    Ok(Plan {
+        target: intent.grant_target(),
+        required: intent.executable || untrusted_application.is_some(),
+        prompt: Some(prompt),
+        trusts_application: untrusted_application,
+    })
+}
+
 pub(super) fn plan_protected_settings(
     settings: &JsonMap,
     vault_configured: bool,

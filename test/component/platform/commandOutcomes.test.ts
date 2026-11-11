@@ -133,6 +133,9 @@ const cases: Case[] = [
   voidCase('fsLocal.createFile', 'fs_create_file', () => api.fsLocal.createFile('C:\\a')),
   sensitiveVoid('fsLocal.delete', 'fs_delete', () => api.fsLocal.delete('C:\\a')),
   sensitiveVoid('fsLocal.revealPath', 'fs_reveal_path', () => api.fsLocal.revealPath('C:\\a')),
+  sensitiveVoid('fsLocal.openWith', 'fs_open_with', () =>
+    api.fsLocal.openWith('C:\\notes.txt', 'C:\\editor.exe'),
+  ),
   sensitiveVoid('fsLocal.openPath (document)', 'fs_open_document', () =>
     api.fsLocal.openPath('C:\\a.pdf'),
   ),
@@ -342,6 +345,28 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
     throw new Error(`console.error: ${args.map(String).join(' ')}`);
   });
+});
+
+test('local Open with authorization covers the selected file and application', async () => {
+  const target = cases.find((target) => target.command === 'fs_open_with')!;
+  answer(target, resolve(null));
+  await target.call();
+  expect(rawInvoke).toHaveBeenCalledWith(
+    'plugin:sensitive|authorize_sensitive',
+    expect.objectContaining({
+      operation: 'fs_open_with',
+      target: JSON.stringify({ localPath: 'C:\\notes.txt', application: 'C:\\editor.exe' }),
+    }),
+  );
+  expect(rawInvoke).toHaveBeenCalledWith(
+    'plugin:sensitive|fs_open_with',
+    expect.objectContaining({
+      authorizationToken: 'grant',
+      localPath: 'C:\\notes.txt',
+      application: 'C:\\editor.exe',
+      choose: false,
+    }),
+  );
 });
 afterEach(() => {
   rawInvoke.mockReset();

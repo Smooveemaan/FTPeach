@@ -169,6 +169,11 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
             remotePath: args?.remotePath,
             application: args?.application ?? null,
           });
+        case 'fs_open_with':
+          return JSON.stringify({
+            localPath: args?.localPath,
+            application: args?.application ?? null,
+          });
         case 'sites_reveal_secret':
           return `${describeUnknown(args?.id)}:${describeUnknown(args?.field)}`;
         case 'settings_reveal_proxy_password':

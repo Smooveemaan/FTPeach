@@ -455,6 +455,14 @@ body.column-resize-active .row:hover:not(.selected) {
 }
 
 
+body.drag-move-active,
+body.drag-move-active *,
+body.native-drag-active,
+body.native-drag-active * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body.drag-move-active .app-shell {
   pointer-events: none;
 }

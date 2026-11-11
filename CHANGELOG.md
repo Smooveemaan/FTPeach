@@ -15,9 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Files dragged out of FTPeach can be brought back into its panes during the same drag.
 - External file drags on macOS no longer show an extra Copy badge beside the system indicator.
 - Files dragged into the app on macOS target the folder under the cursor at every interface scale.
 - Scrolling log messages no longer overlap the log toolbar.
+- Dragging files across the log no longer selects its text.
 - Security confirmations on macOS appear fully drawn and accept input without blocking the application.
 - Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
 - Clicking any button or control dismisses open tooltips immediately.

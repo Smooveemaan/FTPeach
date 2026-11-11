@@ -104,8 +104,8 @@ fn init_ole() -> windows::core::Result<()> {
 
 /// Runs `DoDragDrop` on the main thread, copy only, until the user drops or
 /// cancels.
-fn copy_drag(data_object: &IDataObject) -> anyhow::Result<()> {
-    let drop_source: IDropSource = DropSource.into();
+fn copy_drag(data_object: &IDataObject, window: &tauri::Window) -> anyhow::Result<()> {
+    let drop_source: IDropSource = DropSource(window.clone(), StdMutex::new(None)).into();
     let mut out_effect = DROPEFFECT::default();
     unsafe { DoDragDrop(data_object, &drop_source, DROPEFFECT_COPY, &mut out_effect) }
         .ok()
@@ -163,11 +163,21 @@ fn build_descriptor_hglobal(files: &[DragOutFile]) -> windows::core::Result<HGLO
 }
 
 #[implement(IDropSource)]
-struct DropSource;
+struct DropSource(tauri::Window, StdMutex<Option<(i32, i32)>>);
 
 #[allow(non_snake_case)]
 impl IDropSource_Impl for DropSource_Impl {
     fn QueryContinueDrag(&self, fescapepressed: BOOL, grfkeystate: MODIFIERKEYS_FLAGS) -> HRESULT {
+        let ended = fescapepressed.as_bool() || !grfkeystate.contains(MK_LBUTTON);
+        let mut point = POINT::default();
+        if unsafe { windows::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut point) }.is_ok() {
+            let mut last = self.1.lock().unwrap();
+            let next = (point.x, point.y);
+            if ended || *last != Some(next) {
+                *last = Some(next);
+                crate::native_drag::report_motion(&self.0, ended, fescapepressed.as_bool());
+            }
+        }
         if fescapepressed.as_bool() {
             DRAGDROP_S_CANCEL
         } else if !grfkeystate.contains(MK_LBUTTON) {
@@ -683,6 +693,7 @@ pub async fn start_drag(
         })?;
 
     let (tx, rx) = oneshot::channel();
+    let motion_window = window.clone();
     window.run_on_main_thread(move || {
         let result = (|| -> anyhow::Result<()> {
             init_ole().map_err(|e| anyhow::anyhow!("OleInitialize failed: {e}"))?;
@@ -695,7 +706,7 @@ pub async fn start_drag(
             // `CoGetInterfaceAndReleaseStream` has already released the
             // stream, so it must not be released a second time on drop.
             std::mem::forget(stream);
-            copy_drag(&data_object)
+            copy_drag(&data_object, &motion_window)
         })();
         let _ = tx.send(result);
     })?;

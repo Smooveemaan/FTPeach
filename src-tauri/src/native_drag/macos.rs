@@ -136,6 +136,95 @@ mod macos_impl {
     }
 
     #[repr(C)]
+    #[derive(Clone, Copy)]
+    struct NSSize {
+        width: f64,
+        height: f64,
+    }
+
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    struct NSRect {
+        origin: NSPoint,
+        size: NSSize,
+    }
+
+    unsafe fn prepare_drag_images(
+        items: *const c_void,
+        view: *const c_void,
+        event: *const c_void,
+        types: &[&str],
+    ) -> Result<()> {
+        if event.is_null() {
+            bail!("No current event available for drag session");
+        }
+        unsafe {
+            let point: unsafe extern "C" fn(*const c_void, *const c_void) -> NSPoint =
+                std::mem::transmute(objc_msgSend as *const ());
+            let convert: unsafe extern "C" fn(
+                *const c_void,
+                *const c_void,
+                NSPoint,
+                *const c_void,
+            ) -> NSPoint = std::mem::transmute(objc_msgSend as *const ());
+            let origin = convert(
+                view,
+                sel_registerName(c"convertPoint:fromView:".as_ptr()),
+                point(event, sel_registerName(c"locationInWindow".as_ptr())),
+                std::ptr::null(),
+            );
+            let send: unsafe extern "C" fn(*const c_void, *const c_void) -> *const c_void =
+                std::mem::transmute(objc_msgSend as *const ());
+            let send_arg: unsafe extern "C" fn(
+                *const c_void,
+                *const c_void,
+                *const c_void,
+            ) -> *const c_void = std::mem::transmute(objc_msgSend as *const ());
+            let workspace = send(
+                objc_getClass(c"NSWorkspace".as_ptr()),
+                sel_registerName(c"sharedWorkspace".as_ptr()),
+            );
+            let count: unsafe extern "C" fn(*const c_void, *const c_void) -> usize =
+                std::mem::transmute(objc_msgSend as *const ());
+            let at: unsafe extern "C" fn(*const c_void, *const c_void, usize) -> *const c_void =
+                std::mem::transmute(objc_msgSend as *const ());
+            let set_frame: unsafe extern "C" fn(
+                *const c_void,
+                *const c_void,
+                NSRect,
+                *const c_void,
+            ) = std::mem::transmute(objc_msgSend as *const ());
+            for index in 0..count(items, sel_registerName(c"count".as_ptr())) {
+                let item = at(items, sel_registerName(c"objectAtIndex:".as_ptr()), index);
+                let file_type = cf_string(types.get(index).copied().unwrap_or("public.data"))
+                    .context("failed to allocate icon type")?;
+                let image = send_arg(
+                    workspace,
+                    sel_registerName(c"iconForFileType:".as_ptr()),
+                    file_type.0,
+                );
+                if image.is_null() {
+                    bail!("No file icon available for drag session");
+                }
+                // AppKit requires a nonempty frame and image before starting the session.
+                set_frame(
+                    item,
+                    sel_registerName(c"setDraggingFrame:contents:".as_ptr()),
+                    NSRect {
+                        origin,
+                        size: NSSize {
+                            width: 32.0,
+                            height: 32.0,
+                        },
+                    },
+                    image,
+                );
+            }
+            Ok(())
+        }
+    }
+
+    #[repr(C)]
     struct BlockLiteral {
         _isa: *const c_void,
         _flags: i32,
@@ -236,6 +325,17 @@ mod macos_impl {
 
     struct DragSourceContext {
         sender: Mutex<Option<oneshot::Sender<Result<()>>>>,
+        window: Option<Window>,
+    }
+
+    impl DragSourceContext {
+        fn started(&self, result: Result<()>) {
+            if let Err(error) = result
+                && let Some(sender) = self.sender.lock().unwrap().take()
+            {
+                let _ = sender.send(Err(error));
+            }
+        }
     }
 
     struct PromiseContext {
@@ -265,8 +365,35 @@ mod macos_impl {
             let ptr = objc_getAssociatedObject(this, &DRAG_SOURCE_KEY as *const _ as *const c_void);
             if !ptr.is_null() {
                 let ctx = &*(ptr as *const DragSourceContext);
-                if let Some(sender) = ctx.sender.lock().unwrap().take() {
+                if let Some(window) = &ctx.window {
+                    let send: unsafe extern "C" fn(*const c_void, *const c_void) -> usize =
+                        std::mem::transmute(objc_msgSend as *const ());
+                    let buttons = send(
+                        objc_getClass(c"NSEvent".as_ptr()),
+                        sel_registerName(c"pressedMouseButtons".as_ptr()),
+                    );
+                    crate::native_drag::report_motion(window, true, buttons & 1 != 0);
+                }
+                let sender = ctx.sender.lock().unwrap().take();
+                if let Some(sender) = sender {
                     let _ = sender.send(Ok(()));
+                }
+            }
+        }
+    }
+
+    extern "C" fn drag_source_moved(
+        this: *const c_void,
+        _sel: *const c_void,
+        _session: *const c_void,
+        _point: NSPoint,
+    ) {
+        unsafe {
+            let ptr = objc_getAssociatedObject(this, &DRAG_SOURCE_KEY as *const _ as *const c_void);
+            if !ptr.is_null() {
+                let ctx = &*(ptr as *const DragSourceContext);
+                if let Some(window) = &ctx.window {
+                    crate::native_drag::report_motion(window, false, false);
                 }
             }
         }
@@ -495,6 +622,12 @@ mod macos_impl {
                         c"Q@:@q".as_ptr(),
                     );
 
+                    class_addMethod(
+                        drag_source_cls,
+                        sel_registerName(c"draggingSession:movedToPoint:".as_ptr()),
+                        drag_source_moved as *const (),
+                        c"v@:@{CGPoint=dd}".as_ptr(),
+                    );
                     let sel_ended =
                         sel_registerName(c"draggingSession:endedAtPoint:operation:".as_ptr());
                     class_addMethod(
@@ -547,6 +680,7 @@ mod macos_impl {
         let (tx, rx) = oneshot::channel();
         let context = Arc::new(DragSourceContext {
             sender: Mutex::new(Some(tx)),
+            window: Some(window.clone()),
         });
 
         let files_for_drag = files;
@@ -624,6 +758,10 @@ mod macos_impl {
                     )
                         -> *const c_void = std::mem::transmute(objc_msgSend as *const ());
 
+                    let image_types: Vec<_> = files_for_drag
+                        .iter()
+                        .map(|file| uti_for_file(&file.name, file.is_directory))
+                        .collect();
                     for file in files_for_drag {
                         let promise_ctx = Arc::new(PromiseContext {
                             file: file.clone(),
@@ -675,6 +813,8 @@ mod macos_impl {
                         bail!("No contentView available for drag session");
                     }
 
+                    prepare_drag_images(items_array, view, current_event, &image_types)?;
+
                     let sel_begin_drag =
                         sel_registerName(c"beginDraggingSessionWithItems:event:source:".as_ptr());
                     let msg_send_begin_drag: unsafe extern "C" fn(
@@ -700,9 +840,7 @@ mod macos_impl {
                 }
             })();
 
-            if let (Err(e), Some(sender)) = (res, context_for_drag.sender.lock().unwrap().take()) {
-                let _ = sender.send(Err(e));
-            }
+            context_for_drag.started(res);
         })?;
 
         rx.await
@@ -714,6 +852,7 @@ mod macos_impl {
         let (tx, rx) = oneshot::channel();
         let context = Arc::new(DragSourceContext {
             sender: Mutex::new(Some(tx)),
+            window: Some(window.clone()),
         });
 
         let context_for_drag = context.clone();
@@ -780,6 +919,10 @@ mod macos_impl {
                     )
                         -> *const c_void = std::mem::transmute(objc_msgSend as *const ());
 
+                    let image_types: Vec<_> = paths
+                        .iter()
+                        .map(|path| uti_for_file(path, std::path::Path::new(path).is_dir()))
+                        .collect();
                     for path in paths {
                         let path_cf = cf_string(&path).context("failed to allocate path string")?;
                         let ns_url = msg_send_file_url(cls_url, sel_file_url, path_cf.0);
@@ -812,6 +955,8 @@ mod macos_impl {
                         bail!("No contentView available for local drag session");
                     }
 
+                    prepare_drag_images(items_array, view, current_event, &image_types)?;
+
                     let sel_begin_drag =
                         sel_registerName(c"beginDraggingSessionWithItems:event:source:".as_ptr());
                     let msg_send_begin_drag: unsafe extern "C" fn(
@@ -837,13 +982,110 @@ mod macos_impl {
                 }
             })();
 
-            if let (Err(e), Some(sender)) = (res, context_for_drag.sender.lock().unwrap().take()) {
-                let _ = sender.send(Err(e));
-            }
+            context_for_drag.started(res);
         })?;
 
         rx.await
             .map_err(|_| anyhow::anyhow!("Local drag session channel closed"))?
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn starting_a_drag_keeps_the_result_pending_until_completion_or_error() {
+            let (sender, mut receiver) = oneshot::channel();
+            let context = DragSourceContext {
+                sender: Mutex::new(Some(sender)),
+                window: None,
+            };
+            context.started(Ok(()));
+            assert!(matches!(
+                receiver.try_recv(),
+                Err(oneshot::error::TryRecvError::Empty)
+            ));
+            context.started(Err(anyhow::anyhow!("drag could not start")));
+            assert_eq!(
+                receiver.try_recv().unwrap().unwrap_err().to_string(),
+                "drag could not start"
+            );
+        }
+
+        #[test]
+        fn drag_items_have_visible_images_and_frames_before_the_session_starts() {
+            unsafe {
+                let send: unsafe extern "C" fn(*const c_void, *const c_void) -> *const c_void =
+                    std::mem::transmute(objc_msgSend as *const ());
+                let send_arg: unsafe extern "C" fn(
+                    *const c_void,
+                    *const c_void,
+                    *const c_void,
+                ) -> *const c_void = std::mem::transmute(objc_msgSend as *const ());
+                let pool = send(
+                    objc_getClass(c"NSAutoreleasePool".as_ptr()),
+                    sel_registerName(c"new".as_ptr()),
+                );
+                let writer = send(
+                    objc_getClass(c"NSPasteboardItem".as_ptr()),
+                    sel_registerName(c"new".as_ptr()),
+                );
+                let item = send_arg(
+                    send(
+                        objc_getClass(c"NSDraggingItem".as_ptr()),
+                        sel_registerName(c"alloc".as_ptr()),
+                    ),
+                    sel_registerName(c"initWithPasteboardWriter:".as_ptr()),
+                    writer,
+                );
+                let items = send_arg(
+                    objc_getClass(c"NSArray".as_ptr()),
+                    sel_registerName(c"arrayWithObject:".as_ptr()),
+                    item,
+                );
+                let view = send(
+                    objc_getClass(c"NSView".as_ptr()),
+                    sel_registerName(c"new".as_ptr()),
+                );
+                let mouse_event: unsafe extern "C" fn(
+                    *const c_void,
+                    *const c_void,
+                    usize,
+                    NSPoint,
+                    usize,
+                    f64,
+                    isize,
+                    *const c_void,
+                    isize,
+                    isize,
+                    f32,
+                ) -> *const c_void = std::mem::transmute(objc_msgSend as *const ());
+                let event = mouse_event(
+                    objc_getClass(c"NSEvent".as_ptr()),
+                    sel_registerName(c"mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:".as_ptr()),
+                    1, NSPoint { x: 80.0, y: 120.0 }, 0, 0.0, 0, std::ptr::null(), 0, 1, 1.0,
+                );
+                assert!(!event.is_null());
+                prepare_drag_images(items, view, event, &[]).unwrap();
+                let frame: unsafe extern "C" fn(*const c_void, *const c_void) -> NSRect =
+                    std::mem::transmute(objc_msgSend as *const ());
+                let frame = frame(item, sel_registerName(c"draggingFrame".as_ptr()));
+                assert_eq!((frame.origin.x, frame.origin.y), (80.0, 120.0));
+                assert_eq!((frame.size.width, frame.size.height), (32.0, 32.0));
+                let components = send(item, sel_registerName(c"imageComponents".as_ptr()));
+                let count: unsafe extern "C" fn(*const c_void, *const c_void) -> usize =
+                    std::mem::transmute(objc_msgSend as *const ());
+                assert_eq!(count(components, sel_registerName(c"count".as_ptr())), 1);
+                let component = send(components, sel_registerName(c"firstObject".as_ptr()));
+                assert!(!send(component, sel_registerName(c"contents".as_ptr())).is_null());
+                assert!(prepare_drag_images(items, view, std::ptr::null(), &[]).is_err());
+                let release: unsafe extern "C" fn(*const c_void, *const c_void) =
+                    std::mem::transmute(objc_msgSend as *const ());
+                for object in [view, item, writer] {
+                    release(object, sel_registerName(c"release".as_ptr()));
+                }
+                release(pool, sel_registerName(c"drain".as_ptr()));
+            }
+        }
     }
 }
 

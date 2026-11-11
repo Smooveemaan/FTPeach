@@ -25,7 +25,7 @@ import type {
   Unsubscribe,
   VaultLocked,
 } from './ipcContracts.ts';
-import type { DragOutFile } from './api/dragOut.ts';
+import type { DragOutMotion, DragOutFile } from './api/dragOut.ts';
 import type { LogEntry } from '../shared/logEntry.ts';
 import type { SiteProtocol } from '../shared/siteContracts.ts';
 
@@ -140,6 +140,7 @@ declare global {
         onProgress: (callback: (payload: OpenWithProgress) => void) => Unsubscribe;
       };
       dragOut: {
+        onMotion: (callback: (motion: DragOutMotion) => void) => Unsubscribe;
         start: (
           connectionId: string,
           protocol: SiteProtocol,

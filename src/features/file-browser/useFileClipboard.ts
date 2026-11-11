@@ -1,5 +1,5 @@
 import type { MouseEvent, MutableRefObject } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DragEntry, DragInfo, DropMenu } from './components/useDragMove.ts';
 import { useDragMove } from './components/useDragMove.ts';
@@ -120,13 +120,18 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
       }));
     if (files.length !== names.length) return;
     outboundDragRef.current = true;
+    document.body.classList.add('native-drag-active');
+    dragMove.beginNativeDrag();
+
     try {
       const result = await api.dragOut.start(connectionId, pane.protocol ?? 'ftp', files);
       if (!result.ok) reportAsyncFailure(commandResultError(result));
     } catch (error) {
       reportAsyncFailure(error);
     } finally {
+      dragMove.cancelDrag();
       outboundDragRef.current = false;
+      document.body.classList.remove('native-drag-active');
     }
   };
 
@@ -140,13 +145,18 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
       .map((name) => paneJoin(pane, name));
     if (paths.length !== names.length || paths.length === 0) return;
     outboundDragRef.current = true;
+    document.body.classList.add('native-drag-active');
+    dragMove.beginNativeDrag();
+
     try {
       const result = await api.dragOut.startLocal(paths);
       if (!result.ok) reportAsyncFailure(commandResultError(result));
     } catch (error) {
       reportAsyncFailure(error);
     } finally {
+      dragMove.cancelDrag();
       outboundDragRef.current = false;
+      document.body.classList.remove('native-drag-active');
     }
   };
 
@@ -175,16 +185,16 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
         const pane = panes[side];
         if (pane.kind === 'local') {
           if (!pane.path) return;
-          dragMove.cancelDrag();
           void startLocalDragOut(pane, names);
           return;
         }
         if (!pane.connectionId) return;
-        dragMove.cancelDrag();
         void startNativeDragOut(pane, names);
       },
     },
   );
+
+  useEffect(() => api.dragOut.onMotion(dragMove.nativeMotion), [dragMove.nativeMotion]);
 
   return {
     copyToClipboard,

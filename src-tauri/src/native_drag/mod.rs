@@ -30,3 +30,34 @@ pub struct DragOutFile {
     #[serde(default)]
     pub is_directory: bool,
 }
+
+#[cfg(any(windows, target_os = "macos"))]
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DragMotion {
+    x: f64,
+    y: f64,
+    ended: bool,
+    cancelled: bool,
+}
+
+#[cfg(any(windows, target_os = "macos"))]
+fn report_motion(window: &tauri::Window, ended: bool, cancelled: bool) {
+    use tauri::Emitter;
+    if let (Ok(cursor), Ok(origin)) = (window.cursor_position(), window.inner_position()) {
+        let scale = if cfg!(target_os = "macos") {
+            window.scale_factor().unwrap_or(1.0)
+        } else {
+            1.0
+        };
+        let _ = window.emit(
+            "drag-out-motion",
+            DragMotion {
+                x: (cursor.x - f64::from(origin.x)) / scale,
+                y: (cursor.y - f64::from(origin.y)) / scale,
+                ended,
+                cancelled,
+            },
+        );
+    }
+}

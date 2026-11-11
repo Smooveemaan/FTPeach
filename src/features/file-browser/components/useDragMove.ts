@@ -1,5 +1,6 @@
+import type { DragOutMotion } from '../../../platform/api/dragOut.ts';
 import type { MutableRefObject, MouseEvent as ReactMouseEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getInterfaceScale } from '../../../platform/interfaceScale.ts';
 import { hostPlatform } from '../../../platform/os.ts';
 import type { DropAction, DropKeys } from './dropAction.ts';
@@ -30,6 +31,7 @@ interface ActiveDrag {
   active: boolean;
   isMove?: boolean;
   leftWindow?: boolean;
+  native?: boolean;
 }
 
 export interface DragInfo {
@@ -84,6 +86,8 @@ const AUTO_SCROLL_EDGE = 48; // px from the list's own top/bottom edge
 const AUTO_SCROLL_MAX_SPEED = 16; // px per animation frame, right at the edge
 
 export interface DragMoveModel {
+  beginNativeDrag: () => void;
+  nativeMotion: (motion: DragOutMotion) => void;
   startDrag: (side: PaneId, names: string[], entry: DragEntry, e: ReactMouseEvent) => void;
   cancelDrag: () => void | undefined;
   ghostRef: MutableRefObject<HTMLDivElement | null>;
@@ -108,6 +112,13 @@ export function useDragMove(
   const onDragLeaveWindowRef = useRef(onDragLeaveWindow);
   onDragLeaveWindowRef.current = onDragLeaveWindow;
   const finishDragRef = useRef<((e: MouseEvent | undefined, commit: boolean) => void) | null>(null);
+
+  const beginNativeDrag = useCallback(() => {
+    if (dragRef.current) dragRef.current.native = true;
+    setDragInfo(null);
+  }, []);
+  const nativeMotionRef = useRef<(motion: DragOutMotion) => void>(() => {});
+  const nativeMotion = useCallback((motion: DragOutMotion) => nativeMotionRef.current(motion), []);
 
   // Which row (if any) currently shows the folder glow.
   const activeFolderRowRef = useRef<HTMLElement | null>(null);
@@ -287,6 +298,7 @@ export function useDragMove(
 
       updateAutoScroll(e);
       updateTarget(e, e);
+      if (drag.native) setDragInfo(null);
     };
 
     const handleModifierKey = (e: KeyboardEvent) => {
@@ -353,7 +365,23 @@ export function useDragMove(
 
     finishDragRef.current = finishDrag;
 
+    nativeMotionRef.current = (motion) => {
+      if (!dragRef.current?.native) return;
+      const target = document.elementFromPoint(motion.x, motion.y);
+      const event = new MouseEvent('mousemove', {
+        clientX: motion.x,
+        clientY: motion.y,
+        button: 0,
+        ctrlKey: hostPlatform() !== 'macos',
+        altKey: hostPlatform() === 'macos',
+      });
+      Object.defineProperty(event, 'target', { value: target });
+      if (motion.ended) finishDrag(event, !motion.cancelled);
+      else handleMouseMove(event);
+    };
+
     const handleMouseUp = (e: MouseEvent) => {
+      if (dragRef.current?.native) return;
       if (dragRef.current && e.button !== dragRef.current.button) return;
       finishDrag(e, true);
     };
@@ -392,13 +420,12 @@ export function useDragMove(
     };
   };
 
-  // Tears down the in-app drag state (ghost, wash, auto-scroll, source) exactly as Escape does, without committing a drop. Callers hand
-  // off to a native OS drag (see useFileClipboard's onDragLeaveWindow) call
-  // this immediately so the later mouseup doesn't misinterpret leftover DOM
-  // state as an in-app drop.
+  // Cancel without submitting a drop, including native completion and failed handoff.
   const cancelDrag = () => finishDragRef.current?.(undefined, false);
 
   return {
+    beginNativeDrag,
+    nativeMotion,
     startDrag,
     cancelDrag,
     ghostRef,

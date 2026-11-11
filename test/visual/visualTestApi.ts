@@ -353,7 +353,11 @@ export const visualTestApi = {
     quit: () => resolved(ok),
   },
   notifications: { transfersComplete: () => resolved(ok) },
-  dragOut: { start: () => resolved(ok), startLocal: () => resolved(ok) },
+  dragOut: {
+    onMotion: () => readyUnsubscribe(() => {}),
+    start: () => resolved(ok),
+    startLocal: () => resolved(ok),
+  },
   tray: {
     setModel: () => resolved(ok),
     hideWindow: () => resolved(ok),

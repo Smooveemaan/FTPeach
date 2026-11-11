@@ -157,3 +157,61 @@ test('a right drag opens the drop menu instead of dropping, and its items drop',
   act(() => result.current.closeDropMenu());
   expect(result.current.dropMenu).toBeNull();
 });
+
+test.each([false, true])('native return highlights its destination; cancelled=%s', (cancelled) => {
+  const { result, crumb, drop } = start();
+  const original = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: () => crumb });
+  try {
+    act(() => result.current.beginNativeDrag());
+    act(() => result.current.nativeMotion({ x: 20, y: 20, ended: false, cancelled: false }));
+    expect(crumb.classList.contains('drag-target')).toBe(true);
+    expect(result.current.dragInfo).toBeNull();
+    fireEvent.mouseUp(crumb);
+    expect(drop).not.toHaveBeenCalled();
+    act(() => result.current.nativeMotion({ x: 20, y: 20, ended: true, cancelled }));
+    expect(drop).toHaveBeenCalledTimes(cancelled ? 0 : 1);
+    if (!cancelled)
+      expect(drop).toHaveBeenCalledWith(
+        expect.objectContaining({ isMove: false, targetFolder: 'C:\\other' }),
+      );
+    expect(crumb.classList.contains('drag-target')).toBe(false);
+    act(() => result.current.nativeMotion({ x: 20, y: 20, ended: true, cancelled: false }));
+    expect(drop).toHaveBeenCalledTimes(cancelled ? 0 : 1);
+  } finally {
+    if (original) Object.defineProperty(document, 'elementFromPoint', original);
+    else Reflect.deleteProperty(document, 'elementFromPoint');
+  }
+});
+
+test('native drop outside the window never starts an internal transfer', () => {
+  const { result, drop } = start();
+  const original = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: () => null });
+  try {
+    act(() => result.current.beginNativeDrag());
+    act(() => result.current.nativeMotion({ x: -10, y: -10, ended: true, cancelled: false }));
+    expect(drop).not.toHaveBeenCalled();
+    expect(result.current.dragInfo).toBeNull();
+  } finally {
+    if (original) Object.defineProperty(document, 'elementFromPoint', original);
+    else Reflect.deleteProperty(document, 'elementFromPoint');
+  }
+});
+
+test('returning a native drag to its source directory is rejected', () => {
+  const { result, crumb, drop } = start();
+  crumb.dataset.dropPath = source.path;
+  const original = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
+  Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: () => crumb });
+  try {
+    act(() => result.current.beginNativeDrag());
+    act(() => result.current.nativeMotion({ x: 20, y: 20, ended: false, cancelled: false }));
+    expect(crumb.classList.contains('drag-target')).toBe(false);
+    act(() => result.current.nativeMotion({ x: 20, y: 20, ended: true, cancelled: false }));
+    expect(drop).not.toHaveBeenCalled();
+  } finally {
+    if (original) Object.defineProperty(document, 'elementFromPoint', original);
+    else Reflect.deleteProperty(document, 'elementFromPoint');
+  }
+});

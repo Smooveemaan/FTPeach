@@ -322,7 +322,7 @@ export const tauriApi: Window['api'] = {
     onChanged: onEvent('openWith:changed', isOpenWithChange),
     onProgress: onEvent('openWith:progress', isOpenWithProgress),
   },
-  dragOut: createDragOutApi(invoke),
+  dragOut: createDragOutApi(invoke, onEvent),
   log: {
     openFolder: (folder: string) => voidOutcome(invoke, 'log_open_folder', { folder }),
     recent: (): Promise<LogEntry[]> =>

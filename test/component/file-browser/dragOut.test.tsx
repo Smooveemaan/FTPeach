@@ -1,5 +1,6 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { act, renderHook } from '@testing-library/react';
-import { expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { useFileClipboard } from '../../../src/features/file-browser/useFileClipboard.ts';
 import { makeTab } from '../../../src/features/file-browser/panes/paneModel.ts';
 import { useDragMove } from '../../../src/features/file-browser/components/useDragMove.ts';
@@ -7,8 +8,19 @@ import { setAsyncFailureSink } from '../../../src/shared/asyncFailure.ts';
 import type { TransferBatchResult } from '../../../src/features/transfers/transferBatchResult.ts';
 
 vi.mock('../../../src/features/file-browser/components/useDragMove.ts', () => ({
-  useDragMove: vi.fn(() => ({ cancelDrag: vi.fn(), ghostRef: { current: null }, dragInfo: null })),
+  useDragMove: vi.fn(() => ({
+    cancelDrag: vi.fn(),
+    beginNativeDrag: vi.fn(),
+    nativeMotion: vi.fn(),
+    ghostRef: { current: null },
+    dragInfo: null,
+  })),
 }));
+
+const onMotion = vi.fn(() => readyUnsubscribe(() => {}));
+beforeEach(() => {
+  window.api = { dragOut: { onMotion } } as unknown as Window['api'];
+});
 
 test('dragging a remote folder and file out of the window starts native drag with directory metadata', async () => {
   const tab = makeTab('tab');
@@ -23,7 +35,7 @@ test('dragging a remote folder and file out of the window starts native drag wit
     ],
   });
   const start = vi.fn().mockResolvedValue({ ok: true });
-  window.api = { dragOut: { start } } as unknown as Window['api'];
+  window.api = { dragOut: { onMotion, start } } as unknown as Window['api'];
   const { result } = renderHook(() =>
     useFileClipboard({
       browser: {
@@ -63,7 +75,7 @@ test('dragging local entries out of the window hands the shell their full paths'
   });
   const start = vi.fn().mockResolvedValue({ ok: true });
   const startLocal = vi.fn().mockResolvedValue({ ok: true });
-  window.api = { dragOut: { start, startLocal } } as unknown as Window['api'];
+  window.api = { dragOut: { onMotion, start, startLocal } } as unknown as Window['api'];
   const { result } = renderHook(() =>
     useFileClipboard({
       browser: {
@@ -168,7 +180,6 @@ test('a cut stays on the clipboard until its files have actually moved', async (
     entries: [{ name: 'file.txt', isDirectory: false, size: 42 }],
     selected: new Set(['file.txt']),
   });
-  window.api = {} as unknown as Window['api'];
   let outcome: TransferBatchResult = {
     items: [{ name: 'file.txt', outcome: 'failed', sourceRetained: true }],
     copied: 0,
@@ -227,3 +238,50 @@ test('a cut marks its names in the folder it came from, and a copy marks nothing
   act(() => result.current.copyToClipboard('a', tab.panes.a));
   expect(result.current.cutNames(tab.panes.a)).toBeUndefined();
 });
+
+test.each(['local', 'remote'] as const)(
+  '%s native drag keeps text selection disabled through handoff and completion',
+  async (kind) => {
+    const tab = makeTab('tab');
+    Object.assign(tab.panes.a, {
+      kind,
+      path: '/work',
+      connectionId: kind === 'remote' ? 'session' : null,
+      entries: [{ name: 'file.txt', isDirectory: false, size: 42 }],
+    });
+    let complete!: (_value: { ok: boolean }) => void;
+    const pending = new Promise<{ ok: boolean }>((resolve) => {
+      complete = resolve;
+    });
+    const start = vi.fn(() => pending);
+    window.api = { dragOut: { onMotion, start, startLocal: start } } as unknown as Window['api'];
+    const { result } = renderHook(() =>
+      useFileClipboard({
+        browser: { panes: tab.panes, canCopyBetween: vi.fn(), refreshPaneIfAt: vi.fn() },
+        transfers: { copyEntries: vi.fn() },
+      }),
+    );
+    vi.mocked(result.current.dragMove.cancelDrag).mockImplementation(() => {
+      expect(document.body.classList.contains('native-drag-active')).toBe(true);
+      document.body.classList.remove('drag-move-active');
+    });
+    act(() => {
+      vi.mocked(useDragMove)
+        .mock.calls.at(-1)?.[1]
+        ?.onDragLeaveWindow?.({
+          side: 'a',
+          entryName: 'file.txt',
+          names: ['file.txt'],
+          isDir: false,
+        });
+    });
+    expect(start).toHaveBeenCalledOnce();
+    expect(result.current.outboundDragRef.current).toBe(true);
+    expect(document.body.classList.contains('native-drag-active')).toBe(true);
+    await act(async () => {
+      complete({ ok: true });
+    });
+    expect(result.current.outboundDragRef.current).toBe(false);
+    expect(document.body.classList.contains('native-drag-active')).toBe(false);
+  },
+);

@@ -51,10 +51,11 @@ pub(crate) async fn start_local_drag(
     paths: Vec<String>,
 ) -> anyhow::Result<()> {
     let (tx, rx) = oneshot::channel();
+    let motion_window = window.clone();
     window.run_on_main_thread(move || {
         let result = (|| -> anyhow::Result<()> {
             init_ole().map_err(|e| anyhow::anyhow!("OleInitialize failed: {e}"))?;
-            copy_drag(&local_paths_data_object(&paths)?)
+            copy_drag(&local_paths_data_object(&paths)?, &motion_window)
         })();
         let _ = tx.send(result);
     })?;

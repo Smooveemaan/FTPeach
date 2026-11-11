@@ -197,7 +197,7 @@ for (const icon of linuxIcons.filter((icon) => icon.endsWith('.png'))) {
   assert.equal(width, png.readUInt32BE(20), `Linux icon must be square: ${icon}`);
   iconSizes.add(width);
 }
-for (const size of [32, 128, 256]) {
+for (const size of [32, 48, 128, 256]) {
   assert.ok(iconSizes.has(size), `Linux bundles need a ${size}px PNG icon`);
 }
 assert.ok(

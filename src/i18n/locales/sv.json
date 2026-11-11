@@ -1035,7 +1035,9 @@
     "local": "Dator",
     "remote": "Server",
     "updatedAtTooltip": "Uppdaterad: {{date}}",
-    "connectToServer": "Server"
+    "connectToServer": "Server",
+    "copyConnectionAddress": "Kopiera anslutningsadress",
+    "copySshFingerprint": "Kopiera SSH-fingeravtryck"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Inga senaste anslutningar",

@@ -1035,7 +1035,9 @@
     "local": "कंप्यूटर",
     "remote": "सर्वर",
     "updatedAtTooltip": "अपडेट किया गया: {{date}}",
-    "connectToServer": "सर्वर"
+    "connectToServer": "सर्वर",
+    "copyConnectionAddress": "कनेक्शन का पता कॉपी करें",
+    "copySshFingerprint": "SSH फ़िंगरप्रिंट कॉपी करें"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "कोई हालिया कनेक्शन नहीं",

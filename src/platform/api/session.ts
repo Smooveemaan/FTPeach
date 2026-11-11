@@ -29,6 +29,7 @@ export interface WindowConnectionSettings {
 }
 export interface SessionConnectResult extends CommandResult {
   hostKeyMismatch?: HostKeyDecision;
+  sshFingerprint?: string;
 }
 export interface SessionListResult extends CommandResult {
   entries: FileEntry[];
@@ -40,11 +41,13 @@ function isFileEntryArray(value: unknown): value is FileEntry[] {
 
 /** How `session_connect` ended when it did not fail. */
 type ConnectOutcome =
-  { outcome: 'connected' } | ({ outcome: 'hostKeyUnconfirmed' } & HostKeyDecision);
+  | { outcome: 'connected'; sshFingerprint?: string }
+  | ({ outcome: 'hostKeyUnconfirmed' } & HostKeyDecision);
 
 function isConnectOutcome(value: unknown): value is ConnectOutcome {
   if (!isRecord(value)) return false;
-  if (value.outcome === 'connected') return true;
+  if (value.outcome === 'connected')
+    return value.sshFingerprint === undefined || typeof value.sshFingerprint === 'string';
   return (
     value.outcome === 'hostKeyUnconfirmed' &&
     typeof value.host === 'string' &&
@@ -60,7 +63,10 @@ function isConnectOutcome(value: unknown): value is ConnectOutcome {
  * key to confirm.
  */
 function connectResult(outcome: ConnectOutcome): SessionConnectResult {
-  if (outcome.outcome === 'connected') return { ok: true };
+  if (outcome.outcome === 'connected')
+    return outcome.sshFingerprint === undefined
+      ? { ok: true }
+      : { ok: true, sshFingerprint: outcome.sshFingerprint };
   const { outcome: _outcome, ...hostKeyMismatch } = outcome;
   return { ok: false, errorCode: 'hostKeyMismatch', hostKeyMismatch };
 }

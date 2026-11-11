@@ -1047,7 +1047,9 @@
     "local": "Компьютер",
     "remote": "Сервер",
     "updatedAtTooltip": "Обновлено: {{date}}",
-    "connectToServer": "Сервер"
+    "connectToServer": "Сервер",
+    "copyConnectionAddress": "Копировать адрес подключения",
+    "copySshFingerprint": "Копировать отпечаток SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Нет недавних подключений",

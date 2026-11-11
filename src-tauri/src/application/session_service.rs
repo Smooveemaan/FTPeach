@@ -144,7 +144,7 @@ pub(crate) async fn connect(
     server: &ServerSettings,
     credentials: Credentials,
     window: WindowConnectionSettings,
-) -> Result<(), ConnectFailure> {
+) -> Result<Option<String>, ConnectFailure> {
     if !sessions.has_slot(connection_id) && sessions.slot_count() >= MAX_SESSIONS {
         return Err(ConnectFailure::from_error(CommandError::new(
             ErrorCode::ResourceLimit,
@@ -228,6 +228,7 @@ pub(crate) async fn connect(
             "Connection closed during setup",
         )));
     }
+    let fingerprint = browse_client.ssh_fingerprint();
     *guard = Some(Session {
         browse_client,
         server,
@@ -235,7 +236,7 @@ pub(crate) async fn connect(
         transfer_pool,
         browse_timeout_ms,
     });
-    Ok(())
+    Ok(fingerprint)
 }
 
 /// Cancels any in-flight connect, closes the session, and drops the slot once

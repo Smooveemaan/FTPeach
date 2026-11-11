@@ -1035,7 +1035,9 @@
     "local": "Bilgisayar",
     "remote": "Sunucu",
     "updatedAtTooltip": "Güncellendi: {{date}}",
-    "connectToServer": "Sunucu"
+    "connectToServer": "Sunucu",
+    "copyConnectionAddress": "Bağlantı Adresini Kopyala",
+    "copySshFingerprint": "SSH Parmak İzini Kopyala"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Son bağlantı yok",

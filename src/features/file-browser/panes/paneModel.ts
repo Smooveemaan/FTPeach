@@ -9,6 +9,7 @@ export interface PaneState {
   id: PaneId;
   kind: PaneKind;
   connectionId: string | null;
+  sshFingerprint?: string | undefined;
   protocol: SiteProtocol | null;
   siteLabel: string;
   siteId: string | null;

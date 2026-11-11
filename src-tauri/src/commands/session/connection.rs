@@ -23,7 +23,10 @@ use tauri::State;
 #[derive(Debug, PartialEq, Eq, Serialize)]
 #[serde(tag = "outcome", rename_all = "camelCase")]
 pub enum ConnectOutcome {
-    Connected,
+    Connected {
+        #[serde(rename = "sshFingerprint", skip_serializing_if = "Option::is_none")]
+        ssh_fingerprint: Option<String>,
+    },
     #[serde(rename_all = "camelCase")]
     HostKeyUnconfirmed {
         host: String,
@@ -35,9 +38,11 @@ pub enum ConnectOutcome {
 }
 
 impl ConnectOutcome {
-    fn from_service(outcome: Result<(), session_service::ConnectFailure>) -> CommandResult<Self> {
+    fn from_service(
+        outcome: Result<Option<String>, session_service::ConnectFailure>,
+    ) -> CommandResult<Self> {
         match outcome {
-            Ok(()) => Ok(Self::Connected),
+            Ok(ssh_fingerprint) => Ok(Self::Connected { ssh_fingerprint }),
             Err(session_service::ConnectFailure {
                 host_key_mismatch: Some(mismatch),
                 ..
@@ -190,8 +195,17 @@ mod tests {
             serde_json::json!({ "outcome": "hostKeyUnconfirmed", "host": "h", "port": 22, "actual": "bb" })
         );
         assert_eq!(
-            serde_json::to_value(ConnectOutcome::from_service(Ok(())).unwrap()).unwrap(),
+            serde_json::to_value(ConnectOutcome::from_service(Ok(None)).unwrap()).unwrap(),
             serde_json::json!({ "outcome": "connected" })
+        );
+    }
+
+    #[test]
+    fn connected_sftp_returns_its_verified_fingerprint() {
+        let outcome = ConnectOutcome::from_service(Ok(Some("abcdef".into()))).unwrap();
+        assert_eq!(
+            serde_json::to_value(outcome).unwrap(),
+            serde_json::json!({ "outcome": "connected", "sshFingerprint": "abcdef" })
         );
     }
 

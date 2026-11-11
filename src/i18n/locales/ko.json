@@ -1035,7 +1035,9 @@
     "local": "컴퓨터",
     "remote": "서버",
     "updatedAtTooltip": "새로 고침: {{date}}",
-    "connectToServer": "서버"
+    "connectToServer": "서버",
+    "copyConnectionAddress": "연결 주소 복사",
+    "copySshFingerprint": "SSH 지문 복사"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "최근 연결 없음",

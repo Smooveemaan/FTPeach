@@ -1047,7 +1047,9 @@
     "local": "Komputer",
     "remote": "Serwer",
     "updatedAtTooltip": "Zaktualizowano: {{date}}",
-    "connectToServer": "Serwer"
+    "connectToServer": "Serwer",
+    "copyConnectionAddress": "Kopiuj adres połączenia",
+    "copySshFingerprint": "Kopiuj odcisk klucza SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Brak ostatnich połączeń",

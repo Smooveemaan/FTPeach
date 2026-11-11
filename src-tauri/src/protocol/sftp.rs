@@ -72,6 +72,7 @@ fn parse_longname(longname: &str) -> (Option<String>, Option<String>, Option<Str
 
 pub struct SftpBackend {
     known_hosts: Arc<dyn KnownHostsStore>,
+    fingerprint: Arc<StdMutex<Option<String>>>,
     session: Arc<AsyncMutex<Option<client::Handle<TofuHandler>>>>,
     sftp: Arc<StdRwLock<Option<Arc<RawSftpSession>>>>,
     connected: Arc<AtomicBool>,
@@ -100,6 +101,7 @@ impl SftpBackend {
     pub fn new(known_hosts: Arc<dyn KnownHostsStore>) -> Self {
         Self {
             known_hosts,
+            fingerprint: Arc::new(StdMutex::new(None)),
             session: Arc::new(AsyncMutex::new(None)),
             sftp: Arc::new(StdRwLock::new(None)),
             connected: Arc::new(AtomicBool::new(false)),
@@ -394,6 +396,10 @@ impl SftpBackend {
 
 #[async_trait]
 impl ProtocolBackend for SftpBackend {
+    fn ssh_fingerprint(&self) -> Option<String> {
+        self.fingerprint.lock().unwrap().clone()
+    }
+
     async fn connect(
         &mut self,
         config: &crate::protocol::config::ConnectionConfig,

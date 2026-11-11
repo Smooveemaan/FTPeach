@@ -1188,6 +1188,10 @@ mod local_integration_tests {
 
         backend.connect(&config).await.unwrap();
         assert!(backend.is_connected());
+        assert_eq!(
+            backend.ssh_fingerprint(),
+            store.get_known_host_fingerprint("127.0.0.1", port).await
+        );
         let entries = backend.list("/").await.unwrap();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].name, "hello.txt");
@@ -1279,6 +1283,7 @@ mod tofu_tests {
     async fn try_connect(store: &Store, port: u16) -> Outcome {
         let mismatch = Arc::new(StdMutex::new(None));
         let handler = TofuHandler {
+            fingerprint: Arc::new(StdMutex::new(None)),
             known_hosts: Arc::new(store.clone()),
             host: "127.0.0.1".to_string(),
             port,

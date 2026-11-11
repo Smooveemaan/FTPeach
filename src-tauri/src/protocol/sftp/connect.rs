@@ -32,7 +32,9 @@ impl SftpBackend {
         );
 
         let mismatch: Arc<StdMutex<Option<HostKeyMismatchError>>> = Arc::new(StdMutex::new(None));
+        *self.fingerprint.lock().unwrap() = None;
         let handler = TofuHandler {
+            fingerprint: self.fingerprint.clone(),
             known_hosts: self.known_hosts.clone(),
             host: host.clone(),
             port,

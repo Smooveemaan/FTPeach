@@ -1035,7 +1035,9 @@
     "local": "计算机",
     "remote": "服务器",
     "updatedAtTooltip": "更新时间：{{date}}",
-    "connectToServer": "服务器"
+    "connectToServer": "服务器",
+    "copyConnectionAddress": "复制连接地址",
+    "copySshFingerprint": "复制 SSH 指纹"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "没有最近的连接",

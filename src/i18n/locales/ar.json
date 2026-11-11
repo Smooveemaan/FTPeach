@@ -1059,7 +1059,9 @@
     "local": "الكمبيوتر",
     "remote": "الخادم",
     "updatedAtTooltip": "تاريخ التحديث: {{date}}",
-    "connectToServer": "الخادم"
+    "connectToServer": "الخادم",
+    "copyConnectionAddress": "نسخ عنوان الاتصال",
+    "copySshFingerprint": "نسخ بصمة SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "لا توجد اتصالات حديثة",

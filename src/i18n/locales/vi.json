@@ -1035,7 +1035,9 @@
     "local": "Máy tính",
     "remote": "Máy chủ",
     "updatedAtTooltip": "Cập nhật: {{date}}",
-    "connectToServer": "Máy chủ"
+    "connectToServer": "Máy chủ",
+    "copyConnectionAddress": "Sao chép địa chỉ kết nối",
+    "copySshFingerprint": "Sao chép dấu vân tay SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Không có kết nối gần đây",

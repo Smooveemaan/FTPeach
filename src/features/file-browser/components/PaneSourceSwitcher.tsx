@@ -1,8 +1,11 @@
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConnectionBar } from '../../connections/index.ts';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
+import ContextMenu from '../../../components/ContextMenu.tsx';
+import { handler, reportRejection } from '../../../shared/asyncFailure.ts';
+import { connectionAddress } from '../../../shared/siteContracts.ts';
 import MenuItems from '../../../components/MenuItems.tsx';
 import { useAnchoredMenu } from '../../../hooks/useMenuPosition.ts';
 import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.ts';
@@ -16,6 +19,7 @@ interface PaneSourceState {
   siteId: string | null;
   form: ConnectionForm;
   errorMessage: string;
+  sshFingerprint?: string | undefined;
 }
 
 interface PaneSourceSwitcherProps {
@@ -65,6 +69,8 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
     const { t } = useTranslation();
     const { open, setOpen, rootRef, triggerRef, panelRef, panelPos } = useAnchoredMenu();
 
+    const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+    const address = connectionAddress(pane.form);
     const isConnected = pane.status === 'connected';
     const showForm = pane.kind === 'remote' && !isConnected;
     const dotState =
@@ -86,7 +92,10 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
           : t('paneSourceSwitcher.remote');
     const [labelRef, labelTruncated] = useTruncated<HTMLSpanElement>([label]);
 
-    const toggleOpen = () => setOpen((v) => !v);
+    const toggleOpen = () => {
+      setContextMenu(null);
+      setOpen((v) => !v);
+    };
 
     const sourceButton = (
       <div className="pane-source-anchor" ref={rootRef}>
@@ -100,6 +109,11 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
               : undefined
           }
           onClick={toggleOpen}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            setOpen(false);
+            if (pane.kind === 'remote') setContextMenu({ x: event.clientX, y: event.clientY });
+          }}
         >
           <span className={`pane-source-dot state-${dotState}`} />
           <span ref={labelRef} className={`pane-source-label${labelTruncated ? ' truncated' : ''}`}>
@@ -183,6 +197,41 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
 
     return (
       <div ref={forwardedRef} className={`pane-source-wrap ${showForm ? 'form-open' : ''}`}>
+        {contextMenu && pane.kind === 'remote' && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onClose={() => setContextMenu(null)}
+            items={[
+              {
+                id: 'toggle-connection',
+                label: t(
+                  isConnected
+                    ? 'connectionBar.connectTooltip.disconnect'
+                    : 'connectionBar.connectTooltip.connect',
+                ),
+                disabled: pane.status === 'connecting' || (!isConnected && !address),
+                onClick: handler(isConnected ? onDisconnect : onConnect),
+              },
+              {
+                id: 'copy-connection-address',
+                label: t('paneSourceSwitcher.copyConnectionAddress'),
+                disabled: !address,
+                onClick: () => reportRejection(navigator.clipboard.writeText(address)),
+              },
+              ...(pane.form.protocol === 'sftp' && pane.sshFingerprint
+                ? [
+                    {
+                      id: 'ssh-fingerprint',
+                      label: t('paneSourceSwitcher.copySshFingerprint'),
+                      onClick: () =>
+                        reportRejection(navigator.clipboard.writeText(pane.sshFingerprint!)),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        )}
         {showForm ? (
           <ConnectionBar
             leadingSlot={sourceButton}

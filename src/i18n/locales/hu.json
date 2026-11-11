@@ -1035,7 +1035,9 @@
     "local": "Számítógép",
     "remote": "Szerver",
     "updatedAtTooltip": "Frissítve: {{date}}",
-    "connectToServer": "Szerver"
+    "connectToServer": "Szerver",
+    "copyConnectionAddress": "Kapcsolat címének másolása",
+    "copySshFingerprint": "SSH-ujjlenyomat másolása"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Nincsenek legutóbbi kapcsolatok",

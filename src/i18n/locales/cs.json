@@ -1047,7 +1047,9 @@
     "local": "Počítač",
     "remote": "Server",
     "updatedAtTooltip": "Aktualizováno: {{date}}",
-    "connectToServer": "Server"
+    "connectToServer": "Server",
+    "copyConnectionAddress": "Kopírovat adresu připojení",
+    "copySshFingerprint": "Kopírovat otisk SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Žádná nedávná připojení",

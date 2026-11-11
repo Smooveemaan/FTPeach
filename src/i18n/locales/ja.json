@@ -1035,7 +1035,9 @@
     "local": "コンピューター",
     "remote": "サーバー",
     "updatedAtTooltip": "更新日: {{date}}",
-    "connectToServer": "サーバー"
+    "connectToServer": "サーバー",
+    "copyConnectionAddress": "接続先アドレスをコピー",
+    "copySshFingerprint": "SSH フィンガープリントをコピー"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "最近の接続はありません",

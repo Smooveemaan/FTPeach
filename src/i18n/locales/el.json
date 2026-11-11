@@ -1035,7 +1035,9 @@
     "local": "Υπολογιστής",
     "remote": "Διακομιστής",
     "updatedAtTooltip": "Ενημερώθηκε: {{date}}",
-    "connectToServer": "Διακομιστής"
+    "connectToServer": "Διακομιστής",
+    "copyConnectionAddress": "Αντιγραφή διεύθυνσης σύνδεσης",
+    "copySshFingerprint": "Αντιγραφή αποτυπώματος SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Δεν υπάρχουν πρόσφατες συνδέσεις",

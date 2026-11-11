@@ -1035,7 +1035,9 @@
     "local": "Computer",
     "remote": "Server",
     "updatedAtTooltip": "Bijgewerkt: {{date}}",
-    "connectToServer": "Server"
+    "connectToServer": "Server",
+    "copyConnectionAddress": "Verbindingsadres kopiëren",
+    "copySshFingerprint": "SSH-vingerafdruk kopiëren"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Geen recente verbindingen",

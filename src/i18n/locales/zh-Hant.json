@@ -1035,7 +1035,9 @@
     "local": "電腦",
     "remote": "伺服器",
     "updatedAtTooltip": "更新時間：{{date}}",
-    "connectToServer": "伺服器"
+    "connectToServer": "伺服器",
+    "copyConnectionAddress": "複製連線位址",
+    "copySshFingerprint": "複製 SSH 指紋"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "沒有最近的連線",

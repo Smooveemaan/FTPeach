@@ -1035,7 +1035,9 @@
     "local": "Komputer",
     "remote": "Server",
     "updatedAtTooltip": "Diperbarui: {{date}}",
-    "connectToServer": "Server"
+    "connectToServer": "Server",
+    "copyConnectionAddress": "Salin alamat koneksi",
+    "copySshFingerprint": "Salin sidik jari SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Tidak ada koneksi terbaru",

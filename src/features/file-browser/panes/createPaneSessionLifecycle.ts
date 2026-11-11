@@ -103,6 +103,7 @@ export function createPaneSessionLifecycle({
         status: 'idle',
         errorMessage: '',
         form: initialForm,
+        sshFingerprint: undefined,
         siteLabel: '',
         siteId: null,
         path: '/',
@@ -130,6 +131,7 @@ export function createPaneSessionLifecycle({
       ...pane,
       kind: 'local',
       connectionId: null,
+      sshFingerprint: undefined,
       protocol: null,
       status: 'idle',
       errorMessage: '',
@@ -154,7 +156,7 @@ export function createPaneSessionLifecycle({
   // stale one would caption an ad-hoc connection with the bookmark the user
   // just edited away from (e.g. "SFTP" over a hand-typed 127.0.0.1 FTP host).
   const setPaneForm = (id: PaneId, form: ConnectionForm) =>
-    updatePane(id, { form, siteId: null, siteLabel: '' });
+    updatePane(id, { form, siteId: null, siteLabel: '', sshFingerprint: undefined });
 
   const connectPane =
     (
@@ -189,6 +191,7 @@ export function createPaneSessionLifecycle({
         {
           kind: 'remote',
           status: 'connecting',
+          sshFingerprint: undefined,
           errorMessage: '',
           loading: false,
           connectionId,
@@ -226,6 +229,7 @@ export function createPaneSessionLifecycle({
           status: 'connecting',
           errorMessage: '',
           protocol: f.protocol,
+          sshFingerprint: res.sshFingerprint,
           history: [],
           future: [],
           connectionId,
@@ -340,6 +344,7 @@ export function createPaneSessionLifecycle({
       form: f,
       siteLabel: site.name,
       siteId: site.id,
+      sshFingerprint: undefined,
     };
     updatePane(id, nextPane, tabId);
     reportRejection(connectPane(id, f, nextPane, tabId, site.remotePath || '/')());

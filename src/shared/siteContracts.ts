@@ -104,3 +104,21 @@ export interface ManagedSite extends Partial<ServerSettings> {
   icon?: string;
   color?: string;
 }
+
+/** The public connection address, without credentials. */
+export function connectionAddress(form: ConnectionForm): string {
+  if (form.protocol === 'webdav') {
+    try {
+      const url = new URL(form.webdavUrl.trim());
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
+      const port = url.port || (url.protocol === 'https:' ? '443' : '80');
+      return `${url.protocol}//${url.hostname}:${port}${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      return '';
+    }
+  }
+  const host = form.host.trim();
+  if (!host) return '';
+  const bracketed = host.includes(':') && !host.startsWith('[') ? `[${host}]` : host;
+  return `${bracketed}:${form.port.trim() || DEFAULT_PORTS[form.protocol]}`;
+}

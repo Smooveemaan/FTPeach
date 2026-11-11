@@ -1035,7 +1035,9 @@
     "local": "คอมพิวเตอร์",
     "remote": "เซิร์ฟเวอร์",
     "updatedAtTooltip": "อัปเดต: {{date}}",
-    "connectToServer": "เซิร์ฟเวอร์"
+    "connectToServer": "เซิร์ฟเวอร์",
+    "copyConnectionAddress": "คัดลอกที่อยู่การเชื่อมต่อ",
+    "copySshFingerprint": "คัดลอกลายนิ้วมือ SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "ไม่มีการเชื่อมต่อล่าสุด",

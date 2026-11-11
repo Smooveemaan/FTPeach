@@ -1041,7 +1041,9 @@
     "local": "מחשב",
     "remote": "שרת",
     "updatedAtTooltip": "עודכן: {{date}}",
-    "connectToServer": "שרת"
+    "connectToServer": "שרת",
+    "copyConnectionAddress": "העתק כתובת חיבור",
+    "copySshFingerprint": "העתק טביעת אצבע SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "אין חיבורים אחרונים",

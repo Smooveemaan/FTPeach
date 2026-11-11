@@ -1041,7 +1041,9 @@
     "local": "Calculator",
     "remote": "Server",
     "updatedAtTooltip": "Actualizat: {{date}}",
-    "connectToServer": "Server"
+    "connectToServer": "Server",
+    "copyConnectionAddress": "Copiază adresa conexiunii",
+    "copySshFingerprint": "Copiază amprenta SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Nu există conexiuni recente",

@@ -340,3 +340,49 @@ test('a first sighting is trusted without an expected fingerprint, and a decline
   assert.equal(h.tab.panes.b.status, 'error');
   assert.equal(h.tab.panes.b.errorMessage, '');
 });
+
+test('a verified SSH fingerprint survives disconnect and is cleared when connection parameters change', async () => {
+  const h = harness((command) =>
+    command === 'session_connect'
+      ? { outcome: 'connected', sshFingerprint: 'abcdef' }
+      : { ok: true },
+  );
+  h.tab.panes.b.form = { ...h.tab.panes.b.form, protocol: 'sftp', host: 'example.org' };
+  await h.lifecycle.connectPane('b')();
+  assert.equal(h.tab.panes.b.sshFingerprint, 'abcdef');
+  await h.lifecycle.disconnectPane('b');
+  assert.equal(h.tab.panes.b.sshFingerprint, 'abcdef');
+  for (const patch of [
+    { host: 'other.example.org' },
+    { port: '2222' },
+    { protocol: 'ftp' as const },
+  ]) {
+    h.tab.panes.b.sshFingerprint = 'abcdef';
+    h.lifecycle.setPaneForm('b', { ...h.tab.panes.b.form, ...patch });
+    assert.equal(h.tab.panes.b.sshFingerprint, undefined);
+  }
+});
+
+test('selecting another bookmark clears the previous fingerprint even if its address is invalid', () => {
+  const h = harness();
+  h.tab.panes.b.sshFingerprint = 'abcdef';
+  h.lifecycle.siteConnectPane('b', {
+    id: 'other',
+    name: 'Other',
+    protocol: 'webdav',
+    webdavUrl: 'invalid',
+  });
+  assert.equal(h.tab.panes.b.siteId, 'other');
+  assert.equal(h.tab.panes.b.sshFingerprint, undefined);
+  assert.equal(h.tab.panes.b.status, 'error');
+});
+
+test('choosing a new server or the computer clears the previous fingerprint', () => {
+  const h = harness();
+  h.tab.panes.b.sshFingerprint = 'abcdef';
+  h.lifecycle.startPaneConnect('b');
+  assert.equal(h.tab.panes.b.sshFingerprint, undefined);
+  h.tab.panes.b.sshFingerprint = 'abcdef';
+  h.lifecycle.switchPaneToLocal('b');
+  assert.equal(h.tab.panes.b.sshFingerprint, undefined);
+});

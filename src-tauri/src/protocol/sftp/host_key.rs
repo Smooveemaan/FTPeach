@@ -43,6 +43,7 @@ pub(super) fn encode_hex(bytes: &[u8]) -> String {
 }
 
 pub(super) struct TofuHandler {
+    pub(super) fingerprint: Arc<StdMutex<Option<String>>>,
     pub(super) known_hosts: Arc<dyn KnownHostsStore>,
     pub(super) host: String,
     pub(super) port: u16,
@@ -71,7 +72,10 @@ impl client::Handler for TofuHandler {
             .await
             .context("pinning host key to known_hosts.json")?
         {
-            HostKeyPinOutcome::Pinned | HostKeyPinOutcome::Matched => Ok(true),
+            HostKeyPinOutcome::Pinned | HostKeyPinOutcome::Matched => {
+                *self.fingerprint.lock().unwrap() = Some(fingerprint);
+                Ok(true)
+            }
             outcome => {
                 *self.mismatch.lock().unwrap() = Some(HostKeyMismatchError {
                     host: self.host.clone(),

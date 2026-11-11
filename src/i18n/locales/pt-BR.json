@@ -1041,7 +1041,9 @@
     "local": "Computador",
     "remote": "Servidor",
     "updatedAtTooltip": "Atualizado: {{date}}",
-    "connectToServer": "Servidor"
+    "connectToServer": "Servidor",
+    "copyConnectionAddress": "Copiar endereço da conexão",
+    "copySshFingerprint": "Copiar impressão digital SSH"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Nenhuma conexão recente",

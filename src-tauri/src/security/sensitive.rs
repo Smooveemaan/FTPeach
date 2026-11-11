@@ -421,9 +421,7 @@ pub async fn sensitive_confirmation_prompt(
     crate::runtime::confirmation_window::scale_to_interface(&window).await;
     Ok(ScaledConfirmationPrompt {
         prompt,
-        interface_scale: window
-            .state::<crate::runtime::window_scale::InterfaceScale>()
-            .get(),
+        interface_scale: crate::runtime::confirmation_window::interface_scale(&window),
     })
 }
 

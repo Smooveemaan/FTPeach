@@ -156,6 +156,10 @@ pub(crate) async fn wait_until_rendered(window: &tauri::WebviewWindow) -> Result
     }
 }
 
+pub(crate) fn interface_scale(window: &tauri::WebviewWindow) -> f64 {
+    window.state::<super::window_scale::InterfaceScale>().get()
+}
+
 /// Gives the window the interface zoom, which it no longer takes from the
 /// monitor alone once the interface scale is set.
 pub(crate) async fn scale_to_interface(window: &tauri::WebviewWindow) {

@@ -48,7 +48,7 @@ use security::sensitive::AuthorizationState;
 use security::{vault, vault_guard};
 use session::{ConnectingClients, Sessions};
 use store::Store;
-#[cfg(feature = "smoke-test")]
+#[cfg(any(feature = "smoke-test", target_os = "linux"))]
 use tauri::Manager;
 
 pub fn run() {
@@ -211,10 +211,23 @@ pub fn run() {
             #[cfg(feature = "smoke-test")]
             commands::smoke::smoke_probe_confirmation_acl,
         ])
-        .setup(runtime::startup::setup)
+        .setup(|app| {
+            runtime::startup::setup(app)?;
+            #[cfg(target_os = "linux")]
+            if let Some(window) = app.get_webview_window("main") {
+                native_drag::linux::install(&window);
+            }
+            Ok(())
+        })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|_app, event| match event {
+            #[cfg(target_os = "linux")]
+            tauri::RunEvent::Exit => {
+                crate::native_drag::linux::cleanup(_app);
+                runtime::notification::unregister_identity();
+            }
+            #[cfg(not(target_os = "linux"))]
             tauri::RunEvent::Exit if local_fs::portable::root().is_some() => {
                 runtime::notification::unregister_identity();
             }

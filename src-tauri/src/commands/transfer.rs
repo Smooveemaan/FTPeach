@@ -121,6 +121,9 @@ pub async fn transfer_cancel(
     transfer_id: String,
     intent: crate::application::transfer_service::CancelIntent,
 ) -> CommandResult<()> {
+    // Linux drag-out rows use the ordinary Stop command for recursive downloads too.
+    #[cfg(target_os = "linux")]
+    crate::application::recursive_transfer::cancel(&transfer_id, intent);
     crate::application::transfer_service::transfer_cancel(
         &sessions,
         connection_id,

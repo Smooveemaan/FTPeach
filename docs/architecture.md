@@ -110,7 +110,7 @@ platform before release.
 | `store/` | JSON persistence in the installed or portable data folder and secret-field placement. |
 | `security/` | Vault, DPAPI, Windows Hello unlock, sensitive-operation grants, path and name guards, redaction. |
 | `runtime/` | Process lifecycle: startup, shutdown, tray, window geometry and scale, logging, updater staging, auto-lock. |
-| `native_drag/` | Dragging remote and local files out to Explorer as OLE virtual files. |
+| `native_drag/` | Dragging files out through Windows OLE, macOS file promises and Linux GTK/FUSE. |
 | `domain/`, `ipc.rs` | Shared data types, and the IPC wire types (`ErrorCode`, `CommandError`). |
 
 Dependencies point down: `commands` calls the zones below it and nothing

@@ -180,6 +180,7 @@ assert.deepEqual(
 assert.deepEqual(linuxConfig?.bundle?.linux?.deb?.depends, [
   'libwebkit2gtk-4.1-0',
   'libayatana-appindicator3-1',
+  'fuse3',
 ]);
 assert.equal(linuxConfig?.bundle?.category, 'Utility', 'Linux desktop entry needs a menu category');
 assert.ok(

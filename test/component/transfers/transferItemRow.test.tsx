@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 import TransferItemRow from '../../../src/features/transfers/components/TransferItemRow.tsx';
 import type { TransferRow } from '../../../src/features/transfers/transferStore.ts';
@@ -25,7 +25,7 @@ test.each([0, 2048])('completed transfers show 100%% without a total (%s bytes)'
   expect(container.querySelector('[data-column-cell="progress"]')?.textContent).toContain('100%');
 });
 
-function renderRow(item: TransferRow, columnOrder: ReorderableColumnKey[] = []) {
+function renderRow(item: TransferRow, columnOrder: ReorderableColumnKey[] = [], onStop = vi.fn()) {
   return render(
     <TransferItemRow
       item={item}
@@ -39,10 +39,47 @@ function renderRow(item: TransferRow, columnOrder: ReorderableColumnKey[] = []) 
       speedSamples={{}}
       onRetry={vi.fn()}
       onPause={vi.fn()}
-      onStop={vi.fn()}
+      onStop={onStop}
     />,
   );
 }
+
+test.each(['Linux', 'Windows NT', 'Macintosh'])(
+  'native folder downloads offer Stop only when supported (%s)',
+  (platform) => {
+    const agent = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(platform);
+    try {
+      const onStop = vi.fn();
+      const { container } = renderRow(
+        {
+          id: 'folder-drag-stop',
+          name: 'Folder',
+          direction: 'down',
+          dragOut: true,
+          isDirectory: true,
+          protocol: 'sftp',
+          connectionId: 'session',
+          remoteFile: '/Folder',
+          status: 'progress',
+          bytes: 0,
+          startedAt: 1,
+        },
+        [],
+        onStop,
+      );
+      const stop = container.querySelector('.stop-btn');
+      if (platform === 'Linux') {
+        expect(stop).not.toBeNull();
+        fireEvent.click(stop!);
+        expect(onStop).toHaveBeenCalledWith('folder-drag-stop');
+      } else {
+        expect(stop).toBeNull();
+      }
+    } finally {
+      agent.mockRestore();
+    }
+  },
+);
 
 test.each(['D:\\Your\\Local\\Folder', '/remote/Folder/'])(
   'shows only the folder name and keeps the full path in its tooltip (%s)',

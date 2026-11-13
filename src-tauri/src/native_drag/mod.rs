@@ -1,5 +1,6 @@
-//! Native OS drag-and-drop for dragging a remote file out of FTPeach onto
-//! the system file explorer (Windows Explorer, macOS Finder).
+//! Native OS drag-and-drop from FTPeach onto the desktop or file manager.
+#[cfg(target_os = "linux")]
+pub mod linux;
 pub mod macos;
 #[cfg(all(windows, not(feature = "test-utils")))]
 mod manifest;
@@ -31,7 +32,7 @@ pub struct DragOutFile {
     pub is_directory: bool,
 }
 
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(any(windows, target_os = "macos", target_os = "linux"))]
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct DragMotion {

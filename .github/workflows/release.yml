@@ -147,7 +147,7 @@ jobs:
         if: steps.preflight.outputs.multiplatform == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 file libssl-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 fuse3 file libssl-dev
       - name: Install pinned Rust toolchain
         if: steps.preflight.outputs.multiplatform == 'true'
         run: rustup show
@@ -407,7 +407,7 @@ jobs:
         if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb dbus-x11 libfuse2 libwebkit2gtk-4.1-0 libayatana-appindicator3-1
+          sudo apt-get install -y xvfb dbus-x11 libfuse2 fuse3 libwebkit2gtk-4.1-0 libayatana-appindicator3-1
       - name: Accept Linux Debian and AppImage packages
         if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
         run: node --experimental-strip-types scripts/release/unix-acceptance.ts release-candidate --linux

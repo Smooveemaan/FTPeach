@@ -8,8 +8,7 @@ use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter};
 
-/// Emitted once per row the moment a drop target starts pulling bytes (i.e.
-/// the drop actually happened and the download began) so the Transfers panel
+/// Emitted once per row when a target first requests the files so the Transfers panel
 /// can add it — the frontend only tracks rows it knows about, and unlike
 /// every other transfer, it isn't the frontend that starts this one. A file
 /// dragged out on its own gets a row; one inside a folder dragged out whole
@@ -85,6 +84,7 @@ impl TransferReporter {
         ));
     }
 
+    #[cfg(any(windows, target_os = "macos"))]
     pub fn progress(&self, id: &str, bytes: u64, total: Option<u64>) {
         self.progress.send(TransferProgressPayload {
             bytes: Some(bytes),
@@ -97,6 +97,7 @@ impl TransferReporter {
         });
     }
 
+    #[cfg(any(windows, target_os = "macos"))]
     pub fn done(&self, id: &str, bytes: u64, total: Option<u64>) {
         self.progress.send(TransferProgressPayload {
             bytes: Some(bytes),

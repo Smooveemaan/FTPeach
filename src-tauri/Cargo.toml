@@ -144,6 +144,7 @@ zstd = { version = "=0.14.3", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 dbus = "0.9.12"
+fuser = { version = "0.18.0", default-features = false }
 gtk = "0.18.2"
 zbus = "5.19.0"
 

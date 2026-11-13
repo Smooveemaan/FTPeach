@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { hostPlatform } from '../../../platform/os.ts';
 import { memo, useCallback, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatBytes, formatSpeed, formatDuration } from '../../../shared/format.ts';
@@ -313,7 +314,7 @@ function TransferItemRow({
               </button>
             )}
             {(item.status === 'progress' || item.status === 'queued' || item.status === 'paused') &&
-              !(item.dragOut && item.isDirectory) && (
+              !(item.dragOut && item.isDirectory && hostPlatform() !== 'linux') && (
                 <button
                   type="button"
                   className="stop-btn"

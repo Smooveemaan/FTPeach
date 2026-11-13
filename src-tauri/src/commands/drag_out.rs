@@ -72,7 +72,91 @@ pub async fn drag_out_start(
             Err(err) => Err(CommandError::from_anyhow(&err)),
         }
     }
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(target_os = "linux")]
+    {
+        use crate::application::recursive_transfer::{self, Endpoint, Intent};
+        let _ = pool;
+        let origin_base = sessions.origin_base_for(&connection_id).await;
+        let sessions = sessions.inner().clone();
+        let progress = progress.inner().clone();
+        let entries = files.clone();
+        let reporter = crate::native_drag::report::TransferReporter::new(
+            app,
+            progress.clone(),
+            connection_id.clone(),
+            protocol,
+        );
+        crate::native_drag::linux::start_drag(
+            window,
+            entries,
+            Box::new(move |directory| {
+                tauri::async_runtime::block_on(async move {
+                    for file in files {
+                        let id = uuid::Uuid::new_v4().to_string();
+                        let target = directory.join(&file.name);
+                        reporter.started(&id, &file, file.size);
+                        reporter.status(&id, "queued");
+                        let outcome = if file.is_directory {
+                            let report = recursive_transfer::run(
+                                &sessions,
+                                Some(&progress),
+                                Intent {
+                                    id: id.clone(),
+                                    source: Endpoint::Remote {
+                                        path: file.remote_path.clone(),
+                                        connection_id: connection_id.clone(),
+                                    },
+                                    target: Endpoint::Local {
+                                        path: target.to_string_lossy().into_owned(),
+                                    },
+                                    moving: false,
+                                    overwrite: false,
+                                    skip_existing: false,
+                                    resume_from: None,
+                                },
+                            )
+                            .await;
+                            if report.ok {
+                                Ok(())
+                            } else {
+                                Err(report.errors.into_iter().next().unwrap_or_else(|| {
+                                    CommandError::new(
+                                        ErrorCode::Cancelled,
+                                        "Drag download cancelled",
+                                    )
+                                }))
+                            }
+                        } else {
+                            crate::application::transfer_service::transfer_download(
+                                &sessions,
+                                &progress,
+                                connection_id.clone(),
+                                id.clone(),
+                                file.remote_path.clone(),
+                                target.to_string_lossy().into_owned(),
+                                false,
+                                Some(false),
+                            )
+                            .await
+                        };
+                        if let Err(error) = outcome {
+                            reporter.error(&id, error.clone());
+                            return Err(error);
+                        }
+                        let origin = crate::local_fs::provenance::Origin::for_url(
+                            &origin_base,
+                            &file.remote_path,
+                        );
+                        crate::local_fs::provenance::mark(&target, &origin);
+                    }
+                    Ok(())
+                })
+            }),
+        )
+        .await
+        .map_err(CommandError::from)
+    }
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     {
         let _ = (window, app, progress, pool, connection_id, protocol, files);
         Err(CommandError::new(
@@ -112,7 +196,13 @@ pub async fn drag_out_start_local(window: Window, paths: Vec<String>) -> Command
             Err(err) => Err(CommandError::from_anyhow(&err)),
         }
     }
-    #[cfg(not(any(windows, target_os = "macos")))]
+    #[cfg(target_os = "linux")]
+    {
+        crate::native_drag::linux::start_local_drag(window, paths)
+            .await
+            .map_err(CommandError::from)
+    }
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
     {
         let _ = (window, paths);
         Err(CommandError::new(

@@ -280,6 +280,10 @@ jobs:
         run: >-
           sudo apt-get update && sudo apt-get install --yes
           libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+          fuse3 xvfb python3-gi libxtst6
+      - name: Enable FUSE for native drag tests
+        if: runner.os == 'Linux'
+        run: sudo modprobe fuse
       - name: Install pinned Rust toolchain
         run: rustup component add clippy
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3

@@ -6,26 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Support for macOS.
+- Support for Linux.
 - Right-clicking the pane connection button offers Connect or Disconnect, copies the server address,
   and copies the SSH fingerprint when available.
 - The toolbar has a Settings button to open Settings directly.
 - The Help menu includes a direct link to the User Guide.
-- Open with offers the same application submenu for local and remote files on Windows, macOS and Linux.
-
-### Changed
-
-- Dialogs on macOS use centered titles and a round close button on the left.
+- Open with offers the same application submenu for local and remote files.
 
 ### Fixed
 
-- Launching FTPeach again while it is starting no longer crashes the running application.
 - Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Files dragged out of FTPeach can be brought back into its panes during the same drag.
-- External file drags on macOS no longer show an extra Copy badge beside the system indicator.
-- Files dragged into the app on macOS target the folder under the cursor at every interface scale.
 - Scrolling log messages no longer overlap the log toolbar.
 - Dragging files across the log no longer selects its text.
-- Security confirmations on macOS appear fully drawn and accept input without blocking the application.
 - Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
 - Clicking any button or control dismisses open tooltips immediately.
 - Resetting the window layout while fullscreen restores the window to its centered size.

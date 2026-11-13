@@ -61,6 +61,11 @@ fn linux_launcher_and_notification_icon_are_bundled() {
     );
     let desktop = include_str!("../../linux/FTPeach.desktop");
     assert!(desktop.lines().any(|line| line == "StartupNotify=false"));
+    assert!(
+        desktop
+            .lines()
+            .any(|line| line == "X-GNOME-UsesNotifications=true")
+    );
     assert!(desktop.lines().any(|line| line == "StartupWMClass=FTPeach"));
     assert_eq!(
         config()["bundle"]["resources"]["icons/128x128.png"],

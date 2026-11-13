@@ -109,16 +109,19 @@ impl Client {
 
     fn clear(&self) -> Result<()> {
         let ids = lock(&self.shown).keys().copied().collect::<Vec<_>>();
+        let mut result = Ok(());
         for id in ids {
-            self.connection.call_method(
+            if let Err(error) = self.connection.call_method(
                 Some(DESTINATION),
                 PATH,
                 Some(DESTINATION),
                 "CloseNotification",
                 &(id,),
-            )?;
+            ) {
+                result = Err(error.into());
+            }
         }
-        Ok(())
+        result
     }
 }
 

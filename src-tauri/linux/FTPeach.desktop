@@ -10,3 +10,4 @@ Terminal=false
 Categories={{categories}}
 StartupWMClass=FTPeach
 StartupNotify=false
+X-GNOME-UsesNotifications=true

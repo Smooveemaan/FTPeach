@@ -137,3 +137,56 @@ fn notification_identity_click_token_clearing_and_delivery_errors_cross_dbus() {
     assert!(lock(&client.shown).is_empty());
     assert!(client.show("Done", "One file", "/icon.png").is_err());
 }
+
+#[test]
+fn clearing_continues_when_the_server_rejects_one_notification() {
+    let mut bus = TestBus(
+        Command::new("dbus-daemon")
+            .args(["--session", "--nofork", "--print-address=1"])
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap(),
+    );
+    let mut address = String::new();
+    BufReader::new(bus.0.stdout.take().unwrap())
+        .read_line(&mut address)
+        .unwrap();
+    let server = connect(address.trim());
+    server
+        .request_name(DESTINATION, false, false, false)
+        .unwrap();
+    let connection = zbus::blocking::connection::Builder::address(address.trim())
+        .unwrap()
+        .build()
+        .unwrap();
+    let client = Client::new(connection, |_| panic!("clearing must not activate the app")).unwrap();
+    let worker = std::thread::spawn(move || {
+        for id in [41u32, 42] {
+            let request = next_call(&server);
+            assert_eq!(request.member().unwrap(), "Notify");
+            server.send(request.method_return().append1(id)).unwrap();
+        }
+        let rejected = next_call(&server);
+        assert_eq!(rejected.member().unwrap(), "CloseNotification");
+        let rejected_id = rejected.read1::<u32>().unwrap();
+        server
+            .send(rejected.error(
+                &"org.freedesktop.Notifications.InvalidId".into(),
+                c"Notification already dismissed",
+            ))
+            .unwrap();
+        let remaining = next_call(&server);
+        assert_eq!(remaining.member().unwrap(), "CloseNotification");
+        let remaining_id = remaining.read1::<u32>().unwrap();
+        assert_ne!(rejected_id, remaining_id);
+        assert!([41, 42].contains(&remaining_id));
+        server.send(remaining.method_return()).unwrap();
+    });
+    client.show("Done", "One file", "/icon.png").unwrap();
+    client.show("Done", "Another file", "/icon.png").unwrap();
+    assert!(
+        client.clear().is_err(),
+        "delivery errors must remain observable"
+    );
+    worker.join().unwrap();
+}

@@ -266,8 +266,8 @@ pub(crate) async fn authorized_reset<R: tauri::Runtime>(
 }
 
 /// Turns enhanced protection off. The grant for it is issued only after
-/// the backend's own confirmation window verified the master password,
-/// whether or not the vault was already unlocked.
+/// the backend's own confirmation window approved the switch and, if the
+/// vault was locked, authenticated the user.
 #[tauri::command]
 pub async fn vault_use_system_protection(
     window: tauri::WebviewWindow,

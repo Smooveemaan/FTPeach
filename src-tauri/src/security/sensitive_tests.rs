@@ -206,6 +206,7 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
         "native-dialog",
         true,
         false,
+        true,
         "en".into(),
     )
     .unwrap();
@@ -220,6 +221,7 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
             "secrets",
             vault_configured,
             false,
+            true,
             "en".into(),
         )
         .unwrap();
@@ -229,13 +231,23 @@ fn an_export_names_whether_it_carries_the_saved_passwords() {
         assert_eq!(prompt.kind, ConfirmationKind::ExportSecrets);
         assert_eq!(prompt.requires_reauthentication, vault_configured);
     }
-    assert!(plan_operation(Op::AppExportSettings, "anything", true, false, "en".into()).is_err());
+    assert!(
+        plan_operation(
+            Op::AppExportSettings,
+            "anything",
+            true,
+            false,
+            true,
+            "en".into()
+        )
+        .is_err()
+    );
 }
 
 #[test]
 fn a_damaged_vault_is_started_over_not_reset() {
     let kind = |damaged| {
-        plan_operation(Op::VaultReset, "", false, damaged, "en".into())
+        plan_operation(Op::VaultReset, "", false, damaged, false, "en".into())
             .unwrap()
             .prompt
             .unwrap()
@@ -394,6 +406,11 @@ fn disabled_confirmations_never_suppress_vault_reset() {
 #[test]
 fn enhanced_secret_reveal_always_prompts_for_reauthentication() {
     for operation in [Op::SitesRevealSecret, Op::SettingsRevealProxyPassword] {
+        for unlocked in [false, true] {
+            let plan =
+                plan_operation(operation, "secret", true, false, unlocked, "en".into()).unwrap();
+            assert!(plan.prompt.unwrap().requires_reauthentication);
+        }
         assert!(should_prompt(operation, true, false, true));
         assert!(should_prompt(operation, true, true, true));
     }
@@ -515,10 +532,27 @@ fn switching_off_enhanced_protection_is_always_confirmed() {
         true,
         false
     ));
-    let prompt =
-        confirmation_prompt(Op::VaultUseSystemProtection, "vault", "en".into(), true).unwrap();
-    assert_eq!(prompt.kind, ConfirmationKind::UseSystemProtection);
-    assert!(prompt.requires_reauthentication);
+    for unlocked in [false, true] {
+        let plan = plan_operation(
+            Op::VaultUseSystemProtection,
+            "vault",
+            true,
+            false,
+            unlocked,
+            "en".into(),
+        )
+        .unwrap();
+        assert!(plan.required);
+        let prompt = plan.prompt.unwrap();
+        assert_eq!(prompt.kind, ConfirmationKind::UseSystemProtection);
+        assert_eq!(prompt.requires_reauthentication, !unlocked);
+        assert!(should_prompt(
+            Op::VaultUseSystemProtection,
+            plan.required,
+            false,
+            prompt.requires_reauthentication,
+        ));
+    }
 }
 
 #[test]

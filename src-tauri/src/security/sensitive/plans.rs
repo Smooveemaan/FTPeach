@@ -125,6 +125,7 @@ pub(super) fn plan_operation(
     target: &str,
     vault_configured: bool,
     vault_damaged: bool,
+    vault_unlocked: bool,
     locale: String,
 ) -> CommandResult<Plan> {
     let target = normalized_target(operation, target)?;
@@ -139,10 +140,9 @@ pub(super) fn plan_operation(
         && (exports_secrets
             || matches!(
                 operation,
-                Op::SitesRevealSecret
-                    | Op::SettingsRevealProxyPassword
-                    | Op::VaultUseSystemProtection
-            ));
+                Op::SitesRevealSecret | Op::SettingsRevealProxyPassword
+            )
+            || (operation == Op::VaultUseSystemProtection && !vault_unlocked));
     let mut prompt = (required || requires_reauthentication)
         .then(|| confirmation_prompt(operation, &target, locale, requires_reauthentication))
         .transpose()?;

@@ -605,6 +605,7 @@ pub async fn authorize_sensitive(
             &target,
             vault.is_configured(),
             vault.is_damaged(),
+            vault.is_unlocked().await,
             locale,
         )?,
     };

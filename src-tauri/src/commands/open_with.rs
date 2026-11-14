@@ -250,7 +250,16 @@ async fn open_with_chooser<R: tauri::Runtime>(
     window: &tauri::WebviewWindow<R>,
     path: &Path,
 ) -> anyhow::Result<()> {
-    crate::local_fs::open_with_applications::linux::choose(window, path).await
+    if let Some(program) =
+        crate::local_fs::open_with_applications::linux::choose(window, path).await?
+        && let Err(error) = window
+            .state::<crate::store::Store>()
+            .trust_application(&program)
+            .await
+    {
+        log::warn!("could not remember the chosen application: {error}");
+    }
+    Ok(())
 }
 
 #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]

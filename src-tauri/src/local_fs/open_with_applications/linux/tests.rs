@@ -25,7 +25,29 @@ fn desktop_associations_and_launch_preserve_file_arguments() {
         let desktop = root.join("data/applications/editor.desktop");
         let approved = crate::local_fs::local_open::ApprovedLocalPaths::default();
         let desktop = approved.canonical_application(&desktop).unwrap();
-        launch(&desktop, &document).unwrap();
+        let chosen = gio::DesktopAppInfo::from_filename(&desktop).unwrap();
+        let program = launch_chosen(chosen.upcast_ref(), &document, None).unwrap();
+        assert_eq!(program, desktop);
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
+            let profile = root.join("profile");
+            let store = crate::store::Store::new_at(profile.clone());
+            assert!(!store.is_trusted_application(&program).await);
+            store.trust_application(&program).await.unwrap();
+            let reopened = crate::store::Store::new_at(profile);
+            let default = candidates.iter().find(|app| app.is_default).unwrap();
+            let default = approved
+                .canonical_application(Path::new(&default.path))
+                .unwrap();
+            assert!(reopened.is_trusted_application(&default).await);
+            let alternate = approved
+                .canonical_application(&root.join("data/applications/alternate.desktop"))
+                .unwrap();
+            assert!(!reopened.is_trusted_application(&alternate).await);
+        });
+        let unavailable =
+            gio::AppInfo::create_from_commandline("/bin/true", None, gio::AppInfoCreateFlags::NONE)
+                .unwrap();
+        assert!(launch_chosen(&unavailable, &document, None).is_err());
         let output = root.join("received");
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
         while !output.exists() {

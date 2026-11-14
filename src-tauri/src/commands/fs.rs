@@ -792,6 +792,9 @@ mod grant_tests {
     }
 }
 
+#[cfg(all(test, target_os = "linux"))]
+mod reveal_tests;
+
 #[cfg(test)]
 mod drag_move_tests {
     use super::*;

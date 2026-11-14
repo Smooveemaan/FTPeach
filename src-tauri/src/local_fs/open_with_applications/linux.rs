@@ -1,6 +1,6 @@
 use super::ApplicationCandidate;
 use gtk::{gio, prelude::*};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Lists desktop applications for the name's MIME type, with the default first.
 pub fn query_applications(file_name: &str) -> Vec<ApplicationCandidate> {
@@ -40,11 +40,28 @@ pub fn launch(application: &Path, file: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn launch_chosen(
+    app: &gio::AppInfo,
+    file: &Path,
+    context: Option<&gio::AppLaunchContext>,
+) -> anyhow::Result<PathBuf> {
+    let desktop = app
+        .downcast_ref::<gio::DesktopAppInfo>()
+        .and_then(|app| app.filename())
+        .ok_or_else(|| anyhow::anyhow!("The desktop application is unavailable"))?;
+    let application =
+        super::super::local_open::ApprovedLocalPaths::default().canonical_application(&desktop)?;
+    let app = gio::DesktopAppInfo::from_filename(&application)
+        .ok_or_else(|| anyhow::anyhow!("The desktop application is unavailable"))?;
+    app.launch(&[gio::File::for_path(file)], context)?;
+    Ok(application)
+}
+
 /// Opens a modal system chooser without changing the default application.
 pub async fn choose<R: tauri::Runtime>(
     window: &tauri::WebviewWindow<R>,
     path: &Path,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Option<PathBuf>> {
     let owner = window.clone();
     let path = path.to_path_buf();
     let (tx, rx) = tokio::sync::oneshot::channel();
@@ -73,11 +90,11 @@ pub async fn choose<R: tauri::Runtime>(
                     .ok_or_else(|| anyhow::anyhow!("No application selected"))
                     .and_then(|app| {
                         let context = dialog.display().app_launch_context();
-                        app.launch(std::slice::from_ref(&file), context.as_ref())
-                            .map_err(Into::into)
+                        launch_chosen(&app, &path, context.as_ref().map(|ctx| ctx.upcast_ref()))
+                            .map(Some)
                     })
             } else {
-                Ok(())
+                Ok(None)
             };
             dialog.close();
             let _ = tx.send(result);

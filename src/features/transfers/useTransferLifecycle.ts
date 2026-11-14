@@ -359,15 +359,34 @@ export function useTransferLifecycle(
     const id =
       existingId ||
       startTransfer({ direction: 'recursive', name: intent.source.path, intent, targetProtocol });
-    // A walk counts what it has already put in place, paused or not.
-    const attemptId = existingId ? requeueAttempt(id, { keepBytes: true }) : beginAttempt(id);
+    const attemptId = existingId
+      ? requeueAttempt(id, { keepBytes: resumeFrom !== undefined })
+      : beginAttempt(id);
     const stopFollowing = followLanded(id, attemptId, refreshTarget);
     const waiting = new AbortController();
     waitingRecursive.current.set(id, waiting);
     const dispatch = { started: false };
     let report: RecursiveReport;
     try {
-      report = await scheduleRecursive(() => {
+      report = await scheduleRecursive(async () => {
+        if (existingId && resumeFrom === undefined) {
+          // Stop leaves completed uploads in place; a fresh attempt needs merge consent.
+          const approval = await approveTarget({ ...intent.target, merge: true });
+          waiting.signal.throwIfAborted();
+          if (approval === null) {
+            cancelIntentRef.current[id] = 'stopped';
+            throw new Error('Folder transfer retry cancelled');
+          }
+          intent = {
+            ...intent,
+            target: { ...intent.target, path: approval.path },
+            overwrite: approval.overwrite,
+          };
+          setTransfersStore((previous) => ({
+            ...previous,
+            [id]: { ...previous[id]!, intent },
+          }));
+        }
         dispatch.started = true;
         waitingRecursive.current.delete(id);
         return api.transfer.recursive({

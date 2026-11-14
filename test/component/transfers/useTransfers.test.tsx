@@ -624,6 +624,112 @@ test('a paused folder walk resumes from the attempt that kept its journal', asyn
   });
 });
 
+for (const targetKind of ['local', 'remote'] as const) {
+  for (const decision of ['approve', 'decline', 'stop'] as const) {
+    test(`restarting a stopped ${targetKind} folder checks merge consent (${decision})`, async () => {
+      const answer = createDeferred<boolean>();
+      const confirmMerge = vi.fn(() => answer.promise);
+      await withHarness(
+        async ({ getApi, getSnapshot, mockApi, emitProgress }) => {
+          const first = createDeferred<RecursiveReport>();
+          const retry = createDeferred<RecursiveReport>();
+          const recursive = vi
+            .fn()
+            .mockImplementationOnce(() => first.promise)
+            .mockImplementation(() => retry.promise);
+          mockApi.transfer.recursive = recursive;
+          const options = localFolderMove();
+          if (targetKind === 'remote') {
+            options.move = false;
+            options.targetPane = {
+              ...options.targetPane,
+              kind: 'remote',
+              path: '/target',
+              connectionId: 'c1',
+              protocol: 'sftp',
+            };
+          }
+          let running!: Promise<unknown>;
+          await act(async () => {
+            running = getApi().copyEntries(options);
+            await Promise.resolve();
+          });
+          const row = Object.values(getSnapshot())[0]!;
+          act(() => {
+            emitProgress({
+              id: row.attemptId!,
+              connectionId: 'c1',
+              status: 'progress',
+              bytes: 40,
+              total: 100,
+            });
+            flushTransferUpdates();
+          });
+          await act(async () => {
+            await getApi().stopTransfer(row.id);
+            first.resolve({ ...pausedWalkReport, paused: false });
+            await running;
+          });
+          const listing = async (path = '') => ({
+            ok: true as const,
+            path,
+            entries: [folderEntry],
+          });
+          mockApi.fsLocal.list = listing;
+          mockApi.session.list = listing;
+          let restarting!: Promise<void>;
+          await act(async () => {
+            restarting = getApi().retryTransfer(row.id);
+            await Promise.resolve();
+          });
+          try {
+            assert.equal(
+              confirmMerge.mock.calls.length,
+              1,
+              'files left by Stop need fresh merge consent',
+            );
+            assert.equal(recursive.mock.calls.length, 1, 'no upload starts before consent');
+            assert.equal(getSnapshot()[row.id]?.bytes, 0, 'a fresh attempt starts at zero once');
+            if (decision === 'stop') await act(() => getApi().stopTransfer(row.id));
+            await act(async () => {
+              answer.resolve(decision !== 'decline');
+              await Promise.resolve();
+            });
+            if (decision === 'approve') {
+              const submitted = recursive.mock.calls[1]![0] as RecursiveIntent;
+              assert.equal(submitted.overwrite, true);
+              assert.equal(submitted.resumeFrom, undefined);
+              assert.notEqual(submitted.id, row.attemptId);
+              const updated = getSnapshot()[row.id];
+              assert.equal(updated?.direction === 'recursive' && updated.intent.overwrite, true);
+            } else {
+              assert.equal(
+                recursive.mock.calls.length,
+                1,
+                'decline or Stop never sends the folder',
+              );
+            }
+          } finally {
+            await act(async () => {
+              answer.resolve(false);
+              retry.resolve({
+                ok: true,
+                outcome: 'complete',
+                scanned: 3,
+                completed: 2,
+                errors: [],
+              });
+              await restarting;
+            });
+          }
+          assert.equal(getSnapshot()[row.id]?.status, decision === 'approve' ? 'done' : 'stopped');
+        },
+        { confirmMerge },
+      );
+    });
+  }
+}
+
 test('a running folder walk lists its target again as it puts entries in place', async () => {
   await withHarness(async ({ getApi, mockApi, emitProgress }) => {
     const walk = createDeferred<RecursiveReport>();
@@ -2015,77 +2121,89 @@ test('buffered progress and error events cannot settle a cancelling attempt befo
   });
 });
 
-test('a native drag-out download announced by the backend gets a queue row that progress events then drive', async () => {
-  await withHarness(async ({ getApi, getSnapshot, calls, emitDragOutStarted, emitProgress }) => {
-    act(() => {
-      emitDragOutStarted({
-        id: 'dragout-1',
-        connectionId: 'c1',
-        protocol: 'sftp',
-        name: 'photo.jpg',
-        remoteFile: '/remote/photo.jpg',
-        total: 1000,
+test.each([false, true])(
+  'a native drag-out download announced by the backend gets a queue row that progress events then drive (folder=%s)',
+  async (isDirectory) => {
+    await withHarness(async ({ getApi, getSnapshot, calls, emitDragOutStarted, emitProgress }) => {
+      act(() => {
+        emitDragOutStarted({
+          id: 'dragout-1',
+          connectionId: 'c1',
+          protocol: 'sftp',
+          name: 'photo.jpg',
+          remoteFile: '/remote/photo.jpg',
+          total: 1000,
+          isDirectory,
+        });
       });
-    });
-    const row = getSnapshot()['dragout-1'];
-    assert.ok(row, 'the announcement creates the row — nothing else will');
-    assert.equal(row.direction, 'down');
-    assert.equal(row.status, 'progress');
-    assert.equal(row.dragOut, true);
-    assert.equal(row.total, 1000);
+      const row = getSnapshot()['dragout-1'];
+      assert.ok(row, 'the announcement creates the row — nothing else will');
+      assert.equal(row.direction, 'down');
+      assert.equal(row.status, 'progress');
+      assert.equal(row.dragOut, true);
+      assert.equal(row.total, 1000);
 
-    act(() => {
-      emitProgress({ id: 'dragout-1', connectionId: 'c1', status: 'progress', bytes: 400 });
-    });
-    assert.equal(getSnapshot()['dragout-1']?.bytes, 400);
-
-    // Announced twice (defensive: Explorer re-requesting the same file) must
-    // not reset a row that's already underway.
-    act(() => {
-      emitDragOutStarted({
-        id: 'dragout-1',
-        connectionId: 'c1',
-        protocol: 'sftp',
-        name: 'photo.jpg',
-        remoteFile: '/remote/photo.jpg',
+      act(() => {
+        emitProgress({ id: 'dragout-1', connectionId: 'c1', status: 'progress', bytes: 400 });
       });
-    });
-    assert.equal(getSnapshot()['dragout-1']?.bytes, 400);
+      assert.equal(getSnapshot()['dragout-1']?.bytes, 400);
 
-    assert.equal(getApi().hasPausableTransfers, false, 'Explorer owns the destination: no pause');
-    await act(async () => {
-      getApi().pauseAllTransfers();
-    });
-    assert.equal(calls.cancel.length, 0);
-    assert.equal(getSnapshot()['dragout-1']?.status, 'progress');
-
-    await act(async () => {
-      await getApi().stopTransfer('dragout-1');
-    });
-    assert.deepEqual(calls.cancel, [{ connectionId: 'c1', id: 'dragout-1', intent: 'stop' }]);
-    assert.equal(getSnapshot()['dragout-1']?.status, 'cancelling');
-    assert.equal(calls.fsLocalDelete.length, 0, 'no local partial of ours to clean up');
-
-    // The backend reports the cancelled stream as an error — the user's own
-    // Stop still wins the label, exactly as for ordinary transfers.
-    act(() => {
-      emitProgress({
-        id: 'dragout-1',
-        connectionId: 'c1',
-        status: 'error',
-        error: 'Canceled by user',
-        errorCode: 'cancelled',
+      // Announced twice (defensive: Explorer re-requesting the same file) must
+      // not reset a row that's already underway.
+      act(() => {
+        emitDragOutStarted({
+          id: 'dragout-1',
+          connectionId: 'c1',
+          protocol: 'sftp',
+          name: 'photo.jpg',
+          remoteFile: '/remote/photo.jpg',
+        });
       });
-    });
-    assert.equal(getSnapshot()['dragout-1']?.status, 'stopped');
+      assert.equal(getSnapshot()['dragout-1']?.bytes, 400);
 
-    await act(async () => {
-      await getApi().retryTransfer('dragout-1');
+      assert.equal(getApi().hasPausableTransfers, false, 'Explorer owns the destination: no pause');
+      await act(async () => {
+        getApi().pauseAllTransfers();
+      });
+      assert.equal(calls.cancel.length, 0);
+      assert.equal(getSnapshot()['dragout-1']?.status, 'progress');
+
+      await act(async () => {
+        await getApi().stopTransfer('dragout-1');
+      });
+      assert.deepEqual(calls.cancel, [{ connectionId: 'c1', id: 'dragout-1', intent: 'stop' }]);
+      assert.equal(getSnapshot()['dragout-1']?.status, 'cancelling');
+      assert.equal(calls.fsLocalDelete.length, 0, 'no local partial of ours to clean up');
+
+      // The backend reports the cancelled stream as an error — the user's own
+      // Stop still wins the label, exactly as for ordinary transfers.
+      act(() => {
+        emitProgress({
+          id: 'dragout-1',
+          connectionId: 'c1',
+          status: 'error',
+          error: 'Canceled by user',
+          errorCode: 'cancelled',
+        });
+      });
+      assert.equal(getSnapshot()['dragout-1']?.status, 'stopped');
+      assert.equal(getSnapshot()['dragout-1']?.bytes, 400);
+      assert.equal(getApi().hasActiveTransfers, false);
+
+      act(() => {
+        emitProgress({ id: 'dragout-1', connectionId: 'c1', status: 'progress', bytes: 500 });
+      });
+      assert.equal(getSnapshot()['dragout-1']?.status, 'stopped');
+      assert.equal(getSnapshot()['dragout-1']?.bytes, 400);
+
+      await act(async () => {
+        await getApi().retryTransfer('dragout-1');
+      });
+      assert.equal(calls.download.length, 0, 'nothing to retry into — Explorer picked the target');
+      assert.equal(getSnapshot()['dragout-1']?.status, 'stopped');
     });
-    assert.equal(calls.download.length, 0, 'nothing to retry into — Explorer picked the target');
-    assert.equal(getSnapshot()['dragout-1']?.status, 'stopped');
-  });
-});
+  },
+);
 
 /** The queue announces its end only after it has stayed idle a moment. */
 async function withSettlingTimers(body: (_settle: () => void) => Promise<void>) {

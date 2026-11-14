@@ -1501,8 +1501,27 @@ async fn a_stopped_download_takes_back_its_partial() {
         });
         let (sessions, intent) = download_of_src(&server, &root).await;
         *server.pause_at.lock().unwrap() = Some((intent.id.clone(), 16 * 1024));
-        let progress = ProgressEmitter::for_tests(|_| {});
+        let told = Arc::new(Mutex::new(Vec::new()));
+        let progress = ProgressEmitter::for_tests({
+            let told = told.clone();
+            let id = intent.id.clone();
+            move |payload| {
+                if payload.id == id {
+                    told.lock().unwrap().push(payload);
+                }
+            }
+        });
         let report = run(&sessions, Some(&progress), intent.clone()).await;
+        {
+            let told = told.lock().unwrap();
+            let total = told.iter().rev().find_map(|payload| payload.total);
+            let bytes = told.iter().rev().find_map(|payload| payload.bytes);
+            assert_eq!(total, Some(64 * 1024));
+            assert!(
+                bytes.is_some_and(|bytes| (16 * 1024..64 * 1024).contains(&bytes)),
+                "cancelling the first file lost its partial progress: {bytes:?}"
+            );
+        }
         if stop_while_running {
             assert!(
                 report

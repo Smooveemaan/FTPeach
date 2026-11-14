@@ -311,6 +311,7 @@ pub(super) async fn copy_files(
             }
             result => result,
         };
+        let completed = result.is_ok();
         match result {
             Ok(()) => {
                 if let Some(expected) = source_receipt {
@@ -359,7 +360,8 @@ pub(super) async fn copy_files(
         }
         if let Some(progress) = progress {
             progress.send(TransferProgressPayload {
-                bytes: Some(completed_bytes),
+                // A failed file keeps its last partial byte count in the row.
+                bytes: completed.then_some(completed_bytes),
                 total: Some(total_bytes),
                 landed: Some(landed(journal)),
                 ..TransferProgressPayload::status(

@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Stopped transfers keep their last progress percentage, or show 0% when the total size is unknown.
+- Retrying a stopped folder transfer checks for conflicts with files already at the destination.
 - Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Files dragged out of FTPeach can be brought back into its panes during the same drag.
 - Scrolling log messages no longer overlap the log toolbar.

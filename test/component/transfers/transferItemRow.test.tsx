@@ -6,6 +6,71 @@ import type { ReorderableColumnKey } from '../../../src/features/transfers/trans
 
 const LABELS: Record<string, string> = { a: 'Production', b: 'Backup' };
 
+const cancelledRow: TransferRow = {
+  id: 'cancelled',
+  name: 'partial.bin',
+  direction: 'down',
+  protocol: 'sftp',
+  connectionId: 'session',
+  remoteFile: '/partial.bin',
+  localTarget: 'D:\\partial.bin',
+  status: 'stopped',
+  bytes: 400,
+  total: 1000,
+  startedAt: 1,
+};
+
+test.each<TransferRow>([
+  cancelledRow,
+  { ...cancelledRow, direction: 'up', localFile: 'D:\\partial.bin', remoteTarget: '/partial.bin' },
+  {
+    ...cancelledRow,
+    direction: 'copy',
+    sourceConnectionId: 'session',
+    targetConnectionId: 'other',
+    sourcePath: '/partial.bin',
+    remoteTarget: '/copy.bin',
+  },
+  { ...cancelledRow, dragOut: true },
+  { ...cancelledRow, dragOut: true, isDirectory: true },
+  {
+    ...cancelledRow,
+    direction: 'recursive',
+    intent: {
+      id: 'walk',
+      source: { kind: 'remote', connectionId: 'session', path: '/folder' },
+      target: { kind: 'local', path: 'D:\\folder' },
+      moving: false,
+      overwrite: false,
+    },
+  },
+])(
+  'stopped $direction transfer retains partial progress (dragOut=$dragOut, folder=$isDirectory)',
+  (item) => {
+    const { container, getByRole } = renderRow(item, ['progress', 'transferred']);
+    expect(getByRole('progressbar').getAttribute('aria-valuenow')).toBe('40');
+    expect(container.querySelector('.p-pct')?.textContent).toBe('40%');
+    expect(container.querySelector('[data-column-cell="transferred"]')?.textContent).toContain(
+      '400',
+    );
+  },
+);
+
+test('a stopped transfer without a known total shows an empty progress bar', () => {
+  const { container, getByRole } = renderRow({ ...cancelledRow, total: 0 }, ['progress']);
+  expect(getByRole('progressbar').getAttribute('aria-valuenow')).toBe('0');
+  expect(container.querySelector('.p-pct')?.textContent).toBe('0%');
+});
+
+test.each(['progress', 'cancelling', 'paused'] as const)(
+  '%s retains partial progress',
+  (status) => {
+    const { container, getByRole } = renderRow({ ...cancelledRow, status }, ['progress']);
+    expect(getByRole('progressbar').getAttribute('aria-valuenow')).toBe('40');
+    expect(container.querySelector('.p-pct')?.textContent).toBe('40%');
+  },
+);
+
 test.each([0, 2048])('completed transfers show 100%% without a total (%s bytes)', (bytes) => {
   const { container } = renderRow(
     {

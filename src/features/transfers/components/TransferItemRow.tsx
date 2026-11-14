@@ -79,8 +79,11 @@ function TransferItemRow({
       ? 100
       : hasTotal
         ? Math.min(100, Math.round((item.bytes / total) * 100))
-        : null;
-  const showBar = (hasTotal || item.status === 'done') && item.status !== 'error';
+        : item.status === 'stopped'
+          ? 0
+          : null;
+  const showBar =
+    (hasTotal || item.status === 'done' || item.status === 'stopped') && item.status !== 'error';
   const pauseUnsupported = pauseUnsupportedKey(item);
   const retryUnsupported = !canRetryTransfer(item);
   const speed =

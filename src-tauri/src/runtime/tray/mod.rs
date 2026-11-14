@@ -268,7 +268,7 @@ pub fn restore(app: &AppHandle) {
 /// Configuration for the tray/menu-bar icon behavior per platform.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct TrayIconConfig {
-    /// AppIndicator keeps its D-Bus object exported after the icon is dropped.
+    /// Reuses the Linux status notifier across window visibility changes.
     pub keep_registered: bool,
     /// On macOS, status bar extra icons must be configured as template images
     /// so the system automatically adjusts contrast for light/dark menu bar modes.
@@ -325,11 +325,15 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
 }
 
 /// The peach on its own; the app icon's square plate stays out of the tray.
-/// A tray icon is 16 px at 100% display scale, and each file is the vector
+/// Linux panels choose their own icon size, so they get the largest bitmap.
+/// On Windows, a tray icon is 16 px at 100% display scale, and each file is the vector
 /// logo drawn at exactly the size its scale asks for, because an icon of
 /// another size is resized by Windows into a blur. The notification area sits
 /// on the primary monitor, so that monitor's scale decides.
 fn icon_for_scale(scale: f64) -> Image<'static> {
+    if cfg!(target_os = "linux") {
+        return include_image!("./icons/tray/48.png");
+    }
     if scale <= 1.0 {
         include_image!("./icons/tray/16.png")
     } else if scale <= 1.25 {
@@ -364,9 +368,10 @@ mod tests {
             (4.0, 48),
         ] {
             let icon = icon_for_scale(scale);
+            let expected_size = if cfg!(target_os = "linux") { 48 } else { size };
             assert_eq!(
                 (icon.width(), icon.height()),
-                (size, size),
+                (expected_size, expected_size),
                 "at scale {scale}"
             );
         }
@@ -404,7 +409,15 @@ mod tests {
         let linux = tray_icon_config(false, true);
         assert!(
             linux.keep_registered,
-            "Linux must reuse its AppIndicator after Show FTPeach to avoid duplicate D-Bus objects"
+            "Linux reuses its status notifier after Show FTPeach"
+        );
+        assert!(
+            !linux.show_menu_on_left_click,
+            "Linux right click opens the menu"
+        );
+        assert!(
+            linux.restore_on_left_click,
+            "Linux left click restores the window"
         );
     }
 }

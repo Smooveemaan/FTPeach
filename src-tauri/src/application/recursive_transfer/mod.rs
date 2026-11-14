@@ -370,6 +370,11 @@ async fn run_inner(
         // The walk has its turn: the row stops saying it is queued.
         status_notice(progress, &intent, "progress")();
         let mut manifest = scan(sessions, &intent.source, !intent.moving, &token).await?;
+        if matches!(intent.target, Endpoint::Remote { .. }) {
+            anyhow::ensure!(manifest.entries.iter().filter(|entry| !entry.relative.is_empty()).all(|entry|
+                entry.relative.split('/').all(crate::security::connection_guard::is_safe_path_segment)
+            ), "Unsafe remote entry name");
+        }
         let mut source_directories = HashMap::new();
         if intent.moving {
             for entry in manifest.entries.iter().filter(|entry| entry.directory) {
@@ -395,11 +400,6 @@ async fn run_inner(
                 for name in entry.relative.split('/').filter(|name| !name.is_empty()) { crate::local_fs::windows_names::validate_file_name(name)?; }
                 mutations::validate_download_name(Path::new(&intent.target.path(&entry.relative)))?;
             }
-        if matches!(intent.target, Endpoint::Remote { .. }) {
-            anyhow::ensure!(manifest.entries.iter().filter(|entry| !entry.relative.is_empty()).all(|entry|
-                entry.relative.split('/').all(crate::security::connection_guard::is_safe_path_segment)
-            ), "Unsafe remote entry name");
-        }
         }
         // Names that stood in the target before this walk, which it must never
         // take back, nor write over when skipping. Only an overwrite or a skip

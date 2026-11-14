@@ -121,7 +121,7 @@ test('retention limits completed history while preserving active and retryable r
   setTransfersStore(rows);
   assert.equal(Object.keys(getTransfersSnapshot()).length, COMPLETED_RETENTION + 2);
   assert.equal(transferForAttempt('attempt-active')?.id, 'active');
-  assert.equal(activeTransferForTarget('local:c:\\target\\active')?.id, 'active');
+  assert.equal(activeTransferForTarget('local:c:/target/active')?.id, 'active');
   assert.equal(getTransfersSnapshot().failed?.status, 'error');
   assert.equal(transferForAttempt('attempt-0'), undefined);
   setTransfersStore((current) => ({
@@ -129,7 +129,7 @@ test('retention limits completed history while preserving active and retryable r
     active: { ...current.active!, attemptId: 'new-attempt', status: 'done' },
   }));
   assert.equal(transferForAttempt('attempt-active'), undefined);
-  assert.equal(activeTransferForTarget('local:c:\\target\\active'), undefined);
+  assert.equal(activeTransferForTarget('local:c:/target/active'), undefined);
   resetTransfersStoreForTests();
 });
 
@@ -278,7 +278,7 @@ test('row updates preserve old snapshots and do not publish unchanged values', (
   updateTransferRow('hot', (current) => ({ ...current, attemptId: 'retry', status: 'paused' }));
   assert.equal(transferForAttempt('attempt'), undefined);
   assert.equal(transferForAttempt('retry')?.status, 'paused');
-  assert.equal(activeTransferForTarget('local:c:\\hot'), undefined);
+  assert.equal(activeTransferForTarget('local:c:/hot'), undefined);
   assert.equal(getTransferSummarySnapshot().activeTransfersCount, 0);
   assert.equal(getTransferSummarySnapshot().hasPausedTransfers, true);
   stop();
@@ -373,7 +373,7 @@ test('random lifecycle updates keep indexes and counters equal to a full scan', 
     for (const row of rows) {
       assert.equal(transferForAttempt(row.attemptId || row.id), row);
       assert.equal(
-        activeTransferForTarget(`local:c:\\${row.id}`),
+        activeTransferForTarget(`local:c:/${row.id}`),
         active.includes(row) ? row : undefined,
       );
     }
@@ -426,7 +426,7 @@ test('settling a colliding target does not hide another active owner', () => {
   };
   setTransfersStore({ a: row, b: { ...row, id: 'b' } });
   updateTransferRow('a', (row) => ({ ...row, status: 'error' }));
-  assert.equal(activeTransferForTarget('local:c:\\shared')?.id, 'b');
+  assert.equal(activeTransferForTarget('local:c:/shared')?.id, 'b');
 });
 
 test('retention caps failures apart from successes, including a row that just failed', () => {

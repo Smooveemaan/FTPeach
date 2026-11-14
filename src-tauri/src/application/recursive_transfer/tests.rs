@@ -2,6 +2,84 @@ use super::*;
 
 #[cfg(unix)]
 #[tokio::test]
+async fn unix_skip_existing_keeps_case_distinct_files_separate() {
+    let (root, mut intent) = fixture();
+    intent.moving = false;
+    intent.skip_existing = true;
+    std::fs::write(root.join("source/case"), b"new").unwrap();
+    std::fs::create_dir(root.join("target")).unwrap();
+    std::fs::write(root.join("target/Case"), b"existing").unwrap();
+    let report = run(&Sessions::default(), None, intent).await;
+    assert!(report.ok, "{:?}", report.errors);
+    assert_eq!(report.skipped, 0);
+    assert_eq!(std::fs::read(root.join("target/case")).unwrap(), b"new");
+    assert_eq!(
+        std::fs::read(root.join("target/Case")).unwrap(),
+        b"existing"
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn unix_upload_still_rejects_unsafe_remote_segments_before_copying() {
+    for name in ["back\\slash", "carriage\rreturn", "line\nfeed"] {
+        let (root, mut intent) = fixture();
+        std::fs::write(root.join("source").join(name), b"original").unwrap();
+        let server = Arc::new(Server::default());
+        let (sessions, download) = download_of_src(&server, &root).await;
+        intent.moving = false;
+        intent.target = download.source;
+        let report = run(&sessions, None, intent).await;
+        assert!(!report.ok);
+        assert!(report.errors.iter().any(|error| {
+            error
+                .details
+                .as_deref()
+                .is_some_and(|details| details.contains("Unsafe remote entry name"))
+        }));
+        assert_eq!(
+            std::fs::read(root.join("source").join(name)).unwrap(),
+            b"original"
+        );
+        assert!(server.written.lock().unwrap().is_empty());
+        assert!(server.made.lock().unwrap().is_empty());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn unix_copy_and_move_preserve_backslash_cr_lf_and_case_distinct_names() {
+    for moving in [false, true] {
+        let (root, mut intent) = fixture();
+        intent.moving = moving;
+        let names = [
+            "back\\slash",
+            "carriage\rreturn",
+            "line\nfeed",
+            "Case",
+            "case",
+        ];
+        for name in names {
+            std::fs::create_dir(root.join("source").join(name)).unwrap();
+            std::fs::write(root.join("source").join(name).join(name), name.as_bytes()).unwrap();
+        }
+        let report = run(&Sessions::default(), None, intent).await;
+        assert!(report.ok, "{:?}", report.errors);
+        for name in names {
+            assert_eq!(
+                std::fs::read(root.join("target").join(name).join(name)).unwrap(),
+                name.as_bytes()
+            );
+        }
+        assert_eq!(root.join("source").exists(), !moving);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(unix)]
+#[tokio::test]
 async fn unix_copy_preserves_names_that_windows_rejects() {
     let (root, mut intent) = fixture();
     intent.moving = false;

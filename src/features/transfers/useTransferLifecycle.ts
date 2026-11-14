@@ -8,7 +8,12 @@ import { isCommandErrorCode } from '../../platform/ipcContracts.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { isolate } from '../../shared/bidi.ts';
 import { commandResultError, friendlyError } from '../../shared/errorMessages.ts';
-import { joinLocalPath, joinRemotePath } from '../../shared/paths.ts';
+import {
+  joinLocalPath,
+  joinRemotePath,
+  localPathParts,
+  normalizeLocalPath,
+} from '../../shared/paths.ts';
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { TransferRow, TransferStatus } from './transferStore.ts';
 import {
@@ -284,7 +289,7 @@ export function useTransferLifecycle(
     const localTarget = joinLocalPath(localTargetDir, name);
     return runFileTransfer({
       target: { kind: 'local', path: localTarget },
-      targetKey: (path) => `local:${path.replaceAll('/', '\\').toLowerCase()}`,
+      targetKey: (path) => `local:${normalizeLocalPath(path)}`,
       overwriteApproved,
       reuse: (row, path) =>
         row.direction === 'down' &&
@@ -297,7 +302,7 @@ export function useTransferLifecycle(
       start: (path) =>
         startTransfer({
           direction: 'down',
-          name: path.split(/[\\/]/).pop()!,
+          name: localPathParts(path).pop()!,
           protocol,
           remoteFile,
           localTarget: path,

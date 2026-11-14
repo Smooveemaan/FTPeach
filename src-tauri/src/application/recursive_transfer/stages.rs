@@ -13,7 +13,7 @@ pub(super) struct Walk<'a> {
 
 /// How a target name is compared: Windows names ignore case.
 fn target_key(intent: &Intent, relative: &str) -> String {
-    if matches!(intent.target, Endpoint::Local { .. }) {
+    if cfg!(windows) && matches!(intent.target, Endpoint::Local { .. }) {
         relative.to_lowercase()
     } else {
         relative.to_owned()

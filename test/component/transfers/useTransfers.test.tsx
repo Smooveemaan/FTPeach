@@ -1485,40 +1485,85 @@ test('dropping an upload that is already running does not start a second writer'
   });
 });
 
-test('dropping a download that is already running does not start a second writer', async () => {
-  await withHarness(async ({ getApi, setSnapshot, calls }) => {
-    setSnapshot(() => ({
-      activeDownload: makeTransferRow({
-        id: 'activeDownload',
-        direction: 'down',
-        protocol: 'webdav',
-        name: 'file.bin',
-        status: 'progress',
-        connectionId: 'dav1',
-        remoteFile: '/remote/file.bin',
-        localTarget: 'C:\\local\\file.bin',
-        startedAt: 1,
-      }),
-    }));
-
-    let resultPromise!: ReturnType<TransfersApi['runDownload']>;
-    await act(async () => {
-      resultPromise = getApi().runDownload(
-        'dav1',
-        'webdav',
-        '/remote/file.bin',
-        'file.bin',
-        'C:\\local',
+test.each(['Linux', 'Macintosh'])(
+  'Unix downloads keep case and literal backslashes distinct (%s)',
+  async (platform) => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(platform);
+    await withHarness(async ({ getApi, getSnapshot, mockApi, calls }) => {
+      const pending = ['/Case.bin', '/case.bin', '/back\\slash.bin', '/back/slash.bin'].map(
+        (path) => {
+          const split = path.lastIndexOf('/');
+          return getApi().runDownload(
+            'c1',
+            'sftp',
+            path,
+            path.slice(split + 1),
+            '/downloads' + path.slice(0, split),
+            true,
+            true,
+          );
+        },
       );
-      await resultPromise;
+      assert.equal(calls.download.length, 4);
+      assert.deepEqual(
+        Object.values(getSnapshot()).map((row) => row.name),
+        ['Case.bin', 'case.bin', 'back\\slash.bin', 'slash.bin'],
+      );
+      const duplicate = await getApi().runDownload(
+        'c1',
+        'sftp',
+        '/other',
+        'Case.bin',
+        '/downloads',
+        true,
+        true,
+      );
+      assert.equal('alreadyRunning' in duplicate && duplicate.alreadyRunning, true);
+      await act(async () => {
+        mockApi._nextDownload.resolve({ ok: true });
+        await Promise.all(pending);
+      });
     });
-    const result = await resultPromise;
+  },
+);
 
-    assert.ok(result);
-    assert.equal('alreadyRunning' in result && result.alreadyRunning, true);
-    assert.equal(calls.download.length, 0);
-  });
-});
+test.each(['C:\\local', 'c:/LOCAL'])(
+  'dropping a download that is already running does not start a second writer (%s)',
+  async (targetDirectory) => {
+    await withHarness(async ({ getApi, setSnapshot, calls }) => {
+      setSnapshot(() => ({
+        activeDownload: makeTransferRow({
+          id: 'activeDownload',
+          direction: 'down',
+          protocol: 'webdav',
+          name: 'file.bin',
+          status: 'progress',
+          connectionId: 'dav1',
+          remoteFile: '/remote/file.bin',
+          localTarget: 'C:\\local\\file.bin',
+          startedAt: 1,
+        }),
+      }));
+
+      let resultPromise!: ReturnType<TransfersApi['runDownload']>;
+      await act(async () => {
+        resultPromise = getApi().runDownload(
+          'dav1',
+          'webdav',
+          '/remote/file.bin',
+          'file.bin',
+          targetDirectory,
+        );
+        await resultPromise;
+      });
+      const result = await resultPromise;
+
+      assert.ok(result);
+      assert.equal('alreadyRunning' in result && result.alreadyRunning, true);
+      assert.equal(calls.download.length, 0);
+    });
+  },
+);
 
 test('resuming a paused transfer reuses its overwrite answer instead of asking again', async () => {
   const prompts: string[] = [];

@@ -1,6 +1,7 @@
 import type { SiteProtocol } from '../../shared/siteContracts.ts';
 import type { RecursiveIntent } from '../../platform/api/transfers.ts';
 import type { FolderFile } from '../../platform/ipcContracts.ts';
+import { normalizeLocalPath } from '../../shared/paths.ts';
 
 export type TransferStatus =
   'cancelling' | 'queued' | 'progress' | 'paused' | 'stopped' | 'done' | 'error';
@@ -462,11 +463,11 @@ export function transferTargetKey(row: TransferRow): string | undefined {
   if (row.direction === 'recursive') {
     const target = row.intent.target;
     return target.kind === 'local'
-      ? `local:${target.path.replaceAll('/', '\\').toLowerCase()}`
+      ? `local:${normalizeLocalPath(target.path)}`
       : `remote:${target.connectionId}:${target.path}`;
   }
   return row.direction === 'down' || row.direction === 'local'
-    ? `local:${row.localTarget.replaceAll('/', '\\').toLowerCase()}`
+    ? `local:${normalizeLocalPath(row.localTarget)}`
     : `remote:${row.direction === 'up' ? row.connectionId : row.targetConnectionId}:${row.remoteTarget}`;
 }
 

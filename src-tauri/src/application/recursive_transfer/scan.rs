@@ -47,7 +47,14 @@ pub(super) async fn scan(
                     continue;
                 }
                 anyhow::ensure!(
-                    crate::security::connection_guard::is_safe_path_segment(&child.name),
+                    match source {
+                        Endpoint::Local { .. } => {
+                            crate::local_fs::fs_listing::is_safe_path_segment(&child.name)
+                        }
+                        Endpoint::Remote { .. } => {
+                            crate::security::connection_guard::is_safe_path_segment(&child.name)
+                        }
+                    },
                     "Unsafe recursive entry name"
                 );
                 let relative = if parent.is_empty() {

@@ -47,13 +47,22 @@ pub(crate) fn key(server: Option<&str>, path: &str) -> String {
         None
     };
     let mut parts = Vec::new();
-    for part in resolved.as_deref().unwrap_or(path).split(['/', '\\']) {
+    let unix_local = cfg!(unix) && server.is_none();
+    for part in resolved
+        .as_deref()
+        .unwrap_or(path)
+        .split(|c| c == '/' || (!unix_local && c == '\\'))
+    {
         match part {
             "" | "." => {}
             ".." => {
                 parts.pop();
             }
-            _ => parts.push(part.to_lowercase()),
+            _ => parts.push(if unix_local {
+                part.to_owned()
+            } else {
+                part.to_lowercase()
+            }),
         }
     }
     parts.join("/")
@@ -154,9 +163,25 @@ mod tests {
     #[test]
     fn tabs_cannot_reserve_aliases_of_the_same_target() {
         let first = Reservation::acquire("/reservation-test/Report.txt").unwrap();
-        assert!(Reservation::acquire("/reservation-test/./report.txt").is_err());
+        assert!(Reservation::acquire("/reservation-test/./Report.txt").is_err());
+        assert_eq!(
+            Reservation::acquire("/reservation-test/report.txt").is_err(),
+            cfg!(windows)
+        );
         drop(first);
         assert!(Reservation::acquire("/reservation-test/report.txt").is_ok());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn unix_local_targets_preserve_case_and_literal_backslashes() {
+        let path = unique("Case");
+        let _first = Reservation::acquire(&path).unwrap();
+        assert!(Reservation::acquire(&path.replace("Case", "case")).is_ok());
+        let path = unique("back\\slash");
+        let _first = Reservation::acquire(&path).unwrap();
+        assert!(Reservation::acquire(&path.replace('\\', "/")).is_ok());
+        assert!(Reservation::acquire(&path).is_err());
     }
 
     #[test]

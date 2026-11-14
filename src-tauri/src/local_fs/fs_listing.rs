@@ -67,8 +67,13 @@ impl Drop for ListingRequest {
 
 // Not `security::connection_guard`'s copy: examples/benchmark_listing.rs
 // compiles this file on its own, without the rest of the crate.
-fn is_safe_path_segment(name: &str) -> bool {
-    !name.is_empty() && name != "." && name != ".." && !name.contains(['\\', '/'])
+/// Checks one local path segment without rejecting valid Unix filename characters.
+pub(crate) fn is_safe_path_segment(name: &str) -> bool {
+    !name.is_empty()
+        && name != "."
+        && name != ".."
+        && !name.contains(['/', '\0'])
+        && (!cfg!(windows) || !name.contains('\\'))
 }
 
 fn iso(t: std::io::Result<SystemTime>) -> Option<String> {
@@ -216,6 +221,35 @@ fn list_with_metadata(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn local_segments_reject_traversal_without_rewriting_unix_names() {
+        for name in ["", ".", "..", "a/b", "a\0b"] {
+            assert!(!is_safe_path_segment(name), "{name:?}");
+        }
+        assert_eq!(is_safe_path_segment("a\\b"), cfg!(unix));
+        for name in ["a\rb", "a\nb", "normal"] {
+            assert!(is_safe_path_segment(name), "{name:?}");
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn unix_listing_keeps_backslash_cr_and_lf_names() {
+        let root = std::env::temp_dir().join(format!("ftpeach-unix-list-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir(&root).unwrap();
+        let names = ["back\\slash", "carriage\rreturn", "line\nfeed"];
+        for name in names {
+            std::fs::write(root.join(name), b"contents").unwrap();
+        }
+        let entries =
+            list_bounded(&root, MAX_ENTRIES, MAX_BYTES, &CancellationToken::new()).unwrap();
+        assert_eq!(entries.len(), names.len());
+        for name in names {
+            assert!(entries.iter().any(|entry| entry.name == name));
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn hidden_entries_include_dot_names_and_platform_attributes() {

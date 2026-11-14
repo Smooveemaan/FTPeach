@@ -1282,6 +1282,89 @@ async fn download_of_src(server: &Arc<Server>, root: &Path) -> (Sessions, Intent
     (sessions, intent)
 }
 
+#[tokio::test]
+async fn observed_download_publishes_only_committed_files_before_stop_rolls_back_work() {
+    let root = std::env::temp_dir().join(format!("ftpeach-observed-{}", uuid::Uuid::new_v4()));
+    let server = Arc::new(Server {
+        dirs: vec!["/src".into()],
+        files: HashMap::from([
+            ("/src/a".into(), b"complete a".to_vec()),
+            ("/src/b".into(), b"complete b".to_vec()),
+        ]),
+        ..Server::default()
+    });
+    let (sessions, intent) = download_of_src(&server, &root).await;
+    std::fs::create_dir_all(root.join("published")).unwrap();
+    let listed = Arc::new(Mutex::new(Vec::new()));
+    let delivered = Arc::new(Mutex::new(Vec::new()));
+    let observer = {
+        let root = root.clone();
+        let id = intent.id.clone();
+        let listed = listed.clone();
+        let delivered = delivered.clone();
+        Arc::new(move |event: Delivery<'_>| -> Result<()> {
+            match event {
+                Delivery::Listed(entries) => *listed.lock().unwrap() = entries.to_vec(),
+                Delivery::File(relative) => {
+                    std::fs::hard_link(
+                        root.join("target").join(relative),
+                        root.join("published").join(relative),
+                    )?;
+                    delivered.lock().unwrap().push(relative.to_owned());
+                    cancel(&id, CancelIntent::Stop);
+                }
+            }
+            Ok(())
+        })
+    };
+    let progress = ProgressEmitter::for_tests(|_| {});
+    let report = run_observed(&sessions, Some(&progress), intent, Some(observer)).await;
+    assert!(!report.ok);
+    assert_eq!(report.completed, 1, "{:?}", report.errors);
+    assert!(
+        listed
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|entry| entry.relative == "b")
+    );
+    let delivered = delivered.lock().unwrap();
+    assert_eq!(delivered.len(), 1);
+    let name = &delivered[0];
+    assert_eq!(
+        std::fs::read(root.join("published").join(name)).unwrap(),
+        server.files[&format!("/src/{name}")]
+    );
+    assert!(
+        !root.join("target").exists(),
+        "Stop must still clean up private work"
+    );
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
+async fn publication_failure_aborts_before_copying_or_deleting_the_source() {
+    let (root, intent) = fixture();
+    std::fs::write(root.join("source/a"), b"original").unwrap();
+    let report = run_observed(
+        &Sessions::default(),
+        None,
+        intent,
+        Some(Arc::new(|_| anyhow::bail!("Publication refused"))),
+    )
+    .await;
+    assert!(!report.ok);
+    assert!(report.errors.iter().any(|error| {
+        error
+            .details
+            .as_deref()
+            .is_some_and(|text| text.contains("Publication refused"))
+    }));
+    assert_eq!(std::fs::read(root.join("source/a")).unwrap(), b"original");
+    assert!(!root.join("target").exists());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
 /// A walk whose next file waits for a transfer slot reads Queued, not as if
 /// it were already at work.
 /// A server whose one transfer slot is taken until the permit returned drops.

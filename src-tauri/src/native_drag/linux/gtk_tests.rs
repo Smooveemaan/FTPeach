@@ -121,7 +121,7 @@ fn native_gtk_drag_exchanges_paths_without_blocking_the_source() {
                             Some(1)
                         },
                     )],
-                    Box::new(move |dir| {
+                    Box::new(move |dir, _| {
                         loads.fetch_add(1, Ordering::SeqCst);
                         let before = heartbeat.load(Ordering::SeqCst);
                         let deadline = Instant::now() + Duration::from_secs(2);

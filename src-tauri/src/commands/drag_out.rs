@@ -89,15 +89,39 @@ pub async fn drag_out_start(
         crate::native_drag::linux::start_drag(
             window,
             entries,
-            Box::new(move |directory| {
+            Box::new(move |directory, publisher| {
+                let work = directory.with_extension("download");
+                std::fs::create_dir(&work)?;
                 tauri::async_runtime::block_on(async move {
                     for file in files {
                         let id = uuid::Uuid::new_v4().to_string();
-                        let target = directory.join(&file.name);
+                        let target = work.join(&file.name);
                         reporter.started(&id, &file, file.size);
                         reporter.status(&id, "queued");
                         let outcome = if file.is_directory {
-                            let report = recursive_transfer::run(
+                            let published = publisher.clone();
+                            let root = file.name.clone();
+                            let source = target.clone();
+                            let observer = std::sync::Arc::new(
+                                move |event: recursive_transfer::Delivery<'_>| match event {
+                                    recursive_transfer::Delivery::Listed(entries) => published
+                                        .list(
+                                            &root,
+                                            entries.iter().map(|entry| {
+                                                (
+                                                    entry.relative.as_str(),
+                                                    entry.directory,
+                                                    entry.size,
+                                                )
+                                            }),
+                                        ),
+                                    recursive_transfer::Delivery::File(relative) => published.file(
+                                        &std::path::Path::new(&root).join(relative),
+                                        &source.join(relative),
+                                    ),
+                                },
+                            );
+                            let report = recursive_transfer::run_observed(
                                 &sessions,
                                 Some(&progress),
                                 Intent {
@@ -114,6 +138,7 @@ pub async fn drag_out_start(
                                     skip_existing: false,
                                     resume_from: None,
                                 },
+                                Some(observer),
                             )
                             .await;
                             if report.ok {
@@ -127,16 +152,32 @@ pub async fn drag_out_start(
                                 }))
                             }
                         } else {
-                            crate::application::transfer_service::transfer_download(
-                                &sessions,
-                                &progress,
-                                connection_id.clone(),
-                                id.clone(),
-                                file.remote_path.clone(),
-                                target.to_string_lossy().into_owned(),
-                                false,
-                                Some(false),
-                            )
+                            async {
+                                publisher
+                                    .list("", [(file.name.as_str(), false, file.size.unwrap_or(0))])
+                                    .map_err(CommandError::from)?;
+                                crate::application::transfer_service::transfer_download(
+                                    &sessions,
+                                    &progress,
+                                    connection_id.clone(),
+                                    id.clone(),
+                                    file.remote_path.clone(),
+                                    target.to_string_lossy().into_owned(),
+                                    false,
+                                    Some(false),
+                                )
+                                .await
+                                .and_then(|()| {
+                                    let origin = crate::local_fs::provenance::Origin::for_url(
+                                        &origin_base,
+                                        &file.remote_path,
+                                    );
+                                    crate::local_fs::provenance::mark(&target, &origin);
+                                    publisher
+                                        .file(std::path::Path::new(&file.name), &target)
+                                        .map_err(CommandError::from)
+                                })
+                            }
                             .await
                         };
                         if let Err(error) = outcome {

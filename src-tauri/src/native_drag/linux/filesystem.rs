@@ -6,16 +6,16 @@ use fuser::{
     ReplyData, ReplyDirectory, ReplyEmpty, ReplyEntry, ReplyIoctl, ReplyOpen, ReplyXattr, Request,
 };
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     ffi::{OsStr, OsString},
     fs,
     os::unix::fs::{DirBuilderExt, FileExt, MetadataExt, OpenOptionsExt},
     path::{Path, PathBuf},
-    sync::{Arc, Mutex, OnceLock},
+    sync::{Arc, Condvar, Mutex},
     time::{Duration, UNIX_EPOCH},
 };
 
-pub(crate) type Loader = Box<dyn FnOnce(&Path) -> Result<(), CommandError> + Send>;
+pub(crate) type Loader = Box<dyn FnOnce(&Path, Publisher) -> Result<(), CommandError> + Send>;
 
 fn transfer_errno(error: CommandError) -> Errno {
     if error.code == crate::ipc::ErrorCode::Cancelled {
@@ -28,20 +28,138 @@ fn transfer_errno(error: CommandError) -> Errno {
 struct Directory {
     path: PathBuf,
     loader: Mutex<Option<Loader>>,
-    ready: OnceLock<Result<(), CommandError>>,
+    state: Mutex<Publication>,
+    changed: Condvar,
+}
+
+#[derive(Default)]
+struct Publication {
+    started: bool,
+    result: Option<Result<(), CommandError>>,
+    listed: HashMap<PathBuf, (FileType, u64, usize)>,
+    available: HashSet<PathBuf>,
+}
+
+/// Publishes a selection's metadata and committed files to the read-only view.
+#[derive(Clone)]
+pub(crate) struct Publisher(Arc<Directory>);
+
+impl Publisher {
+    /// Announces directories and file sizes without exposing unfinished contents.
+    pub(crate) fn list<'a>(
+        &self,
+        root: &str,
+        entries: impl IntoIterator<Item = (&'a str, bool, u64)>,
+    ) -> Result<()> {
+        let mut state = self.0.state.lock().unwrap();
+        for (relative, directory, size) in entries {
+            let relative = if relative.is_empty() {
+                PathBuf::from(root)
+            } else {
+                Path::new(root).join(relative)
+            };
+            anyhow::ensure!(
+                relative
+                    .components()
+                    .all(|part| matches!(part, std::path::Component::Normal(_))),
+                "Unsafe drag publication path"
+            );
+            let path = self.0.path.join(&relative);
+            if directory {
+                fs::create_dir_all(&path)?;
+            } else {
+                if let Some(parent) = path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                fs::OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .open(&path)?;
+            }
+            let order = state.listed.len();
+            state.listed.insert(
+                relative,
+                (
+                    if directory {
+                        FileType::Directory
+                    } else {
+                        FileType::RegularFile
+                    },
+                    size,
+                    order,
+                ),
+            );
+        }
+        self.0.changed.notify_all();
+        Ok(())
+    }
+
+    /// Retains a committed file independently of the download's rollback.
+    pub(crate) fn file(&self, relative: &Path, source: &Path) -> Result<()> {
+        anyhow::ensure!(
+            fs::symlink_metadata(source)?.is_file(),
+            "Unsupported drag publication type"
+        );
+        let mut state = self.0.state.lock().unwrap();
+        anyhow::ensure!(
+            matches!(
+                state.listed.get(relative),
+                Some((FileType::RegularFile, _, _))
+            ),
+            "Unlisted drag publication"
+        );
+        // Keep the link outside the exported tree until its name is final.
+        let temporary = self.0.path.with_extension(uuid::Uuid::new_v4().to_string());
+        fs::hard_link(source, &temporary)?;
+        fs::rename(&temporary, self.0.path.join(relative))?;
+        state.available.insert(relative.to_path_buf());
+        self.0.changed.notify_all();
+        Ok(())
+    }
 }
 
 impl Directory {
-    fn prepare(&self) -> Result<(), CommandError> {
-        self.ready
-            .get_or_init(|| {
-                let mut loader = self.loader.lock().unwrap();
-                match loader.take() {
-                    Some(load) => load(&self.path),
-                    None => Ok(()),
-                }
-            })
-            .clone()
+    fn prepare(self: &Arc<Self>, relative: &Path) -> Result<(), CommandError> {
+        if relative.as_os_str().is_empty() {
+            return Ok(());
+        }
+        let mut loader = self.loader.lock().unwrap();
+        if let Some(load) = loader.take() {
+            self.state.lock().unwrap().started = true;
+            let directory = self.clone();
+            tauri::async_runtime::spawn_blocking(move || {
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    load(&directory.path, Publisher(directory.clone()))
+                }))
+                .unwrap_or_else(|_| {
+                    Err(CommandError::new(
+                        crate::ipc::ErrorCode::Internal,
+                        "Drag download panicked",
+                    ))
+                });
+                directory.state.lock().unwrap().result = Some(result);
+                directory.changed.notify_all();
+            });
+        }
+        drop(loader);
+        let mut state = self.state.lock().unwrap();
+        loop {
+            if state.available.contains(relative)
+                || matches!(
+                    state.listed.get(relative),
+                    Some((FileType::Directory, _, _))
+                )
+            {
+                return Ok(());
+            }
+            if let Some(result) = &state.result {
+                return result.clone();
+            }
+            if !state.started {
+                return Ok(());
+            }
+            state = self.changed.wait(state).unwrap();
+        }
     }
 }
 
@@ -55,7 +173,7 @@ struct Node {
 
 impl Node {
     fn path(&self) -> Result<PathBuf, CommandError> {
-        self.directory.prepare()?;
+        self.directory.prepare(&self.relative)?;
         if let Some(root) = self.relative.components().next() {
             let kind = fs::symlink_metadata(self.directory.path.join(root))?.file_type();
             if !kind.is_file() && !kind.is_dir() {
@@ -109,7 +227,8 @@ impl Mounted {
             directory: Arc::new(Directory {
                 path: base.join("cache"),
                 loader: Mutex::new(None),
-                ready: OnceLock::new(),
+                state: Mutex::new(Publication::default()),
+                changed: Condvar::new(),
             }),
             relative: PathBuf::new(),
             parent: INodeNo::ROOT,
@@ -158,7 +277,8 @@ impl Mounted {
         let directory = Arc::new(Directory {
             path,
             loader: Mutex::new(Some(loader)),
-            ready: OnceLock::new(),
+            state: Mutex::new(Publication::default()),
+            changed: Condvar::new(),
         });
         let mut tree = self.tree.lock().unwrap();
         let parent = tree.insert(
@@ -211,6 +331,10 @@ impl Drop for Mounted {
         // Deferred requests must stop writing before their private cache is removed.
         for directory in directories {
             directory.loader.lock().unwrap().take();
+            let mut state = directory.state.lock().unwrap();
+            while state.started && state.result.is_none() {
+                state = directory.changed.wait(state).unwrap();
+            }
         }
         // Never recurse through the mountpoint, including when unmount failed.
         let _ = fs::remove_dir_all(self.base.join("cache"));
@@ -264,13 +388,22 @@ impl View {
     }
     fn attr(&self, ino: INodeNo) -> Result<FileAttr, Errno> {
         let node = self.node(ino)?;
-        let preview = match node.directory.ready.get() {
-            Some(Err(error)) => return Err(transfer_errno(error.clone())),
-            Some(Ok(())) => None,
-            None => node.preview,
-        };
+        let state = node.directory.state.lock().unwrap();
+        let preview =
+            if node.relative.as_os_str().is_empty() || state.available.contains(&node.relative) {
+                None
+            } else if let Some(metadata) = state.listed.get(&node.relative) {
+                Some((metadata.0, metadata.1))
+            } else {
+                match &state.result {
+                    Some(Err(error)) => return Err(transfer_errno(error.clone())),
+                    Some(Ok(())) => None,
+                    None => node.preview,
+                }
+            };
+        drop(state);
         // Desktop shells query metadata on their UI thread before acknowledging a drop.
-        let path = if preview.is_some() {
+        let path = if preview.is_some() && node.preview.is_some() {
             node.directory.path.clone()
         } else {
             node.directory.path.join(&node.relative)
@@ -440,19 +573,40 @@ impl Filesystem for View {
             let result = (|| -> Result<_, Errno> {
                 let node = view.node(ino)?;
                 let mut entries = vec![
-                    (ino, FileType::Directory, OsString::from(".")),
-                    (node.parent, FileType::Directory, OsString::from("..")),
+                    (ino, FileType::Directory, OsString::from("."), 0),
+                    (node.parent, FileType::Directory, OsString::from(".."), 1),
                 ];
                 for entry in fs::read_dir(view.path(ino)?).map_err(Errno::from)? {
                     let entry = entry.map_err(Errno::from)?;
+                    if node.relative.as_os_str().is_empty()
+                        && !view
+                            .0
+                            .lock()
+                            .unwrap()
+                            .children
+                            .contains_key(&(ino, entry.file_name()))
+                    {
+                        continue;
+                    }
                     let child = view.child(ino, &entry.file_name())?;
-                    entries.push((child, view.attr(child)?.kind, entry.file_name()));
+                    let relative = node.relative.join(entry.file_name());
+                    let order = node
+                        .directory
+                        .state
+                        .lock()
+                        .unwrap()
+                        .listed
+                        .get(&relative)
+                        .map_or(usize::MAX, |metadata| metadata.2 + 2);
+                    entries.push((child, view.attr(child)?.kind, entry.file_name(), order));
                 }
+                // Match the coordinator's order and keep offsets stable across reads.
+                entries.sort_by(|a, b| a.3.cmp(&b.3).then_with(|| a.2.cmp(&b.2)));
                 Ok(entries)
             })();
             match result {
                 Ok(entries) => {
-                    for (index, (ino, kind, name)) in
+                    for (index, (ino, kind, name, _)) in
                         entries.into_iter().enumerate().skip(offset as usize)
                     {
                         if reply.add(ino, (index + 1) as u64, kind, name) {
@@ -474,6 +628,123 @@ mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     #[test]
+    fn stopped_folder_keeps_delivered_files_and_rejects_unfinished_contents() {
+        let mounted = Mounted::new().unwrap();
+        let (published, ready) = std::sync::mpsc::channel();
+        let (stop, cancelled) = std::sync::mpsc::channel();
+        let paths = mounted
+            .add_directory(
+                &[test_file("folder", true, None)],
+                Box::new(move |dir, publisher| {
+                    let mut entries = vec![("", true, 0)];
+                    for name in ["a", "b", "c", "d", "e", "unfinished", "waiting"] {
+                        entries.push((name, false, 8));
+                    }
+                    publisher
+                        .list("folder", entries)
+                        .map_err(CommandError::from)?;
+                    let work = dir.with_extension("download");
+                    fs::create_dir(&work)?;
+                    for name in ["a", "b", "c", "d", "e"] {
+                        let source = work.join(name);
+                        fs::write(&source, format!("{name} content"))?;
+                        publisher
+                            .file(&Path::new("folder").join(name), &source)
+                            .map_err(CommandError::from)?;
+                    }
+                    fs::write(work.join("unfinished"), b"partial")?;
+                    published.send(()).unwrap();
+                    cancelled.recv_timeout(Duration::from_secs(15)).unwrap();
+                    fs::remove_dir_all(work)?;
+                    Err(CommandError::new(
+                        crate::ipc::ErrorCode::Cancelled,
+                        "test Stop",
+                    ))
+                }),
+            )
+            .unwrap();
+        let source = PathBuf::from(&paths[0]);
+        let destination = mounted.base.join("destination");
+        fs::create_dir(&destination).unwrap();
+        fs::write(destination.join("unrelated"), b"keep").unwrap();
+        let listing = source.clone();
+        let reading = std::thread::spawn(move || fs::read_dir(listing).unwrap().count());
+        ready.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert_eq!(reading.join().unwrap(), 7);
+        let roots = fs::read_dir(mounted.base.join("mount"))
+            .unwrap()
+            .collect::<std::io::Result<Vec<_>>>()
+            .unwrap();
+        assert_eq!(roots.len(), 1);
+
+        let mut kio = std::env::var_os("FTPEACH_KIO_CLIENT").map(|client| {
+            std::process::Command::new(client)
+                .args(["--platform", "offscreen", "--noninteractive", "copy"])
+                .arg(&source)
+                .arg(&destination)
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+        });
+        let copied = if kio.is_some() {
+            destination.join("folder")
+        } else {
+            destination.clone()
+        };
+        if kio.is_some() {
+            let deadline = std::time::Instant::now() + Duration::from_secs(10);
+            while !(["a", "b", "c", "d", "e"]
+                .iter()
+                .all(|name| copied.join(name).exists()))
+            {
+                if std::time::Instant::now() >= deadline {
+                    let mut child = kio.take().unwrap();
+                    let _ = child.kill();
+                    let output = child.wait_with_output().unwrap();
+                    panic!(
+                        "KIO did not copy completed files before Stop: {}; destination: {:?}",
+                        String::from_utf8_lossy(&output.stderr),
+                        fs::read_dir(&destination)
+                            .unwrap()
+                            .map(|entry| entry.unwrap().path())
+                            .collect::<Vec<_>>()
+                    );
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        } else {
+            for name in ["a", "b", "c", "d", "e"] {
+                fs::copy(source.join(name), copied.join(name)).unwrap();
+            }
+        }
+        let unfinished = source.join("unfinished");
+        let blocked = std::thread::spawn(move || fs::read(unfinished));
+        stop.send(()).unwrap();
+        assert_eq!(
+            blocked.join().unwrap().unwrap_err().raw_os_error(),
+            Some(libc::ECANCELED)
+        );
+        if let Some(child) = kio.take() {
+            let output = child.wait_with_output().unwrap();
+            assert!(
+                !output.status.success(),
+                "KIO reported a stopped folder as complete"
+            );
+        }
+        for name in ["a", "b", "c", "d", "e"] {
+            let expected = format!("{name} content");
+            assert_eq!(fs::read(source.join(name)).unwrap(), expected.as_bytes());
+            assert_eq!(fs::read(copied.join(name)).unwrap(), expected.as_bytes());
+        }
+        assert_eq!(
+            fs::read(source.join("waiting")).unwrap_err().raw_os_error(),
+            Some(libc::ECANCELED)
+        );
+        assert_eq!(fs::read(destination.join("unrelated")).unwrap(), b"keep");
+    }
+
+    #[test]
     fn stopping_file_and_folder_downloads_reaches_gio_as_cancellation() {
         for is_directory in [false, true] {
             let mounted = Mounted::new().unwrap();
@@ -482,7 +753,7 @@ mod tests {
             let paths = mounted
                 .add_directory(
                     &[test_file("entry", is_directory, Some(7))],
-                    Box::new(move |dir| {
+                    Box::new(move |dir, _| {
                         started.send(()).unwrap();
                         cancelled
                             .recv_timeout(Duration::from_secs(5))
@@ -553,7 +824,7 @@ else:
         let paths = mounted
             .add_directory(
                 &[test_file("file.txt", false, Some(7))],
-                Box::new(move |dir| {
+                Box::new(move |dir, _| {
                     std::os::unix::fs::symlink(outside, dir.join("file.txt"))?;
                     Ok(())
                 }),
@@ -567,7 +838,7 @@ else:
         let paths = mounted
             .add_directory(
                 &[test_file("folder", true, None)],
-                Box::new(move |dir| {
+                Box::new(move |dir, _| {
                     std::os::unix::fs::symlink(directory, dir.join("folder"))?;
                     Ok(())
                 }),
@@ -593,7 +864,7 @@ else:
                     test_file("file.txt", false, Some(999)),
                     test_file("folder", true, None),
                 ],
-                Box::new(move |dir| {
+                Box::new(move |dir, _| {
                     started.send(()).unwrap();
                     wait.recv_timeout(Duration::from_secs(2)).map_err(|_| {
                         CommandError::new(
@@ -629,7 +900,7 @@ else:
             let paths = mounted
                 .add_directory(
                     &[test_file("file.bin", false, size)],
-                    Box::new(move |dir| {
+                    Box::new(move |dir, _| {
                         fs::write(dir.join("file.bin"), body)?;
                         Ok(())
                     }),
@@ -661,7 +932,7 @@ else:
                     test_file("a b#%;.txt", false, Some(1)),
                     test_file("folder", true, None),
                 ],
-                Box::new(move |dir| {
+                Box::new(move |dir, _| {
                     seen.fetch_add(1, Ordering::SeqCst);
                     fs::write(dir.join("a b#%;.txt"), contents)?;
                     fs::create_dir_all(dir.join("folder/empty"))?;
@@ -710,7 +981,7 @@ else:
         let paths = mounted
             .add_directory(
                 &[test_file("partial.txt", false, Some(999))],
-                Box::new(|dir| {
+                Box::new(|dir, _| {
                     fs::write(dir.join("partial.txt"), b"partial")?;
                     Err(CommandError::new(
                         crate::ipc::ErrorCode::ConnectionLost,

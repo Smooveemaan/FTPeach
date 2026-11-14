@@ -66,6 +66,10 @@ Packaged smoke, Rust coverage, the layout audit and the installer tests run
 separately. The end-to-end and server suites are closed and run before every release;
 see [how releases are verified](../docs/release-trust.md#how-releases-are-verified).
 
+Linux native drag tests need `fuse3`, `xvfb`, `weston`, `python3-gi`, `libxtst6`,
+a C compiler, `libwayland-dev` and `wayland-protocols`. The Wayland regression
+runs in a nested Weston compositor under Xvfb.
+
 ## Installer tests
 
 `test/e2e/app.ts` starts the real application with a throwaway profile, attaches

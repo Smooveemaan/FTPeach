@@ -3,17 +3,23 @@
 ## Linux
 
 GTK starts a copy-only drag immediately and exports `text/uri-list`. Local selections use their
-existing paths. Remote selections use a process-owned, read-only FUSE mount. Metadata for the
-selected roots comes from the pane's listing without downloading; requests for contents materialize
+existing paths. On Wayland, the source answers GTK's extra `DELETE` target with empty data without
+removing files: Plasma reads every offered format before accepting the drag, and GTK's default
+`NULL` reply leaves that request pending. Remote selections use a process-owned, read-only FUSE mount.
+Metadata for the selected roots comes from the pane's listing without downloading; requests for contents materialize
 the selection in a private temporary directory through the transfer pool and recursive transfer
 coordinator. Blocking requests run off the FUSE event loop so metadata stays available while a
-download is in progress. GTK never waits for the network, and contents are exposed only after the
-whole selection has downloaded successfully. A target may open files while hovering, so downloading
-can begin before the mouse is released. Direct reads continue to the downloaded file's actual EOF,
-even if its listing size was unknown or stale.
-File and directory opens report stopped downloads as `ECANCELED`, which GIO recognizes as
-cancellation. Directory opens wait for materialization too, so a failed or stopped download
-cannot be mistaken for an empty directory. Other download failures remain I/O errors.
+download is in progress. GTK never waits for the network, and contents are exposed only after each
+file has downloaded successfully. A target may open files while hovering, so downloading
+can begin before the mouse is released. The recursive coordinator publishes the validated directory
+listing before copying, then publishes each file only after its download commits. Published files
+are hard links in a separate private view, so stopping the download can clean up its working directory
+without taking completed files away from the file manager. Unfinished files remain unreadable and
+report cancellation; completed files remain available until FTPeach exits. Direct reads continue to
+the downloaded file's actual EOF, even if its listing size was unknown or stale.
+File opens report stopped downloads as `ECANCELED`, which GIO recognizes as cancellation.
+Directory opens wait for the validated listing; cancellation before that listing fails the open,
+so a stopped scan cannot be mistaken for an empty directory. Other download failures remain I/O errors.
 
 The mount stays alive after GTK finishes exchanging paths because the file manager can read them
 later. The pointer gesture and its UI state finish on GDK's `drop-performed`, without waiting for

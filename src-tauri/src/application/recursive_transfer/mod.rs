@@ -9,7 +9,7 @@ mod stages;
 
 use self::io::{Stamp, copy_file, listing, mkdir, remote_task, reserve, stamp_local, stamps};
 use self::journal::{Journal, Paused};
-use self::manifest::Entry;
+pub(crate) use self::manifest::Entry;
 use self::model::check_cancel;
 pub use self::model::{Endpoint, Intent, Report};
 use self::scan::scan;
@@ -126,10 +126,34 @@ pub async fn run(
     progress: Option<&ProgressEmitter>,
     intent: Intent,
 ) -> Report {
+    run_observed(sessions, progress, intent, None).await
+}
+
+/// Validated names and committed files that a native drag can publish incrementally.
+#[cfg_attr(not(any(target_os = "linux", test)), allow(dead_code))]
+pub(crate) enum Delivery<'a> {
+    Listed(&'a [Entry]),
+    File(&'a str),
+}
+
+/// A fallible publication hook; its errors prevent reporting a successful transfer.
+pub(crate) type DeliveryObserver = Arc<dyn Fn(Delivery<'_>) -> Result<()> + Send + Sync>;
+
+/// Runs a walk with notifications before copying and after each file is committed.
+pub(crate) async fn run_observed(
+    sessions: &Sessions,
+    progress: Option<&ProgressEmitter>,
+    intent: Intent,
+    observer: Option<DeliveryObserver>,
+) -> Report {
     let sessions = sessions.clone();
     let progress = progress.cloned();
     // Retain leases and finish the active child even if the IPC caller drops.
-    match tokio::spawn(async move { run_inner(&sessions, progress.as_ref(), intent).await }).await {
+    match tokio::spawn(async move {
+        run_inner(&sessions, progress.as_ref(), intent, observer.as_ref()).await
+    })
+    .await
+    {
         Ok(report) => report,
         Err(error) => Report {
             outcome: "failed".into(),
@@ -264,6 +288,7 @@ async fn run_inner(
     sessions: &Sessions,
     progress: Option<&ProgressEmitter>,
     intent: Intent,
+    observer: Option<&DeliveryObserver>,
 ) -> Report {
     let mut report = Report::default();
     let mut wrote_target = false;
@@ -404,7 +429,8 @@ async fn run_inner(
         // Names that stood in the target before this walk, which it must never
         // take back, nor write over when skipping. Only an overwrite or a skip
         // can meet one: any other copy that lands proves its name was free.
-        let walk = Walk { sessions, progress, intent: &intent, token: &token };
+        if let Some(observer) = observer { observer(Delivery::Listed(&manifest.entries))?; }
+        let walk = Walk { sessions, progress, intent: &intent, token: &token, observer };
         let existing_targets = make_directories(&walk, &manifest, &first_file, &mut journal, &mut wrote_target).await?;
         copy_files(&walk, &manifest, file_count, &existing_targets, &mut journal, &mut report).await?;
         anyhow::ensure!(report.errors.is_empty(), "Recursive copy was incomplete; source retained");

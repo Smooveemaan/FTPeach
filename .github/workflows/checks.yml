@@ -280,7 +280,7 @@ jobs:
         run: >-
           sudo apt-get update && sudo apt-get install --yes
           libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
-          fuse3 xvfb python3-gi libxtst6
+          fuse3 xvfb weston python3-gi libxtst6
       - name: Enable FUSE for native drag tests
         if: runner.os == 'Linux'
         run: sudo modprobe fuse

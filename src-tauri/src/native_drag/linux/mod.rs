@@ -2,6 +2,8 @@
 mod filesystem;
 #[cfg(test)]
 mod gtk_tests;
+#[cfg(test)]
+mod wayland_tests;
 
 use anyhow::{Context, Result, ensure};
 use gtk::{gdk, gio, glib, prelude::*};
@@ -164,6 +166,24 @@ fn begin(
             selection.set(&gdk::Atom::intern("text/uri-list"), 8, &data);
         }),
     );
+    let delete_context = active_context.clone();
+    handlers
+        .borrow_mut()
+        .push(widget.connect_drag_data_delete(move |widget, context| {
+            if delete_context.borrow().as_ref() == Some(context)
+                && widget.display().type_().name() == "GdkWaylandDisplay"
+            {
+                // workaround: GTK3's NULL DELETE reply leaves Plasma waiting for all offered formats.
+                gdk::property_change(
+                    &context.source_window(),
+                    &gdk::Atom::intern("GDK_SELECTION"),
+                    &gdk::Atom::intern("DELETE"),
+                    8,
+                    gdk::PropMode::Replace,
+                    gdk::ChangeData::UChars(&[]),
+                );
+            }
+        }));
     let end_sender = sender.clone();
     let end_handlers = handlers.clone();
     let cancelled = Rc::new(Cell::new(false));

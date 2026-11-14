@@ -9,6 +9,7 @@ pub(super) struct Walk<'a> {
     pub(super) progress: Option<&'a ProgressEmitter>,
     pub(super) intent: &'a Intent,
     pub(super) token: &'a CancellationToken,
+    pub(super) observer: Option<&'a DeliveryObserver>,
 }
 
 /// How a target name is compared: Windows names ignore case.
@@ -35,6 +36,7 @@ pub(super) async fn make_directories(
         progress,
         intent,
         token,
+        ..
     } = *walk;
     let note_existing = intent.overwrite || intent.skip_existing;
     let mut existing_targets = HashSet::new();
@@ -121,6 +123,7 @@ pub(super) async fn copy_files(
         progress,
         intent,
         token,
+        ..
     } = *walk;
     let delivered = |journal: &Journal, entry: &Entry| {
         journal
@@ -324,6 +327,9 @@ pub(super) async fn copy_files(
                         )
                     );
                     journal.sources.insert(entry.relative.clone(), expected);
+                }
+                if let Some(observer) = walk.observer {
+                    observer(Delivery::File(&entry.relative))?;
                 }
                 // Cancellation can race a successful commit. Capture the
                 // receipt even then, so Stop can verify the landed file.

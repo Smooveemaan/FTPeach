@@ -136,9 +136,11 @@ export default function MenuItems({ items, onAction, onCloseSubmenu }: MenuItems
         key={typeof item.label === 'string' ? item.label : `item-${i}`}
         onMouseEnter={() => {
           if (item.disabled) {
+            if (activeSubmenu !== null) focusMenuItem(itemRefs.current[activeSubmenu]);
             setActiveSubmenu(null);
             return;
           }
+          focusMenuItem(itemRefs.current[i]);
           if (hasSubmenu) setActiveSubmenu(i);
           else setActiveSubmenu(null);
         }}

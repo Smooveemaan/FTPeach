@@ -3,6 +3,31 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, test } from 'vitest';
 import MenuItems from '../../../src/components/MenuItems.tsx';
 
+test.each([false, true])(
+  'leaving a submenu keeps focus in the pane (disabled row: %s)',
+  (disabled) => {
+    const { container } = render(
+      <div className="pane">
+        <MenuItems
+          onAction={() => {}}
+          items={[
+            { label: 'Open with', submenu: [{ label: 'Editor' }] },
+            { label: 'Copy path', disabled },
+          ]}
+        />
+      </div>,
+    );
+    const opener = screen.getByRole('menuitem', { name: 'Open with' });
+    fireEvent.mouseEnter(opener);
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Editor' }));
+    const next = screen.getByRole('menuitem', { name: 'Copy path' });
+    fireEvent.mouseEnter(next);
+    expect(screen.queryByRole('menuitem', { name: 'Editor' })).toBeNull();
+    expect(document.activeElement).toBe(disabled ? opener : next);
+    expect(container.querySelector('.pane')!.contains(document.activeElement)).toBe(true);
+  },
+);
+
 test('a menu says which items are toggles and choices, and arrows move through every kind', () => {
   render(
     <MenuItems

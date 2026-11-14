@@ -13,6 +13,14 @@
   z-index: 300;
 }
 
+body.native-confirmation-visible::after {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  content: '';
+  background: var(--modal-scrim);
+}
+
 .modal,
 .error-boundary-card {
   background: var(--bg-panel);

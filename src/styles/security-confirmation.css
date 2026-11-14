@@ -8,6 +8,12 @@ body,
   background: var(--bg-panel);
 }
 
+:root[data-platform='linux'],
+:root[data-platform='linux'] body,
+:root[data-platform='linux'] #root {
+  background: transparent;
+}
+
 /* The dialog's own .modal parts fill the window, which draws its frame. */
 .modal.security-confirmation {
   position: relative;
@@ -36,6 +42,11 @@ body,
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+}
+
+.security-confirmation .modal-header,
+.security-confirmation .modal-footer {
+  flex-shrink: 0;
 }
 
 .security-confirmation__content p {

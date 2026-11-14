@@ -99,6 +99,14 @@ test('a hidden WebKit window with zero height gets a valid initial size', async 
   expect(mocks.setSize.mock.calls[0]?.[0].height).toBeGreaterThan(0);
 });
 
+test('Linux fills the allocated viewport after the native confirmation is shown', async () => {
+  vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Linux');
+  const view = await open();
+  const modal = view.container.querySelector<HTMLElement>('.security-confirmation')!;
+  expect(modal.style.width).toBe('');
+  expect(modal.style.height).toBe('');
+});
+
 test('a hidden window reports ready without waiting for an animation frame', async () => {
   vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
   await open();

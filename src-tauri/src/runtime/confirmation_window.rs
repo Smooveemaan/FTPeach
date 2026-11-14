@@ -209,10 +209,15 @@ fn enable_main(main: &tauri::WebviewWindow, enabled: bool) -> tauri::Result<()> 
         // Check and change together so concurrent prompts cannot leave input disabled.
         let result = window.is_enabled().and_then(|current| {
             if current != enabled {
-                window.set_enabled(enabled)
-            } else {
-                Ok(())
+                window.set_enabled(enabled)?;
             }
+            #[cfg(target_os = "linux")]
+            window.eval(if enabled {
+                "document.body.classList.remove('native-confirmation-visible')"
+            } else {
+                "document.body.classList.add('native-confirmation-visible')"
+            })?;
+            Ok(())
         });
         let _ = tx.send(result);
     })?;
@@ -361,7 +366,9 @@ impl Appearance {
 
     fn background(&self) -> tauri::utils::config::Color {
         let [red, green, blue] = self.background;
-        tauri::utils::config::Color(red, green, blue, 255)
+        // Linux has no native rounded frame to clip the opaque window corners.
+        let alpha = if cfg!(target_os = "linux") { 0 } else { 255 };
+        tauri::utils::config::Color(red, green, blue, alpha)
     }
 
     fn apply(&self, window: &tauri::WebviewWindow) -> tauri::Result<()> {
@@ -425,6 +432,10 @@ pub(crate) fn create(
     .background_color(appearance.background())
     .focused(false)
     .visible(false);
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder.transparent(true);
+    }
     // The same WebView2 profile as the main window, which a portable copy
     // keeps beside the program.
     if let Some(root) = crate::local_fs::portable::root() {
@@ -440,6 +451,12 @@ pub(crate) fn create(
         builder = builder.parent(&main)?;
     }
     let window = builder.build()?;
+    #[cfg(target_os = "linux")]
+    {
+        use gtk::prelude::ApplicationWindowExt;
+        // GTK can paint an empty native menubar above our confirmation content.
+        window.gtk_window()?.set_show_menubar(false);
+    }
     configure_native_window(&window);
     // F5 or Ctrl+R would reload the question away, Ctrl+P print it. Left on
     // under the smoke test, as in the main window.
@@ -487,6 +504,17 @@ pub(crate) fn create(
 #[cfg(test)]
 mod appearance_tests {
     use super::*;
+
+    #[test]
+    fn confirmation_background_preserves_the_palette_with_transparent_linux_corners() {
+        let appearance = Appearance::default();
+        let tauri::utils::config::Color(red, green, blue, alpha) = appearance.background();
+        assert_eq!([red, green, blue], appearance.background);
+        #[cfg(target_os = "linux")]
+        assert_eq!(alpha, 0);
+        #[cfg(not(target_os = "linux"))]
+        assert_eq!(alpha, 255);
+    }
 
     #[test]
     fn appearance_accepts_only_named_schemes_and_byte_colors() {

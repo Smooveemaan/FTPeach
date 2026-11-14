@@ -84,6 +84,12 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
 
     let store = app.state::<Store>().inner().clone();
     if let Some(main_window) = app.get_webview_window("main") {
+        #[cfg(target_os = "linux")]
+        {
+            use gtk::prelude::ApplicationWindowExt;
+            // GTK can paint an empty native menubar above our web-based menu.
+            main_window.gtk_window()?.set_show_menubar(false);
+        }
         #[cfg(windows)]
         super::window_resize::install(&main_window);
         #[cfg(target_os = "macos")]

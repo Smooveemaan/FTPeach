@@ -174,11 +174,14 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
         void (async () => {
           const currentContent = contentRef.current;
           if (!currentContent || cancelled) return;
+          // Measure the message and fields, not the space left by the initial window.
+          currentContent.style.flex = '0 0 auto';
           const height = Math.ceil(
             (titlebar?.offsetHeight ?? 0) +
               currentContent.scrollHeight +
               (actions?.offsetHeight ?? 0),
           );
+          currentContent.style.flex = '';
           const finalSize = size(width, height);
           if (modal) modal.style.height = `${finalSize.height / pixelScale}px`;
           await getCurrentWindow().setSize(finalSize);
@@ -188,6 +191,11 @@ export default function SecurityConfirmation({ requestId }: SecurityConfirmation
           await invoke('plugin:sensitive|sensitive_confirmation_ready', { requestId }).catch(() =>
             getCurrentWindow().close(),
           );
+          if (modal && hostPlatform() === 'linux') {
+            // GTK may allocate more than the requested size; fill its actual viewport.
+            modal.style.width = '';
+            modal.style.height = '';
+          }
         })().catch(() => getCurrentWindow().close());
       });
     };

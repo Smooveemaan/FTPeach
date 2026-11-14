@@ -73,6 +73,7 @@
     "allow-vault-change-password",
     "allow-vault-note-activity",
     "allow-app-version",
+    "allow-app-write-clipboard-text",
     "allow-app-quit",
     "allow-app-state-flushed",
     "allow-app-double-click-time",

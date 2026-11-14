@@ -82,6 +82,7 @@ fn main() {
         "vault_change_password",
         "vault_note_activity",
         "app_version",
+        "app_write_clipboard_text",
         "app_quit",
         "app_state_flushed",
         "app_double_click_time",

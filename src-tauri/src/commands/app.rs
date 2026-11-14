@@ -5,6 +5,8 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
+pub mod clipboard;
+
 /// Whether the spot under a file drag from another app takes the drop, so
 /// Windows or macOS shows a copy or a "no" cursor there.
 #[tauri::command]

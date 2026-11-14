@@ -4,6 +4,7 @@ import { ConnectionBar } from '../../connections/index.ts';
 import Icon from '../../../components/Icon.tsx';
 import type { IconName } from '../../../components/Icon.tsx';
 import ContextMenu from '../../../components/ContextMenu.tsx';
+import { clipboard } from '../../../platform/clipboard.ts';
 import { handler, reportRejection } from '../../../shared/asyncFailure.ts';
 import { connectionAddress } from '../../../shared/siteContracts.ts';
 import MenuItems from '../../../components/MenuItems.tsx';
@@ -217,15 +218,14 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                 id: 'copy-connection-address',
                 label: t('paneSourceSwitcher.copyConnectionAddress'),
                 disabled: !address,
-                onClick: () => reportRejection(navigator.clipboard.writeText(address)),
+                onClick: () => reportRejection(clipboard.writeText(address)),
               },
               ...(pane.form.protocol === 'sftp' && pane.sshFingerprint
                 ? [
                     {
                       id: 'ssh-fingerprint',
                       label: t('paneSourceSwitcher.copySshFingerprint'),
-                      onClick: () =>
-                        reportRejection(navigator.clipboard.writeText(pane.sshFingerprint!)),
+                      onClick: () => reportRejection(clipboard.writeText(pane.sshFingerprint!)),
                     },
                   ]
                 : []),

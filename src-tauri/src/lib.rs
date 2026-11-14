@@ -155,6 +155,7 @@ pub fn run() {
             commands::vault::vault_change_password,
             commands::vault::vault_note_activity,
             commands::app::app_version,
+            commands::app::clipboard::app_write_clipboard_text,
             commands::app::app_quit,
             commands::app::app_state_flushed,
             commands::app::app_double_click_time,

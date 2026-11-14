@@ -2,6 +2,7 @@ import type { MouseEvent as ReactMouseEvent } from 'react';
 import { currentLocalRoot } from '../../shared/paths.ts';
 import type { MenuItem as ShellMenuItem } from '../../components/MenuItems.tsx';
 import { api } from '../../platform/api/index.ts';
+import { clipboard as systemClipboard } from '../../platform/clipboard.ts';
 import { hostPlatform } from '../../platform/os.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
@@ -127,7 +128,7 @@ export function usePaneActions({
   browser,
   sites,
   shell,
-  clipboard = navigator.clipboard,
+  clipboard = systemClipboard,
   fileClipboard,
 }: PaneActionsOptions): PaneActionsModel {
   const {

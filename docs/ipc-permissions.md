@@ -51,6 +51,7 @@ that follow explain security behavior rather than repeat command groupings.
 | `app_state_flushed` | app | Yes | No |
 | `app_system_hour_cycle` | app | Yes | No |
 | `app_version` | app | Yes | No |
+| `app_write_clipboard_text` | app | Yes | No |
 | `authorize_sensitive` | sensitive | Yes | No |
 | `debug_open_devtools` | app | Yes | No |
 | `dialog_select_application` | app | Yes | No |

@@ -4,6 +4,7 @@ import LogPanel from '../../../src/features/logs/LogPanel.tsx';
 import { flashTooltip } from '../../../src/hooks/useTooltip.ts';
 import type { LogEntry } from '../../../src/shared/logEntry.ts';
 import { createLogTimeFormatter } from '../../../src/features/settings/dateFormat.ts';
+import { clipboard } from '../../../src/platform/clipboard.ts';
 
 vi.mock('../../../src/hooks/useTooltip.ts', () => ({ flashTooltip: vi.fn() }));
 
@@ -33,8 +34,8 @@ const shownLines = (container: HTMLElement) =>
   [...container.querySelectorAll('.log-chunk .log-line')].map((element) => element.textContent);
 
 test('Copy flashes its tooltip on the button once the clipboard write settles', async () => {
-  const writeText = vi.fn(() => Promise.resolve());
-  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+  const writeText = vi.spyOn(clipboard, 'writeText').mockResolvedValue(undefined);
+  onTestFinished(() => writeText.mockRestore());
   const { container } = renderPanel([line(1, 'hello')]);
   const copy = container.querySelector<HTMLButtonElement>(
     '[data-tooltip="logPanel.copyToClipboard"]',
@@ -45,6 +46,21 @@ test('Copy flashes its tooltip on the button once the clipboard write settles', 
   });
   expect(writeText).toHaveBeenCalledWith(expect.stringContaining('hello'));
   expect(flashTooltip).toHaveBeenCalledWith(copy, 'logPanel.copiedTooltip');
+});
+
+test('Copy reports a native clipboard error without reporting success', async () => {
+  const writeText = vi
+    .spyOn(clipboard, 'writeText')
+    .mockRejectedValue(new Error('GTK unavailable'));
+  onTestFinished(() => writeText.mockRestore());
+  vi.mocked(flashTooltip).mockClear();
+  renderPanel([line(1, 'hello')]);
+  const copy = screen.getByRole('button', { name: 'logPanel.copyToClipboard' });
+  await act(async () => {
+    copy.click();
+  });
+  expect(writeText).toHaveBeenCalledWith(expect.stringContaining('hello'));
+  expect(flashTooltip).toHaveBeenCalledExactlyOnceWith(copy, 'logPanel.copyFailedTooltip');
 });
 
 test('Save writes only the lines shown, and says so only when the write failed', async () => {

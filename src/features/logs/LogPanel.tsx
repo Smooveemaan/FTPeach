@@ -11,6 +11,7 @@ import type { MouseEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { flashTooltip } from '../../hooks/useTooltip.ts';
+import { clipboard } from '../../platform/clipboard.ts';
 import { useTruncated } from '../../hooks/useTruncated.ts';
 import ContextMenu from '../../components/ContextMenu.tsx';
 import Icon from '../../components/Icon.tsx';
@@ -326,7 +327,7 @@ export default function LogPanel({
     // React nulls currentTarget once the handler yields, so grab it before the await.
     const anchor = e.currentTarget;
     try {
-      await navigator.clipboard.writeText(
+      await clipboard.writeText(
         formatLines(visibleLines, showConnectionTags, getLabel, formatTime, t),
       );
       flashTooltip(anchor, t('logPanel.copiedTooltip'));

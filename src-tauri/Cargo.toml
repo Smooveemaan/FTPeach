@@ -79,7 +79,7 @@ webpki-roots = "1.0.10"
 async-trait = "0.1"
 tokio-util = "0.7"
 regex = "1"
-russh = { version = "0.63.1", default-features = false, features = ["ring", "rsa", "flate2"] }
+russh = { version = "0.65.1", default-features = false, features = ["ring", "rsa", "flate2"] }
 russh-sftp = "3.0.1"
 sha2 = "0.11"
 reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "http2", "stream", "socks"] }
@@ -143,6 +143,8 @@ backhand = { version = "=0.25.5", default-features = false, features = ["gzip", 
 zstd = { version = "=0.14.3", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
+# Enable activation events on the same tray-icon instance Tauri uses.
+tray-icon = { version = "0.25.1", default-features = false, features = ["ksni"] }
 dbus = "0.9.12"
 fuser = { version = "0.18.0", default-features = false }
 gtk = "0.18.2"

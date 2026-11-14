@@ -1,21 +1,26 @@
 [graph]
-targets = ["x86_64-pc-windows-msvc"]
+targets = ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin"]
 
 [advisories]
 version = 2
 yanked = "deny"
 ignore = [
-  { id = "RUSTSEC-2023-0071", reason = "RSA key compatibility is required; the rsa crate has no patched release. Reassess when russh adopts a constant-time implementation. Review by 2027-01-23; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2023-0071", reason = "RSA key compatibility is required; russh 0.65.1 pins rsa to =0.10.0-rc.18, excluding the fixed 0.10.0 release. Reassess when russh accepts the fixed release. Review by 2027-01-23; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2024-0370", reason = "Build-only dependency of glib-macros 0.18 and gtk3-macros 0.18 required by Tauri's GTK 3 stack; no compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2026-0370", reason = "zvariant is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2026-0371", reason = "zbus_names is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
 ]
 
 [licenses]
 version = 2
 confidence-threshold = 0.8
 allow = [
-  "Apache-2.0", "BSD-2-Clause",
+  "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-2-Clause",
   "BSD-3-Clause", "BSL-1.0", "CC0-1.0", "CDLA-Permissive-2.0", "ISC", "MIT",
   "MPL-2.0", "Unicode-3.0", "Zlib"
 ]
+exceptions = [{ name = "ksni", allow = ["Unlicense"] }]
 
 [bans]
 multiple-versions = "allow"

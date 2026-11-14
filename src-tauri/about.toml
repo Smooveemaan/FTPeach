@@ -12,3 +12,6 @@ accepted = [
     "Unicode-3.0",
     "Zlib",
 ]
+
+[ksni]
+accepted = ["Unlicense"]

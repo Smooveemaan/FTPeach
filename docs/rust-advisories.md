@@ -20,10 +20,14 @@ dated review section below.
 
 | Advisory | Kind | Owner | Reviewed | Review by | Current status | Compensating control |
 | --- | --- | --- | --- | --- | --- | --- |
-| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-10-23 | 2027-01-23 | `rsa` 0.10.0-rc.18 through `russh` 0.63.3; RustSec still lists no patched release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
+| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-11-13 | 2027-01-23 | `russh` 0.65.1 pins `rsa` to `=0.10.0-rc.18`, excluding the fixed 0.10.0 release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
+| RUSTSEC-2024-0370 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `proc-macro-error` 1.0.4 through `glib-macros` 0.18.5 and `gtk3-macros` 0.18.2; no compatible fixed release | Used only while compiling GTK macros, not at runtime. Remove when Tauri's GTK dependency no longer requires these macros. |
+| RUSTSEC-2026-0370 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zvariant` 5.15.0 through `zbus` 5.19.0; its replacement is part of zbus 6 | Keep vulnerability advisories enabled; review Tauri plugins, keepawake and KSNI for compatible zbus 6 releases. |
+| RUSTSEC-2026-0371 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zbus_names` 4.3.4 through `zbus` 5.19.0; its replacement is part of zbus 6 | Keep vulnerability advisories enabled; review Tauri plugins, keepawake and KSNI for compatible zbus 6 releases. |
+| RUSTSEC-2026-0372 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zvariant_derive` 5.15.0 through `zvariant` 5.15.0; its replacement is part of zbus 6 | Derive macros run only during compilation; review the same zbus consumers before removing this exception. |
 
-The dependency review found no compatible direct upgrade that removes these
-transitive packages as of 2026-10-23. Remove an ignore as soon as a compatible
+The reviews below found no compatible direct upgrade that removes the accepted
+transitive advisories at their recorded dates. Remove an ignore as soon as a compatible
 fix is available; extending a deadline requires a fresh security review.
 
 The five `rust-unic` exceptions (RUSTSEC-2025-0075, -0080, -0081, -0098 and
@@ -39,6 +43,39 @@ The three `zip` exceptions (RUSTSEC-2026-0367, -0368 and -0369, all in `extract`
 removed on 2026-10-23. `tauri-plugin-updater` needed `zip` 4 only for its `install`, which
 FTPeach never calls: it is built without its `zip` feature, and FTPeach's own unpacking of
 the portable update (`runtime/update_staging.rs`) uses `zip` 9.
+
+## Unix dependency review, 2026-11-13
+
+The audit graph now includes Windows x64, Linux x64 and both macOS architectures
+of the universal release. The same graph is used by the regular and weekly cargo-deny jobs.
+`target-lexicon`'s `Apache-2.0 WITH LLVM-exception` license is accepted by both
+cargo-deny and cargo-about.
+
+`russh` was updated from 0.63.3 to 0.65.1, which fixes
+[RUSTSEC-2026-0495](https://rustsec.org/advisories/RUSTSEC-2026-0495.html).
+FTPeach uses the SSH client and does not run the affected SSH agent server.
+The update keeps the existing RSA compatibility path and its separate advisory.
+RustSec now lists `rsa >=0.10.0` as patched for
+[RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071.html), but
+russh 0.65.1 requires exactly `rsa =0.10.0-rc.18`. A lockfile update cannot select
+the fixed release. The RSA exception was reviewed without extending its
+2027-01-23 deadline; the Ed25519 advice and user-selected RSA signing path remain
+in place. This update does not establish constant-time RSA signing.
+
+The yanked `async-executor` 1.14.0 was updated to 1.14.1 instead of adding a
+yanked-version exception.
+
+The four new exceptions cover unmaintained packages, not newly accepted
+vulnerabilities. GTK 0.18 requires `glib-macros` 0.18.5 and `gtk3-macros` 0.18.2;
+neither has a compatible release replacing `proc-macro-error`. Updating GTK alone
+would leave Tauri's GTK 0.18 dependency in the graph.
+
+`zbus_names`, `zvariant` and `zvariant_derive` were merged into zbus 6. The locked
+Tauri notification, opener and single-instance plugins, notify-rust, keepawake
+and KSNI still require zbus 5. Updating only FTPeach's direct zbus dependency
+would retain the unmaintained crates through these consumers. Replacing or
+patching that stack is outside this dependency update. These exceptions do not
+suppress other advisories for the same packages and expire on 2027-02-11.
 
 ## RSA review, 2026-10-23
 

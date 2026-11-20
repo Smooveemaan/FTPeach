@@ -1563,6 +1563,7 @@ mod recursive_stop_tests {
         let (reader, mut writer) = socket.into_split();
         let mut lines = BufReader::new(reader).lines();
         let mut passive: Option<DataEnd> = None;
+        let mut restart: Option<usize> = None;
         let mut renaming: Option<String> = None;
         let mut cwd = "/".to_string();
         if writer.write_all(b"220 ready\r\n").await.is_err() {
@@ -1584,6 +1585,8 @@ mod recursive_stop_tests {
                 }
                 .to_string(),
                 "EPSV" | "PASV" => {
+                    // RFC 3659 §5.3: another command before RETR clears REST.
+                    restart = None;
                     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
                     let port = listener.local_addr().unwrap().port();
                     passive = Some(DataEnd::Passive(listener));
@@ -1598,6 +1601,7 @@ mod recursive_stop_tests {
                     }
                 }
                 "PORT" => {
+                    restart = None;
                     let numbers: Vec<u16> = argument
                         .split(',')
                         .map(|part| part.parse().unwrap())
@@ -1705,11 +1709,20 @@ mod recursive_stop_tests {
                         Err(reply) => reply.to_string(),
                     }
                 }
+                "REST" => match argument.parse::<usize>() {
+                    Ok(offset) => {
+                        restart = Some(offset);
+                        format!("350 Restarting at {offset}")
+                    }
+                    Err(_) => "501 Syntax error".to_string(),
+                },
                 "RETR" => {
+                    let offset = restart.take().unwrap_or(0);
                     let content = disk.lock().unwrap().files.get(&path).cloned();
                     match content {
                         Some(bytes) => {
-                            let text = String::from_utf8_lossy(&bytes).into_owned();
+                            let tail = &bytes[offset.min(bytes.len())..];
+                            let text = String::from_utf8_lossy(tail).into_owned();
                             send_listing(text, &mut passive, &mut writer).await
                         }
                         // IIS words a missing file and a missing folder alike.
@@ -1858,6 +1871,37 @@ mod recursive_stop_tests {
         backend.create_file("/empty.txt").await.unwrap();
         assert_eq!(disk.lock().unwrap().files["/empty.txt"], b"");
         backend.disconnect().await.unwrap();
+    }
+
+    /// RFC 3659 §5.3 requires REST immediately before RETR, after PASV/EPSV/PORT.
+    /// The fake server drops any earlier REST when PASV or PORT arrives, as
+    /// FileZilla Server does, so reading a tail fails unless REST lands last.
+    #[tokio::test]
+    async fn read_range_sends_rest_after_data_channel_setup_in_passive_and_active_modes() {
+        let disk = disk(|disk| {
+            disk.files
+                .insert("/range.txt".into(), b"0123456789".to_vec());
+        });
+        let port = spawn_server(disk).await;
+        for active_mode in [false, true] {
+            let map = json!({
+                "protocol": "ftp",
+                "host": "127.0.0.1",
+                "port": port,
+                "user": "local",
+                "password": "test",
+                "activeMode": active_mode
+            });
+            let cfg = crate::protocol::config::ConnectionConfig::for_test(map.as_object().unwrap())
+                .unwrap();
+            let mut backend = FtpBackend::new();
+            backend.connect(&cfg).await.unwrap();
+            let tail = backend.read_range("/range.txt", 4, 6).await.unwrap();
+            assert_eq!(tail, b"456789", "active_mode={active_mode}");
+            let whole = backend.read_range("/range.txt", 0, 10).await.unwrap();
+            assert_eq!(whole, b"0123456789", "active_mode={active_mode}");
+            backend.disconnect().await.unwrap();
+        }
     }
 
     /// A live session on a server holding `disk`, reached as a real one is.

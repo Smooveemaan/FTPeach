@@ -208,7 +208,22 @@ impl DataChannel {
         command: String,
         expected: &[Status],
     ) -> BackendResult<Data> {
+        self.open_at(control, command, expected, 0).await
+    }
+
+    pub(super) async fn open_at(
+        &self,
+        control: &mut AsyncRustlsFtpStream,
+        command: String,
+        expected: &[Status],
+        offset: u64,
+    ) -> BackendResult<Data> {
         if self.active {
+            if offset > 0 {
+                let offset =
+                    usize::try_from(offset).context("FTP resume offset exceeds platform size")?;
+                control.resume_transfer(offset).await?;
+            }
             return match control.custom_data_command(command, expected).await {
                 Ok((_, stream)) => Ok(Data::Active(stream)),
                 Err(suppaftp::FtpError::UnexpectedResponse(response))
@@ -241,6 +256,12 @@ impl DataChannel {
             .await
             .context("FTP data connection timed out")?
             .context("opening the FTP data connection")?;
+        // RFC 3659 §5.3 requires REST immediately before the transfer command.
+        if offset > 0 {
+            control
+                .custom_command(format!("REST {offset}"), &[Status::RequestFilePending])
+                .await?;
+        }
         let Some((connector, name)) = self.tls.clone() else {
             control.custom_command(command, expected).await?;
             return Ok(Data::Passive(AsyncDataStream::Tcp(tcp)));

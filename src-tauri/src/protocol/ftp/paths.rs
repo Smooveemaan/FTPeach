@@ -165,11 +165,13 @@ impl FtpBackend {
             .with_stream(move |s| {
                 Box::pin(async move {
                     let mut file = file?;
-                    if start_at > 0 {
-                        s.resume_transfer(start_at as usize).await?;
-                    }
                     let mut data_stream = data
-                        .open(s, format!("RETR {remote_path_owned}"), RETRIEVE_OPEN)
+                        .open_at(
+                            s,
+                            format!("RETR {remote_path_owned}"),
+                            RETRIEVE_OPEN,
+                            start_at,
+                        )
                         .await?;
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];
                     let mut transferred = start_at;

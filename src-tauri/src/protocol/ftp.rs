@@ -617,10 +617,9 @@ impl ProtocolBackend for FtpBackend {
                 // of file. That is deliberately the whole contract: stopping a
                 // RETR early means ABOR, and a mishandled abort desynchronises
                 // the control channel for every command after it.
-                if offset > 0 {
-                    s.resume_transfer(offset as usize).await?;
-                }
-                let mut data_stream = data.open(s, format!("RETR {path}"), RETRIEVE_OPEN).await?;
+                let mut data_stream = data
+                    .open_at(s, format!("RETR {path}"), RETRIEVE_OPEN, offset)
+                    .await?;
                 let mut bytes: Vec<u8> = Vec::with_capacity(len);
                 let read: BackendResult<()> = async {
                     let mut buf = vec![0u8; COPY_CHUNK_SIZE];

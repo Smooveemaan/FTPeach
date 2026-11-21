@@ -17,7 +17,7 @@ test(
     for (const name of ['bundle/nsis', 'docs', 'src-tauri']) {
       mkdirSync(path.join(directory, name), { recursive: true });
     }
-    copyFileSync(process.execPath, path.join(directory, 'app.exe'));
+    copyFileSync(process.execPath, path.join(directory, 'FTPeach.exe'));
     copyFileSync(process.execPath, path.join(directory, 'bundle/nsis/test-setup.exe'));
     for (const name of [
       'docs/rust-advisories.md',
@@ -48,7 +48,7 @@ test(
     });
     const report = readFileSync(path.join(directory, 'release/release-trust-report.md'), 'utf8');
     assert.match(report, /test-setup\.exe: /);
-    assert.match(report, /app\.exe: /);
+    assert.match(report, /FTPeach\.exe: /);
     assert.equal(child.status, report.includes('**FAIL**') ? 1 : 0, child.stderr);
   },
 );

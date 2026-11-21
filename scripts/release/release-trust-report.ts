@@ -51,8 +51,8 @@ function authenticode(file: string): AuthenticodeResult {
 const bundleFiles = await filesUnder(bundleDir);
 const installers = bundleFiles.filter((file) => file.endsWith('-setup.exe'));
 if (installers.length === 0) throw new Error(`No NSIS installer under ${bundleDir}`);
-// Cargo names the binary after the `app` package; the installer renames it.
-const appExe = path.join(releaseDir, 'app.exe');
+// Cargo names the binary after the `FTPeach` package.
+const appExe = path.join(releaseDir, 'FTPeach.exe');
 const executables = [...installers, appExe];
 
 const problems: string[] = [];

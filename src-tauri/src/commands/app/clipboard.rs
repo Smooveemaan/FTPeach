@@ -73,23 +73,7 @@ mod tests {
     #[test]
     fn gtk_clipboard_preserves_multiline_unicode_and_empty_text() {
         const TEST: &str = "commands::app::clipboard::tests::gtk_clipboard_preserves_multiline_unicode_and_empty_text";
-        if std::env::var_os("FTPEACH_CLIPBOARD_TEST_CHILD").is_none() {
-            let output = std::process::Command::new("xvfb-run")
-                .args(["-a"])
-                .arg(std::env::current_exe().unwrap())
-                .args(["--exact", TEST, "--nocapture"])
-                .env("FTPEACH_CLIPBOARD_TEST_CHILD", "1")
-                .env("GDK_BACKEND", "x11")
-                .env_remove("WAYLAND_DISPLAY")
-                .output()
-                .unwrap();
-            assert!(
-                output.status.success(),
-                "{}\n{}",
-                String::from_utf8_lossy(&output.stdout),
-                String::from_utf8_lossy(&output.stderr)
-            );
-            assert!(String::from_utf8_lossy(&output.stdout).contains("1 passed"));
+        if crate::test_inputs::linux::run_in_xvfb(TEST, "FTPEACH_CLIPBOARD_TEST_CHILD", true) {
             return;
         }
         gtk::init().unwrap();

@@ -16,6 +16,7 @@ import {
 import {
   closeOnceShown,
   dataDir,
+  existingInstalledExe,
   fileVersion,
   install,
   installedExe,
@@ -59,7 +60,8 @@ test('previous published copy updates through Help using the unchanged public fe
   const work = mkdtempSync(path.join(process.env.RUNNER_TEMP!, 'ftpeach-published-'));
   const portable = path.join(work, 'portable');
   const helper = path.join(work, 'uia.exe');
-  let exe = installedExe;
+  let previousExe = installedExe;
+  let targetExe = installedExe;
   let data = dataDir;
   let local = localDir;
   let updates = updatesDir;
@@ -92,17 +94,19 @@ test('previous published copy updates through Help using the unchanged public fe
     };
     const packagePath = path.join(work, previous.name);
     writeFileSync(packagePath, previous.bytes);
-    if (mode === 'installed') install(packagePath);
-    else {
+    if (mode === 'installed') {
+      install(packagePath);
+      previousExe = existingInstalledExe();
+    } else {
       mkdirSync(portable);
       execFileSync('tar.exe', ['-xf', packagePath, '-C', portable], { timeout: 60_000 });
       expect(existsSync(path.join(portable, 'FTPeach.portable'))).toBe(true);
-      exe = path.join(portable, 'FTPeach.exe');
+      previousExe = targetExe = path.join(portable, 'FTPeach.exe');
       data = path.join(portable, 'data');
       local = path.join(data, 'local');
       updates = path.join(local, 'updates');
     }
-    observedPrevious = fileVersion(exe);
+    observedPrevious = fileVersion(previousExe);
     expect(observedPrevious).toBe(previous.version);
     // The fixture's trusted-host entry needs a public key, but no server or connection.
     const key = path.join(work, 'fixture-host');
@@ -124,7 +128,7 @@ test('previous published copy updates through Help using the unchanged public fe
     keepEdit(local);
     const edits = recoveredEdits(path.join(local, 'recovered-edits'));
     const start = async () => {
-      const child = spawn(exe, [], { stdio: 'ignore' });
+      const child = spawn(previousExe, [], { stdio: 'ignore' });
       await once(child, 'spawn');
       assert.ok(child.pid);
       return child.pid;
@@ -200,14 +204,14 @@ test('previous published copy updates through Help using the unchanged public fe
       'Restart now to install. Otherwise the update installs the next time FTPeach starts.',
     );
     await expect
-      .poll(() => existsSync(exe) && fileVersion(exe), { timeout: 180_000 })
+      .poll(() => existsSync(targetExe) && fileVersion(targetExe), { timeout: 180_000 })
       .toBe(version);
     await expect
-      .poll(() => runningFrom(exe).filter((pid) => pid !== updating), { timeout: 60_000 })
+      .poll(() => runningFrom(targetExe).filter((pid) => pid !== updating), { timeout: 60_000 })
       .toHaveLength(1);
-    const updated = runningFrom(exe).filter((pid) => pid !== updating)[0]!;
+    const updated = runningFrom(targetExe).filter((pid) => pid !== updating)[0]!;
     await ui(updated, 'invoke', 'Later');
-    observedNew = fileVersion(exe);
+    observedNew = fileVersion(targetExe);
     expect(observedNew).toBe(version);
     newAbout = await about(updated, version);
     await closeOnceShown(updated);

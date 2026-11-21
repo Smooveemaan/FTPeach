@@ -1,16 +1,13 @@
 use super::*;
+use crate::test_inputs::linux::TestBus;
 use dbus::{
     Message, MessageType,
     arg::{RefArg, Variant},
     blocking::Connection as DbusConnection,
     channel::Sender,
 };
-use std::io::{BufRead, BufReader};
-use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
-
-struct TestBus(Child);
 
 type NotifyArguments = (
     String,
@@ -23,17 +20,17 @@ type NotifyArguments = (
     i32,
 );
 
-impl Drop for TestBus {
-    fn drop(&mut self) {
-        let _ = self.0.kill();
-        let _ = self.0.wait();
-    }
-}
-
-fn connect(address: &str) -> DbusConnection {
-    let mut channel = dbus::channel::Channel::open_private(address).unwrap();
-    channel.register().unwrap();
-    channel.into()
+fn start_notification_bus() -> (TestBus, DbusConnection, zbus::blocking::Connection) {
+    let bus = TestBus::start();
+    let server = bus.connect();
+    server
+        .request_name(DESTINATION, false, false, false)
+        .unwrap();
+    let connection = zbus::blocking::connection::Builder::address(bus.address())
+        .unwrap()
+        .build()
+        .unwrap();
+    (bus, server, connection)
 }
 
 fn next_call(connection: &DbusConnection) -> Message {
@@ -51,26 +48,8 @@ fn next_call(connection: &DbusConnection) -> Message {
 
 #[test]
 fn notification_identity_click_token_clearing_and_delivery_errors_cross_dbus() {
-    let mut bus = TestBus(
-        Command::new("dbus-daemon")
-            .args(["--session", "--nofork", "--print-address=1"])
-            .stdout(Stdio::piped())
-            .spawn()
-            .unwrap(),
-    );
-    let mut address = String::new();
-    BufReader::new(bus.0.stdout.take().unwrap())
-        .read_line(&mut address)
-        .unwrap();
-    let server = connect(address.trim());
-    server
-        .request_name(DESTINATION, false, false, false)
-        .unwrap();
+    let (_bus, server, client_connection) = start_notification_bus();
     let (clicked, received) = mpsc::channel();
-    let client_connection = zbus::blocking::connection::Builder::address(address.trim())
-        .unwrap()
-        .build()
-        .unwrap();
     let client = Client::new(client_connection, move |token| {
         clicked.send(token).unwrap();
     })
@@ -140,25 +119,7 @@ fn notification_identity_click_token_clearing_and_delivery_errors_cross_dbus() {
 
 #[test]
 fn clearing_continues_when_the_server_rejects_one_notification() {
-    let mut bus = TestBus(
-        Command::new("dbus-daemon")
-            .args(["--session", "--nofork", "--print-address=1"])
-            .stdout(Stdio::piped())
-            .spawn()
-            .unwrap(),
-    );
-    let mut address = String::new();
-    BufReader::new(bus.0.stdout.take().unwrap())
-        .read_line(&mut address)
-        .unwrap();
-    let server = connect(address.trim());
-    server
-        .request_name(DESTINATION, false, false, false)
-        .unwrap();
-    let connection = zbus::blocking::connection::Builder::address(address.trim())
-        .unwrap()
-        .build()
-        .unwrap();
+    let (_bus, server, connection) = start_notification_bus();
     let client = Client::new(connection, |_| panic!("clearing must not activate the app")).unwrap();
     let worker = std::thread::spawn(move || {
         for id in [41u32, 42] {

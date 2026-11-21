@@ -64,8 +64,10 @@ export function requireThrowawayMachine() {
 
 const env = process.env as Record<string, string> & { LOCALAPPDATA: string; APPDATA: string };
 export const installDir = path.join(env.LOCALAPPDATA, 'FTPeach');
-// The installer keeps the program's Cargo name; only the portable zip renames it.
-export const installedExe = path.join(installDir, 'app.exe');
+export const installedExe = path.join(installDir, 'FTPeach.exe');
+/** Releases before the package rename installed `app.exe`; newer ones install `FTPeach.exe`. */
+export const existingInstalledExe = () =>
+  existsSync(installedExe) ? installedExe : path.join(installDir, 'app.exe');
 const uninstaller = path.join(installDir, 'uninstall.exe');
 /** Settings, bookmarks, the vault (docs/storage.md). */
 export const dataDir = path.join(env.APPDATA, 'FTPeach');
@@ -318,7 +320,7 @@ export const runningFrom = (exe: string) =>
 
 /**
  * Ends every program running from under `folder`, with its WebView2
- * processes: by path, as other programs may share the name app.exe.
+ * processes: by path, as older releases used the generic name app.exe.
  */
 export function stopProgramsIn(folder: string) {
   const pids = powershell(

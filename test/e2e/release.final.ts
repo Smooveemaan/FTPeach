@@ -8,6 +8,7 @@ import {
   changeSettings,
   closeOnceShown,
   dataDir,
+  existingInstalledExe,
   fileVersion,
   install,
   installedExe,
@@ -133,12 +134,14 @@ for (const mode of ['installed', 'portable'] as const) {
     const candidate = await verifyCandidate(directory);
     const version = candidate.readiness.version;
     const previous = await previousRelease(version);
-    let exe = installedExe;
+    let previousExe = installedExe;
+    let targetExe = installedExe;
     let data = dataDir;
     let updates = updatesDir;
     let editsDir: string | undefined;
     if (mode === 'installed') {
       install(previous.setup);
+      previousExe = existingInstalledExe();
     } else {
       const name = `FTPeach_${previous.version}_x64-portable.zip`;
       const download = await fetch(
@@ -157,12 +160,12 @@ for (const mode of ['installed', 'portable'] as const) {
         '-C',
         portable,
       ]);
-      exe = path.join(portable, 'FTPeach.exe');
+      previousExe = targetExe = path.join(portable, 'FTPeach.exe');
       data = path.join(portable, 'data');
       updates = path.join(data, 'local', 'updates');
       editsDir = path.join(data, 'local', 'recovered-edits');
     }
-    expect(fileVersion(exe)).toBe(previous.version);
+    expect(fileVersion(previousExe)).toBe(previous.version);
     changeSettings(
       { language: 'en', theme: 'dark', autoCheckUpdates: true, closeToTray: false },
       data,
@@ -175,7 +178,7 @@ for (const mode of ['installed', 'portable'] as const) {
     const env: typeof process.env = { ...process.env, ...feed.env };
     delete env.FTPEACH_SMOKE_TEST;
     try {
-      const old = spawn(exe, [], { env, stdio: 'ignore' });
+      const old = spawn(previousExe, [], { env, stdio: 'ignore' });
       expect(old.pid).toBeTruthy();
       const pendingPath = path.join(updates, 'pending.json');
       await expect.poll(() => existsSync(pendingPath), { timeout: 180_000 }).toBe(true);
@@ -197,13 +200,13 @@ for (const mode of ['installed', 'portable'] as const) {
       const stored = storedData(data);
       // Staging at startup installs the verified bytes even with future checks disabled.
       changeSettings({ autoCheckUpdates: false }, data);
-      const staging = spawn(exe, [], { env, stdio: 'ignore' });
+      const staging = spawn(previousExe, [], { env, stdio: 'ignore' });
       expect(staging.pid).toBeTruthy();
       await expect
-        .poll(() => existsSync(exe) && fileVersion(exe), { timeout: 180_000 })
+        .poll(() => existsSync(targetExe) && fileVersion(targetExe), { timeout: 180_000 })
         .toBe(version);
-      await expect.poll(() => runningFrom(exe), { timeout: 60_000 }).toHaveLength(1);
-      await closeOnceShown(runningFrom(exe)[0]!);
+      await expect.poll(() => runningFrom(targetExe), { timeout: 60_000 }).toHaveLength(1);
+      await closeOnceShown(runningFrom(targetExe)[0]!);
       if (mode === 'installed')
         expect(registryValue(UNINSTALL_KEY, 'DisplayVersion')).toBe(version);
       expect(storedData(data)).toEqual(stored);

@@ -3,7 +3,7 @@
 // first-contentful-paint is React's first frame. Times are from spawn.
 //
 //   npm run build:tauri
-//   npm run benchmark:cold-start -- [path\to\app.exe] [runs]
+//   npm run benchmark:cold-start -- [path\to\FTPeach.exe] [runs]
 //
 // Close every running FTPeach first: the single-instance plugin hands a second
 // launch to the running one, and no window of ours ever appears.
@@ -11,7 +11,13 @@ import { execFileSync, spawn } from 'node:child_process';
 import path from 'node:path';
 
 const [
-  exe = path.join(process.env.LOCALAPPDATA ?? '', 'FTPeachBuild', 'target', 'release', 'app.exe'),
+  exe = path.join(
+    process.env.LOCALAPPDATA ?? '',
+    'FTPeachBuild',
+    'target',
+    'release',
+    'FTPeach.exe',
+  ),
   runs = '6',
 ] = process.argv.slice(2);
 const port = 9333;

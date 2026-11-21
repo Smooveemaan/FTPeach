@@ -110,7 +110,7 @@ export function stageLayout(
   releaseDir: string,
   layoutDir: string,
   of = version(),
-  binaryPath = path.join(releaseDir, 'app.exe'),
+  binaryPath = path.join(releaseDir, 'FTPeach.exe'),
 ) {
   rmSync(layoutDir, { recursive: true, force: true });
   mkdirSync(path.join(layoutDir, 'Assets'), { recursive: true });
@@ -140,7 +140,7 @@ export function stageLayout(
 export function build(
   releaseDir: string,
   of = version(),
-  binaryPath = path.join(releaseDir, 'app.exe'),
+  binaryPath = path.join(releaseDir, 'FTPeach.exe'),
   run: typeof execFileSync = execFileSync,
 ): string {
   const msixDir = path.join(releaseDir, 'bundle', 'msix');
@@ -159,7 +159,9 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const [command, releaseDirArg, binaryPathArg] = process.argv.slice(2);
   const releaseDir = releaseDirArg ?? process.env.FTPEACH_RELEASE_DIR ?? 'src-tauri/target/release';
   if (command === 'build') {
-    console.log(build(releaseDir, version(), binaryPathArg ?? path.join(releaseDir, 'app.exe')));
+    console.log(
+      build(releaseDir, version(), binaryPathArg ?? path.join(releaseDir, 'FTPeach.exe')),
+    );
   } else {
     console.error('Usage: msix.ts build [releaseDir] [binaryPath]');
     process.exit(1);

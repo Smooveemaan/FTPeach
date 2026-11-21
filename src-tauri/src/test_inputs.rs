@@ -81,3 +81,75 @@ fn edit(value: &mut Value, keys: &[&str], rng: &mut StdRng) {
         _ => *node = odd(rng),
     }
 }
+
+#[cfg(target_os = "linux")]
+pub(crate) mod linux {
+    use dbus::blocking::Connection;
+    use std::io::{BufRead, BufReader};
+    use std::process::{Child, Command, Stdio};
+
+    /// Private `dbus-daemon` for Linux tests; killed and reaped on drop.
+    pub(crate) struct TestBus {
+        child: Child,
+        address: String,
+    }
+
+    impl TestBus {
+        pub(crate) fn start() -> Self {
+            let mut child = Command::new("dbus-daemon")
+                .args(["--session", "--nofork", "--print-address=1"])
+                .stdout(Stdio::piped())
+                .spawn()
+                .unwrap();
+            let mut address = String::new();
+            BufReader::new(child.stdout.take().unwrap())
+                .read_line(&mut address)
+                .unwrap();
+            Self {
+                child,
+                address: address.trim().to_string(),
+            }
+        }
+
+        pub(crate) fn address(&self) -> &str {
+            &self.address
+        }
+
+        pub(crate) fn connect(&self) -> Connection {
+            let mut channel = dbus::channel::Channel::open_private(&self.address).unwrap();
+            channel.register().unwrap();
+            channel.into()
+        }
+    }
+
+    impl Drop for TestBus {
+        fn drop(&mut self) {
+            let _ = self.child.kill();
+            let _ = self.child.wait();
+        }
+    }
+
+    /// Re-runs the current test inside `xvfb-run` when `guard_env` is unset.
+    /// Returns `true` when the parent ran the child and should return early.
+    pub(crate) fn run_in_xvfb(test_name: &str, guard_env: &str, require_passed: bool) -> bool {
+        if std::env::var_os(guard_env).is_some() {
+            return false;
+        }
+        let output = Command::new("xvfb-run")
+            .args(["-a"])
+            .arg(std::env::current_exe().unwrap())
+            .args(["--exact", test_name, "--nocapture"])
+            .env(guard_env, "1")
+            .env("GDK_BACKEND", "x11")
+            .env_remove("WAYLAND_DISPLAY")
+            .output()
+            .unwrap();
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(output.status.success(), "{stdout}\n{stderr}");
+        if require_passed {
+            assert!(stdout.contains("1 passed"), "{stdout}\n{stderr}");
+        }
+        true
+    }
+}

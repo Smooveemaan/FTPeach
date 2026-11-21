@@ -73,22 +73,7 @@ Gtk.main()
 
 #[test]
 fn native_gtk_drag_exchanges_paths_without_blocking_the_source() {
-    if std::env::var_os("FTPEACH_GTK_DRAG_CHILD").is_none() {
-        let output = Command::new("xvfb-run")
-            .args(["-a"])
-            .arg(std::env::current_exe().unwrap())
-            .args(["--exact", TEST, "--nocapture"])
-            .env("FTPEACH_GTK_DRAG_CHILD", "1")
-            .env("GDK_BACKEND", "x11")
-            .env_remove("WAYLAND_DISPLAY")
-            .output()
-            .unwrap();
-        assert!(
-            output.status.success(),
-            "{}\n{}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
+    if crate::test_inputs::linux::run_in_xvfb(TEST, "FTPEACH_GTK_DRAG_CHILD", false) {
         return;
     }
     gtk::init().unwrap();

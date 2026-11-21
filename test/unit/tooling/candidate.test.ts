@@ -91,7 +91,7 @@ test('MSIX builder writes a 4-part full-trust AppxManifest and invokes makeappx 
 
   const tempDir = await mkdtemp(path.join(tmpdir(), 'msix-test-'));
   t.after(() => rm(tempDir, { recursive: true, force: true }));
-  const binPath = path.join(tempDir, 'app.exe');
+  const binPath = path.join(tempDir, 'FTPeach.exe');
   await writeFile(binPath, 'binary');
   await writeFile(path.join(tempDir, 'NOTICE'), 'notice');
   let packedArgs: string[] = [];

@@ -24,7 +24,7 @@ import { confirmationsShown } from './windows.ts';
 
 const root = path.resolve(import.meta.dirname, '../..');
 export const APP_PATH =
-  process.env.FTPEACH_E2E_APP ?? path.join(root, '.tools', 'smoke-target', 'debug', 'app.exe');
+  process.env.FTPEACH_E2E_APP ?? path.join(root, '.tools', 'smoke-target', 'debug', 'FTPeach.exe');
 
 const HELD_BACK = 'desktop tests: held back';
 /** Held-back lines a test read through `heldBack`. */

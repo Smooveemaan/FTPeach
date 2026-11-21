@@ -5,9 +5,9 @@ import { smokeAppPath, smokeProfileEnvironment } from '../../../scripts/packaged
 
 test('the smoke harness launches the executable name of each desktop platform', () => {
   for (const platform of ['linux', 'darwin'] as const) {
-    assert.equal(path.basename(smokeAppPath(platform)), 'app');
+    assert.equal(path.basename(smokeAppPath(platform)), 'FTPeach');
   }
-  assert.equal(path.basename(smokeAppPath('win32')), 'app.exe');
+  assert.equal(path.basename(smokeAppPath('win32')), 'FTPeach.exe');
 });
 
 test('Unix smoke data is isolated through HOME and the XDG folders', () => {

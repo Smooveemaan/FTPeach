@@ -19,6 +19,7 @@ import {
   damaged,
   dataDir,
   desktopShortcut,
+  existingInstalledExe,
   downloadButton,
   failingInstaller,
   fetched,
@@ -192,7 +193,7 @@ test('an upgrade over the previous release keeps settings, passwords, bookmarks,
   expect(registryValue(UNINSTALL_KEY, 'DisplayVersion')).toBe(previous.version);
   writeProfile(profile('system'), runSettings(false));
   // The previous release runs on the profile first, and writes it as it does.
-  const old = spawn(installedExe, [], { detached: true, stdio: 'ignore' });
+  const old = spawn(existingInstalledExe(), [], { detached: true, stdio: 'ignore' });
   await closeOnceShown(old.pid!);
   keepEdit();
   const data = storedData();

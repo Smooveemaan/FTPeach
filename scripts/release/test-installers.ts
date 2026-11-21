@@ -62,7 +62,7 @@ function buildVersion(version: string, pubkey: string, key: string) {
   for (const file of [setup, `${setup}.sig`]) {
     copyFileSync(path.join(releaseDir, 'bundle', 'nsis', file), path.join(folder, file));
   }
-  // Right after its own build: the next one replaces app.exe.
+  // Right after its own build: the next one replaces FTPeach.exe.
   const zip = buildPortable(releaseDir, version);
   // With the key and its password from the variables, as release.yml signs it.
   tauri('signer', 'sign', zip);

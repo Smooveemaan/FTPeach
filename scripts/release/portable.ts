@@ -63,8 +63,8 @@ export function build(releaseDir: string, of = version()): string {
   const folder = path.join(path.dirname(zip), 'FTPeach');
   rmSync(path.dirname(zip), { recursive: true, force: true });
   mkdirSync(folder, { recursive: true });
-  // Cargo names the binary after the `app` package.
-  cpSync(path.join(releaseDir, 'app.exe'), path.join(folder, 'FTPeach.exe'));
+  // Cargo names the binary after the `FTPeach` package.
+  cpSync(path.join(releaseDir, 'FTPeach.exe'), path.join(folder, 'FTPeach.exe'));
   writeFileSync(path.join(folder, 'FTPeach.portable'), '');
   // Where the key and certificate pickers open: files there move with the copy.
   for (const empty of ['keys', 'certificates']) mkdirSync(path.join(folder, empty));

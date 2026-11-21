@@ -20,41 +20,15 @@ fn locked_hint(connection: &Connection) -> Option<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_inputs::linux::TestBus;
     use dbus::{MessageType, arg::Variant, channel::Sender};
-    use std::io::{BufRead, BufReader};
-    use std::process::{Child, Command, Stdio};
-
-    struct TestBus(Child);
-
-    impl Drop for TestBus {
-        fn drop(&mut self) {
-            let _ = self.0.kill();
-            let _ = self.0.wait();
-        }
-    }
-
-    fn connect(address: &str) -> Connection {
-        let mut channel = dbus::channel::Channel::open_private(address).unwrap();
-        channel.register().unwrap();
-        channel.into()
-    }
 
     #[test]
     fn reads_locked_and_unlocked_hints_and_rejects_missing_service() {
-        let mut bus = TestBus(
-            Command::new("dbus-daemon")
-                .args(["--session", "--nofork", "--print-address=1"])
-                .stdout(Stdio::piped())
-                .spawn()
-                .unwrap(),
-        );
-        let mut address = String::new();
-        BufReader::new(bus.0.stdout.take().unwrap())
-            .read_line(&mut address)
-            .unwrap();
-        let client = connect(address.trim());
+        let bus = TestBus::start();
+        let client = bus.connect();
         assert_eq!(locked_hint(&client), None);
-        let server = connect(address.trim());
+        let server = bus.connect();
         server
             .request_name("org.freedesktop.login1", false, false, false)
             .unwrap();

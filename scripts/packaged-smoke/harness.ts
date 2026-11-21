@@ -24,7 +24,7 @@ export function smokeAppPath(platform = process.platform) {
     '.tools',
     'smoke-target',
     'debug',
-    platform === 'win32' ? 'app.exe' : 'app',
+    platform === 'win32' ? 'FTPeach.exe' : 'FTPeach',
   );
 }
 

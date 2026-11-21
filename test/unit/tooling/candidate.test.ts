@@ -24,6 +24,7 @@ import { appxManifest, build as buildMsix, msixName } from '../../../scripts/rel
 import {
   findInstalledBinary,
   findInstalledDesktopFile,
+  isolatedEnv,
   launchAndStayAlive,
   parseDebMetadata,
   parseDesktopEntry,
@@ -112,7 +113,7 @@ test('MSIX builder writes a 4-part full-trust AppxManifest and invokes makeappx 
   assert.equal(packedArgs[0], 'pack');
 });
 
-test('unix acceptance helpers validate universal lipo slices and process liveness', async () => {
+test('unix acceptance helpers validate universal lipo slices and process liveness', async (t) => {
   assert.deepEqual(parseUniversalArchs('x86_64 arm64\n'), ['x86_64', 'arm64']);
   assert.throws(() => parseUniversalArchs('arm64\n'), /Expected universal binary/);
   await launchAndStayAlive(
@@ -125,6 +126,19 @@ test('unix acceptance helpers validate universal lipo slices and process livenes
     launchAndStayAlive(process.execPath, ['-e', 'process.exit(2)'], process.env, 500),
     /exited early/,
   );
+
+  const tempDir = await mkdtemp(path.join(tmpdir(), 'unix-accept-env-'));
+  t.after(() => rm(tempDir, { recursive: true, force: true }));
+  const prevWayland = process.env.WAYLAND_DISPLAY;
+  process.env.WAYLAND_DISPLAY = 'wayland-0';
+  try {
+    const env = await isolatedEnv(tempDir, 'deb');
+    assert.equal(env.WAYLAND_DISPLAY, undefined);
+    assert.equal(env.XDG_RUNTIME_DIR, path.join(tempDir, 'deb', 'run'));
+  } finally {
+    if (prevWayland === undefined) delete process.env.WAYLAND_DISPLAY;
+    else process.env.WAYLAND_DISPLAY = prevWayland;
+  }
 });
 
 test('unix acceptance helpers validate deb metadata, desktop entry, and Linux updater feed', () => {

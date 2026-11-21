@@ -152,6 +152,17 @@ export async function launchAndStayAlive(
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     let settled = false;
+    let stopping = false;
+    let force: ReturnType<typeof setTimeout> | undefined;
+    let giveUp: ReturnType<typeof setTimeout> | undefined;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (force) clearTimeout(force);
+      if (giveUp) clearTimeout(giveUp);
+      resolve();
+    };
     const child = spawn(command, args, {
       env,
       detached: process.platform !== 'win32',
@@ -162,25 +173,35 @@ export async function launchAndStayAlive(
       stderr += chunk.toString('utf8');
     });
     const timer = setTimeout(() => {
-      settled = true;
+      if (settled) return;
+      stopping = true;
       terminateTree(child, 'SIGTERM');
-      const force = setTimeout(() => {
+      child.stdout?.destroy();
+      child.stderr?.destroy();
+      if (child.exitCode !== null || child.signalCode !== null) {
+        finish();
+        return;
+      }
+      force = setTimeout(() => {
         if (child.exitCode === null && child.signalCode === null) {
           terminateTree(child, 'SIGKILL');
         }
       }, 1_000);
-      force.unref();
-      child.stdout?.destroy();
-      child.stderr?.destroy();
-      resolve();
+      giveUp = setTimeout(finish, 2_000);
     }, durationMs);
     child.on('error', (error) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      if (force) clearTimeout(force);
+      if (giveUp) clearTimeout(giveUp);
       reject(error);
     });
     child.on('exit', (code, signal) => {
+      if (stopping) {
+        finish();
+        return;
+      }
       if (settled) return;
       settled = true;
       clearTimeout(timer);
@@ -193,21 +214,26 @@ export async function launchAndStayAlive(
   });
 }
 
-async function isolatedEnv(baseDir: string, label: string): Promise<typeof process.env> {
+export async function isolatedEnv(baseDir: string, label: string): Promise<typeof process.env> {
   const home = path.join(baseDir, label, 'home');
   const config = path.join(home, '.config');
   const data = path.join(home, '.local', 'share');
   const cache = path.join(home, '.cache');
+  const runtime = path.join(baseDir, label, 'run');
   await mkdir(config, { recursive: true });
   await mkdir(data, { recursive: true });
   await mkdir(cache, { recursive: true });
-  return {
+  await mkdir(runtime, { recursive: true, mode: 0o700 });
+  const env: typeof process.env = {
     ...process.env,
     HOME: home,
     XDG_CONFIG_HOME: config,
     XDG_DATA_HOME: data,
     XDG_CACHE_HOME: cache,
+    XDG_RUNTIME_DIR: runtime,
   };
+  delete env.WAYLAND_DISPLAY;
+  return env;
 }
 
 async function resolveMacosExecutable(appBundle: string): Promise<string> {

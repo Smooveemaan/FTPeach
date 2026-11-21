@@ -22,8 +22,13 @@ import {
 } from '../../../scripts/release/candidate.ts';
 import { appxManifest, build as buildMsix, msixName } from '../../../scripts/release/msix.ts';
 import {
+  findInstalledBinary,
+  findInstalledDesktopFile,
   launchAndStayAlive,
+  parseDebMetadata,
+  parseDesktopEntry,
   parseUniversalArchs,
+  verifyLinuxUpdateMetadata,
 } from '../../../scripts/release/unix-acceptance.ts';
 
 test('candidate hashes bind every final file; damaged or missing packages are rejected', async () => {
@@ -119,6 +124,89 @@ test('unix acceptance helpers validate universal lipo slices and process livenes
   await assert.rejects(
     launchAndStayAlive(process.execPath, ['-e', 'process.exit(2)'], process.env, 500),
     /exited early/,
+  );
+});
+
+test('unix acceptance helpers validate deb metadata, desktop entry, and Linux updater feed', () => {
+  assert.deepEqual(
+    parseDebMetadata(' Package: ftpeach\n Version: 0.7.0-1\n Architecture: amd64\n', '0.7.0'),
+    { packageName: 'ftpeach', version: '0.7.0-1' },
+  );
+  assert.deepEqual(
+    parseDebMetadata(' Package: ft-peach\n Version: 0.6.1\n Architecture: amd64\n', '0.6.1'),
+    { packageName: 'ft-peach', version: '0.6.1' },
+  );
+  assert.throws(
+    () => parseDebMetadata(' Package: other\n Version: 0.7.0\n', '0.7.0'),
+    /Unexpected Debian package name/,
+  );
+  assert.throws(
+    () => parseDebMetadata(' Package: ftpeach\n Version: 0.6.1\n', '0.7.0'),
+    /does not match expected 0\.7\.0/,
+  );
+
+  assert.equal(
+    findInstalledDesktopFile(
+      '-rwxr-xr-x root/root 100 2026-11-21 12:00 ./usr/bin/ftpeach\n' +
+        '-rw-r--r-- root/root 200 2026-11-21 12:00 ./usr/share/applications/FTPeach.desktop\n',
+    ),
+    '/usr/share/applications/FTPeach.desktop',
+  );
+  assert.equal(
+    findInstalledDesktopFile(
+      '-rwxr-xr-x 0/0 28129280 2026-11-21 19:50 usr/bin/FTPeach\n' +
+        '-rw-r--r-- 0/0 237 2026-11-21 19:50 usr/share/applications/FTPeach.desktop\n',
+    ),
+    '/usr/share/applications/FTPeach.desktop',
+  );
+  assert.equal(
+    findInstalledBinary('-rwxr-xr-x root/root 100 2026-11-21 12:00 ./usr/bin/ftpeach\n'),
+    '/usr/bin/ftpeach',
+  );
+  assert.equal(
+    findInstalledBinary('-rwxr-xr-x 0/0 28129280 2026-11-21 19:50 usr/bin/FTPeach\n'),
+    '/usr/bin/FTPeach',
+  );
+  assert.throws(() => findInstalledDesktopFile('./usr/bin/ftpeach\n'), /No \.desktop entry/);
+  assert.throws(
+    () => findInstalledBinary('usr/share/applications/FTPeach.desktop\n'),
+    /No executable/,
+  );
+
+  assert.deepEqual(
+    parseDesktopEntry('[Desktop Entry]\nType=Application\nName=FTPeach\nExec=ftpeach %U\n'),
+    { name: 'FTPeach', execArgs: ['ftpeach'] },
+  );
+  assert.throws(
+    () => parseDesktopEntry('[Desktop Entry]\nType=Link\nName=FTPeach\nExec=ftpeach\n'),
+    /Unexpected Desktop Entry Type/,
+  );
+  assert.throws(
+    () => parseDesktopEntry('[Desktop Entry]\nType=Application\nName=FTPeach\n'),
+    /Missing Exec field/,
+  );
+
+  const validFeed = JSON.stringify({
+    version: '0.7.0',
+    platforms: {
+      'linux-x86_64': {
+        url: 'https://github.com/Smooveemaan/FTPeach/releases/download/v0.7.0/FTPeach_0.7.0_amd64.AppImage',
+        signature: 'appimage-sig',
+      },
+      'linux-x86_64-deb': {
+        url: 'https://github.com/Smooveemaan/FTPeach/releases/download/v0.7.0/FTPeach_0.7.0_amd64.deb',
+        signature: 'deb-sig',
+      },
+    },
+  });
+  verifyLinuxUpdateMetadata(validFeed, '0.7.0', { appImage: 'appimage-sig\n', deb: 'deb-sig\n' });
+  assert.throws(
+    () => verifyLinuxUpdateMetadata(validFeed, '0.7.0', { appImage: 'wrong-sig', deb: 'deb-sig' }),
+    /signature does not match/,
+  );
+  assert.throws(
+    () => verifyLinuxUpdateMetadata(validFeed, '0.8.0', { appImage: 'appimage-sig' }),
+    /does not match 0\.8\.0/,
   );
 });
 

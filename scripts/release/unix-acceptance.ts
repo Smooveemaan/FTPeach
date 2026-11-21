@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { chmod, cp, mkdir, mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -17,6 +18,132 @@ export function parseUniversalArchs(lipoOutput: string): string[] {
   return archs;
 }
 
+export function parseDebMetadata(
+  debInfo: string,
+  expectedVersion: string,
+): { packageName: string; version: string } {
+  const pkgMatch = debInfo.match(/^\s*Package:\s*(\S+)/m);
+  assert.ok(
+    pkgMatch?.[1] && /^ft-?peach$/i.test(pkgMatch[1]),
+    `Unexpected Debian package name: ${pkgMatch?.[1] ?? '(missing)'}`,
+  );
+  const verMatch = debInfo.match(/^\s*Version:\s*(\S+)/m);
+  assert.ok(verMatch?.[1], 'Missing Version field in Debian package metadata');
+  const version = verMatch[1];
+  assert.ok(
+    version === expectedVersion || version.startsWith(`${expectedVersion}-`),
+    `Debian package version ${version} does not match expected ${expectedVersion}`,
+  );
+  return { packageName: pkgMatch[1], version };
+}
+
+export function findInstalledDesktopFile(debContents: string): string {
+  const match = debContents.match(/(?:^|\s)(?:\.\/)?(usr\/share\/applications\/[^\s]+\.desktop)\b/);
+  assert.ok(match?.[1], 'No .desktop entry found under /usr/share/applications in Debian package');
+  return `/${match[1]}`;
+}
+
+export function findInstalledBinary(debContents: string): string {
+  const match = debContents.match(/(?:^|\s)(?:\.\/)?(usr\/bin\/[^\s]+)\b/);
+  assert.ok(match?.[1], 'No executable found under /usr/bin in Debian package');
+  return `/${match[1]}`;
+}
+
+export function parseDesktopEntry(contents: string): { name: string; execArgs: string[] } {
+  const sectionMatch = contents.match(/\[Desktop Entry\]([\s\S]*?)(?:\n\[|$)/);
+  assert.ok(sectionMatch?.[1], 'Missing [Desktop Entry] section');
+  const fields = new Map<string, string>();
+  for (const rawLine of sectionMatch[1].split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq <= 0) continue;
+    fields.set(line.slice(0, eq).trim(), line.slice(eq + 1).trim());
+  }
+  assert.equal(
+    fields.get('Type'),
+    'Application',
+    `Unexpected Desktop Entry Type: ${fields.get('Type') ?? '(missing)'}`,
+  );
+  const name = fields.get('Name');
+  assert.ok(name && /ftpeach/i.test(name), `Unexpected Desktop Entry Name: ${name ?? '(missing)'}`);
+  const execRaw = fields.get('Exec');
+  assert.ok(execRaw, 'Missing Exec field in Desktop Entry');
+  const tokens: string[] = [];
+  for (const token of execRaw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? []) {
+    const unquoted = token.replace(/^["']|["']$/g, '');
+    if (/^%[fFuUdDnNickvm]$/.test(unquoted)) continue;
+    tokens.push(unquoted);
+  }
+  assert.ok(tokens.length > 0, `Empty Exec command in Desktop Entry: ${execRaw}`);
+  return { name, execArgs: tokens };
+}
+
+export function verifyLinuxUpdateMetadata(
+  rawLatestJson: string,
+  expectedVersion: string,
+  signatures: { appImage?: string; deb?: string },
+): void {
+  const feed = JSON.parse(rawLatestJson) as {
+    version?: unknown;
+    platforms?: Record<string, { url?: unknown; signature?: unknown }>;
+  };
+  assert.equal(
+    feed.version,
+    expectedVersion,
+    `Updater feed version ${String(feed.version)} does not match ${expectedVersion}`,
+  );
+  assert.ok(
+    feed.platforms && typeof feed.platforms === 'object',
+    'Updater feed is missing platforms',
+  );
+  if (signatures.appImage !== undefined) {
+    const target = feed.platforms['linux-x86_64'];
+    assert.ok(target, 'Updater feed is missing linux-x86_64 target');
+    assert.equal(typeof target.url, 'string', 'linux-x86_64 url must be a string');
+    assert.ok(
+      String(target.url).endsWith(`FTPeach_${expectedVersion}_amd64.AppImage`),
+      `Unexpected linux-x86_64 url: ${String(target.url)}`,
+    );
+    assert.equal(
+      String(target.signature ?? '').trim(),
+      signatures.appImage.trim(),
+      'linux-x86_64 signature does not match candidate .AppImage.sig',
+    );
+  }
+  if (signatures.deb !== undefined) {
+    const target = feed.platforms['linux-x86_64-deb'];
+    assert.ok(target, 'Updater feed is missing linux-x86_64-deb target');
+    assert.equal(typeof target.url, 'string', 'linux-x86_64-deb url must be a string');
+    assert.ok(
+      String(target.url).endsWith(`FTPeach_${expectedVersion}_amd64.deb`),
+      `Unexpected linux-x86_64-deb url: ${String(target.url)}`,
+    );
+    assert.equal(
+      String(target.signature ?? '').trim(),
+      signatures.deb.trim(),
+      'linux-x86_64-deb signature does not match candidate .deb.sig',
+    );
+  }
+}
+
+function terminateTree(child: ReturnType<typeof spawn>, signal: 'SIGTERM' | 'SIGKILL'): void {
+  if (!child.pid) return;
+  if (process.platform !== 'win32') {
+    try {
+      process.kill(-child.pid, signal);
+      return;
+    } catch {
+      // Fall back to direct child signal if the process group already exited.
+    }
+  }
+  try {
+    child.kill(signal);
+  } catch {
+    // Ignore ESRCH when the process has already exited.
+  }
+}
+
 export async function launchAndStayAlive(
   command: string,
   args: string[],
@@ -24,8 +151,10 @@ export async function launchAndStayAlive(
   durationMs = 4_000,
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
+    let settled = false;
     const child = spawn(command, args, {
       env,
+      detached: process.platform !== 'win32',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let stderr = '';
@@ -33,17 +162,27 @@ export async function launchAndStayAlive(
       stderr += chunk.toString('utf8');
     });
     const timer = setTimeout(() => {
-      child.kill('SIGTERM');
-      setTimeout(() => {
-        if (!child.killed) child.kill('SIGKILL');
-      }, 1_000).unref();
+      settled = true;
+      terminateTree(child, 'SIGTERM');
+      const force = setTimeout(() => {
+        if (child.exitCode === null && child.signalCode === null) {
+          terminateTree(child, 'SIGKILL');
+        }
+      }, 1_000);
+      force.unref();
+      child.stdout?.destroy();
+      child.stderr?.destroy();
       resolve();
     }, durationMs);
     child.on('error', (error) => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
       reject(error);
     });
     child.on('exit', (code, signal) => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
       reject(
         new Error(
@@ -156,16 +295,22 @@ export async function verifyLinuxCandidate(directory: string) {
   const debName = `FTPeach_${version}_amd64.deb`;
   const appImagePath = path.resolve(directory, appImageName);
   const debPath = path.resolve(directory, debName);
+  const appImageSig = await readFile(`${appImagePath}.sig`, 'utf8');
+  const debSig = await readFile(`${debPath}.sig`, 'utf8');
 
-  verifyUpdaterSignature(
-    pubkey,
-    await readFile(appImagePath),
-    await readFile(`${appImagePath}.sig`, 'utf8'),
-  );
-  verifyUpdaterSignature(pubkey, await readFile(debPath), await readFile(`${debPath}.sig`, 'utf8'));
+  verifyUpdaterSignature(pubkey, await readFile(appImagePath), appImageSig);
+  verifyUpdaterSignature(pubkey, await readFile(debPath), debSig);
+
+  const latestPath = path.resolve(directory, 'latest.json');
+  if (existsSync(latestPath)) {
+    verifyLinuxUpdateMetadata(await readFile(latestPath, 'utf8'), version, {
+      appImage: appImageSig,
+      deb: debSig,
+    });
+  }
 
   const debInfo = execFileSync('dpkg-deb', ['--info', debPath], { encoding: 'utf8' });
-  assert.match(debInfo, /Package:\s+ftpeach/i, 'Unexpected Debian package name');
+  parseDebMetadata(debInfo, version);
 
   const workDir = await mkdtemp(path.join(tmpdir(), 'ftpeach-linux-acceptance-'));
   try {
@@ -173,12 +318,24 @@ export async function verifyLinuxCandidate(directory: string) {
     const installedFiles = execFileSync('dpkg-deb', ['--contents', debPath], {
       encoding: 'utf8',
     });
-    const binMatch = installedFiles.match(/\.\/usr\/bin\/(\S+)/);
-    assert.ok(binMatch?.[1], 'No executable found under /usr/bin in Debian package');
-    const debBinary = `/usr/bin/${binMatch[1]}`;
+    const debBinary = findInstalledBinary(installedFiles);
+    const desktopFile = findInstalledDesktopFile(installedFiles);
+    const desktop = parseDesktopEntry(await readFile(desktopFile, 'utf8'));
+    const execCommand = path.isAbsolute(desktop.execArgs[0]!)
+      ? desktop.execArgs[0]!
+      : `/usr/bin/${desktop.execArgs[0]!}`;
+    assert.equal(
+      path.basename(execCommand),
+      path.basename(debBinary),
+      `Desktop entry Exec (${desktop.execArgs[0]}) does not match installed binary (${debBinary})`,
+    );
 
     const debEnv = await isolatedEnv(workDir, 'deb');
-    await launchAndStayAlive('dbus-run-session', ['--', 'xvfb-run', '-a', debBinary], debEnv);
+    await launchAndStayAlive(
+      'dbus-run-session',
+      ['--', 'xvfb-run', '-a', execCommand, ...desktop.execArgs.slice(1)],
+      debEnv,
+    );
 
     await chmod(appImagePath, 0o755);
     const appImageEnv = await isolatedEnv(workDir, 'appimage');

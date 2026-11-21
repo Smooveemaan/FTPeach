@@ -5,11 +5,11 @@ targets = ["x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu", "aarch64-apple-
 version = 2
 yanked = "deny"
 ignore = [
-  { id = "RUSTSEC-2023-0071", reason = "RSA key compatibility is required; russh 0.65.1 pins rsa to =0.10.0-rc.18, excluding the fixed 0.10.0 release. Reassess when russh accepts the fixed release. Review by 2027-01-23; see docs/rust-advisories.md." },
   { id = "RUSTSEC-2024-0370", reason = "Build-only dependency of glib-macros 0.18 and gtk3-macros 0.18 required by Tauri's GTK 3 stack; no compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
   { id = "RUSTSEC-2026-0370", reason = "zvariant is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
   { id = "RUSTSEC-2026-0371", reason = "zbus_names is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
   { id = "RUSTSEC-2026-0372", reason = "zvariant_derive is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
+  { id = "RUSTSEC-2026-0543", reason = "chrono is unmaintained; russh-sftp 3.0.1 is the latest published release and still requires chrono alongside FTPeach and trash 5.2.9. Reassess once a jiff-based russh-sftp release is published. Review by 2027-02-19; see docs/rust-advisories.md." },
 ]
 
 [licenses]

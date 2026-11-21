@@ -315,7 +315,7 @@ System unlock trusts the current Windows account, Windows Hello, and the Microso
 
 ### RSA SSH client keys
 
-RSA private-key authentication remains available for compatibility through a dependency affected by `RUSTSEC-2023-0071`. FTPeach recommends Ed25519 and warns when an RSA private key is selected. Key material is never logged or returned by ordinary IPC, but those controls do not remove the underlying timing vulnerability; use Ed25519 where the server supports it. The exception owner and review deadline are tracked in [`rust-advisories.md`](rust-advisories.md).
+RSA private-key authentication remains available for compatibility through `rsa` 0.10.0 via `russh` 0.65.2, which RustSec lists as patched for `RUSTSEC-2023-0071`. FTPeach still recommends Ed25519 for new SSH keys and warns when an RSA private key is selected. Key material is never logged or returned by ordinary IPC. Remaining dependency exceptions and review deadlines are tracked in [`rust-advisories.md`](rust-advisories.md).
 
 ## Rules for future changes
 

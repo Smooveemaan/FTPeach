@@ -115,11 +115,11 @@ servicing is separate from FTPeach's release artifacts.
 
 ## RSA and dependency upgrades
 
-RSA SSH keys go through `rsa`, which has an open timing advisory
-(RUSTSEC-2023-0071). Ed25519 is recommended and the app warns when an RSA key
-is selected; the reachable signing path and why it is kept are recorded in
-[rust-advisories.md](rust-advisories.md). The weekly audit fails if the
-register's kind for an advisory disagrees with RustSec's.
+RSA SSH keys go through `rsa` 0.10.0 via `russh` 0.65.2, which RustSec lists as
+patched for `RUSTSEC-2023-0071`. Ed25519 is still recommended and the app warns
+when an RSA key is selected. Remaining RustSec exceptions and their review
+deadlines are recorded in [rust-advisories.md](rust-advisories.md). The weekly
+audit fails if the register's kind for an advisory disagrees with RustSec's.
 
 Dependabot proposes updates but does not merge them. Every release also runs
 the protocol compatibility suite against real servers, so a protocol crate

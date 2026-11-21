@@ -79,7 +79,7 @@ webpki-roots = "1.0.10"
 async-trait = "0.1"
 tokio-util = "0.7"
 regex = "1"
-russh = { version = "0.65.1", default-features = false, features = ["ring", "rsa", "flate2"] }
+russh = { version = "0.65.2", default-features = false, features = ["ring", "rsa", "flate2"] }
 russh-sftp = "3.0.1"
 sha2 = "0.11"
 reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "http2", "stream", "socks"] }

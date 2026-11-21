@@ -20,15 +20,19 @@ dated review section below.
 
 | Advisory | Kind | Owner | Reviewed | Review by | Current status | Compensating control |
 | --- | --- | --- | --- | --- | --- | --- |
-| RUSTSEC-2023-0071 | vulnerability | @Smooveemaan | 2026-11-13 | 2027-01-23 | `russh` 0.65.1 pins `rsa` to `=0.10.0-rc.18`, excluding the fixed 0.10.0 release | Prefer Ed25519 and warn when a user selects RSA. RSA remains compatibility-only for user-selected SSH client keys; key material is never logged or returned by normal IPC. |
 | RUSTSEC-2024-0370 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `proc-macro-error` 1.0.4 through `glib-macros` 0.18.5 and `gtk3-macros` 0.18.2; no compatible fixed release | Used only while compiling GTK macros, not at runtime. Remove when Tauri's GTK dependency no longer requires these macros. |
 | RUSTSEC-2026-0370 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zvariant` 5.15.0 through `zbus` 5.19.0; its replacement is part of zbus 6 | Keep vulnerability advisories enabled; review Tauri plugins, keepawake and KSNI for compatible zbus 6 releases. |
 | RUSTSEC-2026-0371 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zbus_names` 4.3.4 through `zbus` 5.19.0; its replacement is part of zbus 6 | Keep vulnerability advisories enabled; review Tauri plugins, keepawake and KSNI for compatible zbus 6 releases. |
 | RUSTSEC-2026-0372 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zvariant_derive` 5.15.0 through `zvariant` 5.15.0; its replacement is part of zbus 6 | Derive macros run only during compilation; review the same zbus consumers before removing this exception. |
+| RUSTSEC-2026-0543 | unmaintained | @Smooveemaan | 2026-11-21 | 2027-02-19 | `chrono` 0.4.45 through FTPeach, `russh-sftp` 3.0.1 and `trash` 5.2.9; `russh-sftp` 3.0.1 is the latest published release | Keep vulnerability advisories enabled; migrate FTPeach and update `trash` off `chrono` once a `jiff`-based `russh-sftp` release is published. |
 
 The reviews below found no compatible direct upgrade that removes the accepted
 transitive advisories at their recorded dates. Remove an ignore as soon as a compatible
 fix is available; extending a deadline requires a fresh security review.
+
+The `rsa` exception (RUSTSEC-2023-0071) was removed on 2026-11-21: `russh` 0.65.2
+and `ssh-key` 0.7.0-rc.12 accept `rsa ^0.10`, updating the lockfile to `rsa` 0.10.0,
+which RustSec lists as patched.
 
 The five `rust-unic` exceptions (RUSTSEC-2025-0075, -0080, -0081, -0098 and
 -0100) were removed on 2026-10-02: Tauri 2.12 uses `urlpattern` 0.6.0, which no
@@ -43,6 +47,28 @@ The three `zip` exceptions (RUSTSEC-2026-0367, -0368 and -0369, all in `extract`
 removed on 2026-10-23. `tauri-plugin-updater` needed `zip` 4 only for its `install`, which
 FTPeach never calls: it is built without its `zip` feature, and FTPeach's own unpacking of
 the portable update (`runtime/update_staging.rs`) uses `zip` 9.
+
+## Dependency advisory review, 2026-11-21
+
+`russh` was updated from 0.65.1 to 0.65.2, which loosens its `rsa` requirement to
+`^0.10` and updates `ssh-key` to 0.7.0-rc.12. The lockfile now resolves `rsa` 0.10.0,
+which RustSec lists as patched for
+[RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071.html). That
+exception was removed from `src-tauri/deny.toml`; no vulnerability exceptions remain.
+FTPeach still recommends Ed25519 for new SSH keys and warns when an RSA key is selected.
+
+[RUSTSEC-2026-0543](https://rustsec.org/advisories/RUSTSEC-2026-0543.html) marks
+`chrono` as unmaintained with no patched release (`informational = "unmaintained"`).
+In the audited targets (`x86_64-pc-windows-msvc`, `x86_64-unknown-linux-gnu`,
+`aarch64-apple-darwin`, `x86_64-apple-darwin`), `chrono` 0.4.45 is required directly
+by FTPeach and transitively by `russh-sftp` 3.0.1 and `trash` 5.2.9 (`russh-util`
+0.52.0 depends on `chrono` only for `wasm32`). `russh-sftp` 3.0.1 is the latest
+published release on crates.io and requires `chrono ^0.4.45` unconditionally;
+upstream `master` has switched to `jiff` 1.0.0 but has not been released yet, and
+`trash` 5.4.0 has also moved to `jiff`. Replacing FTPeach's own `chrono` calls alone
+would still leave `chrono` in the lockfile through `russh-sftp`. This exception
+covers only the unmaintained notice, does not suppress vulnerability advisories for
+`chrono`, and expires on 2027-02-19.
 
 ## Unix dependency review, 2026-11-13
 

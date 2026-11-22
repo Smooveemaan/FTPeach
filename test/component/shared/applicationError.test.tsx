@@ -119,3 +119,27 @@ test('banners close independently of secret notices', () => {
   assert.ok(screen.getByText('First'));
   assert.ok(screen.getByText('Second'));
 });
+
+test('secretNotPersistedNotice renders as an error alert with error text styling', () => {
+  let dismissed = false;
+  render(
+    <AppBanners
+      errorMessages={[]}
+      onDismissError={() => undefined}
+      legacyPasswordNotice={false}
+      onDismissLegacyPasswordNotice={() => undefined}
+      plaintextSecretNotice={false}
+      onDismissPlaintextSecretNotice={() => undefined}
+      secretNotPersistedNotice
+      onDismissSecretNotPersistedNotice={() => {
+        dismissed = true;
+      }}
+    />,
+  );
+  const alert = screen.getByRole('alert');
+  const message = alert.querySelector('span');
+  assert.ok(message);
+  assert.ok(message.classList.contains('conn-error'));
+  fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+  assert.equal(dismissed, true);
+});

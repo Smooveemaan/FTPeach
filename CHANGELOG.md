@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
 - Unlock Vault opens in front of Import Settings when triggered during import and skips prompting
   if the vault is already unlocked.
+- The unsaved-password notice banner displays its text in the error color.
 - Clicking any button or control dismisses open tooltips immediately.
 - Resetting the window layout while fullscreen restores the window to its centered size.
 

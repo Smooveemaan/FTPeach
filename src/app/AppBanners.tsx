@@ -75,7 +75,7 @@ export default function AppBanners({
 
       {secretNotPersistedNotice && (
         <div className="app-error-bar" role="alert" aria-live="assertive">
-          <span>{t('secretNotPersistedNotice.message')}</span>
+          <span className="conn-error">{t('secretNotPersistedNotice.message')}</span>
           <button
             type="button"
             className="app-error-bar-close"

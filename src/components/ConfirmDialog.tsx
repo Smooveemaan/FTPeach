@@ -40,6 +40,7 @@ export default function ConfirmDialog({
     <Modal
       title={title}
       onClose={handleCancel}
+      dismissOnBackdrop={false}
       className="modal-confirm"
       initialFocusRef={confirmRef}
       footer={

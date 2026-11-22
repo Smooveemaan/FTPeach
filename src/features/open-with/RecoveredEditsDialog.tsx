@@ -26,6 +26,7 @@ export default function RecoveredEditsDialog({
     <Modal
       title={t('recoveredEdits.title')}
       onClose={() => onLater()}
+      dismissOnBackdrop={false}
       className="modal-confirm"
       footer={
         confirmingDiscard ? (

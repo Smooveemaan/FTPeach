@@ -28,6 +28,7 @@ export default function NameConflictDialog({
     <Modal
       title="FTPeach"
       onClose={onClose}
+      dismissOnBackdrop={false}
       className="modal-confirm"
       initialFocusRef={overwriteRef}
       footer={

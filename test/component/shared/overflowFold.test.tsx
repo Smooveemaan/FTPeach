@@ -69,3 +69,15 @@ test('changed button geometry recalculates folding without a resize', () => {
   expect(screen.getByTestId('toolbar').textContent).toBe('');
   expect(subscriptions).toHaveBeenCalledTimes(1);
 });
+
+test('folds synchronously on initial mount from measured layout width before ResizeObserver fires', () => {
+  const rectSpy = vi
+    .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+    .mockReturnValue({ width: 80 } as DOMRect);
+  try {
+    render(<Toolbar />);
+    expect(screen.getByTestId('toolbar').textContent).toBe('copy,home');
+  } finally {
+    rectSpy.mockRestore();
+  }
+});

@@ -404,6 +404,7 @@ describe('FilePane interactions', () => {
 
     fireEvent.keyDown(pane, { key: 'F2', code: 'F2' });
     expect(container.querySelector('.rename-input')).toBeNull();
+    expect(container.querySelector('.name.is-renaming')).toBeNull();
 
     fireEvent.keyDown(pane, { key: 'r', code: 'KeyR', ctrlKey: true });
     expect(container.querySelector('.rename-input')).not.toBeNull();
@@ -689,5 +690,38 @@ describe('FilePane interactions', () => {
     expect(getContextMenuItems).toHaveBeenCalled();
     expect(props.onSelectionChange).not.toHaveBeenCalled();
     userAgentSpy.mockRestore();
+  });
+
+  test('exiting inline rename with Escape prevents default, focuses the pane without scrolling, and restores list scroll', () => {
+    const { container } = renderPane({ selectedNames: new Set(['Alpha']) });
+    const pane = requireHtml(container.querySelector('.pane'));
+    const list = screen.getByRole('listbox');
+    list.scrollTop = 42;
+    list.scrollLeft = 7;
+
+    pane.focus();
+    fireEvent.keyDown(pane, { key: 'F2', code: 'F2' });
+    const rename = requireHtml(container.querySelector('.rename-input'));
+    expect(rename.parentElement?.classList.contains('is-renaming')).toBe(true);
+
+    const focusSpy = vi.spyOn(pane, 'focus').mockImplementation(() => {
+      // Simulate WebKit scrolling the list when focus moves back to the pane.
+      list.scrollTop = 999;
+    });
+
+    const escapeEvent = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      code: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    fireEvent(rename, escapeEvent);
+
+    expect(escapeEvent.defaultPrevented).toBe(true);
+    expect(container.querySelector('.rename-input')).toBeNull();
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+    expect(list.scrollTop).toBe(42);
+    expect(list.scrollLeft).toBe(7);
+    focusSpy.mockRestore();
   });
 });

@@ -17,6 +17,7 @@ pub const ID_SPEED: &str = "tray-speed";
 pub const ID_PREVENT_SLEEP: &str = "tray-prevent-sleep";
 pub const ID_NOTIFY: &str = "tray-notify";
 pub const ID_RECENT: &str = "tray-recent";
+pub const ID_HIDE_MENU_BAR_ICON: &str = "tray-hide-menu-bar-icon";
 pub const ID_QUIT: &str = "tray-quit";
 pub const ID_CANCEL_QUIT: &str = "tray-cancel-quit";
 /// Followed by the preset's index in the model.
@@ -90,6 +91,10 @@ pub enum MenuCommand {
 /// separator, and an item that makes no sense right now is left out rather
 /// than shown disabled; the status line is the one disabled item.
 pub fn menu_spec(model: &TrayModel) -> Vec<ItemSpec> {
+    menu_spec_for(model, cfg!(target_os = "macos"))
+}
+
+pub fn menu_spec_for(model: &TrayModel, is_macos: bool) -> Vec<ItemSpec> {
     let labels = &model.labels;
     let mut groups: Vec<Vec<ItemSpec>> = Vec::new();
 
@@ -155,12 +160,20 @@ pub fn menu_spec(model: &TrayModel) -> Vec<ItemSpec> {
     groups.push(connections);
 
     // Quit stays last; while quitting waits for transfers it takes the
-    // cancellation's place.
-    groups.push(vec![if model.quit_pending {
+    // cancellation's place. On macOS, Hide Menu Bar Icon sits right above it.
+    let mut footer = Vec::new();
+    if is_macos {
+        footer.push(ItemSpec::normal(
+            ID_HIDE_MENU_BAR_ICON,
+            &labels.hide_menu_bar_icon,
+        ));
+    }
+    footer.push(if model.quit_pending {
         ItemSpec::normal(ID_CANCEL_QUIT, &labels.cancel_quit)
     } else {
         ItemSpec::normal(ID_QUIT, &labels.quit)
-    }]);
+    });
+    groups.push(footer);
 
     let mut spec = Vec::new();
     for group in groups.into_iter().filter(|group| !group.is_empty()) {
@@ -176,12 +189,17 @@ pub fn menu_spec(model: &TrayModel) -> Vec<ItemSpec> {
 /// offers is `None`, so a click that raced a model change does nothing. The
 /// speed and the site come from the model, never from the item's text.
 pub fn command_for(model: &TrayModel, id: &str) -> Option<MenuCommand> {
-    if !contains_id(&menu_spec(model), id) {
+    command_for_platform(model, id, cfg!(target_os = "macos"))
+}
+
+pub fn command_for_platform(model: &TrayModel, id: &str, is_macos: bool) -> Option<MenuCommand> {
+    if !contains_id(&menu_spec_for(model, is_macos), id) {
         return None;
     }
     let action = match id {
         ID_SHOW => return Some(MenuCommand::Show),
         ID_QUIT => return Some(MenuCommand::Quit),
+        ID_HIDE_MENU_BAR_ICON => TrayAction::HideMenuBarIcon,
         ID_PAUSE_ALL => TrayAction::PauseAll,
         ID_RESUME_ALL => TrayAction::ResumeAll,
         ID_CANCEL_QUIT => TrayAction::CancelQuit,
@@ -539,9 +557,27 @@ mod tests {
 
     #[test]
     fn an_idle_model_offers_only_show_and_quit() {
-        let spec = menu_spec(&TrayModel::default());
+        let spec = menu_spec_for(&TrayModel::default(), false);
         assert_eq!(ids(&spec), [ID_SHOW, "tray-separator-1", ID_QUIT]);
         assert!(spec.iter().all(|item| item.enabled));
+    }
+
+    #[test]
+    fn macos_menu_offers_hide_menu_bar_icon_above_quit() {
+        let model = TrayModel::default();
+        let spec = menu_spec_for(&model, true);
+        assert_eq!(
+            ids(&spec),
+            [ID_SHOW, "tray-separator-1", ID_HIDE_MENU_BAR_ICON, ID_QUIT]
+        );
+        assert_eq!(
+            command_for_platform(&model, ID_HIDE_MENU_BAR_ICON, true),
+            Some(MenuCommand::Action(TrayAction::HideMenuBarIcon))
+        );
+        assert_eq!(
+            command_for_platform(&model, ID_HIDE_MENU_BAR_ICON, false),
+            None
+        );
     }
 
     #[test]
@@ -552,7 +588,7 @@ mod tests {
         };
         model.transfers.active = 3;
         model.transfers.can_pause_all = true;
-        let spec = menu_spec(&model);
+        let spec = menu_spec_for(&model, false);
         assert_eq!(
             ids(&spec),
             [
@@ -589,7 +625,7 @@ mod tests {
 
     #[test]
     fn quick_settings_show_their_current_values() {
-        let spec = menu_spec(&configured());
+        let spec = menu_spec_for(&configured(), false);
         assert_eq!(
             ids(&spec),
             [
@@ -654,7 +690,7 @@ mod tests {
         let mut model = configured();
         assert!(!contains_id(&menu_spec(&model), ID_RECENT));
         model.recent_sites = vec![site("a", "Tom & Jerry"), site("b", "Staging")];
-        let spec = menu_spec(&model);
+        let spec = menu_spec_for(&model, false);
         assert_eq!(
             ids(&spec)[5..],
             ["tray-separator-5", ID_RECENT, "tray-separator-7", ID_QUIT]
@@ -695,7 +731,7 @@ mod tests {
         let mut model = TrayModel::default();
         assert_eq!(command_for(&model, ID_CANCEL_QUIT), None);
         model.quit_pending = true;
-        let spec = menu_spec(&model);
+        let spec = menu_spec_for(&model, false);
         assert_eq!(ids(&spec), [ID_SHOW, "tray-separator-1", ID_CANCEL_QUIT]);
         assert_eq!(command_for(&model, ID_QUIT), None);
         assert_eq!(

@@ -36,6 +36,7 @@ export type SettingsDraftValues = Pick<
   | 'coloredTabs'
   | 'minimizeToTray'
   | 'closeToTray'
+  | 'showMenuBarIcon'
   | 'autoCheckUpdates'
   | 'autoReconnectTabs'
   | 'saveSessionOnExit'
@@ -97,6 +98,7 @@ interface SettingsDraft {
   coloredTabsValue: boolean;
   minimizeToTrayValue: boolean;
   closeToTrayValue: boolean;
+  showMenuBarIconValue: boolean;
   autoCheckUpdatesValue: boolean;
   autoReconnectTabsValue: boolean;
   saveSessionOnExitValue: boolean;
@@ -148,6 +150,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     coloredTabsValue: settings.coloredTabs !== false,
     minimizeToTrayValue: !!settings.minimizeToTray,
     closeToTrayValue: !!settings.closeToTray,
+    showMenuBarIconValue: settings.showMenuBarIcon !== false,
     autoCheckUpdatesValue: settings.autoCheckUpdates !== false,
     autoReconnectTabsValue: !!settings.autoReconnectTabs,
     saveSessionOnExitValue: settings.saveSessionOnExit !== false,
@@ -218,6 +221,7 @@ function buildPatch(draft: SettingsDraft): SettingsPatch {
     coloredTabs: draft.coloredTabsValue,
     minimizeToTray: draft.minimizeToTrayValue,
     closeToTray: draft.closeToTrayValue,
+    showMenuBarIcon: draft.showMenuBarIconValue,
     autoCheckUpdates: draft.autoCheckUpdatesValue,
     autoReconnectTabs: draft.autoReconnectTabsValue,
     saveSessionOnExit: draft.saveSessionOnExitValue,
@@ -436,6 +440,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setColoredTabsValue: setter('coloredTabsValue'),
     setMinimizeToTrayValue: setter('minimizeToTrayValue'),
     setCloseToTrayValue: setter('closeToTrayValue'),
+    setShowMenuBarIconValue: setter('showMenuBarIconValue'),
     setAutoCheckUpdatesValue: setter('autoCheckUpdatesValue'),
     setAutoReconnectTabsValue: setter('autoReconnectTabsValue'),
     setSaveSessionOnExitValue: setter('saveSessionOnExitValue'),

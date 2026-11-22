@@ -10,7 +10,7 @@ interface PasswordInputProps extends Omit<
 > {
   className?: string;
   protectedSecret?: boolean;
-  onRevealSaved?: () => boolean | Promise<boolean>;
+  onRevealSaved?: (() => boolean | Promise<boolean>) | undefined;
 }
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function PasswordInput(

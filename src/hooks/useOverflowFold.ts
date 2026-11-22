@@ -1,10 +1,20 @@
 import type { RefObject } from 'react';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 
 export const ITEM_WIDTH = 26 + 6; // .btn-icon + one row gap
 export const DIVIDER_WIDTH = 6 + 2 + 1 + 2; // row gap + .toolbar-divider's own margin/width/margin
 
 const EMPTY_SET = new Set<string>();
+
+function contentWidth(el: HTMLElement): number {
+  const rectWidth = el.getBoundingClientRect().width;
+  if (rectWidth <= 0) return 0;
+  const style = getComputedStyle(el);
+  const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+  const border =
+    (parseFloat(style.borderLeftWidth) || 0) + (parseFloat(style.borderRightWidth) || 0);
+  return Math.max(0, rectWidth - padding - border);
+}
 
 interface FoldItem {
   key: string;
@@ -46,10 +56,13 @@ export function useOverflowFold({
     if (nextCount !== count) setCount(nextCount);
   });
 
-  // Button widths and order can change without resizing the container.
-  // Keep the observer subscribed while using the latest committed options.
-  useEffect(() => {
-    updateFold(widthRef.current);
+  // Measure synchronously before the first paint so freshly mounted toolbars
+  // (e.g. when creating or switching tabs) fold overflowed buttons without
+  // flashing them, and recalculate when button geometry changes without a resize.
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    const measured = el ? contentWidth(el) : 0;
+    updateFold(measured > 0 ? measured : widthRef.current);
   });
 
   useEffect(() => {

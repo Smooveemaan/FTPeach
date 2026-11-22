@@ -114,7 +114,7 @@ function FileRow({
       </span>
       <span
         ref={nameRef}
-        className={`name${nameTruncated ? ' truncated' : ''}`}
+        className={`name${rename ? ' is-renaming' : nameTruncated ? ' truncated' : ''}`}
         dir={rename ? undefined : 'auto'}
       >
         {rename || <bdi>{entry.name}</bdi>}

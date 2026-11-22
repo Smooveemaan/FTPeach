@@ -32,6 +32,7 @@ function setup() {
   const pauseAllTransfers = vi.fn();
   const resumeAllTransfers = vi.fn();
   const updateTransfers = vi.fn();
+  const updateInterface = vi.fn();
   const persist = vi.fn();
   const connectSavedSite = vi.fn();
   const sites = [
@@ -51,6 +52,7 @@ function setup() {
       notifyOnTransferComplete: true,
     },
     updateTransfers,
+    updateInterface,
     recentSites: sites,
     connectableSites: sites,
     connectSavedSite,
@@ -69,6 +71,7 @@ function setup() {
     resumeAllTransfers,
     quit,
     updateTransfers,
+    updateInterface,
     persist,
     connectSavedSite,
     sites,
@@ -276,4 +279,14 @@ test('connect opens a site that still exists in the free pane and ignores a dele
 
   view.fire({ kind: 'connect', siteId: 'deleted' });
   expect(view.connectSavedSite).toHaveBeenCalledTimes(2);
+});
+
+test('hideMenuBarIcon updates interface state and persists showMenuBarIcon: false', async () => {
+  const view = setup();
+  await act(async () => {
+    await Promise.resolve();
+  });
+  view.fire({ kind: 'hideMenuBarIcon' });
+  expect(view.updateInterface).toHaveBeenCalledWith({ showMenuBarIcon: false });
+  expect(view.persist).toHaveBeenCalledWith({ showMenuBarIcon: false });
 });

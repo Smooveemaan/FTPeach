@@ -1,13 +1,12 @@
 //! Application menu bar (used on macOS).
 //!
 //! macOS applications require a system menu bar (NSMenu) at the top of the
-//! screen. To prevent system shortcuts from conflicting with FTPeach's own
-//! controls (e.g. ⌘W for closing tabs rather than the whole window, ⌘H for
-//! home navigation), FTPeach installs a dedicated menu containing only
-//! FTPeach, Edit, and Window submenus, without ⌘W ("Close Window") or ⌘H ("Hide").
+//! screen. FTPeach installs a native menu bar with standard macOS actions
+//! (including ⌘H "Hide FTPeach", contextual ⌘W "Close Tab" / "Close Window"
+//! from the renderer's File menu, and ⌘Q routed through shutdown).
 //!
-//! ⌘Q routes through [], prompting the user if transfers or
-//! unsynced edits are in progress.
+//! ⌘Q routes through [`crate::runtime::shutdown::quit`], prompting the user if
+//! transfers or unsynced edits are in progress.
 
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use tauri::{
@@ -17,6 +16,7 @@ use tauri::{
 
 pub const ID_APP_ABOUT: &str = "app-menu-about";
 pub const ID_APP_QUIT: &str = "app-menu-quit";
+pub const ID_APP_CLOSE_WINDOW: &str = "app-menu:close-window";
 const APP_MENU_ACTION_EVENT: &str = "app-menu:action";
 pub const MAX_MENU_TEXT_CHARS: usize = 256;
 
@@ -24,6 +24,7 @@ pub const MAX_MENU_TEXT_CHARS: usize = 256;
 pub enum AppMenuCommand {
     Quit,
     About,
+    CloseWindow,
 }
 
 /// What an application menu item click asks for.
@@ -32,6 +33,8 @@ pub fn command_for(id: &str) -> Option<AppMenuCommand> {
         Some(AppMenuCommand::Quit)
     } else if id == ID_APP_ABOUT {
         Some(AppMenuCommand::About)
+    } else if id == ID_APP_CLOSE_WINDOW {
+        Some(AppMenuCommand::CloseWindow)
     } else {
         None
     }
@@ -116,7 +119,7 @@ impl AppMenuState {
 }
 
 /// Builds the custom application menu:
-/// - FTPeach (About FTPeach, Services, Hide Others, Show All, Quit with dialog)
+/// - FTPeach (About FTPeach, Services, Hide FTPeach, Hide Others, Show All, Quit with dialog)
 /// - Top-level menus provided by the renderer (File, Edit, View, Transfer, Bookmarks, Help)
 /// - Window (Minimize, Zoom, Bring All to Front)
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
@@ -133,6 +136,7 @@ pub fn build_app_menu<R: Runtime>(
     app_submenu.append(&PredefinedMenuItem::separator(app)?)?;
     app_submenu.append(&PredefinedMenuItem::services(app, None)?)?;
     app_submenu.append(&PredefinedMenuItem::separator(app)?)?;
+    app_submenu.append(&PredefinedMenuItem::hide(app, None)?)?;
     app_submenu.append(&PredefinedMenuItem::hide_others(app, None)?)?;
     app_submenu.append(&PredefinedMenuItem::show_all(app, None)?)?;
     app_submenu.append(&PredefinedMenuItem::separator(app)?)?;
@@ -185,7 +189,7 @@ pub fn build_app_menu<R: Runtime>(
         menu.append(&edit_submenu)?;
     }
 
-    // Window submenu (without Close Window / ⌘W)
+    // Window submenu (Close Window lives in File so ⌘W stays contextual with Close Tab)
     let window_submenu = Submenu::new(app, "Window", true)?;
     window_submenu.append(&PredefinedMenuItem::minimize(app, None)?)?;
     window_submenu.append(&PredefinedMenuItem::maximize(app, None)?)?;
@@ -306,6 +310,13 @@ pub fn install(app: &AppHandle) -> tauri::Result<()> {
                     log::warn!("could not emit app menu action: {error}");
                 }
             }
+            Some(AppMenuCommand::CloseWindow) => {
+                if let Some(window) = app.get_webview_window("main")
+                    && let Err(error) = window.close()
+                {
+                    log::warn!("could not close window from app menu: {error}");
+                }
+            }
             None => {
                 if id.starts_with("app-menu:") {
                     let action_id = id.strip_prefix("app-menu:").unwrap_or(id);
@@ -325,9 +336,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn command_routing_recognizes_quit() {
+    fn command_routing_recognizes_builtin_actions() {
         assert_eq!(command_for(ID_APP_QUIT), Some(AppMenuCommand::Quit));
         assert_eq!(command_for(ID_APP_ABOUT), Some(AppMenuCommand::About));
+        assert_eq!(
+            command_for(ID_APP_CLOSE_WINDOW),
+            Some(AppMenuCommand::CloseWindow)
+        );
         assert_eq!(command_for("other-id"), None);
     }
 

@@ -282,6 +282,7 @@ export default function Application() {
     quit: quitWhenIdle,
     settings: settings.transfers,
     updateTransfers: updateSettings.transfers,
+    updateInterface: updateSettings.interface,
     recentSites: savedSites.orderedSites,
     connectableSites: savedSites.connectableSites,
     connectSavedSite: browser.connectSavedSite,

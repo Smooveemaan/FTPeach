@@ -57,6 +57,7 @@ pub async fn settings_reveal_proxy_password(
 
 #[tauri::command]
 pub async fn settings_set(
+    app: tauri::AppHandle,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
     log_emitter: State<'_, LogEmitter>,
@@ -75,6 +76,7 @@ pub async fn settings_set(
     }
     let next = store.set_settings_with_vault(patch, &vault).await?;
     crate::runtime::settings_apply::apply(&next, &store, &log_emitter);
+    crate::runtime::tray::apply_menu_bar_setting(&app, &next);
     Ok(AppSettings(strip_proxy_secret(next)))
 }
 

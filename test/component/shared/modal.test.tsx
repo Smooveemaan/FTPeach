@@ -245,4 +245,20 @@ describe('critical dialog accessibility', () => {
     await user.tab();
     expect(document.activeElement).toBe(dialog);
   });
+
+  test('dismissOnBackdrop={false} ignores backdrop clicks while still allowing Escape', () => {
+    const onClose = vi.fn();
+    const view = render(
+      <Modal title="Confirm" onClose={onClose} dismissOnBackdrop={false}>
+        <button>OK</button>
+      </Modal>,
+    );
+    const overlay = screen.getByRole('dialog', { name: 'Confirm' }).parentElement as HTMLElement;
+    fireEvent.mouseDown(overlay);
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledOnce();
+    view.unmount();
+  });
 });

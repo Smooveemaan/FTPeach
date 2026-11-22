@@ -127,22 +127,25 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                 if window_for_events.is_minimized().unwrap_or(false) {
                     log::debug!("window: minimized");
                     super::vault_auto_lock::enforce_now(window_for_events.app_handle());
-                    // The title bar button asks for the tray itself; this
-                    // covers minimizing from outside the page: the window
-                    // menu, Win+Down, the taskbar button.
-                    let window = window_for_events.clone();
-                    let store = window.state::<Store>().inner().clone();
-                    tauri::async_runtime::spawn(async move {
-                        let to_tray = store
-                            .get_settings()
-                            .await
-                            .get("minimizeToTray")
-                            .and_then(|value| value.as_bool())
-                            .unwrap_or(false);
-                        if to_tray {
-                            tray::hide_to_tray(window);
-                        }
-                    });
+                    #[cfg(not(target_os = "macos"))]
+                    {
+                        // The title bar button asks for the tray itself; this
+                        // covers minimizing from outside the page: the window
+                        // menu, Win+Down, the taskbar button.
+                        let window = window_for_events.clone();
+                        let store = window.state::<Store>().inner().clone();
+                        tauri::async_runtime::spawn(async move {
+                            let to_tray = store
+                                .get_settings()
+                                .await
+                                .get("minimizeToTray")
+                                .and_then(|value| value.as_bool())
+                                .unwrap_or(false);
+                            if to_tray {
+                                tray::hide_to_tray(window);
+                            }
+                        });
+                    }
                 }
             }
             tauri::WindowEvent::Moved(position) => {
@@ -183,7 +186,9 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let log_emitter_for_apply = app.state::<LogEmitter>().inner().clone();
     let app_for_apply = app.handle().clone();
     tauri::async_runtime::spawn(async move {
-        settings_apply::apply(&store.get_settings().await, &store, &log_emitter_for_apply);
+        let loaded_settings = store.get_settings().await;
+        settings_apply::apply(&loaded_settings, &store, &log_emitter_for_apply);
+        tray::apply_menu_bar_setting(&app_for_apply, &loaded_settings);
         vault_auto_lock::apply_at_startup(&store, app_for_apply.state::<AutoLock>().inner()).await;
         store.scrub_secret_backups().await;
     });

@@ -1,5 +1,5 @@
 import { hostPlatform } from '../../platform/os.ts';
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type {
   CSSProperties,
   MouseEvent as ReactMouseEvent,
@@ -173,9 +173,29 @@ function FilePane({
   );
   const paneRef = useRef<HTMLDivElement>(null);
   const wasRenamingRef = useRef(false);
-  useEffect(() => {
-    if (wasRenamingRef.current && !rename.renamingName) paneRef.current?.focus();
+  const renameScrollRef = useRef<{ top: number; left: number } | null>(null);
+  const snapshotRenameScroll = useCallback(() => {
+    if (renameScrollRef.current) return;
+    const list = paneRef.current?.querySelector<HTMLElement>('.pane-list');
+    if (list) renameScrollRef.current = { top: list.scrollTop, left: list.scrollLeft };
+  }, []);
+  useLayoutEffect(() => {
+    const wasRenaming = wasRenamingRef.current;
     wasRenamingRef.current = !!rename.renamingName;
+    if (!wasRenaming || rename.renamingName) return;
+    const saved = renameScrollRef.current;
+    renameScrollRef.current = null;
+    paneRef.current?.focus({ preventScroll: true });
+    if (!saved) return;
+    const restore = () => {
+      const list = paneRef.current?.querySelector<HTMLElement>('.pane-list');
+      if (!list) return;
+      if (list.scrollTop !== saved.top) list.scrollTop = saved.top;
+      if (list.scrollLeft !== saved.left) list.scrollLeft = saved.left;
+    };
+    restore();
+    const frame = requestAnimationFrame(restore);
+    return () => cancelAnimationFrame(frame);
   }, [rename.renamingName]);
   useEffect(() => {
     preloadExtensions(entries.filter((entry) => !entry.isDirectory).map((entry) => entry.name));
@@ -343,10 +363,20 @@ function FilePane({
           onChange={(e) => rename.setValue(e.target.value)}
           onKeyDown={(e) => {
             e.stopPropagation();
-            if (e.key === 'Enter') rename.commit(entry);
-            if (e.key === 'Escape') rename.cancel();
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              snapshotRenameScroll();
+              rename.commit(entry);
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              snapshotRenameScroll();
+              rename.cancel();
+            }
           }}
-          onBlur={() => rename.commit(entry)}
+          onBlur={() => {
+            snapshotRenameScroll();
+            rename.commit(entry);
+          }}
         />
       ) : null;
     return (

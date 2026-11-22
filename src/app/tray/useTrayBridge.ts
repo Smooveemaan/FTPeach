@@ -33,6 +33,7 @@ export interface TrayBridgeOptions {
   quit: Pick<QuitWhenIdleModel, 'pending' | 'promptOpen' | 'request' | 'cancel'>;
   settings: TrayModelInput['settings'];
   updateTransfers: SettingsUpdaters['transfers'];
+  updateInterface?: SettingsUpdaters['interface'];
   /** Connectable sites, most recent first. */
   recentSites: TrayModelInput['recentSites'];
   connectableSites: readonly ManagedSite[];
@@ -56,6 +57,7 @@ export function useTrayBridge({
   quit,
   settings,
   updateTransfers,
+  updateInterface,
   recentSites,
   connectableSites,
   connectSavedSite,
@@ -136,6 +138,10 @@ export function useTrayBridge({
       updateTransfers(patch);
       persist(patch);
     },
+    hideMenuBarIcon: () => {
+      updateInterface?.({ showMenuBarIcon: false });
+      persist({ showMenuBarIcon: false });
+    },
   };
   const actionsRef = useRef(actions);
   actionsRef.current = actions;
@@ -171,6 +177,9 @@ export function useTrayBridge({
             return;
           case 'cancelQuit':
             actions.quit.cancel();
+            return;
+          case 'hideMenuBarIcon':
+            actions.hideMenuBarIcon();
             return;
         }
       }),

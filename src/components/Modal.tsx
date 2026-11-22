@@ -105,6 +105,7 @@ interface ModalProps {
   className?: string;
   headerActions?: ReactNode;
   closeDisabled?: boolean;
+  dismissOnBackdrop?: boolean;
   initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
@@ -116,6 +117,7 @@ export default function Modal({
   className,
   headerActions,
   closeDisabled = false,
+  dismissOnBackdrop = true,
   initialFocusRef,
 }: ModalProps) {
   const { t } = useTranslation();
@@ -231,7 +233,7 @@ export default function Modal({
     <div
       className="modal-overlay"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !closeDisabled) onClose();
+        if (dismissOnBackdrop && e.target === e.currentTarget && !closeDisabled) onClose();
       }}
     >
       <div

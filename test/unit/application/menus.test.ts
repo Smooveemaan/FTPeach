@@ -253,3 +253,38 @@ test('with a server on each side, File offers to disconnect either one', () => {
     ['disconnect', 'a'],
   ]);
 });
+
+test('on macOS, Close Window shares ⌘W contextually with Close Tab and is absent on other platforms', () => {
+  const h = harness();
+  assert.equal(
+    buildMenus(h.ctx)[0]!.items.find((entry) => entry.id === 'close-window'),
+    undefined,
+  );
+
+  const origNav = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' },
+  });
+  try {
+    const find = (id: string) => buildMenus(h.ctx)[0]!.items.find((entry) => entry.id === id)!;
+    // Single tab: Close Tab releases ⌘W so Close Window owns ⌘W.
+    assert.equal(find('close-tab').disabled, true);
+    assert.equal(find('close-tab').shortcut, undefined);
+    assert.equal(find('close-window').shortcut, '⌘W');
+
+    // Multiple tabs with default ⌘W on Close Tab: Close Window moves to ⇧⌘W.
+    h.ctx.browser.tabs.push(makeTab('second'));
+    assert.equal(find('close-tab').disabled, false);
+    assert.equal(find('close-tab').shortcut, '⌘W');
+    assert.equal(find('close-window').shortcut, '⇧⌘W');
+
+    // Multiple tabs when Close Tab is rebound away from ⌘W: Close Window keeps ⌘W.
+    h.ctx.settings.shortcuts.keyboardShortcuts = { 'close-tab': 'Cmd+KeyK' };
+    assert.equal(find('close-tab').shortcut, '⌘K');
+    assert.equal(find('close-window').shortcut, '⌘W');
+  } finally {
+    if (origNav) Object.defineProperty(globalThis, 'navigator', origNav);
+    else Reflect.deleteProperty(globalThis, 'navigator');
+  }
+});

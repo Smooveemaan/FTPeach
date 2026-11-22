@@ -16,7 +16,6 @@ import Icon from '../../components/Icon.tsx';
 import DismissibleError from '../../components/DismissibleError.tsx';
 import type { IconName } from '../../components/Icon.tsx';
 import { SITE_COLORS, SITE_ENCODINGS, SITE_ICONS, SITE_ICON_LABEL_KEYS } from './siteMeta.ts';
-import { setNativeInputValue } from '../../shared/nativeInput.ts';
 import { useMenuPosition } from '../../hooks/useMenuPosition.ts';
 import { DEFAULT_PORTS } from '../../shared/siteContracts.ts';
 import type { ManagedSite, SiteProtocol } from '../../shared/siteContracts.ts';
@@ -59,6 +58,7 @@ interface SiteEditorProps {
   onChooseCaCertFile: () => void | Promise<void>;
   onChooseLocalPath: () => void | Promise<void>;
   onRevealSecret: (field: SecretField) => boolean | Promise<boolean>;
+  onClearSecret: (field: SecretField) => void;
   secretsChanged: (field: SecretField) => boolean;
   rsaKeySelected: boolean;
   passwordRef: RefObject<HTMLInputElement | null>;
@@ -78,6 +78,7 @@ export default function SiteEditor({
   onChooseCaCertFile,
   onChooseLocalPath,
   onRevealSecret,
+  onClearSecret,
   secretsChanged,
   rsaKeySelected,
   passwordRef,
@@ -179,8 +180,12 @@ export default function SiteEditor({
             ref={secretRef(field)}
             defaultValue=""
             onChange={handleSecretInput(field, removeField)}
-            protectedSecret={saved}
-            onRevealSaved={() => onRevealSecret(field)}
+            // View mode (locked) reveals the saved secret; edit mode (!locked)
+            // starts clean for typing a replacement, so the eye only toggles
+            // what the user types instead of revealing the old secret under the
+            // "leave blank to keep" hint.
+            protectedSecret={saved && locked}
+            onRevealSaved={locked ? () => onRevealSecret(field) : undefined}
             readOnly={locked}
             tabIndex={locked ? -1 : undefined}
           />
@@ -192,11 +197,14 @@ export default function SiteEditor({
               aria-pressed={!locked}
               data-tooltip={t(changeLabel)}
               onClick={() => {
+                onClearSecret(field);
+                setTypedSecrets((current) =>
+                  current[field] ? { ...current, [field]: false } : current,
+                );
                 if (locked) {
                   setEditingSecret(field);
                   secretRef(field).current?.focus();
                 } else {
-                  setNativeInputValue(secretRef(field).current, '');
                   setEditingSecret(null);
                 }
               }}
@@ -211,7 +219,11 @@ export default function SiteEditor({
               aria-label={t(removeLabel)}
               data-tooltip={t(removeLabel)}
               onClick={() => {
-                setNativeInputValue(secretRef(field).current, '');
+                onClearSecret(field);
+                setTypedSecrets((current) =>
+                  current[field] ? { ...current, [field]: false } : current,
+                );
+                setEditingSecret((current) => (current === field ? null : current));
                 setForm((current) => ({ ...current, [removeField]: true }));
               }}
             >
@@ -523,7 +535,7 @@ export default function SiteEditor({
           'connectionBar.authToggle.label',
           !!form.useKeyAuth,
           (checked) => {
-            if (checked) setNativeInputValue(passwordRef.current, '');
+            if (checked) onClearSecret('password');
             setForm((current) => ({ ...current, useKeyAuth: checked }));
           },
           isKeyAuth && (

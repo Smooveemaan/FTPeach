@@ -104,6 +104,7 @@ export function buildTrayModel({
       preventSleep: t('tray.preventSleep'),
       notify: t('tray.notify'),
       recentConnections: t('tray.recentConnections'),
+      hideMenuBarIcon: t('tray.hideMenuBarIcon'),
     },
     status: active === 0 ? '' : status,
     transfers: {

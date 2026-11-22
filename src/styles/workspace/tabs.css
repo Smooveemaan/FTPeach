@@ -110,6 +110,10 @@ body:has(.modal-overlay) .view-toolbar-settings:hover {
   gap: 6px;
   flex: 1 1 auto;
   min-width: 0;
+  /* Matches .tab-strip-close's 16px height so adding a second tab (which mounts
+     the close button) never shifts the strip down on fonts with a shorter 12px
+     line box (such as SF Pro on macOS). */
+  min-height: 16px;
   overflow: hidden;
 }
 

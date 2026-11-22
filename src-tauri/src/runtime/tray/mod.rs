@@ -40,6 +40,9 @@ struct TrayInner {
     /// Whether the window is hidden to the tray. The icon is removed on a
     /// later turn of the event loop, and a hide landing in between keeps it.
     hidden: bool,
+    /// On macOS, keeps the menu bar icon visible regardless of window state
+    /// while the user has `showMenuBarIcon` enabled.
+    persistent_icon: bool,
     last_menu_event: Option<Instant>,
 }
 
@@ -191,6 +194,10 @@ pub fn install(app: &AppHandle, quit: fn(&AppHandle)) {
                 if matches!(action, TrayAction::Connect { .. }) {
                     restore(app);
                 }
+                #[cfg(target_os = "macos")]
+                if matches!(action, TrayAction::HideMenuBarIcon) {
+                    set_macos_menu_bar_icon(app, false);
+                }
                 send_action(app, &action);
             }
             None => {}
@@ -244,10 +251,91 @@ pub fn hide_to_tray(window: WebviewWindow) {
     }
 }
 
-/// Restores the window and hides its tray icon.
+/// Applies the macOS `showMenuBarIcon` preference from a settings map.
+/// No-op on Windows and Linux, where the icon follows minimize/close to tray.
+pub fn apply_menu_bar_setting(
+    app: &AppHandle,
+    settings: &serde_json::Map<String, serde_json::Value>,
+) {
+    #[cfg(target_os = "macos")]
+    {
+        let visible = settings
+            .get("showMenuBarIcon")
+            .and_then(|value| value.as_bool())
+            .unwrap_or(true);
+        set_macos_menu_bar_icon(app, visible);
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, settings);
+    }
+}
+
+/// Shows or hides the persistent macOS menu bar icon.
+#[cfg(target_os = "macos")]
+pub fn set_macos_menu_bar_icon(app: &AppHandle, visible: bool) {
+    let defer = {
+        let state = app.state::<TrayState>();
+        let mut inner = state.lock();
+        inner.persistent_icon = visible;
+        !visible
+            && inner
+                .last_menu_event
+                .is_some_and(|at| at.elapsed() < MENU_CALLBACK_SETTLE)
+    };
+    let handle = app.clone();
+    let apply = move || {
+        let app = handle.clone();
+        let result = app.run_on_main_thread(move || {
+            let state = handle.state::<TrayState>();
+            let mut inner = state.lock();
+            if inner.persistent_icon {
+                if inner.live.is_none() {
+                    match create(&handle, &inner.model()) {
+                        Ok(live) => inner.live = Some(live),
+                        Err(error) => {
+                            log::warn!("could not create the menu bar icon: {error}");
+                            return;
+                        }
+                    }
+                }
+                if let Some(tray) = handle.tray_by_id(TRAY_ID)
+                    && let Err(error) = tray.set_visible(true)
+                {
+                    log::warn!("could not show the menu bar icon: {error}");
+                }
+            } else if !inner.hidden && inner.live.is_some() {
+                drop(inner.live.take());
+                drop(handle.remove_tray_by_id(TRAY_ID));
+            }
+        });
+        if let Err(error) = result {
+            log::warn!("could not update the menu bar icon: {error}");
+        }
+    };
+    if defer {
+        // Destroying the icon inside its native menu callback can strand the menu.
+        tauri::async_runtime::spawn(async move {
+            tokio::time::sleep(MENU_CALLBACK_SETTLE).await;
+            apply();
+        });
+    } else {
+        apply();
+    }
+}
+
+/// Restores the window and hides its tray icon unless it is pinned on macOS.
 pub fn restore(app: &AppHandle) {
-    app.state::<TrayState>().lock().hidden = false;
+    let persistent = {
+        let state = app.state::<TrayState>();
+        let mut inner = state.lock();
+        inner.hidden = false;
+        inner.persistent_icon
+    };
     show_and_focus(app);
+    if persistent {
+        return;
+    }
     let keep_registered =
         tray_icon_config(cfg!(target_os = "macos"), cfg!(target_os = "linux")).keep_registered;
     let handle = app.clone();
@@ -256,7 +344,7 @@ pub fn restore(app: &AppHandle) {
         let result = app.run_on_main_thread(move || {
             let state = handle.state::<TrayState>();
             let mut inner = state.lock();
-            if !inner.hidden && inner.live.is_some() {
+            if !inner.hidden && !inner.persistent_icon && inner.live.is_some() {
                 if keep_registered {
                     if let Some(tray) = handle.tray_by_id(TRAY_ID)
                         && let Err(error) = tray.set_visible(false)

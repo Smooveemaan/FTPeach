@@ -200,6 +200,8 @@ export default function SettingsDialog({
                 setMinimizeToTrayValue={draft.setMinimizeToTrayValue}
                 closeToTrayValue={draft.closeToTrayValue}
                 setCloseToTrayValue={draft.setCloseToTrayValue}
+                showMenuBarIconValue={draft.showMenuBarIconValue}
+                setShowMenuBarIconValue={draft.setShowMenuBarIconValue}
                 selectDirectory={() => api.fsLocal.selectDir()}
               />
             )}

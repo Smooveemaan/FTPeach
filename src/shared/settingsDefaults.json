@@ -73,6 +73,7 @@
   "windowMaximized": false,
   "minimizeToTray": false,
   "closeToTray": false,
+  "showMenuBarIcon": true,
   "legacyPasswordNoticeShown": false,
   "plaintextSecretNoticeShown": false,
   "colorScheme": "peach"

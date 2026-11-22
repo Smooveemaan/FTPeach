@@ -16,6 +16,7 @@ export interface TrayModel {
     preventSleep: string;
     notify: string;
     recentConnections: string;
+    hideMenuBarIcon: string;
   };
   /** The finished status line, empty while nothing is transferring. */
   status: string;
@@ -46,9 +47,15 @@ export type TrayAction =
   | { kind: 'setNotifyOnComplete'; enabled: boolean }
   | { kind: 'connect'; siteId: string }
   | { kind: 'quitRequested'; unsyncedEdits?: number }
-  | { kind: 'cancelQuit' };
+  | { kind: 'cancelQuit' }
+  | { kind: 'hideMenuBarIcon' };
 
-const BARE_ACTIONS: ReadonlySet<string> = new Set(['pauseAll', 'resumeAll', 'cancelQuit']);
+const BARE_ACTIONS: ReadonlySet<string> = new Set([
+  'pauseAll',
+  'resumeAll',
+  'cancelQuit',
+  'hideMenuBarIcon',
+]);
 
 function isTrayAction(value: unknown): value is TrayAction {
   if (!isRecord(value) || typeof value.kind !== 'string') return false;

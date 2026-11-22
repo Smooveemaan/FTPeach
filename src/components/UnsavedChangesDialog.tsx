@@ -21,6 +21,7 @@ export default function UnsavedChangesDialog({
     <Modal
       title={t('settings.unsavedChangesTitle')}
       onClose={onCancel}
+      dismissOnBackdrop={false}
       className="modal-confirm"
       footer={
         <>

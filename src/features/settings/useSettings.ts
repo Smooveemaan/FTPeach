@@ -62,6 +62,7 @@ export interface SettingsValues {
   coloredTabs: boolean;
   minimizeToTray: boolean;
   closeToTray: boolean;
+  showMenuBarIcon: boolean;
   paneOrientation: PaneOrientation;
   logEnabled: boolean;
   logShowTimestamps: boolean;
@@ -96,6 +97,7 @@ export const SETTING_GROUPS = {
     'coloredTabs',
     'minimizeToTray',
     'closeToTray',
+    'showMenuBarIcon',
   ],
   layout: [
     'localColumns',
@@ -345,6 +347,7 @@ function normalizeValues(settings: AppSettings): SettingsValues {
     coloredTabs: s.coloredTabs !== false,
     minimizeToTray: !!s.minimizeToTray,
     closeToTray: !!s.closeToTray,
+    showMenuBarIcon: s.showMenuBarIcon !== false,
     logEnabled: !!s.logEnabled,
     logShowTimestamps: s.logShowTimestamps !== false,
     logToFile: !!s.logToFile,

@@ -40,6 +40,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     coloredTabs: true,
     minimizeToTray: false,
     closeToTray: false,
+    showMenuBarIcon: true,
     autoCheckUpdates: true,
     autoReconnectTabs: false,
     saveSessionOnExit: true,
@@ -823,5 +824,25 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
     expect(screen.queryByRole('alert')).toBeNull();
     expect(props.onClose).not.toHaveBeenCalled();
+  });
+
+  test('Interface settings show the menu bar icon toggle on macOS instead of tray toggles', async () => {
+    const user = userEvent.setup({ delay: null });
+    const uaSpy = vi
+      .spyOn(navigator, 'userAgent', 'get')
+      .mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)');
+    try {
+      const { props } = renderDialog({ showMenuBarIcon: true });
+      await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+      expect(screen.queryByLabelText('settings.minimizeToTray')).toBeNull();
+      expect(screen.queryByLabelText('settings.closeToTray')).toBeNull();
+      const toggle = screen.getByLabelText<HTMLInputElement>('settings.showMenuBarIcon');
+      expect(toggle.checked).toBe(true);
+      await user.click(toggle);
+      await user.click(screen.getByRole('button', { name: 'common.save' }));
+      expect(props.onSave).toHaveBeenCalledWith({ showMenuBarIcon: false });
+    } finally {
+      uaSpy.mockRestore();
+    }
   });
 });

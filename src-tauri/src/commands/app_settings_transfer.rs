@@ -572,6 +572,7 @@ pub async fn app_import_apply(
             &store,
             &tauri::Manager::state::<crate::runtime::log_emitter::LogEmitter>(&app),
         );
+        crate::runtime::tray::apply_menu_bar_setting(&app, next);
         crate::runtime::vault_auto_lock::apply_idle_timeout(next, &auto_lock);
     }
     Ok(ImportResult::Ok {

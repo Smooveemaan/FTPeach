@@ -102,10 +102,10 @@ pub fn close_action(
     active_transfers: u32,
     unsynced_edits: usize,
 ) -> CloseAction {
-    if close_to_tray {
-        CloseAction::HideToTray
-    } else if is_macos {
+    if is_macos {
         CloseAction::HideWindow
+    } else if close_to_tray {
+        CloseAction::HideToTray
     } else if quit_route(active_transfers, unsynced_edits) == QuitRoute::Ask {
         CloseAction::AskQuit
     } else {
@@ -354,13 +354,13 @@ mod tests {
 
     #[test]
     fn close_action_respects_platform_and_preferences() {
-        // With closeToTray enabled, both macOS and non-macOS hide to tray
+        // On Windows/Linux with closeToTray enabled, closing hides to tray
         assert_eq!(close_action(false, true, 0, 0), CloseAction::HideToTray);
         assert_eq!(close_action(false, true, 5, 2), CloseAction::HideToTray);
-        assert_eq!(close_action(true, true, 0, 0), CloseAction::HideToTray);
-        assert_eq!(close_action(true, true, 5, 2), CloseAction::HideToTray);
 
-        // On macOS without closeToTray, closing hides the window without quitting or prompting
+        // On macOS, closing always hides the window without quitting, prompting, or toggling the menu bar icon
+        assert_eq!(close_action(true, true, 0, 0), CloseAction::HideWindow);
+        assert_eq!(close_action(true, true, 5, 2), CloseAction::HideWindow);
         assert_eq!(close_action(true, false, 0, 0), CloseAction::HideWindow);
         assert_eq!(close_action(true, false, 5, 2), CloseAction::HideWindow);
 

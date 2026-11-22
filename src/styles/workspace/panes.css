@@ -589,6 +589,16 @@ body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
   display: flex;
   align-items: center;
 }
+.row .name.is-renaming {
+  position: relative;
+  overflow: visible;
+}
+/* Keeps the row's single-line height while the rename input sits above it
+   out of flow, so neighbouring rows never shift when renaming starts. */
+.row .name.is-renaming::after {
+  content: '\00a0';
+  visibility: hidden;
+}
 /* The name keeps to the window's side; an auto margin is dropped when the
    name overflows, so a long one still starts at its own start and is cut at
    its end. */

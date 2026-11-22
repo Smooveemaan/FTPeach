@@ -11,6 +11,7 @@ import SelectMenu from '../../../components/SelectMenu.tsx';
 import { COLOR_SCHEMES } from '../../../shared/appearance.ts';
 import SegmentedControl from './SegmentedControl.tsx';
 import { handler } from '../../../shared/asyncFailure.ts';
+import { hostPlatform } from '../../../platform/os.ts';
 
 interface InterfaceSettingsProps {
   colorSchemeValue: string;
@@ -32,9 +33,11 @@ interface InterfaceSettingsProps {
   minimizeToTrayValue: boolean;
   setMinimizeToTrayValue: (value: boolean) => void;
   closeToTrayValue: boolean;
+  setCloseToTrayValue: (value: boolean) => void;
+  showMenuBarIconValue: boolean;
+  setShowMenuBarIconValue: (value: boolean) => void;
   /** Native directory picker. Injected so this section stays presentational. */
   selectDirectory: () => Promise<string | null>;
-  setCloseToTrayValue: (value: boolean) => void;
 }
 
 export default function InterfaceSettings({
@@ -58,9 +61,12 @@ export default function InterfaceSettings({
   setMinimizeToTrayValue,
   closeToTrayValue,
   setCloseToTrayValue,
+  showMenuBarIconValue,
+  setShowMenuBarIconValue,
   selectDirectory,
 }: InterfaceSettingsProps) {
   const { t } = useTranslation();
+  const isMac = hostPlatform() === 'macos';
   const dateOnlyFormat =
     DATE_FORMAT_OPTIONS.find((option) => dateFormatValue.startsWith(option.value))?.value ||
     'locale';
@@ -200,28 +206,44 @@ export default function InterfaceSettings({
         </label>
         <p className="settings-hint">{t('settings.coloredTabsHint')}</p>
       </div>
-      <div className="settings-option-group">
-        <label className="secure-toggle settings-toggle">
-          <input
-            type="checkbox"
-            checked={minimizeToTrayValue}
-            onChange={(e) => setMinimizeToTrayValue(e.target.checked)}
-          />
-          {t('settings.minimizeToTray')}
-        </label>
-        <p className="settings-hint">{t('settings.minimizeToTrayHint')}</p>
-      </div>
-      <div className="settings-option-group">
-        <label className="secure-toggle settings-toggle">
-          <input
-            type="checkbox"
-            checked={closeToTrayValue}
-            onChange={(e) => setCloseToTrayValue(e.target.checked)}
-          />
-          {t('settings.closeToTray')}
-        </label>
-        <p className="settings-hint">{t('settings.closeToTrayHint')}</p>
-      </div>
+      {isMac ? (
+        <div className="settings-option-group">
+          <label className="secure-toggle settings-toggle">
+            <input
+              type="checkbox"
+              checked={showMenuBarIconValue}
+              onChange={(e) => setShowMenuBarIconValue(e.target.checked)}
+            />
+            {t('settings.showMenuBarIcon')}
+          </label>
+          <p className="settings-hint">{t('settings.showMenuBarIconHint')}</p>
+        </div>
+      ) : (
+        <>
+          <div className="settings-option-group">
+            <label className="secure-toggle settings-toggle">
+              <input
+                type="checkbox"
+                checked={minimizeToTrayValue}
+                onChange={(e) => setMinimizeToTrayValue(e.target.checked)}
+              />
+              {t('settings.minimizeToTray')}
+            </label>
+            <p className="settings-hint">{t('settings.minimizeToTrayHint')}</p>
+          </div>
+          <div className="settings-option-group">
+            <label className="secure-toggle settings-toggle">
+              <input
+                type="checkbox"
+                checked={closeToTrayValue}
+                onChange={(e) => setCloseToTrayValue(e.target.checked)}
+              />
+              {t('settings.closeToTray')}
+            </label>
+            <p className="settings-hint">{t('settings.closeToTrayHint')}</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

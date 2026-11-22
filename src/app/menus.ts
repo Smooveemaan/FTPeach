@@ -1,6 +1,6 @@
 import i18n from '../i18n/index.ts';
 import { effectiveBinding } from '../shortcuts/resolve.ts';
-import { formatBinding } from '../shortcuts/bindings.ts';
+import { formatBinding, parseBinding } from '../shortcuts/bindings.ts';
 import type { MenuBarEntry } from '../components/MenuBar.tsx';
 import type { MutableRefObject } from 'react';
 import type {
@@ -18,6 +18,7 @@ import type { ApplicationSettingsResult } from './useApplicationSettings.ts';
 import type { WorkspaceLayoutModel } from './useWorkspaceLayout.ts';
 import { handler } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
+import { hostPlatform } from '../platform/os.ts';
 
 /**
  * Everything the menu bar and the global shortcuts act on, as the objects
@@ -156,9 +157,20 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
   const { keyboardShortcuts } = settings.shortcuts;
   const { effectivePaneOrientation } = workspace;
   const commands = applicationCommands(ctx);
+  const isMac = hostPlatform() === 'macos';
 
   const shortcutLabel = (actionId: string) =>
     formatBinding(effectiveBinding(actionId, keyboardShortcuts));
+
+  const closeTabBinding = parseBinding(effectiveBinding('close-tab', keyboardShortcuts));
+  const closeTabUsesCmdW = Boolean(
+    closeTabBinding &&
+    closeTabBinding.code === 'KeyW' &&
+    closeTabBinding.cmd &&
+    !closeTabBinding.ctrl &&
+    !closeTabBinding.alt &&
+    !closeTabBinding.shift,
+  );
 
   const paneSideWord = (id: PaneId) =>
     effectivePaneOrientation === 'vertical'
@@ -221,10 +233,21 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
         {
           id: 'close-tab',
           label: t('menu.file.closeTab'),
-          shortcut: shortcutLabel('close-tab'),
+          // On macOS, release ⌘W to Close Window when only one tab remains.
+          shortcut: isMac && tabs.length === 1 ? undefined : shortcutLabel('close-tab'),
           disabled: modalOpen || tabs.length === 1,
           onClick: () => browser.closeTab(browser.activeTabId),
         },
+        ...(isMac
+          ? [
+              {
+                id: 'close-window',
+                label: t('menu.file.closeWindow'),
+                shortcut: tabs.length === 1 || !closeTabUsesCmdW ? '⌘W' : '⇧⌘W',
+                onClick: () => {},
+              },
+            ]
+          : []),
         {
           id: 'reopen-closed-tab',
           label: t('menu.file.reopenClosedTab'),

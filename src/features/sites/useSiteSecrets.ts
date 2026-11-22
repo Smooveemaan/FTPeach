@@ -15,6 +15,7 @@ interface UseSiteSecretsOptions {
 }
 
 export interface SiteSecretsController {
+  clearSecret: (field: SecretField) => void;
   keyPassphraseRef: RefObject<HTMLInputElement | null>;
   passwordRef: RefObject<HTMLInputElement | null>;
   readSecrets: () => SiteFormSecrets;
@@ -55,6 +56,14 @@ export function useSiteSecrets({
   // The backend asks before revealing in a window of its own, which takes focus
   // from this one. That blur is the reveal's own doing and must not drop it.
   const revealingRef = useRef(0);
+
+  const clearSecret = useCallback(
+    (field: SecretField) => {
+      generationRef.current += 1;
+      setSecret(field, '');
+    },
+    [setSecret],
+  );
 
   const resetSecrets = useCallback(() => {
     generationRef.current += 1;
@@ -141,6 +150,7 @@ export function useSiteSecrets({
   );
 
   return {
+    clearSecret,
     keyPassphraseRef,
     passwordRef,
     readSecrets,

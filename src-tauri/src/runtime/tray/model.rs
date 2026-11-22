@@ -24,6 +24,7 @@ pub struct TrayLabels {
     pub prevent_sleep: String,
     pub notify: String,
     pub recent_connections: String,
+    pub hide_menu_bar_icon: String,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
@@ -87,6 +88,7 @@ impl Default for TrayModel {
                 prevent_sleep: "Keep the computer awake".into(),
                 notify: "Notify when transfers finish".into(),
                 recent_connections: "Recent connections".into(),
+                hide_menu_bar_icon: "Hide menu bar icon".into(),
             },
             status: String::new(),
             transfers: TrayTransfers::default(),
@@ -114,6 +116,7 @@ impl TrayModel {
             ("labels.preventSleep", &labels.prevent_sleep),
             ("labels.notify", &labels.notify),
             ("labels.recentConnections", &labels.recent_connections),
+            ("labels.hideMenuBarIcon", &labels.hide_menu_bar_icon),
             ("status", &self.status),
         ]
         .into_iter()
@@ -182,6 +185,7 @@ pub enum TrayAction {
         unsynced_edits: usize,
     },
     CancelQuit,
+    HideMenuBarIcon,
 }
 
 #[cfg(test)]
@@ -201,6 +205,7 @@ mod tests {
                 "preventSleep": "Keep the computer awake",
                 "notify": "Notify when transfers finish",
                 "recentConnections": "Recent connections",
+                "hideMenuBarIcon": "Hide menu bar icon",
             },
             "status": "Transferring 3 · 42%",
             "transfers": { "active": 3, "canPauseAll": true, "canResumeAll": false },
@@ -331,6 +336,10 @@ mod tests {
             })
             .unwrap(),
             json!({ "kind": "connect", "siteId": "site-1" })
+        );
+        assert_eq!(
+            serde_json::to_value(TrayAction::HideMenuBarIcon).unwrap(),
+            json!({ "kind": "hideMenuBarIcon" })
         );
     }
 }

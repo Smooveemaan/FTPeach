@@ -125,6 +125,7 @@ export default function VaultUnlockDialog({
       title={t('settings.security.unlockRequired')}
       onClose={onClose}
       closeDisabled={busy}
+      dismissOnBackdrop={false}
       className="modal-vault-unlock"
       footer={
         <ModalFooterActions

@@ -25,6 +25,7 @@ export default function QuitDialog({
     <Modal
       title="FTPeach"
       onClose={onCancel}
+      dismissOnBackdrop={false}
       className="modal-confirm"
       initialFocusRef={waitRef}
       footer={

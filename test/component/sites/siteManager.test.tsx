@@ -364,7 +364,7 @@ describe('Site Manager workflows', () => {
     await waitFor(() => expect(input.value).toBe(''));
   });
 
-  test('a saved password stays locked until its edit button is pressed', async () => {
+  test('a saved password separates locked viewing from replacement editing', async () => {
     const user = userEvent.setup({ delay: null });
     vi.mocked(window.api.sites.revealSecret).mockResolvedValue({ ok: true, value: 'saved-secret' });
     const { props } = renderManager();
@@ -377,25 +377,34 @@ describe('Site Manager workflows', () => {
     expect(input.readOnly).toBe(true);
     expect(screen.queryByText('siteManagerDialog.savedSecretHint')).toBeNull();
 
-    await user.click(edit);
-    expect(input.readOnly).toBe(false);
-    expect(document.activeElement).toBe(input);
-    expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
+    // While locked, Show Password reveals the saved password read-only.
     await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
     await waitFor(() => expect(input.value).toBe('saved-secret'));
-    expect(screen.queryByText('siteManagerDialog.savedSecretReplaceHint')).toBeNull();
+    expect(window.api.sites.revealSecret).toHaveBeenCalledTimes(1);
+
+    // Entering replace mode clears any revealed password and hides the eye until new text is typed.
+    await user.click(edit);
+    expect(input.readOnly).toBe(false);
+    expect(input.value).toBe('');
+    expect(document.activeElement).toBe(input);
     expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
-    await user.clear(input);
+    expect(screen.queryByRole('button', { name: 'common.showPassword' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common.hidePassword' })).toBeNull();
+
+    // Typing a new password shows the replace hint and toggles visibility locally without revealing the saved secret.
     await user.type(input, 'draft');
     expect(screen.getByText('siteManagerDialog.savedSecretReplaceHint')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'common.showPassword' }));
+    expect(input.type).toBe('text');
+    expect(input.value).toBe('draft');
+    expect(window.api.sites.revealSecret).toHaveBeenCalledTimes(1);
 
-    // Pressed again, it drops the draft and keeps the saved password.
+    // Pressed again, it drops the draft, re-locks, and keeps the saved password.
     await user.click(edit);
     expect(input.readOnly).toBe(true);
     expect(input.value).toBe('');
-    await user.click(edit);
-    expect(screen.getByText('siteManagerDialog.savedSecretHint')).toBeTruthy();
-    await user.click(edit);
+    expect(screen.queryByText('siteManagerDialog.savedSecretHint')).toBeNull();
+    expect(screen.getByRole('button', { name: 'common.showPassword' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenCalledWith(expect.objectContaining({ password: '' }));
   });

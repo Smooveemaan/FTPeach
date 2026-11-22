@@ -159,6 +159,7 @@ export default function SiteManagerDialog({
   const [confirmDiscardEdit, setConfirmDiscardEdit] = useState(false);
 
   const {
+    clearSecret,
     keyPassphraseRef,
     passwordRef,
     readSecrets,
@@ -571,6 +572,7 @@ export default function SiteManagerDialog({
             onChooseCaCertFile={chooseCaCertFile}
             onChooseLocalPath={chooseLocalPath}
             onRevealSecret={revealSavedSecret}
+            onClearSecret={clearSecret}
             secretsChanged={secretsChanged}
             rsaKeySelected={rsaKeySelected}
             passwordRef={passwordRef}

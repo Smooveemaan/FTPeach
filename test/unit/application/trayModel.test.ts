@@ -57,6 +57,7 @@ test('an idle queue has no status line and nothing to pause or resume', () => {
   assert.equal(model.status, '');
   assert.deepEqual(model.transfers, { active: 0, canPauseAll: false, canResumeAll: false });
   assert.equal(model.labels.show, 'tray.show');
+  assert.equal(model.labels.hideMenuBarIcon, 'tray.hideMenuBarIcon');
 });
 
 test('running transfers show their count, with progress when it is known', () => {

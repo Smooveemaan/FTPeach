@@ -229,6 +229,8 @@ export default function SettingsDialog({
                 setLogShowTimestampsValue={draft.setLogShowTimestampsValue}
                 logToFileValue={draft.logToFileValue}
                 setLogToFileValue={draft.setLogToFileValue}
+                extendedLoggingValue={draft.extendedLoggingValue}
+                setExtendedLoggingValue={draft.setExtendedLoggingValue}
                 logFolderValue={draft.logFolderValue}
                 setLogFolderValue={draft.setLogFolderValue}
                 selectDirectory={() => api.fsLocal.selectDir()}

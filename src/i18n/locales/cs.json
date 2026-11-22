@@ -608,6 +608,8 @@
     "logShowTimestamps": "Zobrazovat časová razítka",
     "logToFile": "Zapisovat protokol do souboru",
     "logToFileHint": "Přidává protokol do denního souboru ve složce protokolů, i když je panel protokolu zavřený. Soubory se uchovávají 14 dní, celkem nejvýše 50 MB.",
+    "extendedLogging": "Zapisovat rozšířený diagnostický protokol",
+    "extendedLoggingHint": "Zaznamenává spuštění aplikace, akce okna a fáze ukončování do protokolu aplikace. Zapněte tuto možnost před pokusem o zopakování problému.",
     "logFolderLabel": "Složka protokolů",
     "logFolderDefault": "Výchozí",
     "chooseLogFolder": "Vybrat složku protokolů…",

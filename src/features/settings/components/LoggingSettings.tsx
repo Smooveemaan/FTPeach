@@ -10,6 +10,8 @@ interface LoggingSettingsProps {
   setLogShowTimestampsValue: (value: boolean) => void;
   logToFileValue: boolean;
   setLogToFileValue: (value: boolean) => void;
+  extendedLoggingValue: boolean;
+  setExtendedLoggingValue: (value: boolean) => void;
   /** Empty is FTPeach's own logs folder. */
   logFolderValue: string;
   setLogFolderValue: (value: string) => void;
@@ -25,6 +27,8 @@ export default function LoggingSettings({
   setLogShowTimestampsValue,
   logToFileValue,
   setLogToFileValue,
+  extendedLoggingValue,
+  setExtendedLoggingValue,
   logFolderValue,
   setLogFolderValue,
   selectDirectory,
@@ -81,6 +85,20 @@ export default function LoggingSettings({
           {t('settings.logToFile')}
         </label>
         <p className="settings-hint">{t('settings.logToFileHint')}</p>
+      </div>
+      <div className="settings-option-group">
+        <label className="secure-toggle settings-toggle">
+          <input
+            type="checkbox"
+            checked={extendedLoggingValue}
+            onChange={(e) => setExtendedLoggingValue(e.target.checked)}
+            aria-describedby="extended-logging-hint"
+          />
+          {t('settings.extendedLogging')}
+        </label>
+        <p id="extended-logging-hint" className="settings-hint">
+          {t('settings.extendedLoggingHint')}
+        </p>
       </div>
       <div className="settings-option-group">
         <label className="settings-field">

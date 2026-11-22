@@ -66,6 +66,7 @@ export interface SettingsValues {
   logEnabled: boolean;
   logShowTimestamps: boolean;
   logToFile: boolean;
+  extendedLogging: boolean;
   /** Where the log files go; empty is FTPeach's own logs folder. */
   logFolder: string;
   keyboardShortcuts: ShortcutOverrides;
@@ -132,7 +133,7 @@ export const SETTING_GROUPS = {
   ],
   updates: ['autoCheckUpdates'],
   security: ['vaultAutoLockMinutes', 'showSecurityConfirmations', 'strictHostKeyCheck'],
-  logging: ['logEnabled', 'logShowTimestamps', 'logToFile', 'logFolder'],
+  logging: ['logEnabled', 'logShowTimestamps', 'logToFile', 'extendedLogging', 'logFolder'],
   shortcuts: ['keyboardShortcuts'],
 } as const satisfies Record<string, readonly (keyof SettingsValues)[]>;
 
@@ -347,6 +348,7 @@ function normalizeValues(settings: AppSettings): SettingsValues {
     logEnabled: !!s.logEnabled,
     logShowTimestamps: s.logShowTimestamps !== false,
     logToFile: !!s.logToFile,
+    extendedLogging: !!s.extendedLogging,
     logFolder: typeof s.logFolder === 'string' ? s.logFolder : '',
     keyboardShortcuts: normalizeKeyboardShortcuts(s.keyboardShortcuts),
   };

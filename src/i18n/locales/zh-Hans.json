@@ -602,6 +602,8 @@
     "logShowTimestamps": "显示时间戳",
     "logToFile": "将日志写入文件",
     "logToFileHint": "即使日志面板已关闭，也会将日志追加到日志文件夹中按天划分的文件里。文件保留 14 天，总大小不超过 50 MB。",
+    "extendedLogging": "写入详细诊断日志",
+    "extendedLoggingHint": "在应用日志中记录应用启动、窗口操作和退出阶段。请在尝试重现问题之前启用此选项。",
     "logFolderLabel": "日志文件夹",
     "logFolderDefault": "默认",
     "chooseLogFolder": "选择日志文件夹…",

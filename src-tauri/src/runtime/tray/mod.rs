@@ -137,14 +137,24 @@ pub fn ask_to_quit(app: &AppHandle, unsynced_edits: usize) {
 }
 
 fn show_and_focus(app: &AppHandle) {
+    log::debug!("window: restore started");
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.unminimize();
+        if let Err(error) = window.unminimize() {
+            log::warn!("could not unminimize main window: {error}");
+        }
         #[cfg(feature = "smoke-test")]
         if crate::runtime::e2e_browser::active() {
             return crate::runtime::e2e_browser::show_without_focus(&window);
         }
-        let _ = window.show();
-        let _ = window.set_focus();
+        if let Err(error) = window.show() {
+            log::warn!("could not show main window: {error}");
+        }
+        if let Err(error) = window.set_focus() {
+            log::warn!("could not focus main window: {error}");
+        }
+        log::debug!("window: restore commands completed");
+    } else {
+        log::warn!("could not restore main window: window unavailable");
     }
 }
 
@@ -197,6 +207,7 @@ fn send_action(app: &AppHandle, action: &TrayAction) {
 /// Puts the icon in the tray, then hides the window. Runs on the main thread,
 /// which owns the icon's hidden window.
 pub fn hide_to_tray(window: WebviewWindow) {
+    log::debug!("window: hide to tray requested");
     let app = window.app_handle().clone();
     let handle = app.clone();
     let result = app.run_on_main_thread(move || {
@@ -221,7 +232,10 @@ pub fn hide_to_tray(window: WebviewWindow) {
             return;
         }
         inner.hidden = true;
-        let _ = window.hide();
+        if let Err(error) = window.hide() {
+            log::warn!("could not hide main window: {error}");
+        }
+        log::debug!("window: hide to tray command completed");
         crate::runtime::confirmation_window::close_all(&handle);
         crate::runtime::vault_auto_lock::enforce_now(&handle);
     });

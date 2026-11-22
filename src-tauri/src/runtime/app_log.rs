@@ -9,6 +9,9 @@
 use crate::security::redaction::redact;
 use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
+use tauri::Manager;
 use tauri::Runtime;
 use tauri::plugin::TauriPlugin;
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind};
@@ -23,6 +26,65 @@ const MAX_FILE_BYTES: u128 = 1024 * 1024;
 const KEPT_FILES: usize = 3;
 /// How much of the end of the log goes into a diagnostic bundle.
 const TAIL_BYTES: u64 = 256 * 1024;
+static EXTENDED_LOGGING: AtomicBool = AtomicBool::new(false);
+
+fn accepts(metadata: &log::Metadata<'_>, extended: bool) -> bool {
+    metadata.level() <= log::Level::Info
+        || (extended
+            && metadata.level() == log::Level::Debug
+            && metadata.target().starts_with("app_lib::runtime::"))
+}
+
+/// Applies diagnostic logging immediately, including changes from settings imports.
+pub fn apply_settings(settings: &crate::store::JsonMap) {
+    let enabled = settings
+        .get("extendedLogging")
+        .and_then(serde_json::Value::as_bool)
+        .unwrap_or(false);
+    if EXTENDED_LOGGING.swap(enabled, Ordering::Relaxed) != enabled {
+        log::info!(
+            "extended diagnostic logging enabled={enabled}; version={}; os={}; arch={}; pid={}",
+            env!("CARGO_PKG_VERSION"),
+            std::env::consts::OS,
+            std::env::consts::ARCH,
+            std::process::id()
+        );
+    }
+}
+
+/// Loads the saved diagnostic mode and checks the native event loop without queuing repeated probes.
+pub fn start(app: &tauri::AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        apply_settings(&app.state::<crate::store::Store>().get_settings().await);
+        log::debug!("startup: application logger ready");
+        loop {
+            tokio::time::sleep(Duration::from_secs(10)).await;
+            if !EXTENDED_LOGGING.load(Ordering::Relaxed) {
+                continue;
+            }
+            let (reply, mut response) = tokio::sync::oneshot::channel();
+            if let Err(error) = app.run_on_main_thread(move || {
+                let _ = reply.send(());
+            }) {
+                log::debug!("main-thread probe could not be queued: {error}");
+                return;
+            }
+            match tokio::time::timeout(Duration::from_secs(2), &mut response).await {
+                Ok(Ok(())) => log::debug!("main-thread probe answered"),
+                Ok(Err(_)) => return,
+                Err(_) => {
+                    log::debug!("main thread has not answered for 2 seconds");
+                    // Keep just this probe queued until the event loop responds.
+                    if response.await.is_err() {
+                        return;
+                    }
+                    log::debug!("main thread responds again");
+                }
+            }
+        }
+    });
+}
 
 pub fn plugin<R: Runtime>(logs_dir: PathBuf) -> TauriPlugin<R> {
     let mut targets = vec![Target::new(TargetKind::Folder {
@@ -38,6 +100,8 @@ pub fn plugin<R: Runtime>(logs_dir: PathBuf) -> TauriPlugin<R> {
         // from Info up. Interface records arrive as warnings and errors.
         .level(log::LevelFilter::Warn)
         .level_for("app_lib", log::LevelFilter::Info)
+        .level_for("app_lib::runtime", log::LevelFilter::Debug)
+        .filter(|metadata| accepts(metadata, EXTENDED_LOGGING.load(Ordering::Relaxed)))
         .max_file_size(MAX_FILE_BYTES)
         .rotation_strategy(RotationStrategy::KeepSome(KEPT_FILES))
         .format(|out, message, record| {
@@ -118,6 +182,30 @@ async fn newest_archive(logs_dir: &Path) -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn extended_logging_keeps_runtime_diagnostics_opt_in_and_excludes_dependency_debug_logs() {
+        for (target, level, enabled, expected) in [
+            (
+                "app_lib::runtime::shutdown",
+                log::Level::Debug,
+                false,
+                false,
+            ),
+            ("app_lib::runtime::shutdown", log::Level::Debug, true, true),
+            ("app_lib::runtime::shutdown", log::Level::Trace, true, false),
+            ("ssh2", log::Level::Debug, true, false),
+            ("app_lib::protocol", log::Level::Debug, true, false),
+            ("app_lib::runtime::tray", log::Level::Warn, false, true),
+        ] {
+            let metadata = log::Metadata::builder().target(target).level(level).build();
+            assert_eq!(
+                accepts(&metadata, enabled),
+                expected,
+                "{target} {level} enabled={enabled}"
+            );
+        }
+    }
 
     #[tokio::test]
     async fn tail_reads_the_newest_lines_across_a_rotation_and_redacts_them() {

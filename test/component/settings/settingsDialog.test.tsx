@@ -49,6 +49,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     logEnabled: false,
     logShowTimestamps: false,
     logToFile: false,
+    extendedLogging: false,
     logFolder: '',
     vaultAutoLockMinutes: 0,
     showSecurityConfirmations: true,
@@ -372,6 +373,23 @@ describe('SettingsDialog unsaved-changes gate', () => {
     );
     expect(props.onClose).toHaveBeenCalledOnce();
   });
+
+  test.each([false, true])(
+    'extended logging can change from %s independently of protocol logging',
+    async (enabled) => {
+      const user = userEvent.setup({ delay: null });
+      const { props } = renderDialog({ extendedLogging: enabled });
+      await user.click(screen.getByRole('button', { name: 'settings.categories.logging' }));
+      const checkbox = screen.getByRole<HTMLInputElement>('checkbox', {
+        name: 'settings.extendedLogging',
+      });
+      expect(checkbox.checked).toBe(enabled);
+      expect(checkbox.disabled).toBe(false);
+      await user.click(checkbox);
+      await user.click(screen.getByRole('button', { name: 'common.save' }));
+      expect(props.onSave).toHaveBeenCalledWith({ extendedLogging: !enabled });
+    },
+  );
 
   test('a chosen log folder is saved, reset to the default, and opened', async () => {
     const user = userEvent.setup({ delay: null });

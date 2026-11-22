@@ -605,6 +605,8 @@
     "logShowTimestamps": "Afișează ora",
     "logToFile": "Scrie jurnalul într-un fișier",
     "logToFileHint": "Adaugă jurnalul într-un fișier zilnic din folderul de jurnale, chiar și când panoul de jurnal este închis. Fișierele sunt păstrate 14 zile, până la 50 MB în total.",
+    "extendedLogging": "Scrie un jurnal de diagnostic extins",
+    "extendedLoggingHint": "Înregistrează pornirea aplicației, acțiunile ferestrei și etapele de închidere în jurnalul aplicației. Activați această opțiune înainte de a încerca să reproduceți o problemă.",
     "logFolderLabel": "Folder de jurnale",
     "logFolderDefault": "Implicit",
     "chooseLogFolder": "Alege folderul de jurnale…",

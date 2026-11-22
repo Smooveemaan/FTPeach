@@ -602,6 +602,8 @@
     "logShowTimestamps": "Hiển thị dấu thời gian",
     "logToFile": "Ghi nhật ký vào tệp",
     "logToFileHint": "Ghi thêm nhật ký vào một tệp theo ngày trong thư mục nhật ký, kể cả khi bảng nhật ký đang đóng. Các tệp được giữ trong 14 ngày, tổng cộng tối đa 50 MB.",
+    "extendedLogging": "Ghi nhật ký chẩn đoán chi tiết",
+    "extendedLoggingHint": "Ghi quá trình khởi động ứng dụng, thao tác cửa sổ và các giai đoạn thoát vào nhật ký ứng dụng. Bật tùy chọn này trước khi thử tái hiện sự cố.",
     "logFolderLabel": "Thư mục nhật ký",
     "logFolderDefault": "Mặc định",
     "chooseLogFolder": "Chọn thư mục nhật ký…",

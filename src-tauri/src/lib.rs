@@ -228,14 +228,20 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|_app, event| match event {
-            #[cfg(target_os = "linux")]
             tauri::RunEvent::Exit => {
-                crate::native_drag::linux::cleanup(_app);
-                runtime::notification::unregister_identity();
+                log::debug!(target: "app_lib::runtime::shutdown", "shutdown: event loop exiting");
+                #[cfg(target_os = "linux")]
+                {
+                    crate::native_drag::linux::cleanup(_app);
+                    runtime::notification::unregister_identity();
+                }
+                #[cfg(not(target_os = "linux"))]
+                if local_fs::portable::root().is_some() {
+                    runtime::notification::unregister_identity();
+                }
             }
-            #[cfg(not(target_os = "linux"))]
-            tauri::RunEvent::Exit if local_fs::portable::root().is_some() => {
-                runtime::notification::unregister_identity();
+            tauri::RunEvent::ExitRequested { code, .. } => {
+                log::debug!(target: "app_lib::runtime::shutdown", "shutdown: event loop received exit request; code={code:?}");
             }
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen {

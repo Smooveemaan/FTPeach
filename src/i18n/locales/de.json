@@ -602,6 +602,8 @@
     "logShowTimestamps": "Zeitstempel anzeigen",
     "logToFile": "Protokoll in Datei schreiben",
     "logToFileHint": "Hängt das Protokoll an eine Datei pro Tag im Protokollordner an, auch wenn das Protokollfenster geschlossen ist. Die Dateien werden 14 Tage lang aufbewahrt, insgesamt bis zu 50 MB.",
+    "extendedLogging": "Erweitertes Diagnoseprotokoll schreiben",
+    "extendedLoggingHint": "Zeichnet den Anwendungsstart, Fensteraktionen und die Schritte beim Beenden im Anwendungsprotokoll auf. Aktivieren Sie diese Option, bevor Sie versuchen, ein Problem nachzustellen.",
     "logFolderLabel": "Protokollordner",
     "logFolderDefault": "Standard",
     "chooseLogFolder": "Protokollordner auswählen…",

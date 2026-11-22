@@ -608,6 +608,8 @@
     "logShowTimestamps": "Pokazuj znaczniki czasu",
     "logToFile": "Zapisuj dziennik do pliku",
     "logToFileHint": "Dopisuje dziennik do osobnego pliku na każdy dzień w folderze dzienników, nawet gdy panel dziennika jest zamknięty. Pliki są przechowywane przez 14 dni, łącznie do 50 MB.",
+    "extendedLogging": "Zapisuj rozszerzony dziennik diagnostyczny",
+    "extendedLoggingHint": "Zapisuje uruchomienie aplikacji, działania okna i etapy zamykania w dzienniku aplikacji. Włącz tę opcję przed próbą odtworzenia problemu.",
     "logFolderLabel": "Folder dzienników",
     "logFolderDefault": "Domyślny",
     "chooseLogFolder": "Wybierz folder dzienników…",

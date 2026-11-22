@@ -605,6 +605,8 @@
     "logShowTimestamps": "Afficher les horodatages",
     "logToFile": "Enregistrer le journal dans un fichier",
     "logToFileHint": "Ajoute le journal à un fichier quotidien dans le dossier des journaux, même lorsque le panneau du journal est fermé. Les fichiers sont conservés 14 jours, dans la limite de 50 Mo au total.",
+    "extendedLogging": "Enregistrer un journal de diagnostic détaillé",
+    "extendedLoggingHint": "Consigne le démarrage de l'application, les actions sur la fenêtre et les étapes de fermeture dans le journal de l'application. Activez cette option avant de tenter de reproduire un problème.",
     "logFolderLabel": "Dossier des journaux",
     "logFolderDefault": "Par défaut",
     "chooseLogFolder": "Choisir le dossier des journaux…",

@@ -602,6 +602,8 @@
     "logShowTimestamps": "Tijdstempels weergeven",
     "logToFile": "Logboek naar bestand schrijven",
     "logToFileHint": "Voegt het logboek toe aan een bestand per dag in de logboekmap, ook als het logboekpaneel gesloten is. Bestanden worden 14 dagen bewaard, tot 50 MB in totaal.",
+    "extendedLogging": "Uitgebreid diagnoselogboek schrijven",
+    "extendedLoggingHint": "Legt het starten van de toepassing, vensteracties en afsluitstappen vast in het logboek van de toepassing. Schakel dit in voordat je een probleem probeert te reproduceren.",
     "logFolderLabel": "Logboekmap",
     "logFolderDefault": "Standaard",
     "chooseLogFolder": "Logboekmap kiezen…",

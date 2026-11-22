@@ -605,6 +605,8 @@
     "logShowTimestamps": "Mostra i timestamp",
     "logToFile": "Scrivi il registro su file",
     "logToFileHint": "Aggiunge il registro a un file giornaliero nella cartella dei registri, anche quando il pannello del registro è chiuso. I file vengono conservati per 14 giorni, fino a 50 MB in totale.",
+    "extendedLogging": "Scrivi un registro diagnostico dettagliato",
+    "extendedLoggingHint": "Registra l'avvio dell'applicazione, le azioni sulla finestra e le fasi di chiusura nel registro dell'applicazione. Attiva questa opzione prima di provare a riprodurre un problema.",
     "logFolderLabel": "Cartella dei registri",
     "logFolderDefault": "Predefinita",
     "chooseLogFolder": "Scegli la cartella dei registri…",

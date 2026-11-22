@@ -602,6 +602,8 @@
     "logShowTimestamps": "Show timestamps",
     "logToFile": "Write log to file",
     "logToFileHint": "Appends the log to a daily file in the log folder, even while the log panel is closed. Files are kept for 14 days, up to 50 MB in total.",
+    "extendedLogging": "Write extended diagnostic log",
+    "extendedLoggingHint": "Records application startup, window actions and shutdown stages in the application log. Enable this before reproducing a problem.",
     "logFolderLabel": "Log folder",
     "logFolderDefault": "Default",
     "chooseLogFolder": "Choose log folder…",

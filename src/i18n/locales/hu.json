@@ -602,6 +602,8 @@
     "logShowTimestamps": "Időbélyegek megjelenítése",
     "logToFile": "Napló írása fájlba",
     "logToFileHint": "A naplót napi fájlokba írja a naplómappában, akkor is, ha a naplópanel zárva van. A fájlokat 14 napig őrzi meg, összesen legfeljebb 50 MB-ig.",
+    "extendedLogging": "Részletes diagnosztikai napló írása",
+    "extendedLoggingHint": "Rögzíti az alkalmazás indítását, az ablakműveleteket és a leállítás szakaszait az alkalmazás naplójában. Kapcsolja be ezt a lehetőséget, mielőtt megpróbálja újra előidézni a problémát.",
     "logFolderLabel": "Naplómappa",
     "logFolderDefault": "Alapértelmezett",
     "chooseLogFolder": "Naplómappa kiválasztása…",

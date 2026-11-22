@@ -120,22 +120,24 @@ pub fn close_action(
 /// Reading that setting and choosing between the options is a decision, not wiring,
 /// so it lives with shutdown rather than inside `run()`'s window-event closure.
 pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: Store) {
+    log::debug!("close: flushing renderer before reading settings");
     // The close-to-tray preference itself may still be debounced in the UI, so
     // ask for it to be stored before reading it -- briefly, because the window
     // has to go away when the button is clicked and nothing is lost if the
     // debounce fires by itself a moment later.
     flush_renderer(&app, TRAY_FLUSH_TIMEOUT).await;
+    log::debug!("close: reading settings");
     let close_to_tray = store
         .get_settings()
         .await
         .get("closeToTray")
         .and_then(|value| value.as_bool())
         .unwrap_or(false);
-    let action = close_action(
-        cfg!(target_os = "macos"),
-        close_to_tray,
-        tray::active_transfers(&app),
-        app.state::<OpenWithWatchers>().unsynced_count(),
+    let active = tray::active_transfers(&app);
+    let unsynced = app.state::<OpenWithWatchers>().unsynced_count();
+    let action = close_action(cfg!(target_os = "macos"), close_to_tray, active, unsynced);
+    log::debug!(
+        "close: action={action:?}; closeToTray={close_to_tray}; active={active}; unsynced={unsynced}"
     );
     match action {
         CloseAction::HideToTray => {
@@ -175,6 +177,7 @@ pub fn quit(app: &AppHandle) {
 /// Quits without asking about transfers: nothing is running, or the window
 /// already asked.
 pub fn quit_now(app: &AppHandle) {
+    log::debug!("shutdown: immediate quit requested");
     match app.get_webview_window("main") {
         Some(window) => {
             if app.state::<ShutdownCoordinator>().begin() {
@@ -206,8 +209,11 @@ fn ask_window(app: &AppHandle) {
 }
 
 pub async fn run(app: AppHandle, window: WebviewWindow) {
+    log::debug!("shutdown: starting cleanup");
     wind_down(app.clone(), window).await;
+    log::debug!("shutdown: requesting event-loop exit");
     app.exit(0);
+    log::debug!("shutdown: event-loop exit queued");
 }
 
 /// Everything `run` does short of exiting: connections closed, window bounds
@@ -215,7 +221,9 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
 /// vault locked. Installing an update needs the same tidy state before it
 /// hands over to the installer.
 pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) -> bool {
+    log::debug!("shutdown: flushing renderer state");
     let state_saved = flush_renderer(&app, SHUTDOWN_FLUSH_TIMEOUT).await;
+    log::debug!("shutdown: renderer state flushed; saved={state_saved}");
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
     let watchers = app.state::<OpenWithWatchers>().inner().clone();
@@ -226,13 +234,21 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
 
     // These are synchronous signals, so issue them before spending any of the
     // timeout waiting for locks or network disconnects.
+    log::debug!("shutdown: canceling connections");
     connecting.cancel_all();
+    log::debug!("shutdown: stopping file watchers");
     watchers.stop_all();
+    log::debug!("shutdown: file watchers stopped");
 
     let cleanup = async move {
         let persister = BoundsPersister::new(store);
-        let persist = persister.persist_now(&window);
+        let persist = async {
+            log::debug!("shutdown: saving window bounds");
+            persister.persist_now(&window).await;
+            log::debug!("shutdown: window bounds save finished");
+        };
         let disconnect = async {
+            log::debug!("shutdown: disconnecting sessions");
             let mut tasks = tokio::task::JoinSet::new();
             for (connection_id, slot) in sessions.all_slots() {
                 tasks.spawn(async move {
@@ -241,11 +257,13 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
                 });
             }
             while tasks.join_next().await.is_some() {}
+            log::debug!("shutdown: session disconnect finished");
         };
         // Copies with edits nobody uploaded move to the recovery folder; only
         // the rest is deleted. Cut short by the deadline, the next start
         // collects the session the same way.
         let end_open_with = async {
+            log::debug!("shutdown: collecting edited files for recovery");
             if let Some(root) = recovery_root {
                 let collected = tokio::task::spawn_blocking(move || {
                     crate::local_fs::edit_recovery::collect(&open_with_dir, &root)
@@ -255,17 +273,27 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
                     log::warn!("kept the open-with session for recovery: {error}");
                 }
             }
+            log::debug!("shutdown: edited-file recovery finished");
         };
-        let lock_vault = vault.lock();
+        let lock_vault = async {
+            log::debug!("shutdown: locking vault");
+            vault.lock().await;
+            log::debug!("shutdown: vault locked");
+        };
 
         tokio::join!(persist, disconnect, end_open_with, lock_vault);
     };
 
     // A stuck network operation or locked temp file must never make the app
     // impossible to close. Dropping cleanup after the deadline is deliberate.
-    let _ = tokio::time::timeout(SHUTDOWN_TIMEOUT, cleanup).await;
+    let cleanup_finished = tokio::time::timeout(SHUTDOWN_TIMEOUT, cleanup)
+        .await
+        .is_ok();
+    log::debug!("shutdown: cleanup finished; completed={cleanup_finished}");
     if let Some(emitter) = app.try_state::<crate::runtime::log_emitter::LogEmitter>() {
+        log::debug!("shutdown: flushing protocol log");
         emitter.flush().await;
+        log::debug!("shutdown: protocol log flush finished");
     }
     state_saved
 }
@@ -273,6 +301,7 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
 async fn flush_renderer<R: Runtime>(app: &AppHandle<R>, deadline: Duration) -> bool {
     let coordinator = app.state::<ShutdownCoordinator>();
     let (request_id, receiver) = coordinator.request_flush();
+    log::debug!("renderer flush: requesting {request_id}; deadline={deadline:?}");
     let emitted = app.emit_to(
         "main",
         "app:flush-state",
@@ -286,6 +315,7 @@ async fn flush_renderer<R: Runtime>(app: &AppHandle<R>, deadline: Duration) -> b
         }
     };
     coordinator.state_flushed(&request_id, false);
+    log::debug!("renderer flush: finished {request_id}; saved={saved}");
     saved
 }
 

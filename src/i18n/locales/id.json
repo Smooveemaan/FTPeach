@@ -602,6 +602,8 @@
     "logShowTimestamps": "Tampilkan cap waktu",
     "logToFile": "Tulis log ke file",
     "logToFileHint": "Menambahkan log ke file harian di folder log, bahkan saat panel log ditutup. File disimpan selama 14 hari, hingga total 50 MB.",
+    "extendedLogging": "Tulis log diagnostik terperinci",
+    "extendedLoggingHint": "Mencatat proses mulai aplikasi, tindakan jendela, dan tahap penutupan ke log aplikasi. Aktifkan sebelum mencoba mengulangi masalah.",
     "logFolderLabel": "Folder log",
     "logFolderDefault": "Default",
     "chooseLogFolder": "Pilih folder log…",

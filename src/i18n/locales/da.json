@@ -602,6 +602,8 @@
     "logShowTimestamps": "Vis tidsstempler",
     "logToFile": "Skriv log til fil",
     "logToFileHint": "Føjer loggen til en daglig fil i logmappen, også når logpanelet er lukket. Filerne gemmes i 14 dage og fylder højst 50 MB i alt.",
+    "extendedLogging": "Skriv udvidet diagnosticeringslog",
+    "extendedLoggingHint": "Registrerer appens opstart, vindueshandlinger og afslutningsfaser i appens log. Aktivér dette, før du forsøger at genskabe et problem.",
     "logFolderLabel": "Logmappe",
     "logFolderDefault": "Standard",
     "chooseLogFolder": "Vælg logmappe…",

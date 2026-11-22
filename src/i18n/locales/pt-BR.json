@@ -605,6 +605,8 @@
     "logShowTimestamps": "Mostrar carimbos de data/hora",
     "logToFile": "Gravar o log em um arquivo",
     "logToFileHint": "Acrescenta o log a um arquivo diário na pasta de logs, mesmo com o painel de log fechado. Os arquivos são mantidos por 14 dias, até 50 MB no total.",
+    "extendedLogging": "Gravar log de diagnóstico detalhado",
+    "extendedLoggingHint": "Registra a inicialização do aplicativo, as ações da janela e as etapas de encerramento no log do aplicativo. Ative esta opção antes de tentar reproduzir um problema.",
     "logFolderLabel": "Pasta de logs",
     "logFolderDefault": "Padrão",
     "chooseLogFolder": "Escolher pasta de logs…",

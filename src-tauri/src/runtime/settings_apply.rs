@@ -10,6 +10,7 @@ use crate::store::{JsonMap, Store};
 /// Brings the process in line with `settings`. Every setter is cheap and
 /// idempotent, so all of them run whatever changed.
 pub fn apply(settings: &JsonMap, store: &Store, log_emitter: &LogEmitter) {
+    super::app_log::apply_settings(settings);
     apply_transfer_limits(settings);
     apply_prevent_sleep(settings);
     apply_log_date_format(settings, log_emitter);

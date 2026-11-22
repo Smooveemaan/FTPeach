@@ -60,6 +60,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // can leave a record.
     app.handle().plugin(app_log::plugin(logs_dir.clone()))?;
     app_log::record_panics();
+    app_log::start(app.handle());
     #[cfg(target_os = "linux")]
     if let Some(reason) = super::linux_graphics::disabled_compositing_reason() {
         log::info!("linux graphics: disabled WebKitGTK compositing mode ({reason})");
@@ -68,6 +69,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     super::system_theme::start(app.handle().clone());
     // Windows installs ahead of the tray and visible window. Unix checks the
     // saved update asynchronously so an unavailable server cannot block startup.
+    #[cfg(windows)]
+    log::debug!("startup: checking staged update");
     #[cfg(windows)]
     updater::install_staged_at_startup(app.handle());
     // Before anything can finish and ask for a toast. Re-registered every
@@ -111,16 +114,18 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
         let persister = window_bounds::BoundsPersister::new(store.clone());
         let window_for_events = main_window.clone();
         main_window.on_window_event(move |event| match event {
-            #[cfg(target_os = "linux")]
-            tauri::WindowEvent::Focused(true) => {
-                notification::clear_delivered(window_for_events.app_handle());
-            }
             tauri::WindowEvent::ScaleFactorChanged { .. } => {
                 super::window_scale::refresh(&window_for_events);
             }
-            tauri::WindowEvent::Resized(_) => {
+            tauri::WindowEvent::Resized(size) => {
+                log::debug!(
+                    "window: resized to {}x{} physical pixels",
+                    size.width,
+                    size.height
+                );
                 persister.schedule(window_for_events.clone());
                 if window_for_events.is_minimized().unwrap_or(false) {
+                    log::debug!("window: minimized");
                     super::vault_auto_lock::enforce_now(window_for_events.app_handle());
                     // The title bar button asks for the tray itself; this
                     // covers minimizing from outside the page: the window
@@ -140,15 +145,31 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                     });
                 }
             }
-            tauri::WindowEvent::Moved(_) => {
+            tauri::WindowEvent::Moved(position) => {
+                log::debug!(
+                    "window: moved to {},{} physical pixels",
+                    position.x,
+                    position.y
+                );
                 persister.schedule(window_for_events.clone());
             }
             tauri::WindowEvent::CloseRequested { api, .. } => {
+                log::debug!("window: close requested");
                 api.prevent_close();
                 let app = window_for_events.app_handle().clone();
                 let window = window_for_events.clone();
                 let store = app.state::<Store>().inner().clone();
                 tauri::async_runtime::spawn(shutdown::on_close_requested(app, window, store));
+            }
+            tauri::WindowEvent::Focused(focused) => {
+                log::debug!("window: focused={focused}");
+                #[cfg(target_os = "linux")]
+                if *focused {
+                    notification::clear_delivered(window_for_events.app_handle());
+                }
+            }
+            tauri::WindowEvent::Destroyed => {
+                log::debug!("window: destroyed");
             }
             _ => {}
         });
@@ -170,6 +191,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     // running its timers or never finishes loading.
     vault_auto_lock::start(app.handle());
     updater::check_at_startup(app.handle());
+
+    log::debug!("startup: setup complete");
 
     Ok(())
 }

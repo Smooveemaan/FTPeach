@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The macOS menu bar shows a sharper peach icon with a visible seam.
 - Import Settings asks whether to import saved passwords on the first step and uses a single-row
   Cancel and Import footer on the file password step.
 

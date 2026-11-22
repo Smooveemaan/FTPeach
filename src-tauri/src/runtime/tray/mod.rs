@@ -344,12 +344,16 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
 }
 
 /// The peach on its own; the app icon's square plate stays out of the tray.
+/// On macOS, the 36 px template matches the 18 pt status item at Retina scale.
 /// Linux panels choose their own icon size, so they get the largest bitmap.
 /// On Windows, a tray icon is 16 px at 100% display scale, and each file is the vector
 /// logo drawn at exactly the size its scale asks for, because an icon of
 /// another size is resized by Windows into a blur. The notification area sits
 /// on the primary monitor, so that monitor's scale decides.
 fn icon_for_scale(scale: f64) -> Image<'static> {
+    if cfg!(target_os = "macos") {
+        return include_image!("./icons/tray/macos.png");
+    }
     if cfg!(target_os = "linux") {
         return include_image!("./icons/tray/48.png");
     }
@@ -391,7 +395,7 @@ mod tests {
     }
 
     #[test]
-    fn the_tray_icon_matches_the_display_scale() {
+    fn tray_icon_dimensions_match_platform_conventions() {
         for (scale, size) in [
             (1.0, 16),
             (1.25, 20),
@@ -403,10 +407,16 @@ mod tests {
             (4.0, 48),
         ] {
             let icon = icon_for_scale(scale);
-            let expected_size = if cfg!(target_os = "linux") { 48 } else { size };
+            let expected_dimensions = if cfg!(target_os = "macos") {
+                (34, 36)
+            } else if cfg!(target_os = "linux") {
+                (48, 48)
+            } else {
+                (size, size)
+            };
             assert_eq!(
                 (icon.width(), icon.height()),
-                (expected_size, expected_size),
+                expected_dimensions,
                 "at scale {scale}"
             );
         }

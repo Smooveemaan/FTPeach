@@ -1,6 +1,7 @@
 node_modules/
 dist/
 /release/
+/release-candidate/
 .DS_Store
 *.log
 .vs/

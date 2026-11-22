@@ -6,7 +6,7 @@ import {
   isRecord,
   voidOutcome,
 } from '../ipcContracts.ts';
-import type { InvokeFn } from '../ipcContracts.ts';
+import type { EventRegistrar, InvokeFn } from '../ipcContracts.ts';
 import type { CommandResult } from '../ipcContracts.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
@@ -106,7 +106,7 @@ function isSelectedSshKey(value: unknown): value is SelectedSshKey {
 const isOptionalPath = (value: unknown): value is string | null =>
   value === null || typeof value === 'string';
 
-export function createFilesystemApi(invoke: InvokeFn) {
+export function createFilesystemApi(invoke: InvokeFn, onEvent: EventRegistrar) {
   // A cancelled native dialog and a failed one are the same thing to every
   // caller — no path was chosen — so these normalize to null instead of
   // widening every call site with a CommandResult.
@@ -114,6 +114,11 @@ export function createFilesystemApi(invoke: InvokeFn) {
     checkedResponse(command, invoke(command), isOptionalPath, () => null);
 
   return {
+    watchDirectories: (paths: string[]) => voidOutcome(invoke, 'fs_watch_directories', { paths }),
+    onDirectoryChanged: onEvent<string>(
+      'fs:directoryChanged',
+      (value): value is string => typeof value === 'string' && value.startsWith('/'),
+    ),
     list: (
       localPath?: string,
       requestKey?: string,

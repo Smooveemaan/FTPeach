@@ -1,3 +1,4 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { createFilesystemApi } from '../../../src/platform/api/filesystem.ts';
 import { createSessionApi } from '../../../src/platform/api/session.ts';
 import type { InvokeFn } from '../../../src/platform/ipcContracts.ts';
@@ -23,6 +24,9 @@ export function paneClient(
   };
   return {
     calls,
-    client: { fsLocal: createFilesystemApi(invoke), session: createSessionApi(invoke) },
+    client: {
+      fsLocal: createFilesystemApi(invoke, () => () => readyUnsubscribe(() => {})),
+      session: createSessionApi(invoke),
+    },
   };
 }

@@ -45,6 +45,7 @@ fn main() {
     // such command to reach.
     const APP_COMMANDS: &[&str] = &[
         "fs_list",
+        "fs_watch_directories",
         "fs_cancel_list",
         "fs_homedir",
         "fs_drives",

@@ -286,7 +286,7 @@ export function onEvent<T = unknown>(
 export const tauriApi: Window['api'] = {
   session: createSessionApi(invoke),
   transfer: createTransferApi(invoke, onEvent),
-  fsLocal: createFilesystemApi(invoke),
+  fsLocal: createFilesystemApi(invoke, onEvent),
   sites: createSitesApi(invoke),
   tabs: createTabsApi(invoke),
   settings: createSettingsApi(invoke, authorizeSensitive),

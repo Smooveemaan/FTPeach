@@ -36,6 +36,7 @@
     "sensitive:allow-settings-set-security",
     "sensitive:allow-vault-use-system-protection",
     "allow-fs-list",
+    "allow-fs-watch-directories",
     "allow-fs-cancel-list",
     "allow-fs-homedir",
     "allow-fs-drives",

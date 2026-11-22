@@ -9,6 +9,15 @@ use crate::local_fs::roots::{self, Drive};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
+#[tauri::command]
+pub async fn fs_watch_directories(window: tauri::Window, paths: Vec<String>) -> CommandResult<()> {
+    #[cfg(target_os = "linux")]
+    crate::local_fs::directory_watch::replace(window, paths).await?;
+    #[cfg(not(target_os = "linux"))]
+    let _ = (window, paths);
+    Ok(())
+}
+
 // Resolving a path is the first thing that can reach the network: a UNC
 // address makes Windows contact the server before any later check runs. The
 // thin wrappers below refuse an unconfirmed share from the path's text, then

@@ -118,12 +118,14 @@ test('domain APIs preserve command names and camelCase argument contracts', asyn
   const sites = createSitesApi(invoke);
   const settings = createSettingsApi(invoke);
   const tabs = createTabsApi(invoke);
+  const filesystem = createFilesystemApi(invoke, onEvent);
 
   await session.rename('connection-1', '/old', '/new', false);
   await transfer.cancelRemoteCopy('source-1', 'target-1', 'transfer-1');
   await sites.applyLayout([{ id: 'site-1', parentId: 'folder-1' }]);
   await settings.set({ concurrency: 4 });
   await tabs.clear();
+  await filesystem.watchDirectories(['/work', '/destination']);
 
   assert.deepEqual(calls, [
     {
@@ -144,10 +146,15 @@ test('domain APIs preserve command names and camelCase argument contracts', asyn
     },
     { command: 'settings_set', args: { patch: { concurrency: 4 } } },
     { command: 'tabs_clear', args: undefined },
+    { command: 'fs_watch_directories', args: { paths: ['/work', '/destination'] } },
   ]);
   const validateProgress = eventValidators.get('transfer:progress');
   assert.ok(validateProgress);
   assert.equal(validateProgress({ id: '1', connectionId: 'c', status: 'done' }), true);
+  const validateDirectory = eventValidators.get('fs:directoryChanged');
+  assert.ok(validateDirectory);
+  assert.equal(validateDirectory('/work'), true);
+  for (const invalid of [null, 42, {}, 'relative']) assert.equal(validateDirectory(invalid), false);
 });
 
 test('security settings go through their own confirmed command before the rest', async () => {
@@ -303,9 +310,10 @@ test('a malformed command response is reduced to a reportable failure', async ()
   ]) {
     const remote = await createSessionApi(respondWith([bad])).list('c1', '/pub');
     assert.equal(remote.ok, false, `remote entry ${JSON.stringify(bad)} must be refused`);
-    const local = await createFilesystemApi(respondWith({ path: 'C:\\', entries: [bad] })).list(
-      'C:\\',
-    );
+    const local = await createFilesystemApi(
+      respondWith({ path: 'C:\\', entries: [bad] }),
+      () => () => readyUnsubscribe(() => {}),
+    ).list('C:\\');
     assert.equal(local.ok, false, `local entry ${JSON.stringify(bad)} must be refused`);
   }
 
@@ -341,21 +349,59 @@ test('command responses that carry no outcome fall back instead of being asserte
 
   // `fs_homedir` used to be asserted to `string`, so a failed call handed the
   // pane a CommandResult object to navigate to.
-  assert.equal(await createFilesystemApi(respondWith({ ok: false, error: 'x' })).homedir(), null);
   assert.equal(
-    await createFilesystemApi(respondWith('C:\\Users\\dev')).homedir(),
+    await createFilesystemApi(
+      respondWith({ ok: false, error: 'x' }),
+      () => () => readyUnsubscribe(() => {}),
+    ).homedir(),
+    null,
+  );
+  assert.equal(
+    await createFilesystemApi(
+      respondWith('C:\\Users\\dev'),
+      () => () => readyUnsubscribe(() => {}),
+    ).homedir(),
     'C:\\Users\\dev',
   );
-  assert.equal(await createFilesystemApi(respondWith('')).homedir(), null);
+  assert.equal(
+    await createFilesystemApi(respondWith(''), () => () => readyUnsubscribe(() => {})).homedir(),
+    null,
+  );
 
-  assert.deepEqual(await createFilesystemApi(respondWith({ nope: 1 })).drives(), []);
   assert.deepEqual(
-    await createFilesystemApi(respondWith([{ path: 'C:', label: 'System' }])).drives(),
+    await createFilesystemApi(
+      respondWith({ nope: 1 }),
+      () => () => readyUnsubscribe(() => {}),
+    ).drives(),
+    [],
+  );
+  assert.deepEqual(
+    await createFilesystemApi(
+      respondWith([{ path: 'C:', label: 'System' }]),
+      () => () => readyUnsubscribe(() => {}),
+    ).drives(),
     [{ path: 'C:', label: 'System' }],
   );
-  assert.equal(await createFilesystemApi(respondWith('yes')).isDir('C:'), false);
-  assert.equal(await createFilesystemApi(respondWith(null)).selectKeyFile(), null);
-  assert.equal(await createFilesystemApi(respondWith({ path: 'k' })).selectKeyFile(), null);
+  assert.equal(
+    await createFilesystemApi(respondWith('yes'), () => () => readyUnsubscribe(() => {})).isDir(
+      'C:',
+    ),
+    false,
+  );
+  assert.equal(
+    await createFilesystemApi(
+      respondWith(null),
+      () => () => readyUnsubscribe(() => {}),
+    ).selectKeyFile(),
+    null,
+  );
+  assert.equal(
+    await createFilesystemApi(
+      respondWith({ path: 'k' }),
+      () => () => readyUnsubscribe(() => {}),
+    ).selectKeyFile(),
+    null,
+  );
 
   const settings = createSettingsApi(respondWith({ recentSiteIds: [7] }));
   assert.deepEqual(await settings.get(), {}, 'a recentSiteIds of numbers is not AppSettings');
@@ -409,12 +455,15 @@ test('a write that answers with nothing is a success, and a refusal stays one', 
 test('opening a local path follows backend classification including extensionless programs', async () => {
   const commands: string[] = [];
   const executablePaths = new Set(['/usr/bin/editor', '/Downloads/setup.AppImage', '/notes.txt']);
-  const api = createFilesystemApi(async <T>(command: string, args?: InvokeArgs) => {
-    if (command === 'fs_is_executable')
-      return executablePaths.has(String(args?.localPath)) as InvokeResult<T>;
-    commands.push(command);
-    return { ok: true };
-  });
+  const api = createFilesystemApi(
+    async <T>(command: string, args?: InvokeArgs) => {
+      if (command === 'fs_is_executable')
+        return executablePaths.has(String(args?.localPath)) as InvokeResult<T>;
+      commands.push(command);
+      return { ok: true };
+    },
+    () => () => readyUnsubscribe(() => {}),
+  );
   for (const path of [
     '/usr/bin/editor',
     '/Downloads/setup.AppImage',
@@ -436,10 +485,13 @@ test('opening a local path follows backend classification including extensionles
 
 test('local Open with names the file, application and native chooser explicitly', async () => {
   const calls: [string, InvokeArgs | undefined][] = [];
-  const api = createFilesystemApi(async <T>(command: string, args?: InvokeArgs) => {
-    calls.push([command, args]);
-    return { ok: true } as InvokeResult<T>;
-  });
+  const api = createFilesystemApi(
+    async <T>(command: string, args?: InvokeArgs) => {
+      calls.push([command, args]);
+      return { ok: true } as InvokeResult<T>;
+    },
+    () => () => readyUnsubscribe(() => {}),
+  );
   await api.openWith('/notes.txt', '/apps/editor');
   await api.openWith('/notes.txt', undefined, true);
   assert.deepEqual(calls, [
@@ -451,10 +503,13 @@ test('local Open with names the file, application and native chooser explicitly'
 test('failed or malformed executable classification never launches a path', async () => {
   for (const response of [{ ok: false, errorCode: 'permissionDenied' }, null, 'true', {}]) {
     const commands: string[] = [];
-    const api = createFilesystemApi(async <T>(command: string) => {
-      commands.push(command);
-      return response as InvokeResult<T>;
-    });
+    const api = createFilesystemApi(
+      async <T>(command: string) => {
+        commands.push(command);
+        return response as InvokeResult<T>;
+      },
+      () => () => readyUnsubscribe(() => {}),
+    );
     const result = await api.openPath('/unapproved');
     assert.equal(result.ok, false);
     assert.deepEqual(commands, ['fs_is_executable']);

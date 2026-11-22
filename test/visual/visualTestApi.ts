@@ -198,6 +198,8 @@ export const visualTestApi = {
     clear: () => resolved(ok),
   },
   fsLocal: {
+    watchDirectories: () => resolved(ok),
+    onDirectoryChanged: () => unsubscribe,
     list: (path = 'C:\\Users\\developer\\Projects') =>
       resolved({ ok: true, path, entries: manyFiles() ?? localEntries }),
     homedir: () => resolved('C:\\Users\\developer'),

@@ -77,6 +77,7 @@ that follow explain security behavior rather than repeat command groupings.
 | `fs_rename` | app | Yes | No |
 | `fs_reveal_path` | sensitive | Yes | No |
 | `fs_validate_copy` | app | Yes | No |
+| `fs_watch_directories` | app | Yes | No |
 | `log_export_diagnostics` | app | Yes | No |
 | `log_open_folder` | app | Yes | No |
 | `log_recent` | app | Yes | No |

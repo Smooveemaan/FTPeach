@@ -1,3 +1,4 @@
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import { afterEach, expect, test, vi } from 'vitest';
 import type { DragDropEvent } from '@tauri-apps/api/webview';
 import { PhysicalPosition } from '@tauri-apps/api/dpi';
@@ -30,7 +31,9 @@ test.each([
     const unlisten = vi.fn();
     onDragDropEvent.mockResolvedValue(unlisten);
     const receive = vi.fn();
-    const stop = createFilesystemApi(vi.fn()).onOsDragDrop(receive);
+    const stop = createFilesystemApi(vi.fn(), () => () => readyUnsubscribe(() => {})).onOsDragDrop(
+      receive,
+    );
     const emit = (payload: DragDropEvent) => onDragDropEvent.mock.calls[0]![0]({ payload });
     const paths = ['/Users/test/Desktop/file.txt'];
     const position = new PhysicalPosition(x, y);

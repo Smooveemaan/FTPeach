@@ -121,6 +121,7 @@ pub fn run() {
         .manage(commands::app::settings_transfer::StagedImport::default())
         .invoke_handler(tauri::generate_handler![
             commands::fs::fs_list,
+            commands::fs::fs_watch_directories,
             commands::fs::fs_cancel_list,
             commands::fs::fs_homedir,
             commands::fs::fs_drives,

@@ -1,9 +1,10 @@
 import type { MouseEvent, MutableRefObject } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DragEntry, DragInfo, DropMenu } from './components/useDragMove.ts';
 import { useDragMove } from './components/useDragMove.ts';
 import { api } from '../../platform/api/index.ts';
+import { hostPlatform } from '../../platform/os.ts';
 import { reportAsyncFailure, reportRejection } from '../../shared/asyncFailure.ts';
 import { commandResultError } from '../../shared/errorMessages.ts';
 import { canMoveBetween } from '../../shared/movePolicy.ts';
@@ -11,6 +12,7 @@ import type { TransfersModel } from '../transfers/index.ts';
 import { resolveDropAction } from './components/dropAction.ts';
 import { paneJoin } from './panes/paneBackend.ts';
 import type { PaneId, PaneState } from './panes/paneModel.ts';
+import { PANE_IDS } from './panes/paneModel.ts';
 import type { PanesModel } from './usePanes.ts';
 
 interface ClipboardState {
@@ -51,6 +53,59 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
   const { t } = useTranslation();
   const { panes, canCopyBetween, refreshPaneIfAt } = browser;
   const { copyEntries } = transfers;
+  const currentBrowser = useRef(browser);
+  currentBrowser.current = browser;
+  const localPathA = panes.a.kind === 'local' ? panes.a.path : '';
+  const localPathB = panes.b.kind === 'local' ? panes.b.path : '';
+
+  useEffect(() => {
+    if (hostPlatform() !== 'linux') return;
+    let cancelled = false;
+    const refresh = (paths: string[]) => {
+      const current = currentBrowser.current;
+      for (const id of PANE_IDS) {
+        const pane = current.panes[id];
+        if (pane.kind === 'local' && paths.includes(pane.path)) {
+          reportRejection(current.refreshPaneIfAt(id, pane.path));
+        }
+      }
+    };
+    const stop = api.fsLocal.onDirectoryChanged((path) => refresh([path]));
+    const watch = async (paths: string[]) => {
+      const result = await api.fsLocal.watchDirectories(paths);
+      if (!result.ok) reportAsyncFailure(commandResultError(result));
+      // Close the gap between the pane's initial listing and the monitor becoming ready.
+      else if (!cancelled) refresh(paths);
+    };
+    reportRejection(
+      stop.ready.then((ready) => {
+        if (ready && !cancelled)
+          return watch([...new Set([localPathA, localPathB].filter(Boolean))]);
+        return undefined;
+      }),
+    );
+    return () => {
+      cancelled = true;
+      stop();
+      reportRejection(watch([]));
+    };
+  }, [localPathA, localPathB]);
+
+  const refreshLocalPanes = useCallback(() => {
+    for (const id of PANE_IDS) {
+      const pane = panes[id];
+      if (pane.kind === 'local' && pane.path) {
+        reportRejection(refreshPaneIfAt(id, pane.path));
+      }
+    }
+  }, [panes, refreshPaneIfAt]);
+
+  useEffect(() => {
+    if (hostPlatform() !== 'linux') return;
+    // The desktop can finish moving local files after the native drag has ended.
+    window.addEventListener('focus', refreshLocalPanes);
+    return () => window.removeEventListener('focus', refreshLocalPanes);
+  }, [refreshLocalPanes]);
 
   const [clipboard, setClipboard] = useState<ClipboardState | null>(null);
 
@@ -157,6 +212,7 @@ export function useFileClipboard({ browser, transfers }: FileClipboardOptions): 
       dragMove.cancelDrag();
       outboundDragRef.current = false;
       document.body.classList.remove('native-drag-active');
+      if (hostPlatform() === 'linux') refreshLocalPanes();
     }
   };
 

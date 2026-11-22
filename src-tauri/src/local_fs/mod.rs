@@ -1,3 +1,5 @@
+#[cfg(target_os = "linux")]
+pub(crate) mod directory_watch;
 pub(crate) mod edit_recovery;
 pub(crate) mod filesystem_safety;
 pub(crate) mod fs_delete;

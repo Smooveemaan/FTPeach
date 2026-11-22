@@ -115,7 +115,7 @@ instead of the usual controls.
    12 characters twice. Leave this off if you will enter server passwords again.
 3. Select **Export**, complete the security confirmation and save the file.
 4. On the new computer, use **File > Import Settings**, choose the file and
-   enter its file password. **Import without passwords** imports bookmarks alone.
+   enter its file password. Clear **Import saved passwords** to import bookmarks alone.
 
 > [!WARNING]
 > **Only saved passwords are encrypted in the export.** Addresses, usernames and
@@ -127,7 +127,7 @@ instead of the usual controls.
 
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::an export with the saved passwords needs a long password typed twice -->
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
-<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
+<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords skips the password step when unticked on step one, or can be let go -->
 <!-- verified-by: pr src-tauri/src/security/export_secrets.rs::sealed_secrets_open_with_the_password_only -->
 <!-- verified-by: pr src-tauri/src/commands/app_settings_transfer_tests.rs::export_strips_plaintext_encrypted_and_legacy_secret_fields -->
 
@@ -143,12 +143,13 @@ and asks before exporting without those passwords.
 <!-- verified-by: pr test/component/platform/securityConfirmation.test.tsx::failed reauthentication clears the password and allows a corrected retry -->
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::bookmarks whose passwords cannot be opened are named, and left out only when asked -->
 
-Importing such a file asks for its password. A wrong one is asked for again;
-"Import without passwords" brings in the bookmarks alone. Passwords move
+Importing such a file asks for its password when **Import saved passwords** is
+checked. A wrong password is asked for again; clearing **Import saved passwords**
+skips the password step and brings in the bookmarks alone. Passwords move
 between system protection and a master password in either direction.
 
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords asks for its password and keeps asking until it opens them -->
-<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
+<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords skips the password step when unticked on step one, or can be let go -->
 <!-- verified-by: pr src-tauri/src/store/sites/transfer_tests.rs::passwords_carry_between_every_kind_of_protection -->
 
 Import warnings name bookmarks whose saved passwords could not be matched safely.

@@ -92,7 +92,7 @@ or the password-protected export. Windows Hello must be enabled on the new
 computer separately.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
-<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords can be imported without them, or let go -->
+<!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords skips the password step when unticked on step one, or can be let go -->
 <!-- verified-by: pr src-tauri/src/security/vault_tests.rs::windows_hello_is_switched_on_and_off_per_computer -->
 
 ## I cannot unlock saved passwords

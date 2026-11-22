@@ -115,6 +115,21 @@ pub fn app_system_hour_cycle() -> Option<&'static str> {
     None
 }
 
+/// Returns the Linux portal preference, or no value when the portal is unavailable.
+#[tauri::command]
+pub async fn app_system_theme() -> Option<&'static str> {
+    #[cfg(target_os = "linux")]
+    {
+        return tauri::async_runtime::spawn_blocking(crate::runtime::system_theme::read)
+            .await
+            .ok()
+            .and_then(Result::ok)
+            .flatten();
+    }
+    #[cfg(not(target_os = "linux"))]
+    None
+}
+
 /// Recolors the 1px border Windows 11 draws around this window.
 ///
 /// The window is frameless (`decorations: false`), so nothing the webview

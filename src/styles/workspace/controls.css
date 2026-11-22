@@ -32,6 +32,19 @@
   color: var(--accent-fill-text);
 }
 
+.title-bar[data-platform='linux'] .title-bar-btn {
+  width: 36px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-secondary);
+}
+
+.title-bar[data-platform='linux'] .title-bar-btn:hover {
+  color: var(--text-primary);
+}
+
 /* ---------- Protocol select ---------- */
 
 .protocol-select {

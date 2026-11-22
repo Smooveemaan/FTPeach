@@ -176,6 +176,29 @@ pub(crate) async fn scale_to_interface(window: &tauri::WebviewWindow) {
 /// at the parent's scale: when it has just crossed to the parent's monitor,
 /// Windows may not have resized it for that monitor's scale yet.
 pub(crate) fn center_over_parent(parent: &tauri::WebviewWindow, child: &tauri::WebviewWindow) {
+    #[cfg(target_os = "linux")]
+    {
+        let parent = parent.clone();
+        let centered = child.clone();
+        if let Err(error) = child.run_on_main_thread(move || {
+            use gtk::prelude::*;
+            if let (Ok(parent), Ok(child)) = (parent.gtk_window(), centered.gtk_window()) {
+                // Wayland positions modal transients; absolute toplevel coordinates are ignored.
+                child.set_transient_for(Some(&parent));
+                child.set_type_hint(gtk::gdk::WindowTypeHint::Dialog);
+                child.set_modal(true);
+                child.set_position(gtk::WindowPosition::CenterOnParent);
+            }
+        }) {
+            log::warn!("Could not center confirmation over its parent: {error}");
+        }
+    }
+    #[cfg(not(target_os = "linux"))]
+    center_using_coordinates(parent, child);
+}
+
+#[cfg(not(target_os = "linux"))]
+fn center_using_coordinates(parent: &tauri::WebviewWindow, child: &tauri::WebviewWindow) {
     let (Ok(parent_position), Ok(parent_size), Ok(parent_scale), Ok(child_size), Ok(child_scale)) = (
         parent.outer_position(),
         parent.outer_size(),

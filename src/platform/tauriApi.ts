@@ -55,6 +55,7 @@ import type {
 import type { LogEntry } from '../shared/logEntry.ts';
 import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { flushShutdownState } from './shutdownPersistence.ts';
+import { hostPlatform } from './os.ts';
 import './persistSetting.ts';
 
 interface VaultStatus {
@@ -402,8 +403,8 @@ export const tauriApi: Window['api'] = {
      * the theme the document just switched to:
      *
      *   - `setTheme` is the OS-level dark/light flag. On 'system' it takes
-     *     null, handing the choice back to the setting the CSS resolves
-     *     against too.
+     *     null on Windows/macOS. Linux receives the resolved appearance:
+     *     Tao treats null as a request for light GTK decorations.
      *   - WebviewWindow.setBackgroundColor updates both the host window and
      *     WebView2's default background. Window.setBackgroundColor alone leaves
      *     the webview at its startup color when the theme changes.
@@ -419,10 +420,18 @@ export const tauriApi: Window['api'] = {
         confirmation: { light: boolean; colorScheme: string; background: [number, number, number] };
       },
     ) => {
-      const native: Theme | null = theme === 'dark' || theme === 'light' ? theme : null;
+      const native: Theme | null =
+        hostPlatform() === 'linux'
+          ? colors.confirmation.light
+            ? 'light'
+            : 'dark'
+          : theme === 'dark' || theme === 'light'
+            ? theme
+            : null;
       const appWindow = getCurrentWebviewWindow();
       void appWindow.setTheme(native).catch(reportAsyncFailure);
-      void appWindow.setBackgroundColor([...colors.background, 255]).catch(reportAsyncFailure);
+      const alpha = hostPlatform() === 'linux' ? 0 : 255;
+      void appWindow.setBackgroundColor([...colors.background, alpha]).catch(reportAsyncFailure);
       const [red, green, blue] = colors.border;
       void invoke('app_set_window_border', {
         red,

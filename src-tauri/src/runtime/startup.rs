@@ -24,6 +24,12 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let mut main_window =
         tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?
             .accept_first_mouse(true);
+    #[cfg(target_os = "linux")]
+    {
+        main_window = main_window
+            .transparent(true)
+            .background_color(tauri::utils::config::Color(0, 0, 0, 0));
+    }
     if let Some(root) = local_fs::portable::root() {
         main_window = main_window.data_directory(local_fs::portable::webview_dir(root));
     }
@@ -58,6 +64,8 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if let Some(reason) = super::linux_graphics::disabled_compositing_reason() {
         log::info!("linux graphics: disabled WebKitGTK compositing mode ({reason})");
     }
+    #[cfg(target_os = "linux")]
+    super::system_theme::start(app.handle().clone());
     // Windows installs ahead of the tray and visible window. Unix checks the
     // saved update asynchronously so an unavailable server cannot block startup.
     #[cfg(windows)]
@@ -93,6 +101,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
             use gtk::prelude::ApplicationWindowExt;
             // GTK can paint an empty native menubar above our web-based menu.
             main_window.gtk_window()?.set_show_menubar(false);
+            super::linux_window_frame::install(&main_window)?;
         }
         #[cfg(windows)]
         super::window_resize::install(&main_window);

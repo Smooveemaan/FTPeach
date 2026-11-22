@@ -40,6 +40,29 @@ describe('TitleBar', () => {
     expect(showSystemMenu).not.toHaveBeenCalled();
   });
 
+  test('on Linux: renders the app title bar and working window controls', () => {
+    const minimize = vi.fn();
+    const toggleMaximize = vi.fn();
+    const close = vi.fn();
+    vi.spyOn(windowControls, 'useWindowControls').mockReturnValue({
+      available: true,
+      maximized: false,
+      minimize,
+      toggleMaximize,
+      close,
+      showSystemMenu: vi.fn(),
+    });
+    const { container } = render(<TitleBar minimizeToTray={false} platform="linux" />);
+    expect(container.querySelector('.title-bar')?.getAttribute('data-platform')).toBe('linux');
+    expect(screen.getByText('FTPeach')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText('titleBar.minimize'));
+    fireEvent.click(screen.getByLabelText('titleBar.maximize'));
+    fireEvent.click(screen.getByLabelText('common.close'));
+    expect(minimize).toHaveBeenCalledOnce();
+    expect(toggleMaximize).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
+  });
+
   test('on Windows: renders custom window controls when available and responds to context menu', () => {
     const showSystemMenu = vi.fn();
     const minimize = vi.fn();

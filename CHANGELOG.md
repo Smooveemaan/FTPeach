@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Support for macOS.
-- Support for Linux.
+- Support for Linux with system light and dark appearance and neutral window controls.
 - Right-clicking the pane connection button offers Connect or Disconnect, copies the server address,
   and copies the SSH fingerprint when available.
 - The toolbar has a Settings button to open Settings directly.

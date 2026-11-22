@@ -163,6 +163,7 @@ pub fn run() {
             commands::app::app_state_flushed,
             commands::app::app_double_click_time,
             commands::app::app_system_hour_cycle,
+            commands::app::app_system_theme,
             commands::app::app_open_external,
             commands::app::app_set_window_border,
             commands::app::app_show_system_menu,

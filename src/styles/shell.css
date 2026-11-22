@@ -1,5 +1,38 @@
 /* ---------- Shell ---------- */
 
+:root[data-platform='linux']:has(.app-shell) {
+  --app-window-radius: 12px;
+  background: transparent;
+}
+
+:root[data-platform='linux']:has(.app-shell) body {
+  background: transparent;
+  border-radius: var(--app-window-radius);
+  clip-path: inset(0 round var(--app-window-radius));
+}
+
+:root[data-platform='linux'] .app-shell {
+  background: var(--bg-base);
+}
+
+:root[data-platform='linux']:has(.app-shell) body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  border: 1px solid var(--window-border);
+  border-radius: var(--app-window-radius);
+}
+
+:root[data-platform='linux']:has(.title-bar[data-maximized='true']) {
+  --app-window-radius: 0px;
+}
+
+:root[data-platform='linux']:has(.title-bar[data-maximized='true']) body::after {
+  border: 0;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;

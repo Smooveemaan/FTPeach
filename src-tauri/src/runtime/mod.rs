@@ -5,6 +5,8 @@ pub(crate) mod browser_keys;
 pub(crate) mod dock;
 #[cfg(any(target_os = "linux", test))]
 pub(crate) mod linux_graphics;
+#[cfg(target_os = "linux")]
+pub(crate) mod linux_window_frame;
 pub(crate) mod log_emitter;
 pub(crate) mod log_messages;
 pub(crate) mod notification;
@@ -30,3 +32,5 @@ pub(crate) mod e2e_browser;
 pub(crate) mod e2e_control;
 pub(crate) mod file_dialog;
 pub(crate) mod startup;
+#[cfg(target_os = "linux")]
+pub(crate) mod system_theme;

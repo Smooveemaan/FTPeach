@@ -87,6 +87,7 @@ fn main() {
         "app_state_flushed",
         "app_double_click_time",
         "app_system_hour_cycle",
+        "app_system_theme",
         "app_open_external",
         "app_set_window_border",
         "app_show_system_menu",

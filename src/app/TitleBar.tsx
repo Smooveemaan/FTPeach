@@ -58,6 +58,7 @@ export default function TitleBar({ minimizeToTray, platform = hostPlatform() }: 
     <div
       className={`title-bar ${isMac ? 'macos' : ''}`}
       data-platform={platform}
+      data-maximized={controls.maximized}
       data-tauri-drag-region="deep"
       onContextMenu={
         available && !isMac

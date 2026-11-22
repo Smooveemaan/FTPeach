@@ -17,6 +17,11 @@ const TRAY_ID: &str = "main";
 const ACTION_EVENT: &str = "tray:action";
 const MENU_CALLBACK_SETTLE: Duration = Duration::from_millis(100);
 
+fn restores_on_click(button: MouseButton, state: MouseButtonState, is_linux: bool) -> bool {
+    state == MouseButtonState::Up
+        && (button == MouseButton::Left || (is_linux && button == MouseButton::Middle))
+}
+
 /// Keeps the tray menu and icon state across window visibility changes.
 #[derive(Default)]
 pub struct TrayState {
@@ -305,15 +310,15 @@ fn create(app: &AppHandle, model: &TrayModel) -> tauri::Result<LiveMenu> {
         .show_menu_on_left_click(config.show_menu_on_left_click);
 
     if config.restore_on_left_click {
-        // Left click brings the window back; the menu opens on right click,
-        // same as Windows' own tray convention. On macOS, left click opens the
-        // menu bar extra directly.
+        // GNOME's indicator extension reserves a single left click for its menu;
+        // its middle click sends SecondaryActivate without opening that menu.
         builder = builder.on_tray_icon_event(|tray, event| {
             if let TrayIconEvent::Click {
-                button: MouseButton::Left,
-                button_state: MouseButtonState::Up,
+                button,
+                button_state,
                 ..
             } = event
+                && restores_on_click(button, button_state, cfg!(target_os = "linux"))
             {
                 restore(tray.app_handle());
             }
@@ -354,6 +359,22 @@ fn icon_for_scale(scale: f64) -> Image<'static> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn linux_secondary_activation_restores_without_changing_other_mouse_actions() {
+        for (linux, button, state, expected) in [
+            (true, MouseButton::Middle, MouseButtonState::Up, true),
+            (false, MouseButton::Middle, MouseButtonState::Up, false),
+            (true, MouseButton::Left, MouseButtonState::Up, true),
+            (false, MouseButton::Left, MouseButtonState::Up, true),
+            (true, MouseButton::Right, MouseButtonState::Up, false),
+            (false, MouseButton::Right, MouseButtonState::Up, false),
+            (true, MouseButton::Middle, MouseButtonState::Down, false),
+            (true, MouseButton::Left, MouseButtonState::Down, false),
+        ] {
+            assert_eq!(restores_on_click(button, state, linux), expected);
+        }
+    }
 
     #[test]
     fn the_tray_icon_matches_the_display_scale() {

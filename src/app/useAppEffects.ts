@@ -8,6 +8,7 @@ import { api } from '../platform/api/index.ts';
 import { applyInterfaceScale } from '../platform/interfaceScale.ts';
 import { applyAppearance } from '../shared/appearance.ts';
 import { applyWindowTheme } from '../platform/windowFrame.ts';
+import { observeSystemTheme } from '../platform/systemTheme.ts';
 import { installVaultActivityReporting } from './vaultAutoLock.ts';
 
 interface AppEffectsOptions {
@@ -22,16 +23,13 @@ export function useAppEffects({
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const applyResolvedTheme = () => {
-      const resolved = theme === 'system' ? (media.matches ? 'dark' : 'light') : theme;
+    const applyResolvedTheme = (resolved: string) => {
       applyAppearance(resolved, colorScheme);
       applyWindowTheme(theme);
     };
-    applyResolvedTheme();
-    if (theme !== 'system') return;
-    media.addEventListener('change', applyResolvedTheme);
-    return () => media.removeEventListener('change', applyResolvedTheme);
+    if (theme === 'system') return observeSystemTheme(applyResolvedTheme);
+    applyResolvedTheme(theme);
+    return undefined;
   }, [theme, colorScheme]);
 
   useEffect(() => {

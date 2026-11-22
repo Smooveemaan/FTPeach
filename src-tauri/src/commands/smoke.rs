@@ -107,6 +107,35 @@ pub async fn smoke_probe_confirmation_acl(app: tauri::AppHandle) -> Result<Strin
         if !window.is_enabled().map_err(|error| error.to_string())? {
             return Err("confirmation itself is disabled".to_string());
         }
+        #[cfg(target_os = "linux")]
+        {
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            let dialog = window.clone();
+            let parent = main.clone();
+            window
+                .run_on_main_thread(move || {
+                    use gtk::prelude::*;
+                    let result = (|| -> tauri::Result<bool> {
+                        let dialog = dialog.gtk_window()?;
+                        Ok(dialog.transient_for().as_ref()
+                            == Some(parent.gtk_window()?.upcast_ref())
+                            && dialog.is_modal()
+                            && dialog.type_hint() == gtk::gdk::WindowTypeHint::Dialog
+                            && dialog.window_position() == gtk::WindowPosition::CenterOnParent)
+                    })();
+                    let _ = tx.send(result);
+                })
+                .map_err(|error| error.to_string())?;
+            if !rx
+                .await
+                .map_err(|error| error.to_string())?
+                .map_err(|error| error.to_string())?
+            {
+                return Err(
+                    "confirmation is not a centered modal dialog of the main window".into(),
+                );
+            }
+        }
         // Ready can be sent again after resizing or a failed password attempt.
         crate::runtime::confirmation_window::show(&window)?;
         // A script evaluated into a document about to be replaced is lost;

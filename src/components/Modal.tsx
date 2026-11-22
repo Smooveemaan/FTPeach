@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useTruncated } from '../hooks/useTruncated.ts';
 import { holdDialogScrim } from '../platform/windowFrame.ts';
 
+// Matches `.modal-overlay { z-index: 300 }` in modal.css, leaving room below
+// in-dialog popups (400) while ensuring stacked dialogs paint in open order
+// regardless of their DOM order in AppDialogs.
+const MODAL_BASE_Z_INDEX = 300;
+
 // Every open Modal listens for Escape on the document, so a dialog stacked on
 // top of another would otherwise close both. Only the most recently opened one
 // reacts.
@@ -14,14 +19,22 @@ const overlays = new Map<object, Element>();
 let releaseBackground = () => {};
 
 /**
- * Makes everything outside the topmost dialog's overlay inert — unreachable by
- * Tab, clicks and screen readers — except the window's title bar, which still
- * moves, minimises and closes the window. Run whenever the stack changes:
+ * Keeps the visual stacking order and inert background aligned with the open
+ * dialog stack: every open overlay gets a `z-index` in open order, and
+ * everything outside the topmost dialog's overlay becomes inert — unreachable
+ * by Tab, clicks and screen readers — except the window's title bar, which
+ * still moves, minimises and closes the window. Run whenever the stack changes:
  * dialogs mount and close in any order, and only the top one may be live.
  * Elements that were inert already are left as they were.
  */
 function syncInertBackground() {
   releaseBackground();
+  openModals.forEach((token, index) => {
+    const layer = overlays.get(token);
+    if (layer instanceof HTMLElement) {
+      layer.style.zIndex = String(MODAL_BASE_Z_INDEX + index);
+    }
+  });
   const top = openModals.at(-1);
   const overlay = top && overlays.get(top);
   const held: Element[] = [];

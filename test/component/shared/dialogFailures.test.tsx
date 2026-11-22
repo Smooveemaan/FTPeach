@@ -85,6 +85,30 @@ describe('dialog async failures', () => {
     expect(await screen.findByLabelText('settings.security.masterPassword')).toBeTruthy();
   });
 
+  test('skips prompting when the vault is already unlocked', async () => {
+    const onUnlocked = vi.fn();
+    const unlockSystem = vi.fn();
+    render(
+      <VaultUnlockDialog
+        onClose={vi.fn()}
+        onUnlocked={onUnlocked}
+        vaultApi={{
+          status: vi.fn().mockResolvedValue({
+            configured: true,
+            locked: false,
+            systemUnlockAvailable: true,
+            systemUnlockEnabled: true,
+          }),
+          unlock: vi.fn(),
+          unlockSystem,
+        }}
+      />,
+    );
+    await waitFor(() => expect(onUnlocked).toHaveBeenCalledOnce());
+    expect(unlockSystem).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   test('a refused master password is said in the user’s language, not the backend’s', async () => {
     const backendText = 'Vault authentication failed or temporarily unavailable';
     render(

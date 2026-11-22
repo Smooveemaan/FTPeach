@@ -35,17 +35,29 @@ export default function VaultUnlockDialog({
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     vaultApi
       .status()
       .then((status) => {
+        if (cancelled) return;
+        // Another request may have unlocked the vault already (or it is not configured):
+        // do not prompt again, just continue with the queued retries.
+        if (status.configured === false || status.locked === false) {
+          onUnlocked();
+          return;
+        }
         const hello = status.systemUnlockAvailable && status.systemUnlockEnabled;
         setSystemUnlock(hello);
         return hello ? unlockWithSystem() : setShown(true);
       })
       .catch((failure: unknown) => {
+        if (cancelled) return;
         reportAsyncFailure(failure);
         setShown(true);
       });
+    return () => {
+      cancelled = true;
+    };
     // Once, as the dialog is asked for.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vaultApi]);

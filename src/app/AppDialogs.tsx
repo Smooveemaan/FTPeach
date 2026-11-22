@@ -274,17 +274,6 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           onClose={() => dialogs.setShowLocalPathManagerDialog(false)}
         />
       )}
-      {dialogs.vaultUnlockRetries.length > 0 && (
-        <VaultUnlockDialog
-          vaultApi={api.vault}
-          onUnlocked={() => {
-            const retries = dialogs.vaultUnlockRetries;
-            dialogs.setVaultUnlockRetries([]);
-            retries.forEach((retry) => retry());
-          }}
-          onClose={() => dialogs.setVaultUnlockRetries([])}
-        />
-      )}
       {dialogs.showExportSettings && (
         <SettingsTransferDialog
           mode="export"
@@ -481,6 +470,17 @@ export default function AppDialogs({ model }: AppDialogsProps) {
             dialogs.nameConflict?.onDecision({ action: 'skip' });
             dialogs.setNameConflict(null);
           }}
+        />
+      )}
+      {dialogs.vaultUnlockRetries.length > 0 && (
+        <VaultUnlockDialog
+          vaultApi={api.vault}
+          onUnlocked={() => {
+            const retries = dialogs.vaultUnlockRetries;
+            dialogs.setVaultUnlockRetries([]);
+            retries.forEach((retry) => retry());
+          }}
+          onClose={() => dialogs.setVaultUnlockRetries([])}
         />
       )}
       {dialogs.confirmState && (

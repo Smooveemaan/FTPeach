@@ -202,6 +202,37 @@ describe('critical dialog accessibility', () => {
     expect(alreadyInert.hasAttribute('inert')).toBe(true);
   });
 
+  test('a dialog opened later stacks above an already-open dialog even when earlier in DOM order', () => {
+    const tree = (showEarlierInDom: boolean) => (
+      <>
+        {showEarlierInDom && (
+          <Modal title="Unlock" onClose={() => {}}>
+            <button>Unlock</button>
+          </Modal>
+        )}
+        <Modal title="Import" onClose={() => {}}>
+          <button>Import</button>
+        </Modal>
+      </>
+    );
+    const view = render(tree(false));
+    const importOverlay = screen.getByRole('dialog', { name: 'Import' })
+      .parentElement as HTMLElement;
+    expect(importOverlay.style.zIndex).toBe('300');
+
+    view.rerender(tree(true));
+    const unlockOverlay = screen.getByRole('dialog', { name: 'Unlock' })
+      .parentElement as HTMLElement;
+    expect(Number(unlockOverlay.style.zIndex)).toBeGreaterThan(Number(importOverlay.style.zIndex));
+    expect(importOverlay.hasAttribute('inert')).toBe(true);
+    expect(unlockOverlay.hasAttribute('inert')).toBe(false);
+
+    view.rerender(tree(false));
+    expect(importOverlay.style.zIndex).toBe('300');
+    expect(importOverlay.hasAttribute('inert')).toBe(false);
+    view.unmount();
+  });
+
   test('a dialog with nothing to focus keeps focus on itself', async () => {
     const user = userEvent.setup({ delay: null });
     render(

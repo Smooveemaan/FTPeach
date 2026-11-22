@@ -132,10 +132,11 @@
     if (aclResult !== 'ok') throw new Error(`confirmation window ACL: ${aclResult}`);
     if (confirmationGranted)
       throw new Error('the confirmation was granted without anyone confirming it');
-    await waitFor('.menu-bar');
+    const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent);
+    await waitFor(isMac ? '.title-bar.macos' : '.menu-bar');
     await waitFor('.panes');
     await waitFor('.status-bar');
-    key(',', 'Comma', { ctrlKey: true });
+    key(',', 'Comma', isMac ? { metaKey: true } : { ctrlKey: true });
     await waitFor('.modal-settings');
     clickByText('.settings-nav-item', 'Interface');
     await waitFor('.language-select-trigger');

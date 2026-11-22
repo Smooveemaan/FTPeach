@@ -664,10 +664,10 @@
     "includeLocalPaths": "로컬 경로",
     "passwordHint": "파일에 저장된 비밀번호가 있으면 내보낼 때 사용한 비밀번호를 묻습니다.",
     "filePasswordHint": "이 파일에는 저장된 비밀번호가 있습니다. 비밀번호도 가져오려면 파일을 내보낼 때 사용한 비밀번호를 입력하세요.",
+    "includePasswords": "저장된 비밀번호 가져오기",
     "filePassword": "파일 비밀번호",
     "wrongPassword": "이 비밀번호로는 파일의 비밀번호를 열 수 없습니다.",
-    "importWithPasswords": "비밀번호와 함께 가져오기",
-    "importWithoutPasswords": "비밀번호 없이 가져오기",
+    "importAction": "가져오기",
     "scopeMismatch": "다음 북마크는 내보낸 후 연결 설정이 변경되어 비밀번호를 가져오지 않았습니다:",
     "unmatched": "다음 북마크는 같은 서버에 대해 두 번 이상 저장되어 있어 비밀번호를 가져오지 않았습니다:"
   },

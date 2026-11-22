@@ -667,10 +667,10 @@
     "includeLocalPaths": "Percorsi locali",
     "passwordHint": "Se il file contiene password salvate, ti verrà chiesta la password con cui è stato esportato.",
     "filePasswordHint": "Questo file contiene password salvate. Per importare anche quelle, inserisci la password con cui il file è stato esportato.",
+    "includePasswords": "Importa le password salvate",
     "filePassword": "Password del file",
     "wrongPassword": "Questa password non apre le password nel file.",
-    "importWithPasswords": "Importa con le password",
-    "importWithoutPasswords": "Importa senza le password",
+    "importAction": "Importa",
     "scopeMismatch": "Le impostazioni di connessione di questi segnalibri sono state modificate dopo l'esportazione, quindi le loro password non sono state importate:",
     "unmatched": "Questi segnalibri sono salvati più volte per lo stesso server, quindi le loro password non sono state importate:"
   },

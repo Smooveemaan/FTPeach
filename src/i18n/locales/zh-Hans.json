@@ -664,10 +664,10 @@
     "includeLocalPaths": "本地路径",
     "passwordHint": "如果文件包含已保存的密码，将要求您输入导出时使用的密码。",
     "filePasswordHint": "此文件包含已保存的密码。若要一并导入，请输入导出此文件时使用的密码。",
+    "includePasswords": "导入已保存的密码",
     "filePassword": "文件密码",
     "wrongPassword": "此密码无法打开文件中的密码。",
-    "importWithPasswords": "导入并包含密码",
-    "importWithoutPasswords": "导入但不包含密码",
+    "importAction": "导入",
     "scopeMismatch": "以下书签的连接设置在导出后已更改，因此未导入其密码：",
     "unmatched": "以下书签为同一服务器保存了多次，因此未导入其密码："
   },

@@ -667,10 +667,10 @@
     "includeLocalPaths": "Chemins locaux",
     "passwordHint": "Si le fichier contient des mots de passe enregistrés, le mot de passe utilisé lors de son exportation vous sera demandé.",
     "filePasswordHint": "Ce fichier contient des mots de passe enregistrés. Pour les importer aussi, saisissez le mot de passe utilisé lors de l'exportation du fichier.",
+    "includePasswords": "Importer les mots de passe enregistrés",
     "filePassword": "Mot de passe du fichier",
     "wrongPassword": "Ce mot de passe n'ouvre pas les mots de passe du fichier.",
-    "importWithPasswords": "Importer avec les mots de passe",
-    "importWithoutPasswords": "Importer sans les mots de passe",
+    "importAction": "Importer",
     "scopeMismatch": "Les paramètres de connexion de ces signets ont été modifiés après l'exportation ; leurs mots de passe n'ont donc pas été importés :",
     "unmatched": "Ces signets sont enregistrés plusieurs fois pour le même serveur ; leurs mots de passe n'ont donc pas été importés :"
   },

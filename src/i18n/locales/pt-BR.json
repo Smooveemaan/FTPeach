@@ -667,10 +667,10 @@
     "includeLocalPaths": "Caminhos locais",
     "passwordHint": "Se o arquivo contiver senhas salvas, será pedida a senha usada na exportação.",
     "filePasswordHint": "Este arquivo contém senhas salvas. Para importá-las também, digite a senha usada na exportação do arquivo.",
+    "includePasswords": "Importar senhas salvas",
     "filePassword": "Senha do arquivo",
     "wrongPassword": "Esta senha não abre as senhas do arquivo.",
-    "importWithPasswords": "Importar com senhas",
-    "importWithoutPasswords": "Importar sem senhas",
+    "importAction": "Importar",
     "scopeMismatch": "As configurações de conexão destes favoritos foram alteradas após a exportação, por isso as senhas deles não foram importadas:",
     "unmatched": "Estes favoritos estão salvos mais de uma vez para o mesmo servidor, por isso as senhas deles não foram importadas:"
   },

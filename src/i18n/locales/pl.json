@@ -670,10 +670,10 @@
     "includeLocalPaths": "Ścieżki lokalne",
     "passwordHint": "Jeśli plik zawiera zapisane hasła, pojawi się prośba o hasło, z którym go wyeksportowano.",
     "filePasswordHint": "Ten plik zawiera zapisane hasła. Aby zaimportować także je, wprowadź hasło, z którym plik wyeksportowano.",
+    "includePasswords": "Importuj zapisane hasła",
     "filePassword": "Hasło pliku",
     "wrongPassword": "To hasło nie otwiera haseł w pliku.",
-    "importWithPasswords": "Importuj z hasłami",
-    "importWithoutPasswords": "Importuj bez haseł",
+    "importAction": "Importuj",
     "scopeMismatch": "Ustawienia połączenia tych zakładek zmieniono po eksporcie, dlatego ich hasła nie zostały zaimportowane:",
     "unmatched": "Te zakładki są zapisane więcej niż raz dla tego samego serwera, dlatego ich hasła nie zostały zaimportowane:"
   },

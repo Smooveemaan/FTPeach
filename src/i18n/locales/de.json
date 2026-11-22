@@ -664,10 +664,10 @@
     "includeLocalPaths": "Lokale Pfade",
     "passwordHint": "Enthält die Datei gespeicherte Passwörter, werden Sie nach dem Passwort gefragt, mit dem sie exportiert wurde.",
     "filePasswordHint": "Diese Datei enthält gespeicherte Passwörter. Geben Sie das Passwort ein, mit dem die Datei exportiert wurde, um auch sie zu importieren.",
+    "includePasswords": "Gespeicherte Passwörter importieren",
     "filePassword": "Dateipasswort",
     "wrongPassword": "Dieses Passwort öffnet die Passwörter in der Datei nicht.",
-    "importWithPasswords": "Mit Passwörtern importieren",
-    "importWithoutPasswords": "Ohne Passwörter importieren",
+    "importAction": "Importieren",
     "scopeMismatch": "Die Verbindungseinstellungen dieser Lesezeichen wurden nach dem Export geändert, daher wurden ihre Passwörter nicht importiert:",
     "unmatched": "Diese Lesezeichen sind mehrfach für denselben Server gespeichert, daher wurden ihre Passwörter nicht importiert:"
   },

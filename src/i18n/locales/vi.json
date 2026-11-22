@@ -664,10 +664,10 @@
     "includeLocalPaths": "Đường dẫn cục bộ",
     "passwordHint": "Nếu tệp có mật khẩu đã lưu, bạn sẽ được yêu cầu nhập mật khẩu đã dùng khi xuất tệp.",
     "filePasswordHint": "Tệp này có mật khẩu đã lưu. Để nhập cả chúng, hãy nhập mật khẩu đã dùng khi xuất tệp.",
+    "includePasswords": "Nhập mật khẩu đã lưu",
     "filePassword": "Mật khẩu tệp",
     "wrongPassword": "Mật khẩu này không mở được các mật khẩu trong tệp.",
-    "importWithPasswords": "Nhập kèm mật khẩu",
-    "importWithoutPasswords": "Nhập không kèm mật khẩu",
+    "importAction": "Nhập",
     "scopeMismatch": "Cài đặt kết nối của các dấu trang này đã thay đổi sau khi xuất, nên mật khẩu của chúng không được nhập:",
     "unmatched": "Các dấu trang này được lưu nhiều lần cho cùng một máy chủ, nên mật khẩu của chúng không được nhập:"
   },

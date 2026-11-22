@@ -664,10 +664,10 @@
     "includeLocalPaths": "Jalur lokal",
     "passwordHint": "Jika file berisi kata sandi tersimpan, Anda akan diminta memasukkan kata sandi yang digunakan saat file diekspor.",
     "filePasswordHint": "File ini berisi kata sandi tersimpan. Untuk mengimpornya juga, masukkan kata sandi yang digunakan saat file diekspor.",
+    "includePasswords": "Impor kata sandi tersimpan",
     "filePassword": "Kata sandi file",
     "wrongPassword": "Kata sandi ini tidak membuka kata sandi dalam file.",
-    "importWithPasswords": "Impor dengan kata sandi",
-    "importWithoutPasswords": "Impor tanpa kata sandi",
+    "importAction": "Impor",
     "scopeMismatch": "Pengaturan koneksi bookmark berikut diubah setelah ekspor, sehingga kata sandinya tidak diimpor:",
     "unmatched": "Bookmark berikut tersimpan lebih dari sekali untuk server yang sama, sehingga kata sandinya tidak diimpor:"
   },

@@ -153,13 +153,26 @@ test('a file with passwords asks for its password and keeps asking until it open
       }),
   });
   const props = renderDialog('import', transfer);
+  const includePasswords = box('importSettingsDialog.includePasswords');
+  expect(includePasswords).toHaveProperty('checked', true);
+  expect(screen.getByText('importSettingsDialog.passwordHint')).toBeTruthy();
+
   await user.click(button('importSettingsDialog.confirmLabel'));
   const field = await screen.findByLabelText('importSettingsDialog.filePassword');
-  const importWith = button('importSettingsDialog.importWithPasswords');
-  expect(importWith).toHaveProperty('disabled', true);
+  expect(
+    screen.queryByRole('checkbox', { name: 'importSettingsDialog.includePasswords' }),
+  ).toBeNull();
+  const footer = document.querySelector('.modal-footer') as HTMLElement;
+  const footerButtons = within(footer).getAllByRole('button');
+  expect(footerButtons.map((item) => item.textContent)).toEqual([
+    'common.cancel',
+    'importSettingsDialog.importAction',
+  ]);
+  const confirmImport = button('importSettingsDialog.importAction');
+  expect(confirmImport).toHaveProperty('disabled', true);
 
   await user.type(field, 'wrong');
-  await user.click(importWith);
+  await user.click(confirmImport);
   expect(await screen.findByRole('alert')).toHaveProperty(
     'textContent',
     'importSettingsDialog.wrongPassword',
@@ -172,27 +185,48 @@ test('a file with passwords asks for its password and keeps asking until it open
   expect(await screen.findByText('Moved server')).toBeTruthy();
   expect(screen.getByText('importSettingsDialog.scopeMismatch')).toBeTruthy();
   expect(props.onDone).toHaveBeenCalledWith(done);
-  const footer = document.querySelector('.modal-footer') as HTMLElement;
   await user.click(within(footer).getByRole('button', { name: 'common.close' }));
   expect(props.onClose).toHaveBeenCalledOnce();
   expect(transfer.discardImport).not.toHaveBeenCalled();
 });
 
-test('a file with passwords can be imported without them, or let go', async () => {
+test('a file with passwords skips the password step when unticked on step one, or can be let go', async () => {
   const user = userEvent.setup({ delay: null });
-  const transfer = model({ previewImport: vi.fn(async () => ({ hasSecrets: true })) });
-  renderDialog('import', transfer);
+  const transfer = model({
+    previewImport: vi.fn(async () => ({ hasSecrets: true })),
+    applyImport: vi.fn<SettingsTransferModel['applyImport']>(async () => ({
+      done,
+      warnings: null,
+    })),
+  });
+  const firstProps = renderDialog('import', transfer);
+  const includePasswords = box('importSettingsDialog.includePasswords');
+  await user.click(box('importSettingsDialog.includeBookmarks'));
+  expect(includePasswords).toHaveProperty('disabled', true);
+  expect(includePasswords).toHaveProperty('checked', false);
+  await user.click(box('importSettingsDialog.includeBookmarks'));
+  expect(includePasswords).toHaveProperty('disabled', false);
+  expect(includePasswords).toHaveProperty('checked', true);
+
+  await user.click(includePasswords);
+  expect(screen.queryByText('importSettingsDialog.passwordHint')).toBeNull();
   await user.click(button('importSettingsDialog.confirmLabel'));
-  await user.click(
-    await screen.findByRole('button', { name: 'importSettingsDialog.importWithoutPasswords' }),
+  await waitFor(() =>
+    expect(transfer.applyImport).toHaveBeenCalledWith(
+      { includeSettings: false, includeBookmarks: true, includeLocalPaths: false },
+      null,
+    ),
   );
-  expect(transfer.applyImport).toHaveBeenCalledWith(expect.anything(), null);
+  expect(screen.queryByLabelText('importSettingsDialog.filePassword')).toBeNull();
+  expect(firstProps.onDone).toHaveBeenCalledWith(done);
+  expect(firstProps.onClose).toHaveBeenCalledOnce();
 
   const letGo = model({ previewImport: vi.fn(async () => ({ hasSecrets: true })) });
   document.body.innerHTML = '';
   const props = renderDialog('import', letGo);
   await user.click(button('importSettingsDialog.confirmLabel'));
-  await user.click(await screen.findByRole('button', { name: 'common.cancel' }));
+  await screen.findByLabelText('importSettingsDialog.filePassword');
+  await user.click(screen.getByRole('button', { name: 'common.cancel' }));
   expect(letGo.discardImport).toHaveBeenCalledOnce();
   expect(letGo.applyImport).not.toHaveBeenCalled();
   expect(props.onClose).toHaveBeenCalledOnce();

@@ -493,3 +493,108 @@ test('file operation errors use the dismissible error banner', async ({ page }) 
   await error.getByRole('button', { name: en.common.close }).click();
   await expect(error).toHaveCount(0);
 });
+
+test('import settings places the password toggle on step one and keeps a single-row footer on step two', async ({
+  page,
+}) => {
+  for (const locale of [
+    { language: 'en', strings: en },
+    { language: 'ru', strings: ru },
+  ]) {
+    await openHarness(page, locale.language);
+    await page.evaluate(() => {
+      let locked = true;
+      window.api.app.importPreview = async () => ({ ok: true, hasSecrets: true });
+      window.api.app.importApply = async () =>
+        locked ? { ok: false, errorCode: 'vaultLocked', error: 'Vault locked' } : { ok: true };
+      window.api.vault.status = async () => ({
+        mode: 'masterPassword',
+        configured: true,
+        locked: true,
+        available: true,
+        systemUnlockAvailable: false,
+        systemUnlockEnabled: false,
+      });
+      window.api.vault.unlock = async () => {
+        locked = false;
+        return { ok: true };
+      };
+    });
+    const fileMenu = page.locator('.menu-bar-trigger[data-menu="file"]');
+    if (await fileMenu.isVisible()) {
+      await fileMenu.click();
+      await page.locator('.menu-item[data-action="import-settings"]').click();
+    } else {
+      await openBookmarks(page);
+      await page
+        .getByRole('button', {
+          name: locale.strings.siteManagerDialog.importBookmarks,
+          exact: true,
+        })
+        .click();
+    }
+    const dialog = page.getByRole('dialog', { name: locale.strings.importSettingsDialog.title });
+    await expect(dialog).toBeVisible();
+
+    const includeBookmarks = dialog.getByRole('checkbox', {
+      name: locale.strings.importSettingsDialog.includeBookmarks,
+    });
+    const includePasswords = dialog.getByRole('checkbox', {
+      name: locale.strings.importSettingsDialog.includePasswords,
+    });
+    if (!(await includeBookmarks.isChecked())) {
+      await expect(includePasswords).toBeDisabled();
+      await expect(includePasswords).not.toBeChecked();
+      await includeBookmarks.click();
+    }
+    await expect(includePasswords).toBeEnabled();
+    await expect(includePasswords).toBeChecked();
+    await expect(dialog.getByText(locale.strings.importSettingsDialog.passwordHint)).toBeVisible();
+    await dialog.screenshot({
+      path: `test-results/import-settings-options-${locale.language}.png`,
+    });
+
+    await dialog
+      .getByRole('button', { name: locale.strings.importSettingsDialog.confirmLabel })
+      .click();
+
+    const passwordInput = dialog.getByLabel(locale.strings.importSettingsDialog.filePassword);
+    await expect(passwordInput).toBeVisible();
+    await expect(includePasswords).toHaveCount(0);
+
+    const footerButtons = dialog.locator('.modal-footer button');
+    await expect(footerButtons).toHaveCount(2);
+    const cancelButton = dialog.getByRole('button', {
+      name: locale.strings.common.cancel,
+      exact: true,
+    });
+    const importButton = dialog.getByRole('button', {
+      name: locale.strings.importSettingsDialog.importAction,
+      exact: true,
+    });
+    const [cancelBox, importBox] = await Promise.all([
+      cancelButton.boundingBox(),
+      importButton.boundingBox(),
+    ]);
+    expect(Math.abs(cancelBox!.y - importBox!.y)).toBeLessThan(2);
+    await expect(importButton).toBeDisabled();
+    await dialog.screenshot({
+      path: `test-results/import-settings-password-${locale.language}.png`,
+    });
+
+    // Submitting a file password while the vault is locked opens the vault
+    // unlock prompt strictly above the import dialog so it stays clickable.
+    await passwordInput.fill('export-file-password');
+    await importButton.click();
+    const unlockDialog = page.locator('.modal-vault-unlock');
+    await expect(unlockDialog).toBeVisible();
+    const unlockInput = unlockDialog.getByLabel(locale.strings.settings.security.masterPassword);
+    await unlockInput.click();
+    await unlockInput.fill('master-password');
+    await unlockDialog
+      .getByRole('button', { name: locale.strings.settings.security.unlock, exact: true })
+      .click();
+    await expect(unlockDialog).toHaveCount(0);
+    await expect(dialog).toHaveCount(0);
+  }
+});

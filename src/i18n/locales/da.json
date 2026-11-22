@@ -664,10 +664,10 @@
     "includeLocalPaths": "Lokale stier",
     "passwordHint": "Hvis filen indeholder gemte adgangskoder, bliver du bedt om den adgangskode, den blev eksporteret med.",
     "filePasswordHint": "Denne fil indeholder gemte adgangskoder. Indtast den adgangskode, filen blev eksporteret med, for også at importere dem.",
+    "includePasswords": "Importér gemte adgangskoder",
     "filePassword": "Filadgangskode",
     "wrongPassword": "Denne adgangskode åbner ikke adgangskoderne i filen.",
-    "importWithPasswords": "Importér med adgangskoder",
-    "importWithoutPasswords": "Importér uden adgangskoder",
+    "importAction": "Importér",
     "scopeMismatch": "Forbindelsesindstillingerne for disse bogmærker er ændret efter eksporten, så deres adgangskoder blev ikke importeret:",
     "unmatched": "Disse bogmærker er gemt mere end én gang til den samme server, så deres adgangskoder blev ikke importeret:"
   },

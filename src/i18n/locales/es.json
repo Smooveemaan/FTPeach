@@ -667,10 +667,10 @@
     "includeLocalPaths": "Rutas locales",
     "passwordHint": "Si el archivo contiene contraseñas guardadas, se te pedirá la contraseña con la que se exportó.",
     "filePasswordHint": "Este archivo contiene contraseñas guardadas. Para importarlas también, introduce la contraseña con la que se exportó el archivo.",
+    "includePasswords": "Importar contraseñas guardadas",
     "filePassword": "Contraseña del archivo",
     "wrongPassword": "Esta contraseña no abre las contraseñas del archivo.",
-    "importWithPasswords": "Importar con contraseñas",
-    "importWithoutPasswords": "Importar sin contraseñas",
+    "importAction": "Importar",
     "scopeMismatch": "La configuración de conexión de estos marcadores cambió después de la exportación, así que sus contraseñas no se importaron:",
     "unmatched": "Estos marcadores están guardados más de una vez para el mismo servidor, así que sus contraseñas no se importaron:"
   },

@@ -664,10 +664,10 @@
     "includeLocalPaths": "Yerel yollar",
     "passwordHint": "Dosyada kayıtlı şifreler varsa, dosyanın dışa aktarıldığı şifre sorulur.",
     "filePasswordHint": "Bu dosyada kayıtlı şifreler var. Bunları da içe aktarmak için dosyanın dışa aktarıldığı şifreyi girin.",
+    "includePasswords": "Kayıtlı şifreleri içe aktar",
     "filePassword": "Dosya şifresi",
     "wrongPassword": "Bu şifre dosyadaki şifreleri açmıyor.",
-    "importWithPasswords": "Şifrelerle içe aktar",
-    "importWithoutPasswords": "Şifreler olmadan içe aktar",
+    "importAction": "İçe aktar",
     "scopeMismatch": "Bu yer imlerinin bağlantı ayarları dışa aktarımdan sonra değiştirildiği için şifreleri içe aktarılmadı:",
     "unmatched": "Bu yer imleri aynı sunucu için birden fazla kez kayıtlı olduğundan şifreleri içe aktarılmadı:"
   },

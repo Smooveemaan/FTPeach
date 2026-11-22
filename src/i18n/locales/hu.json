@@ -664,10 +664,10 @@
     "includeLocalPaths": "Helyi útvonalak",
     "passwordHint": "Ha a fájl mentett jelszavakat tartalmaz, a program bekéri azt a jelszót, amellyel exportálták.",
     "filePasswordHint": "Ez a fájl mentett jelszavakat tartalmaz. Ha ezeket is importálni szeretné, adja meg a jelszót, amellyel a fájlt exportálták.",
+    "includePasswords": "Mentett jelszavak importálása",
     "filePassword": "Fájljelszó",
     "wrongPassword": "Ez a jelszó nem nyitja meg a fájlban lévő jelszavakat.",
-    "importWithPasswords": "Importálás jelszavakkal",
-    "importWithoutPasswords": "Importálás jelszavak nélkül",
+    "importAction": "Importálás",
     "scopeMismatch": "Ezeknek a könyvjelzőknek a kapcsolati beállításai az exportálás után megváltoztak, ezért a jelszavaikat nem importálta a program:",
     "unmatched": "Ezek a könyvjelzők ugyanahhoz a szerverhez többször is el vannak mentve, ezért a jelszavaikat nem importálta a program:"
   },

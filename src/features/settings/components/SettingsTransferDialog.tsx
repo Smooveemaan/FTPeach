@@ -28,6 +28,7 @@ const TEXT = {
     includeSettings: 'importSettingsDialog.includeSettings',
     includeBookmarks: 'importSettingsDialog.includeBookmarks',
     includeLocalPaths: 'importSettingsDialog.includeLocalPaths',
+    includePasswords: 'importSettingsDialog.includePasswords',
     passwordHint: 'importSettingsDialog.passwordHint',
   },
   export: {
@@ -36,6 +37,7 @@ const TEXT = {
     includeSettings: 'exportSettingsDialog.includeSettings',
     includeBookmarks: 'exportSettingsDialog.includeBookmarks',
     includeLocalPaths: 'exportSettingsDialog.includeLocalPaths',
+    includePasswords: 'exportSettingsDialog.includePasswords',
     passwordHint: 'exportSettingsDialog.passwordHint',
   },
 } as const;
@@ -48,7 +50,7 @@ type Step =
   | { name: 'options' }
   /** Export: bookmarks whose passwords cannot be opened here. */
   | { name: 'unreadable'; names: string[] }
-  /** Import: the file has passwords; ask for the one it was exported with. */
+  /** Import: the file has passwords and the user opted to include them; ask for the file password. */
   | { name: 'password' }
   /** Import: done, but some passwords stayed behind. */
   | { name: 'report'; warnings: ImportWarnings };
@@ -81,7 +83,7 @@ export default function SettingsTransferDialog({
   const [options, setOptions] = useState(initialOptions);
   const [step, setStep] = useState<Step>({ name: 'options' });
   const [busy, setBusy] = useState(false);
-  const [withSecrets, setWithSecrets] = useState(false);
+  const [withSecrets, setWithSecrets] = useState(mode === 'import');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [wrongPassword, setWrongPassword] = useState(false);
@@ -90,6 +92,7 @@ export default function SettingsTransferDialog({
   const text = TEXT[mode];
 
   const exportsSecrets = mode === 'export' && withSecrets && options.includeBookmarks;
+  const importsSecrets = mode === 'import' && withSecrets && options.includeBookmarks;
   const savedSecrets = sites.reduce(
     (count, site) => count + Number(!!site.hasPassword) + Number(!!site.hasKeyPassphrase),
     0,
@@ -157,8 +160,13 @@ export default function SettingsTransferDialog({
       return;
     }
     setStaged(true);
-    if (preview.hasSecrets) setStep({ name: 'password' });
-    else await apply(null, true);
+    if (preview.hasSecrets && importsSecrets) {
+      setPassword('');
+      setWrongPassword(false);
+      setStep({ name: 'password' });
+    } else {
+      await apply(null, true);
+    }
   };
 
   const footer = (() => {
@@ -185,27 +193,13 @@ export default function SettingsTransferDialog({
         );
       case 'password':
         return (
-          <>
-            <button type="button" className="btn" onClick={close} disabled={busy}>
-              {t('common.cancel')}
-            </button>
-            <button
-              type="button"
-              className="btn"
-              onClick={handler(() => apply(null, false))}
-              disabled={busy}
-            >
-              {t('importSettingsDialog.importWithoutPasswords')}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handler(() => apply(password, false))}
-              disabled={busy || !password}
-            >
-              {t('importSettingsDialog.importWithPasswords')}
-            </button>
-          </>
+          <ModalFooterActions
+            onCancel={close}
+            onConfirm={handler(() => apply(password, false))}
+            confirmLabel={t('importSettingsDialog.importAction')}
+            cancelDisabled={busy}
+            confirmDisabled={busy || !password}
+          />
         );
       case 'report':
         return (
@@ -241,59 +235,57 @@ export default function SettingsTransferDialog({
               </label>
             ))}
           </div>
-          {mode === 'import' ? (
-            <p className="settings-hint settings-transfer-note">{t(text.passwordHint)}</p>
-          ) : (
-            <section className="settings-transfer-secrets">
-              <label className="secure-toggle settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={exportsSecrets}
-                  disabled={busy || !options.includeBookmarks}
-                  onChange={(e) => setWithSecrets(e.target.checked)}
-                />
-                {t('exportSettingsDialog.includePasswords')}
-              </label>
-              {!exportsSecrets ? (
-                <p className="settings-hint">{t(text.passwordHint)}</p>
-              ) : (
-                <>
-                  <div className="settings-transfer-text">
-                    <p className="settings-hint">
-                      {t('exportSettingsDialog.passwordsCount', { count: savedSecrets })}
-                    </p>
-                    <p className="settings-hint settings-warning">
-                      {t('exportSettingsDialog.passwordsWarning')}
-                    </p>
-                  </div>
-                  <div className="vault-password-form">
-                    <label className="settings-field">
-                      <span>{t('exportSettingsDialog.exportPassword')}</span>
-                      <PasswordInput
-                        autoComplete="new-password"
-                        value={password}
-                        disabled={busy}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </label>
-                    <label className="settings-field">
-                      <span>{t('exportSettingsDialog.confirmExportPassword')}</span>
-                      <PasswordInput
-                        autoComplete="new-password"
-                        value={confirmation}
-                        disabled={busy}
-                        onChange={(e) => setConfirmation(e.target.value)}
-                      />
-                    </label>
-                  </div>
-                  {passwordProblem && (password || confirmation) && (
-                    <p className="settings-hint">{t(passwordProblem)}</p>
-                  )}
-                  <p className="settings-hint">{t('exportSettingsDialog.keysHint')}</p>
-                </>
-              )}
-            </section>
-          )}
+          <section className="settings-transfer-secrets">
+            <label className="secure-toggle settings-toggle">
+              <input
+                type="checkbox"
+                checked={mode === 'export' ? exportsSecrets : importsSecrets}
+                disabled={busy || !options.includeBookmarks}
+                onChange={(e) => setWithSecrets(e.target.checked)}
+              />
+              {t(text.includePasswords)}
+            </label>
+            {mode === 'import' ? (
+              importsSecrets && <p className="settings-hint">{t(text.passwordHint)}</p>
+            ) : !exportsSecrets ? (
+              <p className="settings-hint">{t(text.passwordHint)}</p>
+            ) : (
+              <>
+                <div className="settings-transfer-text">
+                  <p className="settings-hint">
+                    {t('exportSettingsDialog.passwordsCount', { count: savedSecrets })}
+                  </p>
+                  <p className="settings-hint settings-warning">
+                    {t('exportSettingsDialog.passwordsWarning')}
+                  </p>
+                </div>
+                <div className="vault-password-form">
+                  <label className="settings-field">
+                    <span>{t('exportSettingsDialog.exportPassword')}</span>
+                    <PasswordInput
+                      autoComplete="new-password"
+                      value={password}
+                      disabled={busy}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </label>
+                  <label className="settings-field">
+                    <span>{t('exportSettingsDialog.confirmExportPassword')}</span>
+                    <PasswordInput
+                      autoComplete="new-password"
+                      value={confirmation}
+                      disabled={busy}
+                      onChange={(e) => setConfirmation(e.target.value)}
+                    />
+                  </label>
+                </div>
+                {passwordProblem && (password || confirmation) && (
+                  <p className="settings-hint">{t(passwordProblem)}</p>
+                )}
+                <p className="settings-hint">{t('exportSettingsDialog.keysHint')}</p>
+              </>
+            )}
+          </section>
         </>
       )}
       {step.name === 'unreadable' && (

@@ -664,10 +664,10 @@
     "includeLocalPaths": "Lokala sökvägar",
     "passwordHint": "Om filen innehåller sparade lösenord blir du ombedd att ange lösenordet som den exporterades med.",
     "filePasswordHint": "Den här filen innehåller sparade lösenord. Ange lösenordet som filen exporterades med för att importera även dem.",
+    "includePasswords": "Importera sparade lösenord",
     "filePassword": "Fillösenord",
     "wrongPassword": "Det här lösenordet öppnar inte lösenorden i filen.",
-    "importWithPasswords": "Importera med lösenord",
-    "importWithoutPasswords": "Importera utan lösenord",
+    "importAction": "Importera",
     "scopeMismatch": "Anslutningsinställningarna för de här bokmärkena ändrades efter exporten, så deras lösenord importerades inte:",
     "unmatched": "De här bokmärkena är sparade mer än en gång för samma server, så deras lösenord importerades inte:"
   },

@@ -14,6 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The Help menu includes a direct link to the User Guide.
 - Open with offers the same application submenu for local and remote files.
 
+### Changed
+
+- Import Settings asks whether to import saved passwords on the first step and uses a single-row
+  Cancel and Import footer on the file password step.
+
 ### Fixed
 
 - Stopped transfers keep their last progress percentage, or show 0% when the total size is unknown.

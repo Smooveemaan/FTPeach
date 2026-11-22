@@ -664,10 +664,10 @@
     "includeLocalPaths": "本機路徑",
     "passwordHint": "若檔案包含已儲存的密碼，系統會要求您輸入匯出時使用的密碼。",
     "filePasswordHint": "此檔案包含已儲存的密碼。若要一併匯入，請輸入匯出此檔案時使用的密碼。",
+    "includePasswords": "匯入已儲存的密碼",
     "filePassword": "檔案密碼",
     "wrongPassword": "此密碼無法開啟檔案中的密碼。",
-    "importWithPasswords": "匯入並包含密碼",
-    "importWithoutPasswords": "匯入但不包含密碼",
+    "importAction": "匯入",
     "scopeMismatch": "以下書籤的連線設定在匯出後已變更，因此未匯入其密碼：",
     "unmatched": "以下書籤為同一伺服器儲存了多次，因此未匯入其密碼："
   },

@@ -667,10 +667,10 @@
     "includeLocalPaths": "Căi locale",
     "passwordHint": "Dacă fișierul conține parole salvate, vi se va cere parola cu care a fost exportat.",
     "filePasswordHint": "Acest fișier conține parole salvate. Pentru a le importa și pe ele, introduceți parola cu care a fost exportat fișierul.",
+    "includePasswords": "Importă parolele salvate",
     "filePassword": "Parola fișierului",
     "wrongPassword": "Această parolă nu deschide parolele din fișier.",
-    "importWithPasswords": "Importă cu parole",
-    "importWithoutPasswords": "Importă fără parole",
+    "importAction": "Importă",
     "scopeMismatch": "Setările de conexiune ale acestor marcaje au fost modificate după export, așa că parolele lor nu au fost importate:",
     "unmatched": "Aceste marcaje sunt salvate de mai multe ori pentru același server, așa că parolele lor nu au fost importate:"
   },

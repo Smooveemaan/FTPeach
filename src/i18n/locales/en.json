@@ -664,10 +664,10 @@
     "includeLocalPaths": "Local paths",
     "passwordHint": "If the file contains saved passwords, you will be asked for the password it was exported with.",
     "filePasswordHint": "This file contains saved passwords. Enter the password the file was exported with to import them too.",
+    "includePasswords": "Import saved passwords",
     "filePassword": "File password",
     "wrongPassword": "This password does not open the passwords in the file.",
-    "importWithPasswords": "Import with passwords",
-    "importWithoutPasswords": "Import without passwords",
+    "importAction": "Import",
     "scopeMismatch": "The connection settings of these bookmarks were changed after the export, so their passwords were not imported:",
     "unmatched": "These bookmarks are saved more than once for the same server, so their passwords were not imported:"
   },

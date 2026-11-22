@@ -670,10 +670,10 @@
     "includeLocalPaths": "Místní cesty",
     "passwordHint": "Pokud soubor obsahuje uložená hesla, budete požádáni o heslo, se kterým byl exportován.",
     "filePasswordHint": "Tento soubor obsahuje uložená hesla. Chcete-li importovat i je, zadejte heslo, se kterým byl soubor exportován.",
+    "includePasswords": "Importovat uložená hesla",
     "filePassword": "Heslo souboru",
     "wrongPassword": "Toto heslo neotevírá hesla v souboru.",
-    "importWithPasswords": "Importovat s hesly",
-    "importWithoutPasswords": "Importovat bez hesel",
+    "importAction": "Importovat",
     "scopeMismatch": "Nastavení připojení těchto záložek se po exportu změnilo, proto jejich hesla nebyla importována:",
     "unmatched": "Tyto záložky jsou pro stejný server uloženy vícekrát, proto jejich hesla nebyla importována:"
   },

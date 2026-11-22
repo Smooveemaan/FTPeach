@@ -664,10 +664,10 @@
     "includeLocalPaths": "Lokale paden",
     "passwordHint": "Als het bestand opgeslagen wachtwoorden bevat, wordt gevraagd om het wachtwoord waarmee het is geëxporteerd.",
     "filePasswordHint": "Dit bestand bevat opgeslagen wachtwoorden. Voer het wachtwoord in waarmee het bestand is geëxporteerd om ook die te importeren.",
+    "includePasswords": "Opgeslagen wachtwoorden importeren",
     "filePassword": "Bestandswachtwoord",
     "wrongPassword": "Dit wachtwoord opent de wachtwoorden in het bestand niet.",
-    "importWithPasswords": "Importeren met wachtwoorden",
-    "importWithoutPasswords": "Importeren zonder wachtwoorden",
+    "importAction": "Importeren",
     "scopeMismatch": "De verbindingsinstellingen van deze bladwijzers zijn na de export gewijzigd, dus hun wachtwoorden zijn niet geïmporteerd:",
     "unmatched": "Deze bladwijzers zijn meer dan eens opgeslagen voor dezelfde server, dus hun wachtwoorden zijn niet geïmporteerd:"
   },

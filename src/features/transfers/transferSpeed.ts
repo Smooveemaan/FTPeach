@@ -2,7 +2,7 @@ export interface SpeedSample {
   bytes: number;
   time: number;
   speed: number | null;
-  /** `time` is a moment the byte count was seen to change, not the row's first render. */
+  /** A byte change has established the measurement baseline. */
   atChange: boolean;
 }
 export type SpeedSamples = Record<string, SpeedSample>;
@@ -37,13 +37,13 @@ export function updateSpeedSample(
     return null;
   }
   const dt = (now - prev.time) / 1000;
-  if (bytes === prev.bytes) return dt >= STALLED_AFTER ? 0 : prev.speed;
+  if (bytes === prev.bytes) {
+    if (dt >= STALLED_AFTER) prev.speed = 0;
+    return prev.speed;
+  }
   if (dt < MIN_WINDOW) return prev.speed;
-  // The first bytes, or the first after a stall: when they began to arrive is
-  // unknown, and dividing by the whole wait would understate the speed, so the
-  // measurement starts here. Until it has a value the cell keeps what it
-  // showed: nothing yet, or 0 B/s after a stall.
-  if (!prev.atChange || dt >= STALLED_AFTER) {
+  // The first byte change starts the baseline because the initial wait may be setup.
+  if (!prev.atChange) {
     const shown = dt >= STALLED_AFTER ? 0 : prev.speed;
     samples[id] = { bytes, time: now, speed: shown, atChange: true };
     return shown;

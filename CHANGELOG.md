@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Active transfers show their speed when progress updates arrive two or more seconds apart.
 - Stopped transfers keep their last progress percentage, or show 0% when the total size is unknown.
 - Retrying a stopped folder transfer checks for conflicts with files already at the destination.
 - Switching an unlocked vault to system protection keeps the confirmation without asking for the master password again.

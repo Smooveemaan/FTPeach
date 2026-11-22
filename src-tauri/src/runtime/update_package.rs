@@ -176,7 +176,7 @@ fn deb_version(bytes: &[u8]) -> anyhow::Result<String> {
             );
             let text = String::from_utf8(metadata(&mut entry)?)?;
             ensure!(
-                field(&text, "Package")? == "ftpeach",
+                matches!(field(&text, "Package")?, "ft-peach" | "ftpeach"),
                 "the update is not FTPeach"
             );
             version = Some(field(&text, "Version")?.to_owned());

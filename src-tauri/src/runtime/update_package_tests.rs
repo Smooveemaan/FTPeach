@@ -78,6 +78,7 @@ fn appimage(version: &str, symlink: bool) -> Vec<u8> {
 fn all_unix_formats_bind_the_signed_version_and_refuse_rollback() {
     for (package, bytes) in [
         (Package::MacApp, mac("0.2.0")),
+        (Package::Deb, deb("Package: ft-peach\nVersion: 0.2.0\n")),
         (Package::Deb, deb("Package: ftpeach\nVersion: 0.2.0\n")),
         (Package::AppImage, appimage("0.2.0", false)),
     ] {
@@ -135,8 +136,8 @@ fn missing_or_ambiguous_metadata_is_refused() {
     );
     for control in [
         "Package: other\nVersion: 0.2.0\n",
-        "Package: ftpeach\n",
-        "Package: ftpeach\nVersion: 0.2.0\nVersion: 0.9.0\n",
+        "Package: ft-peach\n",
+        "Package: ft-peach\nVersion: 0.2.0\nVersion: 0.9.0\n",
     ] {
         assert!(deb_version(&deb(control)).is_err(), "{control}");
     }
@@ -158,7 +159,7 @@ fn package_metadata_and_elf_offsets_are_bounded() {
     }
     assert!(appimage_version(&malformed_squashfs).is_err());
     assert!(deb_version(b"!<arch>\ntruncated").is_err());
-    let valid = deb("Package: ftpeach\nVersion: 0.2.0\n");
+    let valid = deb("Package: ft-peach\nVersion: 0.2.0\n");
     for length in [0, 8, 60, valid.len() - 1] {
         assert!(deb_version(&valid[..length]).is_err());
     }

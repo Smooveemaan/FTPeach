@@ -95,6 +95,12 @@ pub fn run() {
             runtime::tray::restore(app);
         }))
     };
+    #[cfg(not(debug_assertions))]
+    let builder = builder.plugin(
+        tauri::plugin::Builder::<tauri::Wry>::new("context-menu")
+            .js_init_script_on_all_frames(include_str!("../assets/disable_context_menu.js"))
+            .build(),
+    );
     let store = open_store();
     protocol::keep_stranded_in(store.data_dir());
     let vault = vault::Vault::new(store.data_dir().to_path_buf());

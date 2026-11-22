@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   if the vault is already unlocked.
 - The unsaved-password notice banner displays its text in the error color.
 - Clicking any button or control dismisses open tooltips immediately.
+- Right-clicking in FTPeach shows only the application's own context menus.
 - Resetting the window layout while fullscreen restores the window to its centered size.
 
 ## [0.6.1] - 2026-11-05

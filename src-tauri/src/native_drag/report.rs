@@ -4,6 +4,8 @@
 use super::DragOutFile;
 use crate::ipc::CommandError;
 use crate::transfer::error_kind::transfer_error_kind;
+#[cfg(target_os = "macos")]
+use crate::transfer::progress::FolderFile;
 use crate::transfer::progress::{ProgressEmitter, TransferProgressPayload};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter};
@@ -89,6 +91,26 @@ impl TransferReporter {
         self.progress.send(TransferProgressPayload {
             bytes: Some(bytes),
             total,
+            ..TransferProgressPayload::status(
+                id.to_string(),
+                self.connection_id.clone(),
+                "progress",
+            )
+        });
+    }
+
+    #[cfg(target_os = "macos")]
+    pub fn progress_file(
+        &self,
+        id: &str,
+        bytes: u64,
+        total: Option<u64>,
+        file: Option<FolderFile>,
+    ) {
+        self.progress.send(TransferProgressPayload {
+            bytes: Some(bytes),
+            total,
+            file,
             ..TransferProgressPayload::status(
                 id.to_string(),
                 self.connection_id.clone(),

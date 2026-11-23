@@ -317,7 +317,7 @@ function TransferItemRow({
               </button>
             )}
             {(item.status === 'progress' || item.status === 'queued' || item.status === 'paused') &&
-              !(item.dragOut && item.isDirectory && hostPlatform() !== 'linux') && (
+              !(item.dragOut && item.isDirectory && hostPlatform() === 'windows') && (
                 <button
                   type="button"
                   className="stop-btn"

@@ -133,12 +133,12 @@ test.each(['Linux', 'Windows NT', 'Macintosh'])(
         onStop,
       );
       const stop = container.querySelector('.stop-btn');
-      if (platform === 'Linux') {
+      if (platform === 'Windows NT') {
+        expect(stop).toBeNull();
+      } else {
         expect(stop).not.toBeNull();
         fireEvent.click(stop!);
         expect(onStop).toHaveBeenCalledWith('folder-drag-stop');
-      } else {
-        expect(stop).toBeNull();
       }
     } finally {
       agent.mockRestore();

@@ -63,11 +63,13 @@ pub fn clean_file_name(name: &str) -> String {
 mod macos_impl {
     use super::*;
     use crate::ipc::{CommandError, ErrorCode};
-    use crate::transfer::progress::ProgressInfo;
+    use crate::transfer::progress::{FolderFile, ProgressInfo};
     use crate::transfer::transfer_pool::TaskFn;
     use anyhow::{Context, Result, bail};
-    use std::ffi::{CStr, CString, c_char, c_void};
-    use std::path::PathBuf;
+    use std::collections::VecDeque;
+    use std::ffi::{CStr, CString, OsStr, c_char, c_void};
+    use std::path::{Path, PathBuf};
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::sync::{Arc, Mutex, Once};
     use tokio::sync::oneshot;
 
@@ -476,9 +478,50 @@ mod macos_impl {
         });
     }
 
+    /// A dot-prefixed staging directory beside the destination on the same
+    /// volume. Keeping drag-out downloads here prevents Finder and Desktop from
+    /// showing temporary `.ftpeach-resume.json` sidecars during transfer, and
+    /// removing it on drop leaves no partial or sidecar litter if the user stops
+    /// the drag-out.
+    pub(super) struct HiddenDragStage {
+        dir: PathBuf,
+    }
+
+    impl HiddenDragStage {
+        pub(super) async fn create(parent: &Path) -> Result<Self> {
+            let dir = parent.join(format!(".ftpeach-drag-{}", uuid::Uuid::new_v4()));
+            tokio::fs::create_dir_all(&dir).await?;
+            Ok(Self { dir })
+        }
+
+        pub(super) fn file_path(&self, file_name: impl AsRef<Path>) -> PathBuf {
+            self.dir.join(file_name)
+        }
+    }
+
+    impl Drop for HiddenDragStage {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.dir);
+        }
+    }
+
+    struct PlannedFile {
+        remote_path: String,
+        rel_path: String,
+        local_path: PathBuf,
+        size: u64,
+    }
+
     async fn perform_promise_download(ctx: Arc<PromiseContext>, dest_path: PathBuf) -> Result<()> {
         let transfer_id = uuid::Uuid::new_v4().to_string();
-        ctx.reporter.started(&transfer_id, &ctx.file, ctx.file.size);
+        // A directory's listed size on the server is its inode size, not the
+        // sum of its files; leave total unknown until download_directory scans.
+        let initial_total = if ctx.file.is_directory {
+            None
+        } else {
+            ctx.file.size
+        };
+        ctx.reporter.started(&transfer_id, &ctx.file, initial_total);
         ctx.reporter.status(&transfer_id, "progress");
 
         if ctx.file.is_directory {
@@ -493,9 +536,16 @@ mod macos_impl {
         transfer_id: String,
         dest_path: PathBuf,
     ) -> Result<()> {
-        if let Some(parent) = dest_path.parent() {
-            tokio::fs::create_dir_all(parent).await?;
-        }
+        let parent = dest_path
+            .parent()
+            .context("drag-out destination has no parent directory")?;
+        tokio::fs::create_dir_all(parent).await?;
+        let stage = HiddenDragStage::create(parent).await?;
+        let file_name = dest_path
+            .file_name()
+            .unwrap_or_else(|| OsStr::new("download"));
+        let staged_path = stage.file_path(file_name);
+
         let total = ctx.file.size;
         let reporter = ctx.reporter.clone();
         let id_for_progress = transfer_id.clone();
@@ -506,26 +556,36 @@ mod macos_impl {
         });
 
         let remote_path = ctx.file.remote_path.clone();
-        let target = dest_path.clone();
+        let target = staged_path.clone();
         let task: TaskFn = Box::new(move |backend| {
             Box::pin(async move { backend.download(&remote_path, &target, false, sink).await })
         });
 
-        match ctx.pool.run(transfer_id.clone(), task).await {
+        let outcome = ctx.pool.run(transfer_id.clone(), task).await;
+        match outcome {
             Ok(()) => {
                 let origin = crate::local_fs::provenance::Origin::for_url(
                     &ctx.origin_base,
                     &ctx.file.remote_path,
                 );
-                crate::local_fs::provenance::mark(&dest_path, &origin);
+                crate::local_fs::provenance::mark(&staged_path, &origin);
+                if let Err(err) = tokio::fs::rename(&staged_path, &dest_path).await {
+                    drop(stage);
+                    let cmd_err = CommandError::from_anyhow(&err.into());
+                    ctx.reporter.error(&transfer_id, cmd_err.clone());
+                    bail!("{}", cmd_err.message);
+                }
+                drop(stage);
                 let final_bytes = tokio::fs::metadata(&dest_path)
                     .await
                     .map(|m| m.len())
                     .unwrap_or_else(|_| total.unwrap_or(0));
-                ctx.reporter.done(&transfer_id, final_bytes, total);
+                ctx.reporter
+                    .done(&transfer_id, final_bytes, total.or(Some(final_bytes)));
                 Ok(())
             }
             Err(err) => {
+                drop(stage);
                 let cmd_err = CommandError::new(ErrorCode::Cancelled, err.to_string());
                 ctx.reporter.error(&transfer_id, cmd_err);
                 Err(err)
@@ -544,52 +604,128 @@ mod macos_impl {
         let remote_dir = ctx.file.remote_path.clone();
         let local_dir = dest_dir.clone();
         let origin_base = ctx.origin_base.clone();
+        let reported_bytes = Arc::new(AtomicU64::new(0));
+        let reported_total = Arc::new(AtomicU64::new(0));
+        let bytes_out = reported_bytes.clone();
+        let total_out = reported_total.clone();
 
         let task: TaskFn = Box::new(move |backend| {
             Box::pin(async move {
-                let mut transferred: u64 = 0;
-                let mut queue = vec![(remote_dir, local_dir)];
-                while let Some((rem, loc)) = queue.pop() {
-                    tokio::fs::create_dir_all(&loc).await?;
+                // Scan the remote tree first so the Transfers row shows the real
+                // folder total and the current file inside it.
+                let mut dirs = vec![local_dir.clone()];
+                let mut files = Vec::new();
+                let mut queue = VecDeque::from([(remote_dir, String::new(), local_dir.clone())]);
+                while let Some((rem, rel, loc)) = queue.pop_front() {
                     let items = backend.list(&rem).await?;
                     for item in items {
-                        if item.name == "." || item.name == ".." {
+                        if item.name == "."
+                            || item.name == ".."
+                            || item.name.contains('/')
+                            || item.name.contains('\\')
+                            || item.name.contains('\0')
+                        {
                             continue;
                         }
                         let child_rem = format!("{}/{}", rem.trim_end_matches('/'), item.name);
+                        let child_rel = if rel.is_empty() {
+                            item.name.clone()
+                        } else {
+                            format!("{rel}/{}", item.name)
+                        };
                         let child_loc = loc.join(&item.name);
                         if item.is_directory {
-                            queue.push((child_rem, child_loc));
+                            dirs.push(child_loc.clone());
+                            queue.push_back((child_rem, child_rel, child_loc));
                         } else {
-                            let item_size = item.size;
-                            let rep = reporter.clone();
-                            let t_id = id_for_progress.clone();
-                            let current_base = transferred;
-                            let sink = Arc::new(move |info: ProgressInfo| {
-                                if let ProgressInfo::Progress { bytes, .. } = info {
-                                    rep.progress(&t_id, current_base + bytes, None);
-                                }
+                            files.push(PlannedFile {
+                                remote_path: child_rem,
+                                rel_path: child_rel,
+                                local_path: child_loc,
+                                size: item.size,
                             });
-                            backend
-                                .download(&child_rem, &child_loc, false, sink)
-                                .await?;
-                            let origin = crate::local_fs::provenance::Origin::for_url(
-                                &origin_base,
-                                &child_rem,
-                            );
-                            crate::local_fs::provenance::mark(&child_loc, &origin);
-                            transferred += item_size;
-                            reporter.progress(&id_for_progress, transferred, None);
                         }
                     }
                 }
+
+                let total_bytes: u64 = files
+                    .iter()
+                    .fold(0u64, |acc, file| acc.saturating_add(file.size));
+                let total_files = files.len() as u64;
+                total_out.store(total_bytes, Ordering::Relaxed);
+                reporter.progress_file(&id_for_progress, 0, Some(total_bytes), None);
+
+                for dir in dirs {
+                    tokio::fs::create_dir_all(&dir).await?;
+                }
+
+                let stage = HiddenDragStage::create(&local_dir).await?;
+                let mut transferred: u64 = 0;
+
+                for (index, planned) in files.into_iter().enumerate() {
+                    let file_info = FolderFile {
+                        number: (index + 1) as u64,
+                        count: total_files,
+                        path: planned.rel_path.clone(),
+                    };
+                    let current_base = transferred;
+                    reporter.progress_file(
+                        &id_for_progress,
+                        current_base,
+                        Some(total_bytes.max(current_base)),
+                        Some(file_info.clone()),
+                    );
+
+                    let staged_name = format!("{index}-{}", clean_file_name(&planned.rel_path));
+                    let staged_path = stage.file_path(&staged_name);
+                    let rep = reporter.clone();
+                    let t_id = id_for_progress.clone();
+                    let info_for_sink = file_info.clone();
+                    let sink = Arc::new(move |info: ProgressInfo| {
+                        if let ProgressInfo::Progress { bytes, .. } = info {
+                            let current = current_base.saturating_add(bytes);
+                            rep.progress_file(
+                                &t_id,
+                                current,
+                                Some(total_bytes.max(current)),
+                                Some(info_for_sink.clone()),
+                            );
+                        }
+                    });
+                    backend
+                        .download(&planned.remote_path, &staged_path, false, sink)
+                        .await?;
+                    let origin = crate::local_fs::provenance::Origin::for_url(
+                        &origin_base,
+                        &planned.remote_path,
+                    );
+                    crate::local_fs::provenance::mark(&staged_path, &origin);
+                    tokio::fs::rename(&staged_path, &planned.local_path).await?;
+                    let actual_size = tokio::fs::metadata(&planned.local_path)
+                        .await
+                        .map(|m| m.len())
+                        .unwrap_or(planned.size);
+                    transferred = transferred.saturating_add(actual_size);
+                    bytes_out.store(transferred, Ordering::Relaxed);
+                    reporter.progress_file(
+                        &id_for_progress,
+                        transferred,
+                        Some(total_bytes.max(transferred)),
+                        Some(file_info),
+                    );
+                }
+
+                drop(stage);
                 Ok(())
             })
         });
 
         match ctx.pool.run(transfer_id.clone(), task).await {
             Ok(()) => {
-                ctx.reporter.done(&transfer_id, 0, None);
+                let final_bytes = reported_bytes.load(Ordering::Relaxed);
+                let final_total = reported_total.load(Ordering::Relaxed).max(final_bytes);
+                ctx.reporter
+                    .done(&transfer_id, final_bytes, Some(final_total));
                 Ok(())
             }
             Err(err) => {
@@ -1157,5 +1293,33 @@ mod tests {
         assert_eq!(clean_file_name("."), "download");
         assert_eq!(clean_file_name(".."), "download");
         assert_eq!(clean_file_name("  spaced.txt  "), "spaced.txt");
+    }
+
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    async fn hidden_drag_stage_hides_artifacts_and_cleans_up_on_drop() {
+        let root =
+            std::env::temp_dir().join(format!("ftpeach-drag-stage-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&root).unwrap();
+        let stage_dir = {
+            let stage = HiddenDragStage::create(&root).await.unwrap();
+            let staged = stage.file_path("movie.mkv");
+            let sidecar = stage.file_path("movie.mkv.ftpeach-resume.json");
+            let partial = stage.file_path(".ftpeach-test.part");
+            std::fs::write(&staged, b"data").unwrap();
+            std::fs::write(&sidecar, b"{}").unwrap();
+            std::fs::write(&partial, b"part").unwrap();
+            let dir = staged.parent().unwrap().to_path_buf();
+            assert!(
+                dir.file_name()
+                    .and_then(|n| n.to_str())
+                    .is_some_and(|n| n.starts_with(".ftpeach-drag-"))
+            );
+            assert!(dir.exists());
+            dir
+        };
+        assert!(!stage_dir.exists());
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 0);
+        std::fs::remove_dir_all(&root).unwrap();
     }
 }

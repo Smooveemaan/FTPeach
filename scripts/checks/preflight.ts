@@ -187,6 +187,20 @@ async function main() {
     });
   }
 
+  if (
+    classification.requiredGates.includes('lint-test-build') ||
+    classification.requiredGates.includes('rust-test') ||
+    classification.requiredGates.includes('rust-linux')
+  ) {
+    steps.push({
+      name: 'check:duplicates',
+      command: 'npm',
+      args: ['run', 'check:duplicates'],
+      hintOnFailure:
+        'Code duplication grew above baseline. See duplication-report/*/jscpd-report.json.',
+    });
+  }
+
   // 3. Frontend TypeScript & Linting
   if (classification.requiredGates.includes('lint-test-build')) {
     steps.push({

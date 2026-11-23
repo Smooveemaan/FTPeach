@@ -964,7 +964,7 @@ nfhou3BTAtiYqzFm/Rh6t9+2OLA=
         crate::protocol::config::ConnectionConfig::for_test(&map).unwrap()
     }
 
-    fn flooding_tls() -> tokio_rustls::TlsAcceptor {
+    pub(super) fn flooding_tls() -> tokio_rustls::TlsAcceptor {
         let _ = rustls::crypto::ring::default_provider().install_default();
         let decode = |value| {
             base64::engine::general_purpose::STANDARD
@@ -2363,32 +2363,10 @@ fn only_a_final_refusal_keeps_the_control_connection() {
 }
 #[tokio::test]
 async fn upload_shutdown_error_still_reads_server_disk_full_reply() {
-    use base64::Engine;
     use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
     use tokio::net::TcpListener;
 
-    let _ = rustls::crypto::ring::default_provider().install_default();
-    const TEST_CERT_DER: &str = "MIIBszCCAVmgAwIBAgIUUg3keFcU1xXWK8BNVb1KynPulV8wCgYIKoZIzj0EAwIwJjEkMCIGA1UEAwwbUnVzdGxzIFJvYnVzdCBSb290IC0gUnVuZyAyMCAXDTc1MDEwMTAwMDAwMFoYDzQwOTYwMTAxMDAwMDAwWjAhMR8wHQYDVQQDDBZyY2dlbiBzZWxmIHNpZ25lZCBjZXJ0MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEud6w4gtZ0xbwJ3E69SSMy5TZfdIifl9L5ZY+hgEe4UiUsBWS32f6Y5NR5Jo8FO1f6o13b3+FvVHREHCGdvppL6NoMGYwFQYDVR0RBA4wDIIKZm9vYmFyLmNvbTAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwHQYDVR0OBBYEFELvxbj5tD75n4pYFvJyr+c8qVEiMA8GA1UdEwEB/wQFMAMBAQAwCgYIKoZIzj0EAwIDSAAwRQIhALxSSdUsrRFnwNMu/doBqI8i8u5HdohVAheFTDwObkOMAiASSjULUtkWSD15u/7Sr01Wm9J1MpqW1pobBVqU3CNRlA==";
-    const TEST_KEY_DER: &str = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgTbAQpfjAT46fgF4BmP15n37woNG5ZNJmwcqsred/7tmhRANCAAS53rDiC1nTFvAncTr1JIzLlNl90iJ+X0vllj6GAR7hSJSwFZLfZ/pjk1HkmjwU7V/qjXdvf4W9UdEQcIZ2+mkv";
-    let decode = |value| {
-        base64::engine::general_purpose::STANDARD
-            .decode(value)
-            .unwrap()
-    };
-    let cert = rustls_pki_types::CertificateDer::from(decode(TEST_CERT_DER));
-    let key = rustls_pki_types::PrivateKeyDer::Pkcs8(
-        rustls_pki_types::PrivateKeyDer::from(rustls_pki_types::PrivatePkcs8KeyDer::from(decode(
-            TEST_KEY_DER,
-        )))
-        .secret_der()
-        .to_vec()
-        .into(),
-    );
-    let tls = rustls::ServerConfig::builder_with_protocol_versions(&[&rustls::version::TLS12])
-        .with_no_client_auth()
-        .with_single_cert(vec![cert], key)
-        .unwrap();
-    let acceptor = tokio_rustls::TlsAcceptor::from(Arc::new(tls));
+    let acceptor = local_integration_tests::flooding_tls();
 
     let control_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let control_port = control_listener.local_addr().unwrap().port();

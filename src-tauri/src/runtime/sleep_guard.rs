@@ -5,6 +5,10 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, mpsc};
 
+const APP_NAME: &str = "FTPeach";
+const APP_ID: &str = "com.smooveemaan.ftpeach";
+const INHIBIT_REASON: &str = "File transfers in progress";
+
 struct Inner {
     active: usize,
     enabled: bool,
@@ -77,13 +81,215 @@ impl SleepGuard {
     }
 }
 
+#[cfg(not(target_os = "linux"))]
 fn create_inhibitor() -> anyhow::Result<keepawake::KeepAwake> {
     Ok(keepawake::Builder::default()
         .idle(true)
-        .reason("File transfers in progress")
-        .app_name("FTPeach")
-        .app_reverse_domain("com.smooveemaan.ftpeach")
+        .reason(INHIBIT_REASON)
+        .app_name(APP_NAME)
+        .app_reverse_domain(APP_ID)
         .create()?)
+}
+
+#[cfg(target_os = "linux")]
+fn create_inhibitor() -> anyhow::Result<linux::LinuxInhibitor> {
+    linux::create_inhibitor()
+}
+
+#[cfg(any(target_os = "linux", test))]
+type BackendAttempt<'a, T> = (&'static str, &'a dyn Fn() -> anyhow::Result<T>);
+
+#[cfg(any(target_os = "linux", test))]
+fn try_in_order<T>(backends: &[BackendAttempt<'_, T>]) -> anyhow::Result<T> {
+    let mut errors = Vec::new();
+    for (name, attempt) in backends {
+        match attempt() {
+            Ok(guard) => return Ok(guard),
+            Err(error) => errors.push(format!("{name}: {error}")),
+        }
+    }
+    anyhow::bail!("{}", errors.join("; "))
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn combine_inhibitors<S, L>(
+    session: anyhow::Result<S>,
+    logind: anyhow::Result<L>,
+) -> anyhow::Result<(Option<S>, Option<L>)> {
+    match (session, logind) {
+        (Ok(session), Ok(logind)) => Ok((Some(session), Some(logind))),
+        (Ok(session), Err(error)) => {
+            log::debug!(
+                "System idle inhibitor unavailable; using desktop session inhibitor: {error}"
+            );
+            Ok((Some(session), None))
+        }
+        (Err(error), Ok(logind)) => {
+            log::debug!(
+                "Desktop session suspend inhibitor unavailable; using systemd-logind idle inhibitor: {error}"
+            );
+            Ok((None, Some(logind)))
+        }
+        (Err(session_error), Err(logind_error)) => {
+            anyhow::bail!("session: {session_error}; logind: {logind_error}")
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+mod linux {
+    use super::{APP_ID, APP_NAME, INHIBIT_REASON, combine_inhibitors, try_in_order};
+    use dbus::arg::Variant;
+    use dbus::blocking::Connection;
+    use std::collections::HashMap;
+    use std::time::Duration;
+
+    const DBUS_TIMEOUT: Duration = Duration::from_secs(2);
+    // Flag 4 = INHIBIT_SUSPEND on both org.gnome.SessionManager and
+    // org.freedesktop.portal.Inhibit (blocks auto-suspend while allowing
+    // the display to turn off).
+    const INHIBIT_SUSPEND: u32 = 4;
+
+    pub(super) struct LinuxInhibitor {
+        _session: Option<SessionInhibitor>,
+        _logind: Option<keepawake::KeepAwake>,
+    }
+
+    enum SessionRelease {
+        Gnome(u32),
+        PowerManagement(u32),
+        Portal(dbus::Path<'static>),
+    }
+
+    struct SessionInhibitor {
+        connection: Connection,
+        release: SessionRelease,
+    }
+
+    impl Drop for SessionInhibitor {
+        fn drop(&mut self) {
+            match &self.release {
+                SessionRelease::Gnome(cookie) => {
+                    let proxy = self.connection.with_proxy(
+                        "org.gnome.SessionManager",
+                        "/org/gnome/SessionManager",
+                        DBUS_TIMEOUT,
+                    );
+                    let _ = proxy.method_call::<(), _, _, _>(
+                        "org.gnome.SessionManager",
+                        "Uninhibit",
+                        (*cookie,),
+                    );
+                }
+                SessionRelease::PowerManagement(cookie) => {
+                    let proxy = self.connection.with_proxy(
+                        "org.freedesktop.PowerManagement.Inhibit",
+                        "/org/freedesktop/PowerManagement/Inhibit",
+                        DBUS_TIMEOUT,
+                    );
+                    let _ = proxy.method_call::<(), _, _, _>(
+                        "org.freedesktop.PowerManagement.Inhibit",
+                        "UnInhibit",
+                        (*cookie,),
+                    );
+                }
+                SessionRelease::Portal(handle) => {
+                    let proxy = self.connection.with_proxy(
+                        "org.freedesktop.portal.Desktop",
+                        &**handle,
+                        DBUS_TIMEOUT,
+                    );
+                    let _ = proxy.method_call::<(), _, _, _>(
+                        "org.freedesktop.portal.Request",
+                        "Close",
+                        (),
+                    );
+                }
+            }
+        }
+    }
+
+    fn inhibit_gnome(connection: &Connection) -> anyhow::Result<SessionRelease> {
+        let proxy = connection.with_proxy(
+            "org.gnome.SessionManager",
+            "/org/gnome/SessionManager",
+            DBUS_TIMEOUT,
+        );
+        let (cookie,): (u32,) = proxy.method_call(
+            "org.gnome.SessionManager",
+            "Inhibit",
+            (APP_ID, 0u32, INHIBIT_REASON, INHIBIT_SUSPEND),
+        )?;
+        Ok(SessionRelease::Gnome(cookie))
+    }
+
+    fn inhibit_power_management(connection: &Connection) -> anyhow::Result<SessionRelease> {
+        let proxy = connection.with_proxy(
+            "org.freedesktop.PowerManagement.Inhibit",
+            "/org/freedesktop/PowerManagement/Inhibit",
+            DBUS_TIMEOUT,
+        );
+        let (cookie,): (u32,) = proxy.method_call(
+            "org.freedesktop.PowerManagement.Inhibit",
+            "Inhibit",
+            (APP_NAME, INHIBIT_REASON),
+        )?;
+        Ok(SessionRelease::PowerManagement(cookie))
+    }
+
+    fn inhibit_portal(connection: &Connection) -> anyhow::Result<SessionRelease> {
+        let proxy = connection.with_proxy(
+            "org.freedesktop.portal.Desktop",
+            "/org/freedesktop/portal/desktop",
+            DBUS_TIMEOUT,
+        );
+        let mut options: HashMap<&str, Variant<&str>> = HashMap::new();
+        options.insert("reason", Variant(INHIBIT_REASON));
+        let (handle,): (dbus::Path<'static>,) = proxy.method_call(
+            "org.freedesktop.portal.Inhibit",
+            "Inhibit",
+            ("", INHIBIT_SUSPEND, options),
+        )?;
+        Ok(SessionRelease::Portal(handle))
+    }
+
+    fn create_session_inhibitor() -> anyhow::Result<SessionInhibitor> {
+        // GNOME (gsd-power) and KDE (PowerDevil) ignore systemd-logind's "idle"
+        // lock for desktop auto-suspend, so we also register a suspend inhibitor
+        // on the user session bus. Keeping this connection open ensures the
+        // inhibitor stays active and is automatically released if the process exits.
+        let connection = Connection::new_session()?;
+        let gnome = || inhibit_gnome(&connection);
+        let power_management = || inhibit_power_management(&connection);
+        let portal = || inhibit_portal(&connection);
+        let release = try_in_order(&[
+            ("org.gnome.SessionManager", &gnome),
+            ("org.freedesktop.PowerManagement.Inhibit", &power_management),
+            ("org.freedesktop.portal.Inhibit", &portal),
+        ])?;
+        Ok(SessionInhibitor {
+            connection,
+            release,
+        })
+    }
+
+    fn create_logind_inhibitor() -> anyhow::Result<keepawake::KeepAwake> {
+        Ok(keepawake::Builder::default()
+            .idle(true)
+            .reason(INHIBIT_REASON)
+            .app_name(APP_NAME)
+            .app_reverse_domain(APP_ID)
+            .create()?)
+    }
+
+    pub(super) fn create_inhibitor() -> anyhow::Result<LinuxInhibitor> {
+        let (session, logind) =
+            combine_inhibitors(create_session_inhibitor(), create_logind_inhibitor())?;
+        Ok(LinuxInhibitor {
+            _session: session,
+            _logind: logind,
+        })
+    }
 }
 
 fn run_worker<T>(
@@ -259,5 +465,59 @@ mod tests {
             Ok(())
         });
         assert_eq!(attempts, 0);
+    }
+
+    #[test]
+    fn try_in_order_stops_at_the_first_working_backend_and_reports_all_failures() {
+        let calls = Mutex::new(Vec::new());
+        let first = || {
+            calls.lock().unwrap().push("gnome");
+            anyhow::bail!("ServiceUnknown")
+        };
+        let second = || {
+            calls.lock().unwrap().push("power-management");
+            Ok("kde-cookie")
+        };
+        let third = || {
+            calls.lock().unwrap().push("portal");
+            Ok("portal-handle")
+        };
+        let selected = try_in_order(&[
+            ("gnome", &first),
+            ("power-management", &second),
+            ("portal", &third),
+        ])
+        .unwrap();
+        assert_eq!(selected, "kde-cookie");
+        assert_eq!(*calls.lock().unwrap(), vec!["gnome", "power-management"]);
+
+        let fail_a = || -> anyhow::Result<&str> { anyhow::bail!("missing A") };
+        let fail_b = || -> anyhow::Result<&str> { anyhow::bail!("missing B") };
+        let error = try_in_order(&[("a", &fail_a), ("b", &fail_b)]).unwrap_err();
+        assert_eq!(error.to_string(), "a: missing A; b: missing B");
+    }
+
+    #[test]
+    fn combine_inhibitors_succeeds_if_either_backend_succeeds_and_fails_only_when_both_fail() {
+        assert_eq!(
+            combine_inhibitors(Ok("session"), Ok("logind")).unwrap(),
+            (Some("session"), Some("logind"))
+        );
+        assert_eq!(
+            combine_inhibitors::<&str, &str>(Ok("session"), Err(anyhow::anyhow!("no logind")))
+                .unwrap(),
+            (Some("session"), None)
+        );
+        assert_eq!(
+            combine_inhibitors::<&str, &str>(Err(anyhow::anyhow!("no session")), Ok("logind"))
+                .unwrap(),
+            (None, Some("logind"))
+        );
+        let error = combine_inhibitors::<&str, &str>(
+            Err(anyhow::anyhow!("no session")),
+            Err(anyhow::anyhow!("no logind")),
+        )
+        .unwrap_err();
+        assert_eq!(error.to_string(), "session: no session; logind: no logind");
     }
 }

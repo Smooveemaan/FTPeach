@@ -74,10 +74,10 @@ import the headless part without JSX. `npm run lint` enforces the import rules.
 ### Sleep prevention (in development)
 
 `runtime/sleep_guard.rs` counts running transfer-pool tasks across connections.
-When `preventSleepDuringTransfers` is enabled, the first task requests one
-`keepawake` idle-sleep inhibitor; the last task releases it. Changing the
-preference during a transfer releases or reacquires it without changing the
-active count. Queued tasks alone do not hold an inhibitor.
+When `preventSleepDuringTransfers` is enabled, the first task requests an
+idle-sleep inhibitor; the last task releases it. Changing the preference during
+a transfer releases or reacquires it without changing the active count. Queued
+tasks alone do not hold an inhibitor.
 
 One dedicated thread owns creation and release, because Windows execution state
 belongs to the calling thread and Linux uses blocking D-Bus calls. Requests
@@ -85,15 +85,17 @@ use one bounded wakeup slot and a shared latest-state flag, so a slow power
 service neither blocks transfers nor grows a request queue. The options
 request idle-system-sleep prevention only: the display may turn off, and explicit
 sleep or closing the lid is subject to the operating system's policy. On Linux,
-`keepawake` requires the system D-Bus and `org.freedesktop.login1` idle-inhibition
-service; desktop power managers may apply their own policy. Acquisition failures
-are logged and do not fail transfers. The next acquisition request tries again.
+the worker requests a desktop-session suspend inhibitor (`org.gnome.SessionManager`,
+`org.freedesktop.PowerManagement.Inhibit`, or `org.freedesktop.portal.Inhibit`,
+in that order) alongside `keepawake`'s `org.freedesktop.login1` idle lock,
+succeeding if either is available. Acquisition failures are logged and do not
+fail transfers. The next acquisition request tries again.
 
 Tests in `runtime::sleep_guard::tests` check concurrent transfers, live preference
 changes, creation/release on one worker thread, release on worker shutdown,
-recovery after an acquisition error, and bounded notification coalescing under
-load. Actual power-manager behavior still needs native acceptance on each
-platform before release.
+recovery after an acquisition error, Linux backend fallback/combination, and
+bounded notification coalescing under load. Actual power-manager behavior still
+needs native acceptance on each platform before release.
 
 ### Module responsibilities
 

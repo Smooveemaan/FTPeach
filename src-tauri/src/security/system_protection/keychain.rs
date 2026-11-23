@@ -32,46 +32,65 @@ fn load_key(entry: &keyring::Entry, create: bool) -> Result<Zeroizing<Vec<u8>>> 
     Ok(key)
 }
 
+fn load_or_cache_key(
+    cache: &mut Option<Zeroizing<Vec<u8>>>,
+    create: bool,
+    load: impl FnOnce(bool) -> Result<Zeroizing<Vec<u8>>>,
+) -> Result<&[u8]> {
+    if cache.is_none() {
+        *cache = Some(load(create)?);
+    }
+    Ok(cache
+        .as_deref()
+        .expect("system protection key cache populated"))
+}
+
 fn with_key<T>(create: bool, operation: impl FnOnce(&[u8]) -> Result<T>) -> Result<T> {
-    // Serialize first-use creation and reads across every store in this process.
-    static ACCESS: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    let _guard = ACCESS
+    // Serialize first-use creation and reads across every store in this process,
+    // and retain the loaded key in memory so multi-secret migrations and later
+    // connects ask the OS keychain at most once per process.
+    static CACHE: std::sync::Mutex<Option<Zeroizing<Vec<u8>>>> = std::sync::Mutex::new(None);
+    let mut cache = CACHE
         .lock()
         .map_err(|_| anyhow!("system protection unavailable"))?;
-    #[cfg(not(test))]
-    let identifier = crate::app_config::identifier();
-    // Separate desktop sessions can bypass the application's single-instance lock.
-    #[cfg(not(test))]
-    let _account_lock = {
-        let directory = dirs::data_dir()
-            .context("system protection data directory unavailable")?
-            .join(&identifier);
-        std::fs::create_dir_all(&directory)?;
-        let lock = std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .open(directory.join("system-protection.lock"))?;
-        lock.lock()
-            .context("locking system protection key access")?;
-        lock
-    };
-    #[cfg(not(test))]
-    let entry = &keyring::Entry::new(&identifier, "system-protection-v1")?;
-    // Unit tests must neither prompt nor change the signed-in user's keychain.
-    #[cfg(test)]
-    let entry = {
-        use std::sync::OnceLock;
-        static ENTRY: OnceLock<keyring::Entry> = OnceLock::new();
-        ENTRY.get_or_init(|| {
-            keyring::Entry::new_with_credential(Box::new(keyring::mock::MockCredential::default()))
-        })
-    };
-    let key = load_key(entry, create).context(
-        "System password storage is unavailable. Set up a master password in Security settings",
-    )?;
-    operation(&key)
+    let key = load_or_cache_key(&mut cache, create, |create| {
+        #[cfg(not(test))]
+        let identifier = crate::app_config::identifier();
+        // Separate desktop sessions can bypass the application's single-instance lock.
+        #[cfg(not(test))]
+        let _account_lock = {
+            let directory = dirs::data_dir()
+                .context("system protection data directory unavailable")?
+                .join(&identifier);
+            std::fs::create_dir_all(&directory)?;
+            let lock = std::fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .truncate(false)
+                .open(directory.join("system-protection.lock"))?;
+            lock.lock()
+                .context("locking system protection key access")?;
+            lock
+        };
+        #[cfg(not(test))]
+        let entry = &keyring::Entry::new(&identifier, "system-protection-v1")?;
+        // Unit tests must neither prompt nor change the signed-in user's keychain.
+        #[cfg(test)]
+        let entry = {
+            use std::sync::OnceLock;
+            static ENTRY: OnceLock<keyring::Entry> = OnceLock::new();
+            ENTRY.get_or_init(|| {
+                keyring::Entry::new_with_credential(Box::new(
+                    keyring::mock::MockCredential::default(),
+                ))
+            })
+        };
+        load_key(entry, create).context(
+            "System password storage is unavailable. Set up a master password in Security settings",
+        )
+    })?;
+    operation(key)
 }
 
 /// Seals a saved field with the account's system-held key.
@@ -178,6 +197,44 @@ mod tests {
             assert!(load_key(&entry, create).is_err());
             assert_eq!(entry.get_secret().unwrap(), [9; 32]);
         }
+    }
+
+    #[test]
+    fn key_cache_loads_once_and_does_not_cache_failures() {
+        let mut cache = None;
+        let mut loads = 0;
+
+        let denied = load_or_cache_key(&mut cache, false, |_| {
+            loads += 1;
+            anyhow::bail!("keychain denied")
+        });
+        assert!(denied.is_err());
+        assert_eq!(loads, 1);
+        assert!(cache.is_none());
+
+        let first = load_or_cache_key(&mut cache, true, |_| {
+            loads += 1;
+            Ok(Zeroizing::new(vec![5; 32]))
+        })
+        .unwrap()
+        .to_vec();
+        let second = load_or_cache_key(&mut cache, false, |_| {
+            loads += 1;
+            Ok(Zeroizing::new(vec![6; 32]))
+        })
+        .unwrap()
+        .to_vec();
+        let third = load_or_cache_key(&mut cache, true, |_| {
+            loads += 1;
+            Ok(Zeroizing::new(vec![7; 32]))
+        })
+        .unwrap()
+        .to_vec();
+
+        assert_eq!(loads, 2);
+        assert_eq!(first, vec![5; 32]);
+        assert_eq!(second, vec![5; 32]);
+        assert_eq!(third, vec![5; 32]);
     }
 
     #[test]

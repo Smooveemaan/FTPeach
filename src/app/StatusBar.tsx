@@ -129,13 +129,16 @@ export default function StatusBar({
             ) : (
               <>
                 {fitLevel >= FIT.quitShort ? (
-                  <span data-tooltip={quitLabel}>
+                  <span className="status-quit-label" data-tooltip={quitLabel}>
                     <span className="visually-hidden">{quitLabel}</span>
                     <span aria-hidden="true">{t('statusBar.quitPendingShort')}</span>
                   </span>
                 ) : (
-                  quitLabel
+                  <span className="status-quit-label">{quitLabel}</span>
                 )}
+                <span className="status-quit-sep" aria-hidden="true">
+                  ·
+                </span>
                 <button
                   type="button"
                   className="status-update-action"

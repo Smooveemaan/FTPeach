@@ -396,6 +396,8 @@
   opacity: 0.5;
 }
 
+/* WKWebView keeps :hover frozen when focus moves to another app (e.g. Show in Finder). */
+body.window-blurred .row:hover:not(.selected),
 body.drag-move-active .row:hover:not(.selected),
 body.native-drag-active .row:hover:not(.selected) {
   background: none;

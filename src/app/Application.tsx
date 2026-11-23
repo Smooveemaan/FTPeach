@@ -54,6 +54,20 @@ import type { PaneId } from '../shared/paneContracts.ts';
 export default function Application() {
   const { t } = useTranslation();
 
+  useEffect(() => {
+    const syncFocus = () => document.body.classList.toggle('window-blurred', !document.hasFocus());
+    const onBlur = () => document.body.classList.add('window-blurred');
+    const onFocus = () => document.body.classList.remove('window-blurred');
+    syncFocus();
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+      document.body.classList.remove('window-blurred');
+    };
+  }, []);
+
   const { errorMessages, setErrorMessage, reportError, withdrawError, dismissError } =
     useApplicationError();
   const dialogs = useAppDialogs();

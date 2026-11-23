@@ -107,3 +107,30 @@ test('a message fades the status out, takes its place, and fades it back in', ()
   finishFade();
   expect(bar().className).toBe('status-bar');
 });
+
+test('quitPending separates its status label from the Cancel button with a bullet', () => {
+  const onCancel = vi.fn();
+  const { container } = render(
+    <StatusBar
+      status={{} as never}
+      paneOrientation="horizontal"
+      leftCount={0}
+      rightCount={0}
+      leftSelectedCount={0}
+      rightSelectedCount={0}
+      syncBrowsing={false}
+      connectionVisualState="idle"
+      logLineCount={0}
+      hasActiveTransfers={true}
+      activeTransfersCount={1}
+      hasPausedTransfers={false}
+      quitPending={{ onCancel }}
+    />,
+  );
+  const label = container.querySelector('.status-quit-label');
+  const sep = container.querySelector('.status-quit-sep');
+  expect(label?.textContent).toBe('statusBar.quitPending');
+  expect(sep?.textContent).toBe('·');
+  fireEvent.click(screen.getByRole('button', { name: 'statusBar.cancelQuit' }));
+  expect(onCancel).toHaveBeenCalledOnce();
+});

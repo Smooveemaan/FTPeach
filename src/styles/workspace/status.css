@@ -103,6 +103,12 @@
   content: '·';
   opacity: 0.6;
 }
+.status-quit-label {
+  color: var(--text-secondary);
+}
+.status-quit-sep {
+  opacity: 0.5;
+}
 .status-update-action {
   border: 0;
   padding: 0;

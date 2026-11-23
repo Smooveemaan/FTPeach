@@ -23,7 +23,7 @@
     iis_webdav    http://127.0.0.1:18180/ Basic authentication
   Passive data ports: 32000-32009. Account: ftpeach_test / FTPeach-test-2026!
   Fixtures follow seed/seed.py; the certificate is exported to
-  C:\ftpeach-test-servers\iis\cert.pem for the client's caCertPath.
+  C:\Dev\ftpeach-test-servers\iis\cert.pem for the client's caCertPath.
   (Windows Server password policy rejects the "testpass" used elsewhere.)
 #>
 [CmdletBinding()]
@@ -43,8 +43,8 @@ if ($PSVersionTable.PSEdition -eq 'Core') {
   exit $LASTEXITCODE
 }
 
-$Root = 'C:\ftpeach-test-servers\iis'
-$StateFile = 'C:\ftpeach-test-servers\iis-state.json'
+$Root = 'C:\Dev\ftpeach-test-servers\iis'
+$StateFile = 'C:\Dev\ftpeach-test-servers\iis-state.json'
 $UserName = 'ftpeach_test'
 $Password = 'FTPeach-test-2026!'
 $CertName = 'FTPeach IIS test certificate'

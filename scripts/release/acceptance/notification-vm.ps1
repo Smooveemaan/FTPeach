@@ -147,7 +147,7 @@ try {
   $sites = @{ schemaVersion = 1; data = @(@{ id = 'acceptance-ftp'; name = 'Acceptance FTP'; protocol = 'ftp'; host = '127.0.0.1'; port = 2121; user = 'ftpeach_test'; plain = 'FTPeach-test-2026!' }) }
   [IO.File]::WriteAllText((Join-Path $data 'settings.json'), ($settings | ConvertTo-Json -Depth 5))
   [IO.File]::WriteAllText((Join-Path $data 'sites.json'), ($sites | ConvertTo-Json -Depth 5))
-  $remoteRoot = 'C:\ftpeach-test-servers\iis\FTPeachTestFtp'
+  $remoteRoot = 'C:\Dev\ftpeach-test-servers\iis\FTPeachTestFtp'
   $app = Start-Process (Join-Path $appDir 'FTPeach.exe') -WindowStyle Normal -PassThru
   $appWindow = (Invoke-Native @('window', $app.Id, 'FTPeach')).handle
   $stage = 'notification policy'

@@ -11,7 +11,7 @@ $app = $null
 $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $identityKey = 'HKCU:\Software\Classes\AppUserModelId\com.smooveemaan.ftpeach'
 $profilePaths = @((Join-Path $env:APPDATA 'FTPeach'), (Join-Path $env:LOCALAPPDATA 'FTPeach'), (Join-Path $env:LOCALAPPDATA 'com.smooveemaan.ftpeach'))
-$remote = 'C:\ftpeach-test-servers\iis\FTPeachTestFtp\acceptance-upload.txt'
+$remote = 'C:\Dev\ftpeach-test-servers\iis\FTPeachTestFtp\acceptance-upload.txt'
 $ownsRemote = $false
 
 function Wait-Until([scriptblock]$Probe, [string]$What, [int]$Seconds = 30) {

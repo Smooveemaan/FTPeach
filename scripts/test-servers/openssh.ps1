@@ -15,11 +15,11 @@
   status     show the service and the listening port
 
   The server: sftp://127.0.0.1:2223, account ftpeach_test / FTPeach-test-2026!,
-  a password or the key C:\ftpeach-test-servers\openssh\client_ed25519 (the
+  a password or the key C:\Dev\ftpeach-test-servers\openssh\client_ed25519 (the
   only authorized key, made by install), SFTP only, jailed in
-  C:\ftpeach-test-servers\openssh\root. It is a separate service
+  C:\Dev\ftpeach-test-servers\openssh\root. It is a separate service
   (FTPeachTestSshd) with its own configuration, so a machine's own sshd is left
-  alone. The host's public key is C:\ftpeach-test-servers\openssh\ssh_host_ed25519_key.pub.
+  alone. The host's public key is C:\Dev\ftpeach-test-servers\openssh\ssh_host_ed25519_key.pub.
   The log is C:\ProgramData\ssh\logs\sshd.log.
 #>
 [CmdletBinding()]
@@ -39,13 +39,13 @@ if ($PSVersionTable.PSEdition -eq 'Core') {
   exit $LASTEXITCODE
 }
 
-$Root = 'C:\ftpeach-test-servers\openssh'
+$Root = 'C:\Dev\ftpeach-test-servers\openssh'
 $Jail = Join-Path $Root 'root'
 $HostKey = Join-Path $Root 'ssh_host_ed25519_key'
 $Config = Join-Path $Root 'sshd_config'
 $ClientKey = Join-Path $Root 'client_ed25519'
 $AuthorizedKeys = Join-Path $Root 'authorized_keys'
-$StateFile = 'C:\ftpeach-test-servers\openssh-state.json'
+$StateFile = 'C:\Dev\ftpeach-test-servers\openssh-state.json'
 $Service = 'FTPeachTestSshd'
 $Port = 2223
 $UserName = 'ftpeach_test'

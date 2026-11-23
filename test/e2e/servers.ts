@@ -11,7 +11,7 @@ export const ftpServer: Server = {
   port: process.env.FTPEACH_E2E_FTP_PORT ?? '2121',
   user: process.env.FTPEACH_E2E_FTP_USER ?? 'ftpeach_test',
   password: process.env.FTPEACH_E2E_FTP_PASSWORD ?? 'FTPeach-test-2026!',
-  root: process.env.FTPEACH_E2E_FTP_ROOT ?? 'C:\\ftpeach-test-servers\\iis\\FTPeachTestFtp',
+  root: process.env.FTPEACH_E2E_FTP_ROOT ?? 'C:\\Dev\\ftpeach-test-servers\\iis\\FTPeachTestFtp',
 };
 
 export const sftpServer: Server = {
@@ -20,12 +20,12 @@ export const sftpServer: Server = {
   port: process.env.FTPEACH_E2E_SFTP_PORT ?? '2223',
   user: process.env.FTPEACH_E2E_SFTP_USER ?? 'ftpeach_test',
   password: process.env.FTPEACH_E2E_SFTP_PASSWORD ?? 'FTPeach-test-2026!',
-  root: process.env.FTPEACH_E2E_SFTP_ROOT ?? 'C:\\ftpeach-test-servers\\openssh\\root',
+  root: process.env.FTPEACH_E2E_SFTP_ROOT ?? 'C:\\Dev\\ftpeach-test-servers\\openssh\\root',
 };
 /** The SFTP server's public host key file. */
 const hostKeyFile =
   process.env.FTPEACH_E2E_SFTP_HOST_KEY ??
-  'C:\\ftpeach-test-servers\\openssh\\ssh_host_ed25519_key.pub';
+  'C:\\Dev\\ftpeach-test-servers\\openssh\\ssh_host_ed25519_key.pub';
 
 /** The fingerprint FTPeach shows: SHA-256 of the key blob, in lowercase hex. */
 export function hostKeyFingerprint() {

@@ -62,10 +62,6 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     app_log::record_panics();
     app_log::start(app.handle());
     #[cfg(target_os = "linux")]
-    if let Some(reason) = super::linux_graphics::disabled_compositing_reason() {
-        log::info!("linux graphics: disabled WebKitGTK compositing mode ({reason})");
-    }
-    #[cfg(target_os = "linux")]
     super::system_theme::start(app.handle().clone());
     // Windows installs ahead of the tray and visible window. Unix checks the
     // saved update asynchronously so an unavailable server cannot block startup.

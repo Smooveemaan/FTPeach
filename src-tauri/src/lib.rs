@@ -52,9 +52,6 @@ use store::Store;
 use tauri::Manager;
 
 pub fn run() {
-    #[cfg(target_os = "linux")]
-    runtime::linux_graphics::configure_webkit_compositing();
-
     rustls::crypto::ring::default_provider()
         .install_default()
         .expect("installing the default rustls CryptoProvider should only run once, at startup");

@@ -3,8 +3,6 @@ pub(crate) mod app_menu;
 #[cfg(windows)]
 pub(crate) mod browser_keys;
 pub(crate) mod dock;
-#[cfg(any(target_os = "linux", test))]
-pub(crate) mod linux_graphics;
 #[cfg(target_os = "linux")]
 pub(crate) mod linux_window_frame;
 pub(crate) mod log_emitter;

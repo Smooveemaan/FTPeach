@@ -12,9 +12,46 @@ pub(super) struct Walk<'a> {
     pub(super) observer: Option<&'a DeliveryObserver>,
 }
 
-/// How a target name is compared: Windows names ignore case.
-fn target_key(intent: &Intent, relative: &str) -> String {
-    if cfg!(windows) && matches!(intent.target, Endpoint::Local { .. }) {
+/// Whether a local target treats names differing only in case as one file.
+fn target_ignores_case(target: &Endpoint) -> bool {
+    let Endpoint::Local { path } = target else {
+        return false;
+    };
+    #[cfg(windows)]
+    {
+        let _ = path;
+        true
+    }
+    #[cfg(target_os = "macos")]
+    {
+        use std::ffi::CString;
+        use std::os::unix::ffi::OsStrExt;
+        for ancestor in Path::new(path).ancestors() {
+            let bytes = if ancestor.as_os_str().is_empty() {
+                b".".as_slice()
+            } else {
+                ancestor.as_os_str().as_bytes()
+            };
+            let Ok(raw) = CString::new(bytes) else {
+                continue;
+            };
+            // SAFETY: `raw` is a NUL-terminated path passed to POSIX `pathconf`.
+            let value = unsafe { libc::pathconf(raw.as_ptr(), libc::_PC_CASE_SENSITIVE) };
+            if value >= 0 {
+                return value == 0;
+            }
+        }
+        true
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
+    {
+        let _ = path;
+        false
+    }
+}
+
+fn target_key(fold_case: bool, relative: &str) -> String {
+    if fold_case {
         relative.to_lowercase()
     } else {
         relative.to_owned()
@@ -39,6 +76,7 @@ pub(super) async fn make_directories(
         ..
     } = *walk;
     let note_existing = intent.overwrite || intent.skip_existing;
+    let fold_case = note_existing && target_ignores_case(&intent.target);
     let mut existing_targets = HashSet::new();
     let mut conflict_bytes = 0usize;
     // Folders this attempt made: one an earlier attempt made may already hold more.
@@ -96,7 +134,7 @@ pub(super) async fn make_directories(
                     conflict_bytes <= self::manifest::MAX_MANIFEST_BYTES,
                     "Destination conflict manifest exceeds memory budget"
                 );
-                existing_targets.insert(target_key(intent, &relative));
+                existing_targets.insert(target_key(fold_case, &relative));
                 anyhow::ensure!(
                     existing_targets.len() <= self::manifest::MAX_ENTRIES,
                     "Destination conflict manifest exceeds entry budget"
@@ -125,6 +163,7 @@ pub(super) async fn copy_files(
         token,
         ..
     } = *walk;
+    let fold_case = !existing_targets.is_empty() && target_ignores_case(&intent.target);
     let delivered = |journal: &Journal, entry: &Entry| {
         journal
             .done
@@ -210,7 +249,7 @@ pub(super) async fn copy_files(
         // A receipt check cannot make a later unconditional rename safe
         // against external writers; never silently broaden consent.
         let ours = journal.created_files.contains(&entry.relative);
-        let existed = !ours && existing_targets.contains(&target_key(intent, &entry.relative));
+        let existed = !ours && existing_targets.contains(&target_key(fold_case, &entry.relative));
         if intent.skip_existing && existed {
             report.skipped += 1;
             continue;

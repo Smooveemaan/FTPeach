@@ -1,6 +1,21 @@
 use super::*;
 
 #[cfg(unix)]
+fn is_case_sensitive(dir: &Path) -> bool {
+    let lower = dir.join(".case-probe");
+    let upper = dir.join(".CASE-PROBE");
+    std::fs::write(&lower, b"").unwrap();
+    let sensitive = std::fs::File::options()
+        .write(true)
+        .create_new(true)
+        .open(&upper)
+        .is_ok();
+    let _ = std::fs::remove_file(lower);
+    let _ = std::fs::remove_file(upper);
+    sensitive
+}
+
+#[cfg(unix)]
 #[tokio::test]
 async fn unix_skip_existing_keeps_case_distinct_files_separate() {
     let (root, mut intent) = fixture();
@@ -11,12 +26,21 @@ async fn unix_skip_existing_keeps_case_distinct_files_separate() {
     std::fs::write(root.join("target/Case"), b"existing").unwrap();
     let report = run(&Sessions::default(), None, intent).await;
     assert!(report.ok, "{:?}", report.errors);
-    assert_eq!(report.skipped, 0);
-    assert_eq!(std::fs::read(root.join("target/case")).unwrap(), b"new");
-    assert_eq!(
-        std::fs::read(root.join("target/Case")).unwrap(),
-        b"existing"
-    );
+    if is_case_sensitive(&root) {
+        assert_eq!(report.skipped, 0);
+        assert_eq!(std::fs::read(root.join("target/case")).unwrap(), b"new");
+        assert_eq!(
+            std::fs::read(root.join("target/Case")).unwrap(),
+            b"existing"
+        );
+    } else {
+        // Case-insensitive volumes (default APFS on macOS) treat Case and case as one file.
+        assert_eq!(report.skipped, 1);
+        assert_eq!(
+            std::fs::read(root.join("target/Case")).unwrap(),
+            b"existing"
+        );
+    }
     std::fs::remove_dir_all(root).unwrap();
 }
 
@@ -54,20 +78,17 @@ async fn unix_copy_and_move_preserve_backslash_cr_lf_and_case_distinct_names() {
     for moving in [false, true] {
         let (root, mut intent) = fixture();
         intent.moving = moving;
-        let names = [
-            "back\\slash",
-            "carriage\rreturn",
-            "line\nfeed",
-            "Case",
-            "case",
-        ];
-        for name in names {
+        let mut names = vec!["back\\slash", "carriage\rreturn", "line\nfeed", "Case"];
+        if is_case_sensitive(&root) {
+            names.push("case");
+        }
+        for name in &names {
             std::fs::create_dir(root.join("source").join(name)).unwrap();
             std::fs::write(root.join("source").join(name).join(name), name.as_bytes()).unwrap();
         }
         let report = run(&Sessions::default(), None, intent).await;
         assert!(report.ok, "{:?}", report.errors);
-        for name in names {
+        for name in &names {
             assert_eq!(
                 std::fs::read(root.join("target").join(name).join(name)).unwrap(),
                 name.as_bytes()

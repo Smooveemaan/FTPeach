@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Active transfers show their speed when progress updates arrive two or more seconds apart.
 - Stopped transfers keep their last progress percentage, or show 0% when the total size is unknown.
 - Retrying a stopped folder transfer checks for conflicts with files already at the destination.
+- FTP uploads that run out of space on the server report a full disk instead of a lost connection.
 - Switching an unlocked vault to system protection keeps the confirmation without asking for the master password again.
 - Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Files dragged out of FTPeach can be brought back into its panes during the same drag.
@@ -38,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Clicking any button or control dismisses open tooltips immediately.
 - Right-clicking in FTPeach shows only the application's own context menus.
 - Resetting the window layout while fullscreen restores the window to its centered size.
+- Restarting a portable copy on Windows waits briefly if the previous instance is still closing.
 
 ## [0.6.1] - 2026-11-05
 

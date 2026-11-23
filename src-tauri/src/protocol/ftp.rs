@@ -874,7 +874,10 @@ impl ProtocolBackend for FtpBackend {
                 .acquire(n as u64)
                 .await;
         }
-        data_stream.finish(s).await?;
+        if let Err(error) = data_stream.finish(s).await {
+            operation.reusable = refused_by_server(&error);
+            return Err(error);
+        }
         operation.reusable = true;
         Ok(())
     }

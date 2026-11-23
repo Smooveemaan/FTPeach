@@ -52,10 +52,13 @@ impl UploadData {
     /// Until it has, dropping this still resets the connection, so a stop
     /// that lands while the last bytes are in flight still takes effect.
     pub(super) async fn finish(mut self, control: &mut AsyncRustlsFtpStream) -> BackendResult<()> {
-        tokio::time::timeout(TRANSFER_STALL_TIMEOUT, self.stream().shutdown())
+        let shut = tokio::time::timeout(TRANSFER_STALL_TIMEOUT, self.stream().shutdown())
             .await
-            .context("upload shutdown timed out")?
-            .context("closing the upload data connection")?;
+            .context("upload shutdown timed out")
+            .and_then(|shut| shut.context("closing the upload data connection"));
+        if let Err(error) = shut {
+            return Err(upload_refusal(control, self, error).await);
+        }
         // The data connection is already shut; this only reads the verdict.
         // An active one is closed before suppaftp reads it, so a stop from
         // here on finds that connection closed rather than reset.

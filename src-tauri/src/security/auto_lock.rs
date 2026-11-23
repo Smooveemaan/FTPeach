@@ -101,7 +101,7 @@ impl AutoLock {
 
     pub fn note_activity_at(&self, at: Instant) {
         if let Ok(mut last) = self.last_activity.lock() {
-            *last = at;
+            *last = (*last).max(at);
         }
     }
 
@@ -197,5 +197,15 @@ mod tests {
         assert_eq!(state.idle_since(start + TEN_MINUTES), TEN_MINUTES);
         state.note_activity_at(start + TEN_MINUTES);
         assert_eq!(state.idle_since(start + TEN_MINUTES), Duration::ZERO);
+    }
+
+    #[test]
+    fn note_activity_at_never_moves_last_activity_backward() {
+        let state = AutoLock::default();
+        let later = Instant::now() + TEN_MINUTES;
+        let earlier = later - Duration::from_secs(30);
+        state.note_activity_at(later);
+        state.note_activity_at(earlier);
+        assert_eq!(state.idle_since(later), Duration::ZERO);
     }
 }

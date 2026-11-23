@@ -2361,3 +2361,149 @@ fn only_a_final_refusal_keeps_the_control_connection() {
         "stalled while reading"
     )));
 }
+#[tokio::test]
+async fn upload_shutdown_error_still_reads_server_disk_full_reply() {
+    use base64::Engine;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::TcpListener;
+
+    let _ = rustls::crypto::ring::default_provider().install_default();
+    const TEST_CERT_DER: &str = "MIIBszCCAVmgAwIBAgIUUg3keFcU1xXWK8BNVb1KynPulV8wCgYIKoZIzj0EAwIwJjEkMCIGA1UEAwwbUnVzdGxzIFJvYnVzdCBSb290IC0gUnVuZyAyMCAXDTc1MDEwMTAwMDAwMFoYDzQwOTYwMTAxMDAwMDAwWjAhMR8wHQYDVQQDDBZyY2dlbiBzZWxmIHNpZ25lZCBjZXJ0MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEud6w4gtZ0xbwJ3E69SSMy5TZfdIifl9L5ZY+hgEe4UiUsBWS32f6Y5NR5Jo8FO1f6o13b3+FvVHREHCGdvppL6NoMGYwFQYDVR0RBA4wDIIKZm9vYmFyLmNvbTAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwHQYDVR0OBBYEFELvxbj5tD75n4pYFvJyr+c8qVEiMA8GA1UdEwEB/wQFMAMBAQAwCgYIKoZIzj0EAwIDSAAwRQIhALxSSdUsrRFnwNMu/doBqI8i8u5HdohVAheFTDwObkOMAiASSjULUtkWSD15u/7Sr01Wm9J1MpqW1pobBVqU3CNRlA==";
+    const TEST_KEY_DER: &str = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgTbAQpfjAT46fgF4BmP15n37woNG5ZNJmwcqsred/7tmhRANCAAS53rDiC1nTFvAncTr1JIzLlNl90iJ+X0vllj6GAR7hSJSwFZLfZ/pjk1HkmjwU7V/qjXdvf4W9UdEQcIZ2+mkv";
+    let decode = |value| {
+        base64::engine::general_purpose::STANDARD
+            .decode(value)
+            .unwrap()
+    };
+    let cert = rustls_pki_types::CertificateDer::from(decode(TEST_CERT_DER));
+    let key = rustls_pki_types::PrivateKeyDer::Pkcs8(
+        rustls_pki_types::PrivateKeyDer::from(rustls_pki_types::PrivatePkcs8KeyDer::from(decode(
+            TEST_KEY_DER,
+        )))
+        .secret_der()
+        .to_vec()
+        .into(),
+    );
+    let tls = rustls::ServerConfig::builder_with_protocol_versions(&[&rustls::version::TLS12])
+        .with_no_client_auth()
+        .with_single_cert(vec![cert], key)
+        .unwrap();
+    let acceptor = tokio_rustls::TlsAcceptor::from(Arc::new(tls));
+
+    let control_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let control_port = control_listener.local_addr().unwrap().port();
+    let data_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let data_port = data_listener.local_addr().unwrap().port();
+    let (reset_sent_tx, reset_sent_rx) = tokio::sync::oneshot::channel::<()>();
+
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = control_listener.accept().await.unwrap();
+        socket.write_all(b"220 ready\r\n").await.unwrap();
+        let (reader, mut writer) = socket.into_split();
+        let mut lines = BufReader::new(reader).lines();
+        let mut reset_tx = Some(reset_sent_tx);
+        while let Ok(Some(line)) = lines.next_line().await {
+            let cmd = line
+                .split_whitespace()
+                .next()
+                .unwrap_or_default()
+                .to_ascii_uppercase();
+            match cmd.as_str() {
+                "USER" => writer.write_all(b"331 Password\r\n").await.unwrap(),
+                "PASS" => writer.write_all(b"230 Logged in\r\n").await.unwrap(),
+                "SYST" => writer.write_all(b"215 UNIX\r\n").await.unwrap(),
+                "FEAT" => writer.write_all(b"211 End\r\n").await.unwrap(),
+                "TYPE" | "OPTS" | "NOOP" => writer.write_all(b"200 OK\r\n").await.unwrap(),
+                "PASV" => {
+                    let reply = format!(
+                        "227 Entering Passive Mode (127,0,0,1,{},{})\r\n",
+                        data_port / 256,
+                        data_port % 256
+                    );
+                    writer.write_all(reply.as_bytes()).await.unwrap();
+                }
+                "STOR" => {
+                    writer.write_all(b"150 Ok to send data\r\n").await.unwrap();
+                    let (data_tcp, _) = data_listener.accept().await.unwrap();
+                    let mut data_tls = acceptor.accept(data_tcp).await.unwrap();
+                    let mut received = [0u8; 5];
+                    tokio::io::AsyncReadExt::read_exact(&mut data_tls, &mut received)
+                        .await
+                        .unwrap();
+                    let (tcp, _) = data_tls.into_inner();
+                    let _ = tcp.set_zero_linger();
+                    drop(tcp);
+                    writer
+                        .write_all(b"452 Transfer aborted. No space left on device\r\n")
+                        .await
+                        .unwrap();
+                    if let Some(tx) = reset_tx.take() {
+                        let _ = tx.send(());
+                    }
+                }
+                "QUIT" => {
+                    writer.write_all(b"221 Bye\r\n").await.unwrap();
+                    return;
+                }
+                other => panic!("unexpected command: {other}"),
+            }
+        }
+    });
+
+    let mut control = AsyncRustlsFtpStream::connect(("127.0.0.1", control_port))
+        .await
+        .unwrap();
+    control.login("user", "pass").await.unwrap();
+    let _ = control
+        .custom_command("PASV", &[Status::PassiveMode])
+        .await
+        .unwrap();
+    let data_tcp = tokio::net::TcpStream::connect(("127.0.0.1", data_port))
+        .await
+        .unwrap();
+    let client_tls = Arc::new(
+        ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(Arc::new(NoCertVerification))
+            .with_no_client_auth(),
+    );
+    let connector = tokio_rustls::TlsConnector::from(client_tls);
+    let server_name = rustls_pki_types::ServerName::try_from("localhost").unwrap();
+    let (reply, tls_stream) = tokio::join!(
+        control.custom_command("STOR /full.bin", STORE_OPEN),
+        connector.connect(server_name, data_tcp),
+    );
+    reply.unwrap();
+    let mut upload = UploadData(Some(data::Data::Passive(AsyncDataStream::Ssl(Box::new(
+        AsyncRustlsStream::from(tls_stream.unwrap()),
+    )))));
+
+    upload.stream().write_all(b"chunk").await.unwrap();
+    upload.stream().flush().await.unwrap();
+
+    // Wait until the server has aborted the data socket and queued its 452 reply,
+    // reproducing the race where write_all buffered everything and only shutdown fails.
+    reset_sent_rx.await.unwrap();
+    let mut probe = [0u8; 1];
+    let _ = upload.stream().read(&mut probe).await;
+
+    let error = upload.finish(&mut control).await.unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("closing the upload data connection"),
+        "expected shutdown error context, got: {error:#}"
+    );
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&error).code,
+        ErrorCode::StorageFull,
+        "got: {error:#}"
+    );
+    assert!(
+        refused_by_server(&error),
+        "control connection should remain reusable: {error:#}"
+    );
+    control.noop().await.unwrap();
+    let _ = control.quit().await;
+    server.abort();
+}

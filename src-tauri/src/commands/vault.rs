@@ -35,6 +35,7 @@ struct VaultAttempt<'a> {
     vault: &'a Vault,
     guard: &'a VaultGuard,
     store: &'a Store,
+    auto_lock: &'a AutoLock,
 }
 
 impl VaultAttempt<'_> {
@@ -54,7 +55,14 @@ impl VaultAttempt<'_> {
         let Ok(permit) = self.guard.acquire().await else {
             return Err(authentication_failed());
         };
+        // Record user presence before the vault becomes unlocked, so the
+        // background auto-lock ticker cannot lock a freshly unlocked vault
+        // while permit bookkeeping or secret migration is still running.
+        self.auto_lock.note_activity();
         let authenticated = authenticate().await;
+        if authenticated.is_ok() {
+            self.auto_lock.note_activity();
+        }
         // Held until the outcome is on the books, so the next attempt cannot
         // be judged against a state that predates this one.
         permit.finish(AttemptOutcome::of(&authenticated)).await;
@@ -89,12 +97,14 @@ pub async fn vault_setup(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
+    auto_lock: State<'_, AutoLock>,
     master_password: SensitiveString,
 ) -> CommandResult<()> {
     let result = VaultAttempt {
         vault: &vault,
         guard: &guard,
         store: &store,
+        auto_lock: &auto_lock,
     }
     .run(|| async { vault.setup(master_password.expose()).await })
     .await;
@@ -111,12 +121,14 @@ pub async fn vault_unlock(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
+    auto_lock: State<'_, AutoLock>,
     master_password: SensitiveString,
 ) -> CommandResult<()> {
     let result = VaultAttempt {
         vault: &vault,
         guard: &guard,
         store: &store,
+        auto_lock: &auto_lock,
     }
     .run(|| async { vault.unlock(master_password.expose()).await })
     .await;
@@ -162,12 +174,14 @@ pub async fn vault_unlock_system(
     vault: State<'_, Vault>,
     guard: State<'_, VaultGuard>,
     store: State<'_, Store>,
+    auto_lock: State<'_, AutoLock>,
     window: tauri::WebviewWindow,
 ) -> CommandResult<()> {
     let result = VaultAttempt {
         vault: &vault,
         guard: &guard,
         store: &store,
+        auto_lock: &auto_lock,
     }
     // A cancelled Windows Hello prompt is a refusal by Windows, which is
     // what the user asking for the vault back looks like when they change
@@ -310,6 +324,7 @@ mod attempt_tests {
         vault: Vault,
         store: Store,
         guard: VaultGuard,
+        auto_lock: AutoLock,
     }
 
     impl Fixture {
@@ -323,6 +338,7 @@ mod attempt_tests {
                 store: Store::new_at(root.clone()),
                 vault,
                 guard: VaultGuard::default(),
+                auto_lock: AutoLock::default(),
                 _root: root,
             }
         }
@@ -332,6 +348,7 @@ mod attempt_tests {
                 vault: &self.vault,
                 guard: &self.guard,
                 store: &self.store,
+                auto_lock: &self.auto_lock,
             }
         }
 
@@ -428,5 +445,21 @@ mod attempt_tests {
         // bounced off it in the meantime.
         tokio::time::sleep(std::time::Duration::from_millis(600)).await;
         assert!(fixture.unlock("correct horse battery staple").await.is_ok());
+    }
+
+    /// Unlocking resets the idle timer before secret migration runs, so the
+    /// background auto-lock loop cannot immediately re-lock a freshly opened vault.
+    #[tokio::test]
+    async fn unlocking_refreshes_auto_lock_before_migration() {
+        let fixture = Fixture::new().await;
+        fixture.auto_lock.set_idle_minutes(1);
+        tokio::time::sleep(std::time::Duration::from_millis(40)).await;
+        let idle_before = fixture.auto_lock.idle_for();
+        assert!(fixture.unlock("correct horse battery staple").await.is_ok());
+        assert!(
+            fixture.auto_lock.idle_for() < idle_before
+                || fixture.auto_lock.idle_for() < std::time::Duration::from_millis(20),
+            "expected idle timer to reset on unlock"
+        );
     }
 }

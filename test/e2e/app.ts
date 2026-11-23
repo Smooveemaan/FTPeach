@@ -114,7 +114,7 @@ async function waitFor<T>(what: string, probe: () => Promise<T | undefined>, sec
  * What a failed launch left to go on: whether
  * the process is alive, what WebView2 was started with, and the app's log.
  */
-function diagnose(child: ChildProcess, profile: string): string {
+function diagnose(child: ChildProcess, profile: string, output: string[] = []): string {
   const webviews = spawnSync(
     'powershell',
     [
@@ -124,8 +124,10 @@ function diagnose(child: ChildProcess, profile: string): string {
     ],
     { encoding: 'utf8' },
   ).stdout;
+  const stdio = output.join('').trim();
   return [
     `app process: ${child.exitCode === null ? 'running' : `exited with ${child.exitCode}`}`,
+    ...(stdio ? [`app output:\n${stdio}`] : []),
     `WebView2 processes:\n${webviews.trim() || '(none)'}`,
     appLogs(profile, 4000),
   ].join('\n');
@@ -145,11 +147,74 @@ function stop(child: ChildProcess) {
   }
 }
 
+interface ProcessInfo {
+  pid: number;
+  parentPid: number;
+  name: string;
+  commandLine: string;
+}
+
+/** Processes whose command line references any of `markers` (case-insensitive). */
+function processesUsing(markers: string[], imageName?: string): ProcessInfo[] {
+  const needles = [...new Set(markers.filter(Boolean))];
+  if (needles.length === 0) return [];
+  const encoded = Buffer.from(JSON.stringify(needles), 'utf8').toString('base64');
+  const filter = imageName ? ` -Filter "name='${imageName}'"` : '';
+  const script = [
+    `$needles = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${encoded}')) | ConvertFrom-Json`,
+    `Get-CimInstance Win32_Process${filter} | Where-Object {`,
+    '  $cmd = $_.CommandLine',
+    '  if (-not $cmd) { return $false }',
+    '  foreach ($n in $needles) { if ($cmd.IndexOf($n, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) { return $true } }',
+    '  return $false',
+    '} | ForEach-Object { "$($_.ProcessId)`t$($_.ParentProcessId)`t$($_.Name)`t$($_.CommandLine)" }',
+  ].join('\n');
+  const out = spawnSync('powershell', ['-NoProfile', '-Command', script], {
+    encoding: 'utf8',
+  }).stdout;
+  if (!out) return [];
+  return out
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const [pid = '0', parentPid = '0', name = '', ...rest] = line.split('\t');
+      return { pid: Number(pid), parentPid: Number(parentPid), name, commandLine: rest.join('\t') };
+    })
+    .filter((info) => Number.isFinite(info.pid) && info.pid > 0 && info.pid !== process.pid);
+}
+
+const webviewsUsing = (markers: string[]) => processesUsing(markers, 'msedgewebview2.exe');
+
+function killPids(pids: number[]) {
+  for (const pid of pids) {
+    spawnSync('taskkill', ['/pid', String(pid), '/T', '/F'], { stdio: 'ignore' });
+  }
+}
+
+function captureOutput(child: ChildProcess, limit = 16_000): string[] {
+  const chunks: string[] = [];
+  let length = 0;
+  const append = (chunk: Buffer) => {
+    const text = chunk.toString('utf8');
+    chunks.push(text);
+    length += text.length;
+    while (length > limit && chunks.length > 1) {
+      length -= chunks.shift()!.length;
+    }
+  };
+  child.stdout?.on('data', append);
+  child.stderr?.on('data', append);
+  return chunks;
+}
+
 /** One process of the application, attached over DevTools. */
 interface Run {
   child: ChildProcess;
   cdpPort: number;
   browser?: Browser;
+  webviewDir?: string;
+  ended?: boolean;
 }
 
 type PhaseTimings = Record<string, number>;
@@ -193,10 +258,15 @@ async function start(
   delete env.FTPEACH_SMOKE_TEST;
   const tempDir = path.join(path.dirname(savedDir), 'temp');
   mkdirSync(tempDir, { recursive: true });
+  const webviewDir = portable
+    ? path.join(path.dirname(exe), 'data', 'webview')
+    : profile
+      ? path.join(profile, 'Local', 'webview2')
+      : undefined;
   const spawnedAt = performance.now();
   const child = spawn(exe, [], {
     cwd: workDir,
-    stdio: 'ignore',
+    stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...env,
       TEMP: tempDir,
@@ -220,11 +290,23 @@ async function start(
       ...(realDialogs ? {} : { FTPEACH_E2E_SAVE_DIR: savedDir, FTPEACH_E2E_PICK_FILE: pickFile }),
     },
   });
+  const output = captureOutput(child);
   timings.processSpawnMs = (timings.processSpawnMs ?? 0) + performance.now() - spawnedAt;
-  Object.assign(run, { child, cdpPort });
+  Object.assign(run, { child, cdpPort, webviewDir, ended: false });
   try {
     await timed(timings, 'debuggingPortMs', () =>
-      waitFor('the debugging port', async () => (await portOpen(cdpPort)) || undefined, 60),
+      waitFor(
+        'the debugging port',
+        async () => {
+          if (child.exitCode !== null) {
+            throw new Error(
+              `The app exited with code ${child.exitCode} before opening the debugging port`,
+            );
+          }
+          return (await portOpen(cdpPort)) || undefined;
+        },
+        60,
+      ),
     );
     await timed(timings, 'cdpConnectMs', async () => {
       run.browser = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`, {
@@ -242,7 +324,7 @@ async function start(
         ? path.dirname(exe)
         : path.join(process.env.APPDATA!, 'FTPeach');
     throw new Error(
-      `${(error as Error).message}\nLaunch: pid=${child.pid}, port=${cdpPort}, profile=${profile ?? logs}\nBrowser version: ${run.browser?.version() ?? '(not connected)'}\nStartup timings: ${JSON.stringify(timings)}\n${diagnose(child, logs)}`,
+      `${(error as Error).message}\nLaunch: pid=${child.pid}, port=${cdpPort}, profile=${profile ?? logs}\nBrowser version: ${run.browser?.version() ?? '(not connected)'}\nStartup timings: ${JSON.stringify(timings)}\n${diagnose(child, logs, output)}`,
       { cause: error },
     );
   }
@@ -412,21 +494,70 @@ export async function launchApp(
   timings.profileSetupMs = performance.now() - profileStarted;
 
   let run: Partial<Run> = {};
-  /** Waits for the process and its debugging port to be gone, killing it if `force`. */
+  /**
+   * Waits for the process, its debugging port and its WebView2 processes to
+   * be gone, killing them if `force`. WebView2's storage and crashpad helpers
+   * can outlive `FTPeach.exe` and its DevTools port, holding `EBWebView` open
+   * across a relaunch or profile cleanup.
+   */
   const end = async (force: boolean) => {
-    const { child, cdpPort, browser } = run;
-    await browser?.close().catch(() => {});
-    if (child && force) stop(child);
+    if (run.ended && !force) return;
+    const { child, cdpPort, browser, webviewDir } = run;
+    if (force) {
+      await browser?.close().catch(() => {});
+      delete run.browser;
+      if (child) stop(child);
+    }
     if (child) {
       await waitFor('the app to exit', async () => child.exitCode !== null || undefined, 30);
     }
+    if (!force) {
+      await browser?.close().catch(() => {});
+      delete run.browser;
+    }
+    child?.stdout?.destroy();
+    child?.stderr?.destroy();
     if (cdpPort) {
       await waitFor('the app to close', async () => !(await portOpen(cdpPort)) || undefined, 30);
     }
+    const markers = [...(webviewDir ? [webviewDir] : []), ...(force ? [base] : [])];
+    if (markers.length > 0) {
+      if (force) {
+        const lingering = webviewsUsing(markers);
+        if (lingering.length > 0) {
+          killPids(lingering.map((info) => info.pid));
+          await waitFor(
+            'WebView2 processes to exit',
+            async () => webviewsUsing(markers).length === 0 || undefined,
+            15,
+          );
+        }
+      } else {
+        try {
+          await waitFor(
+            'WebView2 processes to release the profile',
+            async () => webviewsUsing(markers).length === 0 || undefined,
+            15,
+          );
+        } catch {
+          const lingering = webviewsUsing(markers);
+          if (lingering.length > 0) {
+            killPids(lingering.map((info) => info.pid));
+            await waitFor(
+              'lingering WebView2 processes to exit',
+              async () => webviewsUsing(markers).length === 0 || undefined,
+              10,
+            );
+          }
+        }
+      }
+    }
+    run.ended = true;
   };
   const close = async () => {
     await end(true);
     const logs = appLogs(base, 200_000);
+    const markers = [...(run.webviewDir ? [run.webviewDir] : []), base];
     // WebView2 lets go of its profile a moment after the process ends.
     let failure: unknown;
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -435,13 +566,21 @@ export async function launchApp(
         return logs;
       } catch (error) {
         failure = error;
+        if (attempt === 2 || attempt === 8 || attempt === 14) {
+          const lingering = webviewsUsing(markers);
+          if (lingering.length > 0) killPids(lingering.map((info) => info.pid));
+        }
         await new Promise((resolve) => setTimeout(resolve, 250));
       }
     }
+    const holders = processesUsing(markers)
+      .map((info) => `pid=${info.pid} parent=${info.parentPid} ${info.name} ${info.commandLine}`)
+      .join('\n');
     // A profile left behind is a leak into the next run, never a pass.
-    throw new Error(`Could not remove the test profile ${base}; its logs are still there`, {
-      cause: failure,
-    });
+    throw new Error(
+      `Could not remove the test profile ${base}; its logs are still there${holders ? `\nProcesses still referencing the profile:\n${holders}` : ''}`,
+      { cause: failure },
+    );
   };
   const app: RunningApp = {
     page: undefined as unknown as Page,
@@ -488,7 +627,7 @@ export async function launchApp(
       const { page } = app;
       await page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
       await page.getByRole('menuitem', { name: /^Quit( |$)/ }).click();
-      await waitFor('the app to exit', async () => run.child?.exitCode !== null || undefined, 30);
+      await end(false);
     },
     relaunch: async () => {
       await end(false);

@@ -455,7 +455,11 @@ pub(crate) async fn reauthenticate<R: tauri::Runtime>(
     if vault.is_unlocked().await {
         return vault.verify_password(password).await;
     }
+    app.state::<crate::security::auto_lock::AutoLock>()
+        .note_activity();
     vault.unlock(password).await?;
+    app.state::<crate::security::auto_lock::AutoLock>()
+        .note_activity();
     // The password was accepted; what it was asked for goes ahead even if
     // a leftover secret could not be moved. The next unlock tries again.
     if let Err(error) = store.migrate_secrets_to_vault(vault).await {
@@ -484,6 +488,9 @@ async fn reauthenticate_with_system(
     }
     crate::runtime::confirmation_window::refocus_main(window.app_handle());
     if was_locked {
+        window
+            .state::<crate::security::auto_lock::AutoLock>()
+            .note_activity();
         if let Err(error) = store.migrate_secrets_to_vault(vault).await {
             log::warn!("Could not move saved secrets into the vault after unlocking: {error:#}");
         }

@@ -18,26 +18,16 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
         commands::smoke::report_phase("setup-started");
     }
+    let logs_dir = app.state::<Store>().logs_dir();
+    // First, so everything after it — window creation and the staged-update
+    // install included — can leave a record in ftpeach-app.log.
+    app.handle().plugin(app_log::plugin(logs_dir.clone()))?;
+    app_log::record_panics();
+    app_log::start(app.handle());
     // Declared in tauri.conf.json with `create: false` and built here, so a
     // portable copy can keep the WebView2 profile beside the program. Left to
     // Tauri, the profile and its folder go under %LOCALAPPDATA%.
-    let mut main_window =
-        tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?
-            .accept_first_mouse(true);
-    #[cfg(target_os = "linux")]
-    {
-        main_window = main_window
-            .transparent(true)
-            .background_color(tauri::utils::config::Color(0, 0, 0, 0));
-    }
-    if let Some(root) = local_fs::portable::root() {
-        main_window = main_window.data_directory(local_fs::portable::webview_dir(root));
-    }
-    #[cfg(feature = "smoke-test")]
-    if let Some(args) = super::e2e_browser::args() {
-        main_window = main_window.additional_browser_args(&args);
-    }
-    main_window.build()?;
+    build_main_window(app)?;
     #[cfg(feature = "smoke-test")]
     super::e2e_control::start(app.handle())?;
     #[cfg(feature = "smoke-test")]
@@ -55,12 +45,6 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     if std::env::var_os("FTPEACH_SMOKE_TEST").is_some() {
         commands::smoke::report_phase("backend-ready");
     }
-    let logs_dir = app.state::<Store>().logs_dir();
-    // First, so everything after it — the staged-update install included —
-    // can leave a record.
-    app.handle().plugin(app_log::plugin(logs_dir.clone()))?;
-    app_log::record_panics();
-    app_log::start(app.handle());
     #[cfg(target_os = "linux")]
     super::system_theme::start(app.handle().clone());
     // Windows installs ahead of the tray and visible window. Unix checks the
@@ -196,4 +180,79 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     log::debug!("startup: setup complete");
 
     Ok(())
+}
+
+fn build_main_window_once(app: &tauri::App) -> Result<(), tauri::Error> {
+    let mut main_window =
+        tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?
+            .accept_first_mouse(true);
+    #[cfg(target_os = "linux")]
+    {
+        main_window = main_window
+            .transparent(true)
+            .background_color(tauri::utils::config::Color(0, 0, 0, 0));
+    }
+    if let Some(root) = local_fs::portable::root() {
+        main_window = main_window.data_directory(local_fs::portable::webview_dir(root));
+    }
+    #[cfg(feature = "smoke-test")]
+    if let Some(args) = super::e2e_browser::args() {
+        main_window = main_window.additional_browser_args(&args);
+    }
+    main_window.build().map(drop)
+}
+
+#[cfg(any(windows, test))]
+fn is_webview_profile_busy_message(message: &str) -> bool {
+    // WebView2 returns ERROR_BUSY (0x800700AA) when a just-exited instance's
+    // msedgewebview2.exe helpers are still releasing EBWebView on restart.
+    message.contains("0x800700AA")
+}
+
+#[cfg(windows)]
+fn build_main_window(app: &tauri::App) -> Result<(), tauri::Error> {
+    const MAX_ATTEMPTS: usize = 25;
+    const RETRY_DELAY: std::time::Duration = std::time::Duration::from_millis(200);
+    for attempt in 1..=MAX_ATTEMPTS {
+        match build_main_window_once(app) {
+            Ok(()) => return Ok(()),
+            Err(error)
+                if attempt < MAX_ATTEMPTS
+                    && is_webview_profile_busy_message(&error.to_string()) =>
+            {
+                log::warn!(
+                    "startup: WebView2 profile busy on attempt {attempt}/{MAX_ATTEMPTS}, retrying: {error}"
+                );
+                std::thread::sleep(RETRY_DELAY);
+            }
+            Err(error) => {
+                log::error!("startup: failed to build main window: {error}");
+                return Err(error);
+            }
+        }
+    }
+    unreachable!()
+}
+
+#[cfg(not(windows))]
+fn build_main_window(app: &tauri::App) -> Result<(), tauri::Error> {
+    if let Err(error) = build_main_window_once(app) {
+        log::error!("startup: failed to build main window: {error}");
+        return Err(error);
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_webview_profile_busy_message;
+
+    #[test]
+    fn recognizes_windows_webview2_busy_error() {
+        let busy = r#"runtime error: failed to create webview: WebView2 error: WindowsError(Error { code: HRESULT(0x800700AA), message: "The requested resource is in use." })"#;
+        assert!(is_webview_profile_busy_message(busy));
+        assert!(!is_webview_profile_busy_message(
+            r#"runtime error: failed to create webview: WebView2 error: WindowsError(Error { code: HRESULT(0x80070005), message: "Access is denied." })"#
+        ));
+    }
 }

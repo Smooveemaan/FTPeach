@@ -66,13 +66,19 @@ async fn enforce(app: &tauri::AppHandle) {
         window_hidden: main_window_hidden(app),
     };
     let auto_lock = app.state::<AutoLock>();
-    let Some(reason) = crate::security::auto_lock::lock_reason(
-        auto_lock.idle_for(),
-        auto_lock.idle_timeout(),
-        presence,
-    ) else {
+    let idle_for = auto_lock.idle_for();
+    let idle_timeout = auto_lock.idle_timeout();
+    let Some(reason) = crate::security::auto_lock::lock_reason(idle_for, idle_timeout, presence)
+    else {
         return;
     };
+    log::info!(
+        "vault: auto-locking (reason={reason:?}, idle_ms={}, timeout_ms={:?}, session_locked={}, window_hidden={})",
+        idle_for.as_millis(),
+        idle_timeout.map(|timeout| timeout.as_millis()),
+        presence.session_locked,
+        presence.window_hidden
+    );
     lock_now(app, reason).await;
 }
 

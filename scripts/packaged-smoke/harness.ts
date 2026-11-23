@@ -132,13 +132,15 @@ export async function runPackagedSmoke({ portable = false, timeoutMs = 30_000 } 
     while (Date.now() < deadline) {
       if (existsSync(resultPath)) {
         const result = readFileSync(resultPath, 'utf8');
-        lastPhase = result;
-        if (result === 'ok') successReported = true;
-        if (['setup-started', 'window-built', 'backend-ready'].includes(result)) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          continue;
+        if (result) {
+          lastPhase = result;
+          if (result === 'ok') successReported = true;
+          if (['setup-started', 'window-built', 'backend-ready'].includes(result)) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            continue;
+          }
+          if (!successReported) throw new Error(result);
         }
-        if (!successReported) throw new Error(result);
       }
       if (child.exitCode !== null) {
         if (successReported && child.exitCode === 0) {

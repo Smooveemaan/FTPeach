@@ -170,9 +170,22 @@ async fn wait_for<T>(timeout: Duration, mut attempt: impl FnMut() -> Option<T>) 
     }
 }
 
+fn write_phase(path: &std::path::Path, phase: &str) {
+    let mut tmp = path.as_os_str().to_os_string();
+    tmp.push(".tmp");
+    let tmp = std::path::PathBuf::from(tmp);
+    // Atomic rename prevents the polling harness from reading a 0-byte file
+    // between O_TRUNC and write().
+    if fs::write(&tmp, phase).is_ok() && fs::rename(&tmp, path).is_ok() {
+        return;
+    }
+    let _ = fs::remove_file(&tmp);
+    let _ = fs::write(path, phase);
+}
+
 pub fn report_phase(phase: &str) {
     if let Some(path) = std::env::var_os("FTPEACH_SMOKE_RESULT") {
-        let _ = fs::write(path, phase);
+        write_phase(std::path::Path::new(&path), phase);
     }
 }
 
@@ -282,4 +295,24 @@ async fn verify_editor_shutdown(
         "recovery changed the payload"
     );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::write_phase;
+    use std::fs;
+
+    #[test]
+    fn write_phase_replaces_result_without_leaving_temp_file() {
+        let dir =
+            std::env::temp_dir().join(format!("ftpeach-smoke-phase-{}", uuid::Uuid::new_v4()));
+        fs::create_dir_all(&dir).unwrap();
+        let result = dir.join("result.txt");
+        let tmp = dir.join("result.txt.tmp");
+        write_phase(&result, "setup-started");
+        write_phase(&result, "ok");
+        assert_eq!(fs::read_to_string(&result).unwrap(), "ok");
+        assert!(!tmp.exists());
+        fs::remove_dir_all(&dir).unwrap();
+    }
 }

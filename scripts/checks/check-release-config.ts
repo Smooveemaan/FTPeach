@@ -6,6 +6,10 @@ const macosConfigPath = new URL('../../src-tauri/tauri.macos.conf.json', import.
 const linuxConfigPath = new URL('../../src-tauri/tauri.linux.conf.json', import.meta.url);
 const infoPlistPath = new URL('../../src-tauri/Info.plist', import.meta.url);
 const entitlementsPath = new URL('../../src-tauri/Entitlements.plist', import.meta.url);
+const provisionedEntitlementsPath = new URL(
+  '../../src-tauri/Entitlements.provisioned.plist',
+  import.meta.url,
+);
 const capabilitiesPath = new URL('../../src-tauri/capabilities/default.json', import.meta.url);
 const indexPath = new URL('../../index.html', import.meta.url);
 const spikePublicKeyPath = new URL('../../test/fixtures/updater/spike.key.pub', import.meta.url);
@@ -25,6 +29,7 @@ const [
   linuxConfigSource,
   infoPlist,
   entitlementsPlist,
+  provisionedEntitlementsPlist,
   capabilitiesSource,
   indexHtml,
   spikePublicKeySource,
@@ -42,6 +47,7 @@ const [
   readFile(linuxConfigPath, 'utf8'),
   readFile(infoPlistPath, 'utf8'),
   readFile(entitlementsPath, 'utf8'),
+  readFile(provisionedEntitlementsPath, 'utf8'),
   readFile(capabilitiesPath, 'utf8'),
   readFile(indexPath, 'utf8'),
   readFile(spikePublicKeyPath, 'utf8'),
@@ -211,6 +217,14 @@ assert.ok(
   'Entitlements.plist must declare com.apple.security.automation.apple-events',
 );
 assert.ok(
+  provisionedEntitlementsPlist.includes('com.apple.security.automation.apple-events') &&
+    provisionedEntitlementsPlist.includes('com.apple.application-identifier') &&
+    provisionedEntitlementsPlist.includes('com.apple.developer.team-identifier') &&
+    provisionedEntitlementsPlist.includes('keychain-access-groups') &&
+    !provisionedEntitlementsPlist.includes('.*'),
+  'Entitlements.provisioned.plist must declare concrete Keychain and AppleEvents entitlements without wildcards',
+);
+assert.ok(
   toolchain.includes('aarch64-apple-darwin') && toolchain.includes('x86_64-apple-darwin'),
   'rust-toolchain.toml must declare universal macOS targets (aarch64-apple-darwin and x86_64-apple-darwin)',
 );
@@ -339,6 +353,11 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', 'ftpeach-cargo.cdx.json'],
   [releaseWorkflow, 'release.yml', 'APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}'],
   [releaseWorkflow, 'release.yml', 'APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}'],
+  [
+    releaseWorkflow,
+    'release.yml',
+    'APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}',
+  ],
   [releaseWorkflow, 'release.yml', 'xcrun stapler validate'],
   [checksWorkflow, 'checks.yml', '  rust-test:'],
   [checksWorkflow, 'checks.yml', '  packaged-smoke:'],

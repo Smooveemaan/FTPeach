@@ -82,6 +82,7 @@ jobs:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
         run: |
           if [ -n "$APPLE_API_KEY_P8" ]; then
             key_dir="$RUNNER_TEMP/apple_api_keys"
@@ -91,7 +92,14 @@ jobs:
             chmod 600 "$key_path"
             export APPLE_API_KEY_PATH="$key_path"
           fi
-          npm run tauri -- build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles app,dmg
+          extra_args=()
+          if [ -n "$APPLE_PROVISIONING_PROFILE" ]; then
+            profile_path="$RUNNER_TEMP/embedded.provisionprofile"
+            printf '%s' "$APPLE_PROVISIONING_PROFILE" | base64 --decode > "$profile_path"
+            chmod 600 "$profile_path"
+            extra_args+=(--config "{\"bundle\":{\"macOS\":{\"entitlements\":\"Entitlements.provisioned.plist\",\"files\":{\"embedded.provisionprofile\":\"$profile_path\"}}}}")
+          fi
+          npm run tauri -- build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles app,dmg "${extra_args[@]}"
           mkdir -p release-macos
           bundle_root="src-tauri/target/universal-apple-darwin/release/bundle"
           cp "$bundle_root"/dmg/*.dmg "release-macos/FTPeach_${VERSION}_universal.dmg"

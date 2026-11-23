@@ -783,3 +783,36 @@ async fn a_read_is_kept_only_while_the_server_still_describes_the_same_file() {
         5
     );
 }
+
+#[tokio::test]
+async fn already_exists_commit_cleans_up_partial_and_resume_record() {
+    let root = std::env::temp_dir().join(format!("ftpeach-exists-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&root).unwrap();
+    let destination = root.join("file.bin");
+    std::fs::write(&destination, b"existing").unwrap();
+    let download = DownloadTarget::reserve(&destination)
+        .await
+        .unwrap()
+        .prepare(false, identity(Some(4), Some("v1")), test_origin())
+        .await
+        .unwrap()
+        .unwrap();
+    let mut handle = download.open_at(0).await.unwrap();
+    tokio::io::AsyncWriteExt::write_all(&mut handle, b"next")
+        .await
+        .unwrap();
+    drop(handle);
+    let err = finish(download, Ok(4), Some(4)).await.unwrap_err();
+    assert_eq!(
+        crate::ipc::CommandError::from_anyhow(&err).code,
+        ErrorCode::AlreadyExists
+    );
+    assert_eq!(std::fs::read(&destination).unwrap(), b"existing");
+    assert!(!sidecar(&destination).exists());
+    let leftovers: Vec<_> = std::fs::read_dir(&root)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .collect();
+    assert_eq!(leftovers, vec![std::ffi::OsString::from("file.bin")]);
+    std::fs::remove_dir_all(root).unwrap();
+}

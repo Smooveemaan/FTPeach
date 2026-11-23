@@ -10,7 +10,11 @@ import type {
   NameConflictAction,
   NameConflictDecision,
 } from '../../shared/paneContracts.ts';
-import { availableCopyName, isTransferNameConflict } from './nameConflict.ts';
+import {
+  availableCopyName,
+  isTransferNameConflict,
+  namesMatchForTransfer,
+} from './nameConflict.ts';
 import type { FileEntryLike } from './nameConflict.ts';
 
 export interface TransferTarget {
@@ -79,8 +83,7 @@ export function useOverwriteApproval(
     confirmations.current = decision.catch(() => {});
     return decision;
   };
-  const matches = (kind: TransferTarget['kind'], left: string, right: string) =>
-    kind === 'local' ? left.toLowerCase() === right.toLowerCase() : left === right;
+  const matches = namesMatchForTransfer;
   const approveTarget: OverwriteApproval = async (target) => {
     if (overwriteAction === 'overwrite') return { path: target.path, overwrite: true };
     const separator = target.kind === 'local' ? localSeparator() : '/';

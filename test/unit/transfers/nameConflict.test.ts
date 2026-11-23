@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { availableCopyName } from '../../../src/features/transfers/nameConflict.ts';
+import {
+  availableCopyName,
+  namesMatchForTransfer,
+} from '../../../src/features/transfers/nameConflict.ts';
 
 const entries = (...names: string[]) => names.map((name) => ({ name }));
 
@@ -19,4 +22,14 @@ test('copy names skip occupied candidates and reserve names already chosen in th
   assert.equal(availableCopyName('file.txt', occupied, 'remote'), 'file (copy).txt');
   occupied.push({ name: availableCopyName('file.txt', occupied, 'local') });
   assert.equal(availableCopyName('file.txt', occupied, 'local'), 'file (copy 4).txt');
+});
+
+test('macOS local name matching treats NFC and NFD forms as equivalent while remote stays exact', () => {
+  const nfc = 'caf\u00e9.txt';
+  const nfd = 'cafe\u0301.txt';
+  assert.notEqual(nfc, nfd);
+  assert.equal(namesMatchForTransfer('local', nfc, nfd, 'macos'), true);
+  assert.equal(namesMatchForTransfer('remote', nfc, nfd, 'macos'), false);
+  const occupied = entries('caf\u00e9 (copy).txt');
+  assert.equal(availableCopyName(nfd, occupied, 'local', 'macos'), 'cafe\u0301 (copy 2).txt');
 });

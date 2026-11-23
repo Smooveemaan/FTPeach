@@ -370,11 +370,14 @@ impl LocalDownload {
             Err(error) => Err(error),
         };
         if let Err(error) = &result {
-            // Bytes of two versions: nothing to resume from.
-            if crate::ipc::CommandError::from_anyhow(error).code == ErrorCode::RemoteChanged
-                && let Err(error) = remove_artifact(&self.partial)
+            // Bytes of two versions or a taken destination when replacement was
+            // refused: nothing to resume from, so clear the partial and sidecar.
+            if matches!(
+                crate::ipc::CommandError::from_anyhow(error).code,
+                ErrorCode::RemoteChanged | ErrorCode::AlreadyExists
+            ) && let Err(error) = remove_artifact(&self.partial)
             {
-                log::warn!("A download of a changed file left its partial: {error:#}");
+                log::warn!("A failed download left its partial: {error:#}");
             }
             remove_empty_new_partial(&self.partial, self.start).await;
             // Gone, the partial has nothing to resume; its record would only

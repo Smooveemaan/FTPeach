@@ -35,6 +35,11 @@ jobs:
     environment: release
     runs-on: macos-15
     timeout-minutes: 90
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+      CARGO_INCREMENTAL: '0'
+      SCCACHE_CACHE_MULTIARCH: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -60,6 +65,8 @@ jobs:
         run: |
           rustup show
           rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+        if: steps.preflight.outputs.multiplatform == 'true'
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         if: steps.preflight.outputs.multiplatform == 'true'
         with:
@@ -136,6 +143,10 @@ jobs:
     environment: release
     runs-on: ubuntu-22.04
     timeout-minutes: 60
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+      CARGO_INCREMENTAL: '0'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -164,6 +175,8 @@ jobs:
       - name: Install pinned Rust toolchain
         if: steps.preflight.outputs.multiplatform == 'true'
         run: rustup show
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+        if: steps.preflight.outputs.multiplatform == 'true'
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         if: steps.preflight.outputs.multiplatform == 'true'
         with:
@@ -215,6 +228,10 @@ jobs:
     environment: release
     runs-on: windows-latest
     timeout-minutes: 60
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
+      RUSTC_WRAPPER: 'sccache'
+      CARGO_INCREMENTAL: '0'
     outputs:
       version: ${{ steps.preflight.outputs.version }}
       multiplatform: ${{ steps.preflight.outputs.multiplatform }}
@@ -241,6 +258,7 @@ jobs:
           node --experimental-strip-types scripts/release/check-release-environment.ts release-tag
       - name: Install pinned Rust toolchain
         run: rustup show
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri

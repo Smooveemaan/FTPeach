@@ -224,9 +224,14 @@ assert.ok(
     !provisionedEntitlementsPlist.includes('.*'),
   'Entitlements.provisioned.plist must declare concrete Keychain and AppleEvents entitlements without wildcards',
 );
+assert.match(
+  toolchain,
+  /channel\s*=\s*"\d+\.\d+\.\d+"/,
+  'rust-toolchain.toml must pin an exact Rust toolchain version',
+);
 assert.ok(
-  toolchain.includes('aarch64-apple-darwin') && toolchain.includes('x86_64-apple-darwin'),
-  'rust-toolchain.toml must declare universal macOS targets (aarch64-apple-darwin and x86_64-apple-darwin)',
+  releaseWorkflow.includes('rustup target add aarch64-apple-darwin x86_64-apple-darwin'),
+  'release.yml must install universal macOS targets (aarch64-apple-darwin and x86_64-apple-darwin) in build-macos',
 );
 
 assert.equal(typeof updaterPublicKey, 'string', 'Updater public key must be configured');

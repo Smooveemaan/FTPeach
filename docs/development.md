@@ -11,7 +11,7 @@ Use Windows 10/11 x64 with:
 - Visual Studio Build Tools with the C++ build tools and Windows SDK;
 - the WebView2 Runtime.
 
-The pinned Rust toolchain includes `clippy`, `rustfmt`, and `rust-analyzer`, keeping editor tooling and pull-request checks consistent.
+The pinned Rust toolchain includes `clippy` and `rustfmt`, keeping local builds and pull-request checks consistent.
 
 ## Set up and run
 

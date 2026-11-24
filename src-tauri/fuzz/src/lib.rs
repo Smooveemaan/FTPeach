@@ -172,6 +172,81 @@ pub fn ftp(data: &[u8]) {
 
 #[cfg(test)]
 mod corpus_tests {
+    use std::collections::BTreeMap;
+
+    fn lock_versions(path: &str) -> BTreeMap<String, Vec<semver::Version>> {
+        let text = std::fs::read_to_string(path).unwrap();
+        let mut versions: BTreeMap<String, Vec<semver::Version>> = BTreeMap::new();
+        for block in text.split("[[package]]").skip(1) {
+            let mut name = None;
+            let mut version = None;
+            for line in block.lines() {
+                if let Some(v) = line
+                    .strip_prefix("name = \"")
+                    .and_then(|s| s.strip_suffix('"'))
+                {
+                    name = Some(v);
+                } else if let Some(v) = line
+                    .strip_prefix("version = \"")
+                    .and_then(|s| s.strip_suffix('"'))
+                {
+                    version = semver::Version::parse(v).ok();
+                }
+            }
+            if let (Some(name), Some(version)) = (name, version) {
+                versions.entry(name.to_owned()).or_default().push(version);
+            }
+        }
+        versions
+    }
+
+    fn compatible_branch(a: &semver::Version, b: &semver::Version) -> bool {
+        if a.major > 0 || b.major > 0 {
+            a.major == b.major
+        } else {
+            a.minor == b.minor
+        }
+    }
+
+    #[test]
+    fn shared_dependencies_match_app_major_versions() {
+        let manifest_dir = env!("CARGO_MANIFEST_DIR");
+        let manifest = std::fs::read_to_string(format!("{manifest_dir}/Cargo.toml")).unwrap();
+        let fuzz_lock = lock_versions(&format!("{manifest_dir}/Cargo.lock"));
+        let app_lock = lock_versions(&format!("{manifest_dir}/../Cargo.lock"));
+        let mut in_deps = false;
+        let mut checked = 0usize;
+        for line in manifest.lines().map(str::trim) {
+            if line.starts_with('[') {
+                in_deps = line == "[dependencies]"
+                    || line == "[dev-dependencies]"
+                    || line.ends_with(".dependencies]");
+                continue;
+            }
+            if !in_deps || line.is_empty() || line.starts_with('#') {
+                continue;
+            }
+            let Some((dep, _)) = line.split_once('=') else {
+                continue;
+            };
+            let dep = dep.trim();
+            let Some(app_versions) = app_lock.get(dep) else {
+                continue;
+            };
+            let fuzz_versions = fuzz_lock
+                .get(dep)
+                .unwrap_or_else(|| panic!("{dep} missing from fuzz/Cargo.lock"));
+            assert!(
+                fuzz_versions
+                    .iter()
+                    .any(|fv| app_versions.iter().any(|av| compatible_branch(fv, av))),
+                "fuzz dependency {dep} ({fuzz_versions:?}) drifted from src-tauri/Cargo.lock ({app_versions:?})"
+            );
+            checked += 1;
+        }
+        assert!(checked >= 15, "expected to check shared fuzz dependencies");
+    }
+
     #[test]
     fn replay_committed_corpora() {
         for (target, run) in [

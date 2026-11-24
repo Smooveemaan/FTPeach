@@ -1,28 +1,20 @@
-// Weekly evidence supplements cargo-deny's ignore list. A new upstream version
-// is a review signal, never proof that RSA signing is constant-time.
+// Weekly evidence supplements cargo-deny's ignore list by fetching live RustSec
+// version metadata and verifying that docs/rust-advisories.md matches RustSec's
+// current advisory classification.
 import { appendFile, readFile } from 'node:fs/promises';
-import { execFileSync } from 'node:child_process';
 import { ignoredAdvisories, parseAdvisoryRegister, rustsecKind } from './release-trust.ts';
 
 const policy = await readFile('src-tauri/deny.toml', 'utf8');
 const ids = ignoredAdvisories(policy);
 const register = parseAdvisoryRegister(await readFile('docs/rust-advisories.md', 'utf8'));
-const lines = ['## Rust advisory review evidence', '', `Checked: ${new Date().toISOString()}`, ''];
-const tree = execFileSync(
-  'cargo',
-  [
-    'tree',
-    '--locked',
-    '--manifest-path',
-    'src-tauri/Cargo.toml',
-    '--target',
-    'x86_64-pc-windows-msvc',
-    '-i',
-    'rsa',
-  ],
-  { encoding: 'utf8', timeout: 120_000 },
-);
-lines.push('### Locked RSA dependency chain', '', '```text', tree.trim(), '```', '');
+const lines = [
+  '## Rust advisory review evidence',
+  '',
+  `Checked: ${new Date().toISOString()}`,
+  '',
+  '### Current RustSec patch availability',
+  '',
+];
 
 async function get(url: string): Promise<Response> {
   const response = await fetch(url, {
@@ -33,19 +25,16 @@ async function get(url: string): Promise<Response> {
   return response;
 }
 
-const releases = (await (await get('https://crates.io/api/v1/crates/russh')).json()) as {
-  crate: { max_version: string; max_stable_version: string | null };
-};
-lines.push(
-  `Latest russh: ${releases.crate.max_version}; stable: ${releases.crate.max_stable_version ?? 'none'}.`,
-  'Compare with the locked chain above. A version change requires a signing-path review; it does not establish a fix.',
-  '',
-  '### Current RustSec patch availability',
-  '',
-);
+if (ids.length === 0) {
+  lines.push(
+    'No RustSec advisory exceptions are currently configured in `src-tauri/deny.toml`.',
+    '',
+  );
+}
+
 for (const id of ids) {
   const year = id.split('-')[1];
-  const url = `https://raw.githubusercontent.com/RustSec/advisory-db/main/crates`;
+  const url = 'https://raw.githubusercontent.com/RustSec/advisory-db/main/crates';
   // The advisory database API maps IDs to crate names via the public OSV record.
   const osv = (await (await get(`https://api.osv.dev/v1/vulns/${id}`)).json()) as {
     affected?: { package: { name: string } }[];

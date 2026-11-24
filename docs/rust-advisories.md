@@ -9,11 +9,10 @@ CODEOWNERS assigns changes to this policy to the security owner. Weekly CI runs
 `cargo deny check advisories licenses`.
 
 Each `src-tauri/deny.toml` reason repeats the review deadline; the policy check rejects
-drift from this register. Weekly CI also prints the locked `cargo tree -i rsa`
-chain, the latest upstream russh version, and live RustSec `[versions]` metadata
-for every ignored advisory in the job summary. Fetch failures fail that step;
-stale or missing evidence is not treated as "no fix available". New versions
-and patched ranges are review signals, not proof of constant-time RSA signing.
+drift from this register. Weekly CI also prints live RustSec `[versions]` metadata
+for every ignored advisory in the job summary and verifies that each advisory's kind
+agrees with RustSec. Fetch failures fail that step; stale or missing evidence is
+not treated as "no fix available".
 
 The 120-day window runs from the last review, so a deadline moves only with a new
 dated review section below.

@@ -7,6 +7,10 @@ on:
     - cron: '17 4 * * 1'
   workflow_dispatch:
 
+concurrency:
+  group: security-audit
+  cancel-in-progress: false
+
 jobs:
   rust-advisories:
     permissions:
@@ -22,58 +26,79 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - run: npm run check:rust-advisories
-      - name: Install pinned Rust toolchain
-        run: rustup show
-      - name: Report current RSA chain, russh release and ignored advisory fixes
+      - name: Audit npm lockfile advisories
         if: ${{ !cancelled() }}
-        timeout-minutes: 8
-        run: node --experimental-strip-types scripts/release/report-rust-advisories.ts
-      - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
+        run: npm audit --package-lock-only --audit-level=high
+      - name: Check Rust advisories and licenses
+        if: ${{ !cancelled() }}
+        uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
         with:
           manifest-path: src-tauri/Cargo.toml
           command: check advisories licenses
+      - name: Report ignored RustSec advisory status and verify classifications
+        if: ${{ !cancelled() }}
+        timeout-minutes: 8
+        run: node --experimental-strip-types scripts/release/report-rust-advisories.ts
 
   fuzz-parsers:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [list_parse, ftp_response, webdav_propfind, names_paths, update_package]
+    timeout-minutes: 25
     env:
       RUSTUP_TOOLCHAIN: nightly-2026-09-01
+      RUST_BACKTRACE: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install fixed nightly and cargo-fuzz
-        run: |
-          rustup toolchain install nightly-2026-09-01 --profile minimal
-          cargo install cargo-fuzz --version 0.13.2 --locked
+      - name: Install fixed nightly toolchain
+        run: rustup toolchain install nightly-2026-09-01 --profile minimal
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri/fuzz
-          key: fuzz-${{ matrix.target }}
+          key: fuzz-parsers
+      - name: Install cargo-fuzz if not cached
+        run: |
+          case "$(cargo fuzz --version 2>/dev/null || true)" in
+            *"0.13.2"*) ;;
+            *) cargo install cargo-fuzz --version 0.13.2 --locked ;;
+          esac
       - name: Replay saved regression inputs
         working-directory: src-tauri/fuzz
         run: cargo test --locked --lib
-      - name: Fuzz server responses for 60 seconds
+      - name: Fuzz parsers for 60 seconds each
         working-directory: src-tauri
         env:
           # The preceding locked test fetched dependencies; fuzz must not resolve new ones.
           CARGO_NET_OFFLINE: 'true'
         run: |
-          cargo fuzz run ${{ matrix.target }} -- -max_total_time=60 -timeout=5 -rss_limit_mb=2048 -max_len=65536
+          failed=0
+          {
+            echo "## Parser fuzzing"
+            echo ""
+            echo "| Target | Result |"
+            echo "| --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for target in list_parse ftp_response webdav_propfind names_paths update_package; do
+            echo "::group::Fuzz $target"
+            if cargo fuzz run "$target" -- -max_total_time=60 -timeout=5 -rss_limit_mb=2048 -max_len=65536; then
+              echo "| \`$target\` | pass |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| \`$target\` | **fail** |" >> "$GITHUB_STEP_SUMMARY"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
           git diff --exit-code -- fuzz/Cargo.lock
-      - name: Preserve crashes and evolved corpus
+          exit "$failed"
+      - name: Preserve crashes and evolved corpora
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: fuzz-${{ matrix.target }}-${{ github.run_id }}
+          name: fuzz-results-${{ github.run_id }}
           path: |
-            src-tauri/fuzz/artifacts/${{ matrix.target }}/
-            src-tauri/fuzz/corpus/${{ matrix.target }}/
+            src-tauri/fuzz/artifacts/
+            src-tauri/fuzz/corpus/
           retention-days: 30
           if-no-files-found: warn

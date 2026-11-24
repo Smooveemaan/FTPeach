@@ -13,7 +13,6 @@ export const GATES = [
   'lint-test-build',
   'sast',
   'parser-regressions',
-  'rust-linux',
   'rust-test',
   'rust-test-unix',
   'rust-coverage',

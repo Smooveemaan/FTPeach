@@ -189,8 +189,7 @@ async function main() {
 
   if (
     classification.requiredGates.includes('lint-test-build') ||
-    classification.requiredGates.includes('rust-test') ||
-    classification.requiredGates.includes('rust-linux')
+    classification.requiredGates.includes('rust-test')
   ) {
     steps.push({
       name: 'check:duplicates',
@@ -219,10 +218,7 @@ async function main() {
   }
 
   // 4. Rust checks
-  if (
-    classification.requiredGates.includes('rust-test') ||
-    classification.requiredGates.includes('rust-linux')
-  ) {
+  if (classification.requiredGates.includes('rust-test')) {
     steps.push({
       name: 'cargo fmt check',
       command: 'cargo',

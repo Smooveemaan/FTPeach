@@ -6,13 +6,13 @@
 //   dev-simulate-dpapi-failure  `npm run dev` with DPAPI failing on purpose
 //   smoke-build        the packaged smoke target, into .tools/smoke-target
 //   test-installers    the installer tests' installers, into .tools/installer-target
-//   coverage           rust:test instrumented, from a clean llvm-cov folder
+//   coverage           rust:test instrumented, cleaning workspace coverage artifacts
 //   test-target <name> one integration test target, of src-tauri or of
 //                      another package (--manifest <path>) that depends on it
 //   benchmark-listing  the listing benchmark, into .local/benchmarks
 //   verify-updater     the updater fixture is accepted, a damaged copy refused
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { verifyUpdaterSignature } from './release/check-published.ts';
@@ -81,10 +81,23 @@ function main(): number {
       );
     }
     case 'coverage': {
-      // Coverage starts from nothing, as on a fresh CI runner: llvm-cov cannot
-      // clean a folder it did not create, and builds left in it count lines twice.
+      // Clean stale profraw/profdata and workspace build artifacts while keeping
+      // compiled dependencies in llvm-cov-target so CI and local runs reuse them.
       const target = process.env.CARGO_TARGET_DIR ?? path.join(root, 'src-tauri', 'target');
-      rmSync(path.join(target, 'llvm-cov-target'), { recursive: true, force: true });
+      const llvmCovTarget = path.join(target, 'llvm-cov-target');
+      if (existsSync(llvmCovTarget)) {
+        const cleanStatus = run('cargo', [
+          'llvm-cov',
+          'clean',
+          '--workspace',
+          '--manifest-path',
+          manifest,
+        ]);
+        if (cleanStatus !== 0) {
+          // Fall back if the directory was not created by cargo-llvm-cov.
+          rmSync(llvmCovTarget, { recursive: true, force: true });
+        }
+      }
       mkdirSync(path.join(root, 'coverage', 'rust'), { recursive: true });
       // The same tests as rust:test, instrumented; scripts/coverage/coverage.ts reads the report.
       return run('cargo', [

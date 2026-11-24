@@ -1,4 +1,4 @@
-// `cargo check` on Linux, as CI's rust-linux job and the server matrix build
+// `cargo check` on Linux, as CI's rust-test-unix job and the server matrix build
 // the crate, in Docker. The Tauri build script writes into the source tree, so
 // the container checks a copy; target and registry stay in named volumes.
 import { spawnSync } from 'node:child_process';

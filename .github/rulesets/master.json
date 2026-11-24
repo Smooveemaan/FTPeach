@@ -63,10 +63,6 @@
             "integration_id": 15368
           },
           {
-            "context": "checks / rust-linux",
-            "integration_id": 15368
-          },
-          {
             "context": "checks / rust-test",
             "integration_id": 15368
           },

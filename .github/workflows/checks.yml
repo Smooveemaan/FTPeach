@@ -65,8 +65,6 @@ jobs:
         if: ${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), 'check:verified-by') }}
       - run: npm run format:check
         if: ${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), 'format:check') }}
-      - name: Install pinned Rust toolchain
-        run: rustup show
       - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
         with:
           manifest-path: src-tauri/Cargo.toml
@@ -168,40 +166,6 @@ jobs:
       - name: Replay saved parser regression inputs
         run: npm run test:parser-regressions
 
-  # The server matrix builds the crate on Linux; rust-test only on Windows.
-  rust-linux:
-    permissions:
-      contents: read
-    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'rust-linux')
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install Linux build dependencies
-        run: >-
-          sudo apt-get update && sudo apt-get install --yes
-          libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev dosfstools
-      - name: Install pinned Rust toolchain
-        run: rustup show
-      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        with:
-          workspaces: src-tauri
-      - run: cargo check --locked --all-targets --manifest-path src-tauri/Cargo.toml
-      - name: No-replace operations on FAT
-        shell: bash
-        run: |
-          set -euo pipefail
-          fixture=$(mktemp -d "$RUNNER_TEMP/ftpeach-fat.XXXXXX")
-          mount_dir="$fixture/mount"
-          mkdir "$mount_dir"
-          truncate -s 64M "$fixture/disk.img"
-          mkfs.vfat -F 32 "$fixture/disk.img"
-          sudo mount -t vfat -o "loop,uid=$(id -u),gid=$(id -g)" "$fixture/disk.img" "$mount_dir"
-          trap 'sudo umount "$mount_dir"' EXIT
-          FTPEACH_FAT_TEST_ROOT="$mount_dir" cargo test --locked --manifest-path src-tauri/Cargo.toml --features test-utils --lib no_replace_on_fat_needs_no_hard_links -- --ignored
-
   rust-test:
     permissions:
       contents: read
@@ -271,7 +235,7 @@ jobs:
         run: >-
           sudo apt-get update && sudo apt-get install --yes
           libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
-          fuse3 xvfb weston python3-gi libxtst6
+          dosfstools fuse3 xvfb weston python3-gi libxtst6
       - name: Enable FUSE for native drag tests
         if: runner.os == 'Linux'
         run: sudo modprobe fuse
@@ -286,6 +250,19 @@ jobs:
       - name: Test
         if: ${{ always() }}
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml --features test-utils --all-targets --no-fail-fast
+      - name: No-replace operations on FAT
+        if: ${{ always() && runner.os == 'Linux' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture=$(mktemp -d "$RUNNER_TEMP/ftpeach-fat.XXXXXX")
+          mount_dir="$fixture/mount"
+          mkdir "$mount_dir"
+          truncate -s 64M "$fixture/disk.img"
+          mkfs.vfat -F 32 "$fixture/disk.img"
+          sudo mount -t vfat -o "loop,uid=$(id -u),gid=$(id -g)" "$fixture/disk.img" "$mount_dir"
+          trap 'sudo umount "$mount_dir"' EXIT
+          FTPEACH_FAT_TEST_ROOT="$mount_dir" cargo test --locked --manifest-path src-tauri/Cargo.toml --features test-utils --lib no_replace_on_fat_needs_no_hard_links -- --ignored
 
   rust-coverage:
     permissions:
@@ -314,6 +291,11 @@ jobs:
 
       - name: Install pinned Rust toolchain
         run: rustup component add llvm-tools-preview
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: src-tauri -> target/llvm-cov-target
+          key: rust-coverage
 
       - name: Restore pinned cargo-llvm-cov
         id: llvm-cov-cache
@@ -511,7 +493,6 @@ jobs:
         sast,
         lint-test-build,
         parser-regressions,
-        rust-linux,
         rust-test,
         rust-test-unix,
         rust-coverage,

@@ -242,7 +242,7 @@ An existing destination, including an empty directory or a dangling link, is nev
 Tests: `no_replace_rename_moves_files_and_folders_but_keeps_taken_names`,
 `unix_file::tests::concurrent_no_replace_renames_publish_only_one_source` and
 `unix_file::tests::hard_link_fallback_is_only_used_for_unsupported_exclusive_rename`.
-CI's blocking `rust-linux` job runs `no_replace_on_fat_needs_no_hard_links` on a mounted FAT32
+CI's blocking `rust-test-unix` (`ubuntu-22.04`) job runs `no_replace_on_fat_needs_no_hard_links` on a mounted FAT32
 image: file/directory collisions, a download including its resume record, and verified Move.
 Native guarantees follow [Linux renameat2](https://man7.org/linux/man-pages/man2/rename.2.html)
 and [Apple renamex_np](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/man/man2/rename.2).

@@ -250,27 +250,32 @@ fn enable_main(main: &tauri::WebviewWindow, enabled: bool) -> tauri::Result<()> 
 
 #[cfg(target_os = "macos")]
 fn set_sheet(window: &tauri::WebviewWindow, shown: bool) -> tauri::Result<()> {
-    let parent = window
-        .app_handle()
-        .get_webview_window("main")
-        .ok_or(tauri::Error::WindowNotFound)?;
+    let parent = shown
+        .then(|| {
+            window
+                .app_handle()
+                .get_webview_window("main")
+                .ok_or(tauri::Error::WindowNotFound)
+        })
+        .transpose()?;
     let child = window.clone();
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
     window.run_on_main_thread(move || {
         let result = (|| {
-            let parent = parent.ns_window()?.cast::<objc2_app_kit::NSWindow>();
             let child = child.ns_window()?.cast::<objc2_app_kit::NSWindow>();
-            // SAFETY: both handles are live NSWindows, used on AppKit's main thread.
+            // SAFETY: live NSWindow handles used on AppKit's main thread.
             unsafe {
-                let parent = &*parent;
                 let child = &*child;
                 let sheet_parent = child.sheetParent();
-                if shown && sheet_parent.is_none() {
-                    // Tauri's set_enabled(false) installs an empty blocking sheet;
-                    // the confirmation itself must be the sheet to receive input.
-                    parent.beginSheet_completionHandler(child, None);
-                    child.setAlphaValue(1.0);
-                } else if !shown && let Some(parent) = sheet_parent {
+                if let Some(parent) = parent {
+                    if sheet_parent.is_none() {
+                        let parent = &*parent.ns_window()?.cast::<objc2_app_kit::NSWindow>();
+                        // Tauri's set_enabled(false) installs an empty blocking sheet;
+                        // the confirmation itself must be the sheet to receive input.
+                        parent.beginSheet_completionHandler(child, None);
+                        child.setAlphaValue(1.0);
+                    }
+                } else if let Some(parent) = sheet_parent {
                     parent.endSheet(child);
                 }
             }
@@ -500,23 +505,25 @@ pub(crate) fn create(
         // The main window takes input again once no confirmation is left --
         // before this one goes, or Windows finds the owner disabled and hands
         // the activation to another program.
-        tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed => {
-            #[cfg(target_os = "macos")]
+        #[cfg(target_os = "macos")]
+        tauri::WindowEvent::CloseRequested { .. } => {
+            // Destroyed fires after tao drops the native handle, so the sheet
+            // can only be dismissed here while its NSWindow is still live.
             if let Err(error) = set_sheet(&rescaled, false) {
                 log::error!("Could not dismiss confirmation sheet: {error}");
             }
-            #[cfg(not(target_os = "macos"))]
+        }
+        #[cfg(not(target_os = "macos"))]
+        tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed => {
+            let app = rescaled.app_handle();
+            let others = app
+                .webview_windows()
+                .into_keys()
+                .any(|label| label.starts_with(LABEL_PREFIX) && label != rescaled.label());
+            if let (false, Some(main)) = (others, app.get_webview_window("main"))
+                && let Err(error) = enable_main(&main, true)
             {
-                let app = rescaled.app_handle();
-                let others = app
-                    .webview_windows()
-                    .into_keys()
-                    .any(|label| label.starts_with(LABEL_PREFIX) && label != rescaled.label());
-                if let (false, Some(main)) = (others, app.get_webview_window("main"))
-                    && let Err(error) = enable_main(&main, true)
-                {
-                    log::error!("Could not restore main window input: {error}");
-                }
+                log::error!("Could not restore main window input: {error}");
             }
         }
         _ => {}

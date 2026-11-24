@@ -577,26 +577,35 @@ async function startAndPauseWalk({ getApi, mockApi, getSnapshot }: HarnessContex
 
 test('a refused backend pause becomes an error and retries without a missing journal', async () => {
   await withHarness(async (context) => {
-    const { row, walk, running, submitted } = await startAndPauseWalk(context);
-    await act(async () => {
-      walk.resolve({
-        ...pausedWalkReport,
-        paused: false,
-        errors: [
-          { code: 'cleanupIncomplete', message: 'Pause budget exhausted; results retained' },
-        ],
+    const failures: unknown[] = [];
+    const release = setAsyncFailureSink((error) => failures.push(error));
+    try {
+      const { row, walk, running, submitted } = await startAndPauseWalk(context);
+      const cleanup = {
+        code: 'cleanupIncomplete',
+        message: 'Pause budget exhausted; results retained',
+      };
+      await act(async () => {
+        walk.resolve({
+          ...pausedWalkReport,
+          paused: false,
+          errors: [cleanup],
+        });
+        await running;
       });
-      await running;
-    });
-    assert.equal(context.getSnapshot()[row.id]?.status, 'error');
-    context.mockApi.transfer.recursive = async (intent) => {
-      submitted.push(intent);
-      return { ok: true, outcome: 'complete', scanned: 3, completed: 3, errors: [] };
-    };
-    await act(async () => {
-      await context.getApi().retryTransfer(row.id);
-    });
-    assert.equal(submitted[1]?.resumeFrom, undefined);
+      assert.deepEqual(failures, [cleanup]);
+      assert.equal(context.getSnapshot()[row.id]?.status, 'error');
+      context.mockApi.transfer.recursive = async (intent) => {
+        submitted.push(intent);
+        return { ok: true, outcome: 'complete', scanned: 3, completed: 3, errors: [] };
+      };
+      await act(async () => {
+        await context.getApi().retryTransfer(row.id);
+      });
+      assert.equal(submitted[1]?.resumeFrom, undefined);
+    } finally {
+      release();
+    }
   });
 });
 

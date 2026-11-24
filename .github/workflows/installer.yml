@@ -58,7 +58,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-          cache: npm
+          package-manager-cache: false
 
       - name: Validate saved candidate and check retained installer evidence
         if: inputs.production && inputs.candidate-artifact == ''
@@ -82,6 +82,12 @@ jobs:
           workspaces: src-tauri
           # test-installers writes to this target directory instead of src-tauri/target.
           cache-directories: .tools/installer-target
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.resume.outputs.installer != 'false'
+        with:
+          node-version: 24
+          cache: npm
 
       - if: steps.resume.outputs.installer != 'false'
         run: npm ci

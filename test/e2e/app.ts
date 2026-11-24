@@ -692,6 +692,21 @@ export function inventory(root: string): string {
 }
 
 /**
+ * Whether to record Playwright traces for this attempt. In CI with retries,
+ * only retries pay the CDP screenshot/snapshot overhead; local runs and
+ * single-attempt CI projects still trace. `FTPEACH_E2E_TRACE=1|0` overrides.
+ */
+export function shouldTrace(
+  retry: number,
+  retries: number,
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  if (env.FTPEACH_E2E_TRACE === '1') return true;
+  if (env.FTPEACH_E2E_TRACE === '0') return false;
+  return Boolean(env.CI) && retries > 0 ? retry > 0 : true;
+}
+
+/**
  * The test API with `app`: the running application, with a trace of the last
  * run attached and the process and profile gone afterwards, a timed-out test
  * too. `test.use({ appSettings, appStore, appPortable, appRealDialogs })`
@@ -711,6 +726,7 @@ export const test = base.extend<{
   appRealDialogs: [false, { option: true }],
   app: async ({ appSettings, appStore, appPortable, appRealDialogs }, use, testInfo) => {
     const timings: PhaseTimings = {};
+    const trace = shouldTrace(testInfo.retry, testInfo.project.retries);
     let phase = 0;
     const app = await launchApp(
       appSettings,
@@ -720,14 +736,18 @@ export const test = base.extend<{
           type: 'browser-version',
           description: page.context().browser()!.version(),
         });
-        await page.context().tracing.start({ screenshots: true, snapshots: true });
+        if (trace) {
+          await page.context().tracing.start({ screenshots: true, snapshots: true });
+        }
       },
       appPortable,
       appRealDialogs,
-      (page) =>
-        timed(timings, 'tracingStopMs', () =>
+      async (page) => {
+        if (!trace) return;
+        await timed(timings, 'tracingStopMs', () =>
           page.context().tracing.stop({ path: testInfo.outputPath(`trace-phase-${++phase}.zip`) }),
-        ),
+        );
+      },
       timings,
     );
     let held: string[] = [];
@@ -742,12 +762,14 @@ export const test = base.extend<{
             contentType: 'image/png',
           });
         }
-        await timed(timings, 'tracingStopMs', () =>
-          app.page
-            .context()
-            .tracing.stop({ path: testInfo.outputPath('trace.zip') })
-            .catch(() => {}),
-        );
+        if (trace) {
+          await timed(timings, 'tracingStopMs', () =>
+            app.page
+              .context()
+              .tracing.stop({ path: testInfo.outputPath('trace.zip') })
+              .catch(() => {}),
+          );
+        }
         // What the run left on disk, before close removes it.
         if (failed) {
           writeFileSync(testInfo.outputPath('files.txt'), inventory(path.dirname(app.profileDir)));

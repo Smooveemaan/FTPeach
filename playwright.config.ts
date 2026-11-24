@@ -24,7 +24,7 @@ export default defineConfig({
     locale: 'en-US',
     timezoneId: 'UTC',
     deviceScaleFactor: 1,
-    trace: 'retain-on-failure',
+    trace: isCI ? 'on-first-retry' : 'retain-on-failure',
   },
   webServer: {
     // The harness built once (test/visual/vite.config.ts): a test then loads

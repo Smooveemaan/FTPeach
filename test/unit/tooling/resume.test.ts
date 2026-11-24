@@ -123,16 +123,18 @@ test('automatic signing is permitted only for an exact master branch environment
 test('a newer failed attempt invalidates its own stage while skipped retries preserve success', () => {
   const jobs = [
     { id: 1, name: 'release / build-windows', conclusion: 'success' },
-    { id: 2, name: 'release / acceptance / installer', conclusion: 'success' },
+    { id: 2, name: 'release / package-candidate', conclusion: 'success' },
+    { id: 3, name: 'release / acceptance / installer', conclusion: 'success' },
   ];
   for (const conclusion of ['failure', 'cancelled', 'timed_out', null]) {
-    const retried = [...jobs, { id: 3, name: 'release / acceptance / installer', conclusion }];
+    const retried = [...jobs, { id: 4, name: 'release / acceptance / installer', conclusion }];
     assert.equal(latestStageSuccess(retried, 'acceptance / installer'), false);
     assert.equal(latestStageSuccess(retried, 'build-windows'), true);
+    assert.equal(latestStageSuccess(retried, 'package-candidate'), true);
   }
   assert.equal(
     latestStageSuccess(
-      [...jobs, { id: 3, name: 'release / acceptance / installer', conclusion: 'skipped' }],
+      [...jobs, { id: 4, name: 'release / acceptance / installer', conclusion: 'skipped' }],
       'acceptance / installer',
     ),
     true,
@@ -149,12 +151,14 @@ test('expired evidence and missing, skipped or failed jobs cannot permit a trans
   let body: object = { total_count: 1, artifacts: [{ id: 1, name: 'proof', expired: true }] };
   t.mock.method(globalThis, 'fetch', async () => Response.json(body));
   assert.equal(await findArtifact('proof'), undefined);
-  body = { jobs: [] };
-  await assert.rejects(requireJob('123', '1', 'build-windows'), /Missing or ambiguous/);
-  for (const conclusion of ['skipped', 'failure', 'cancelled', null]) {
-    body = { jobs: [{ name: 'release / build-windows', conclusion }] };
-    await assert.rejects(requireJob('123', '1', 'build-windows'), /did not succeed/);
+  for (const jobName of ['build-windows', 'package-candidate']) {
+    body = { jobs: [] };
+    await assert.rejects(requireJob('123', '1', jobName), /Missing or ambiguous/);
+    for (const conclusion of ['skipped', 'failure', 'cancelled', null]) {
+      body = { jobs: [{ name: `release / ${jobName}`, conclusion }] };
+      await assert.rejects(requireJob('123', '1', jobName), /did not succeed/);
+    }
+    body = { jobs: [{ name: `release / ${jobName}`, conclusion: 'success' }] };
+    await requireJob('123', '1', jobName);
   }
-  body = { jobs: [{ name: 'release / build-windows', conclusion: 'success' }] };
-  await requireJob('123', '1', 'build-windows');
 });

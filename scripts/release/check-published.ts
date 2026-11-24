@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash, createPublicKey, verify } from 'node:crypto';
-import { appendFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -23,6 +23,7 @@ export function verifyUpdaterSignature(
   encodedPublicKey: string,
   content: Buffer,
   encodedSignature: string,
+  allowLegacy = false,
 ) {
   const pubLines = Buffer.from(encodedPublicKey.trim(), 'base64')
     .toString('utf8')
@@ -43,7 +44,10 @@ export function verifyUpdaterSignature(
   const sigBin = Buffer.from(sigLines[1]!, 'base64');
   assert.equal(sigBin.length, 74, 'Invalid minisign signature length');
   const alg = sigBin.subarray(0, 2).toString('ascii');
-  assert.ok(alg === 'Ed' || alg === 'ED', `Unsupported minisign signature algorithm: ${alg}`);
+  assert.ok(
+    alg === 'ED' || (allowLegacy && alg === 'Ed'),
+    `Unsupported minisign signature algorithm: ${alg}`,
+  );
   assert.ok(
     pubBin.subarray(2, 10).equals(sigBin.subarray(2, 10)),
     'Updater signature key ID does not match public key',
@@ -65,6 +69,29 @@ export function verifyUpdaterSignature(
     verify(null, Buffer.concat([signature, trustedComment]), key, globalSig),
     'Updater trusted comment signature verification failed',
   );
+}
+
+export async function verifyUpdaterDirectory(directory: string, expectedCount: number) {
+  const config = JSON.parse(await readFile('src-tauri/tauri.conf.json', 'utf8')) as {
+    plugins?: { updater?: { pubkey?: string } };
+  };
+  const pubkey = config.plugins?.updater?.pubkey;
+  assert.ok(pubkey, 'Missing plugins.updater.pubkey in src-tauri/tauri.conf.json');
+  const entries = await readdir(directory, { withFileTypes: true, recursive: true });
+  const signatures = entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.sig'))
+    .map((entry) => path.join(entry.parentPath, entry.name))
+    .sort();
+  assert.equal(
+    signatures.length,
+    expectedCount,
+    `Expected ${expectedCount} updater signatures, found ${signatures.length}`,
+  );
+  for (const sigPath of signatures) {
+    const artifactPath = sigPath.slice(0, -4);
+    verifyUpdaterSignature(pubkey, await readFile(artifactPath), await readFile(sigPath, 'utf8'));
+    console.log(`Updater signature OK: ${artifactPath}`);
+  }
 }
 
 export function validatePublicFeed(
@@ -126,75 +153,94 @@ async function resolvePublishedCandidate(tagName: string, directory: string): Pr
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const event = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH!, 'utf8'));
-  assert.equal(event.action, 'published');
-  assert.equal(event.release.draft, false);
-  const release = (await githubApi(`releases/${event.release.id}`)) as {
-    tag_name: string;
-    assets: { name: string; url: string; browser_download_url: string }[];
-  };
-  const directory = 'published-release';
-  await mkdir(directory, { recursive: true });
-  for (const asset of release.assets) {
-    assert.match(asset.name, /^[a-zA-Z0-9_.-]+$/);
-    const response = await fetch(asset.browser_download_url, {
-      signal: AbortSignal.timeout(120_000),
-    });
-    assert.ok(response.ok, `Public asset ${asset.name}: HTTP ${response.status}`);
-    await writeFile(`${directory}/${asset.name}`, Buffer.from(await response.arrayBuffer()));
-  }
-  const candidate = await resolvePublishedCandidate(release.tag_name, directory);
-  assert.equal(candidate.schema, 1);
-  assert.match(candidate.readiness.sha, /^[0-9a-f]{40}$/);
-  assert.deepEqual(
-    Object.keys(candidate.files).sort(),
-    candidateNames(candidate.readiness.version).sort(),
-  );
-  const expectedAssets = releaseAssetNames(candidate.readiness.version);
-  assert.deepEqual(
-    release.assets.map((asset) => asset.name).sort(),
-    [...expectedAssets, 'latest.json'].sort(),
-  );
-  assert.equal(
-    candidate.readiness.repository.toLowerCase(),
-    process.env.GITHUB_REPOSITORY!.toLowerCase(),
-  );
-  assert.equal(release.tag_name, `v${candidate.readiness.version}`);
-  for (const name of expectedAssets)
-    assert.equal(
-      sha256(await readFile(`${directory}/${name}`)),
-      candidate.files[name],
-      `Published ${name} changed`,
+  if (process.argv[2] === '--verify') {
+    const [, , , encodedKey, artifactPath, sigPath] = process.argv;
+    assert.ok(encodedKey && artifactPath && sigPath, 'Usage: --verify <pubkey> <artifact> <sig>');
+    verifyUpdaterSignature(
+      encodedKey,
+      await readFile(artifactPath),
+      await readFile(sigPath, 'utf8'),
     );
-  const publicFeed = await fetch(
-    `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/latest/download/latest.json`,
-    { signal: AbortSignal.timeout(60_000) },
-  );
-  assert.ok(publicFeed.ok, `Public feed: HTTP ${publicFeed.status}`);
-  const feed = (await publicFeed.json()) as Parameters<typeof validatePublicFeed>[0];
-  assert.deepEqual(feed, JSON.parse(await readFile(`${directory}/latest.json`, 'utf8')));
-  validatePublicFeed(feed, candidate, release.assets);
-  verifyAttestations(
-    directory,
-    candidate,
-    '.github/workflows/release.yml',
-    execFileSync,
-    candidate.build.workflowSha,
-  );
-  const config = (await githubApi(
-    `contents/src-tauri/tauri.conf.json?ref=${candidate.readiness.sha}`,
-  )) as { content: string };
-  const key = JSON.parse(Buffer.from(config.content, 'base64').toString()).plugins.updater.pubkey;
-  for (const [platform, name] of updaterFeedTargets(feed.version)) {
-    const file = `${directory}/${name}`;
-    const signature = feed.platforms[platform]!.signature;
-    await writeFile(`${file}.sig`, signature);
-    verifyUpdaterSignature(key, await readFile(file), signature);
+    console.log(`Updater signature OK: ${artifactPath}`);
+  } else if (process.argv[2] === '--verify-dir') {
+    const [, , , directory, countArg] = process.argv;
+    const expectedCount = Number(countArg);
+    assert.ok(
+      directory && Number.isInteger(expectedCount) && expectedCount > 0,
+      'Usage: --verify-dir <dir> <expectedCount>',
+    );
+    await verifyUpdaterDirectory(directory, expectedCount);
+  } else {
+    const event = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH!, 'utf8'));
+    assert.equal(event.action, 'published');
+    assert.equal(event.release.draft, false);
+    const release = (await githubApi(`releases/${event.release.id}`)) as {
+      tag_name: string;
+      assets: { name: string; url: string; browser_download_url: string }[];
+    };
+    const directory = 'published-release';
+    await mkdir(directory, { recursive: true });
+    for (const asset of release.assets) {
+      assert.match(asset.name, /^[a-zA-Z0-9_.-]+$/);
+      const response = await fetch(asset.browser_download_url, {
+        signal: AbortSignal.timeout(120_000),
+      });
+      assert.ok(response.ok, `Public asset ${asset.name}: HTTP ${response.status}`);
+      await writeFile(`${directory}/${asset.name}`, Buffer.from(await response.arrayBuffer()));
+    }
+    const candidate = await resolvePublishedCandidate(release.tag_name, directory);
+    assert.equal(candidate.schema, 1);
+    assert.match(candidate.readiness.sha, /^[0-9a-f]{40}$/);
+    assert.deepEqual(
+      Object.keys(candidate.files).sort(),
+      candidateNames(candidate.readiness.version).sort(),
+    );
+    const expectedAssets = releaseAssetNames(candidate.readiness.version);
+    assert.deepEqual(
+      release.assets.map((asset) => asset.name).sort(),
+      [...expectedAssets, 'latest.json'].sort(),
+    );
+    assert.equal(
+      candidate.readiness.repository.toLowerCase(),
+      process.env.GITHUB_REPOSITORY!.toLowerCase(),
+    );
+    assert.equal(release.tag_name, `v${candidate.readiness.version}`);
+    for (const name of expectedAssets)
+      assert.equal(
+        sha256(await readFile(`${directory}/${name}`)),
+        candidate.files[name],
+        `Published ${name} changed`,
+      );
+    const publicFeed = await fetch(
+      `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/latest/download/latest.json`,
+      { signal: AbortSignal.timeout(60_000) },
+    );
+    assert.ok(publicFeed.ok, `Public feed: HTTP ${publicFeed.status}`);
+    const feed = (await publicFeed.json()) as Parameters<typeof validatePublicFeed>[0];
+    assert.deepEqual(feed, JSON.parse(await readFile(`${directory}/latest.json`, 'utf8')));
+    validatePublicFeed(feed, candidate, release.assets);
+    verifyAttestations(
+      directory,
+      candidate,
+      '.github/workflows/release.yml',
+      execFileSync,
+      candidate.build.workflowSha,
+    );
+    const config = (await githubApi(
+      `contents/src-tauri/tauri.conf.json?ref=${candidate.readiness.sha}`,
+    )) as { content: string };
+    const key = JSON.parse(Buffer.from(config.content, 'base64').toString()).plugins.updater.pubkey;
+    for (const [platform, name] of updaterFeedTargets(feed.version)) {
+      const file = `${directory}/${name}`;
+      const signature = feed.platforms[platform]!.signature;
+      await writeFile(`${file}.sig`, signature);
+      verifyUpdaterSignature(key, await readFile(file), signature);
+    }
+    const page = await fetch('https://ftpeach.com/', { signal: AbortSignal.timeout(60_000) });
+    assert.ok(page.ok, `Public Pages: HTTP ${page.status}`);
+    await appendFile(
+      process.env.GITHUB_STEP_SUMMARY!,
+      `Published ${release.tag_name}: public packages, manifest, updater signatures, feed and Pages availability passed. Real installed/portable updates from this public feed still require the owner's verification.\n`,
+    );
   }
-  const page = await fetch('https://ftpeach.com/', { signal: AbortSignal.timeout(60_000) });
-  assert.ok(page.ok, `Public Pages: HTTP ${page.status}`);
-  await appendFile(
-    process.env.GITHUB_STEP_SUMMARY!,
-    `Published ${release.tag_name}: public packages, manifest, updater signatures, feed and Pages availability passed. Real installed/portable updates from this public feed still require the owner's verification.\n`,
-  );
 }

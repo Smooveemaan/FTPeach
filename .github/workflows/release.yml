@@ -106,6 +106,11 @@ jobs:
           cp "$bundle_root"/macos/*.app.tar.gz "release-macos/FTPeach_${VERSION}_universal.app.tar.gz"
           cp "$bundle_root"/macos/*.app.tar.gz.sig "release-macos/FTPeach_${VERSION}_universal.app.tar.gz.sig"
           xcrun stapler validate "release-macos/FTPeach_${VERSION}_universal.dmg"
+      - name: Check macOS packages for signing key leaks
+        if: steps.preflight.outputs.multiplatform == 'true'
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts --scan release-macos release-macos/meta/trust-macos.json
       - name: Attest macOS package bytes
         if: steps.preflight.outputs.multiplatform == 'true'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -180,6 +185,11 @@ jobs:
           cp src-tauri/target/release/bundle/appimage/*.AppImage.sig "release-linux/FTPeach_${VERSION}_amd64.AppImage.sig"
           cp src-tauri/target/release/bundle/deb/*.deb "release-linux/FTPeach_${VERSION}_amd64.deb"
           cp src-tauri/target/release/bundle/deb/*.deb.sig "release-linux/FTPeach_${VERSION}_amd64.deb.sig"
+      - name: Check Linux packages for signing key leaks
+        if: steps.preflight.outputs.multiplatform == 'true'
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts --scan release-linux release-linux/meta/trust-linux.json
       - name: Attest Linux package bytes
         if: steps.preflight.outputs.multiplatform == 'true'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -196,7 +206,6 @@ jobs:
           retention-days: 5
 
   build-windows:
-    needs: [build-macos, build-linux]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     permissions:
       actions: read
@@ -207,8 +216,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 60
     outputs:
-      artifact: ${{ steps.package.outputs.artifact }}
-      candidate-id: ${{ github.run_id }}:${{ github.run_attempt }}
+      version: ${{ steps.preflight.outputs.version }}
       multiplatform: ${{ steps.preflight.outputs.multiplatform }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -253,67 +261,143 @@ jobs:
           npm run tauri -- build --bundles nsis
           node --experimental-strip-types scripts/release/portable.ts build
           npm run tauri -- signer sign src-tauri/target/release/bundle/portable/*-portable.zip
+      - name: Check Windows trust and absence of signing keys
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts --windows src-tauri/target/release release-windows/meta/trust-windows.json
       - name: Build Microsoft Store MSIX package
         if: steps.preflight.outputs.multiplatform == 'true'
         shell: bash
         run: |
           cargo build --release --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol,ms-store --target-dir src-tauri/target/ms-store
           node --experimental-strip-types scripts/release/msix.ts build src-tauri/target/release src-tauri/target/ms-store/release/FTPeach.exe
-      - name: Download macOS packages
+      - name: Check MSIX package for signing key leaks
         if: steps.preflight.outputs.multiplatform == 'true'
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: release-macos-${{ github.run_attempt }}
-          path: src-tauri/target/release/bundle/external
-      - name: Download Linux packages
-        if: steps.preflight.outputs.multiplatform == 'true'
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: release-linux-${{ github.run_attempt }}
-          path: src-tauri/target/release/bundle/external
-      - name: Verify every updater signature
-        shell: pwsh
-        env:
-          MULTIPLATFORM: ${{ steps.preflight.outputs.multiplatform }}
-        run: |
-          $config = Get-Content -Raw src-tauri/tauri.conf.json | ConvertFrom-Json
-          $signatures = @(Get-ChildItem -Recurse src-tauri/target/release/bundle -Filter '*.sig')
-          $expected = if ($env:MULTIPLATFORM -eq 'true') { 5 } else { 2 }
-          if ($signatures.Count -ne $expected) { throw "Expected $expected updater signatures, found $($signatures.Count)" }
-          foreach ($signature in $signatures) {
-            $artifact = $signature.FullName.Substring(0, $signature.FullName.Length - 4)
-            cargo run --locked --manifest-path src-tauri/Cargo.toml --example verify_updater -- $config.plugins.updater.pubkey $artifact $signature.FullName
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
-      - name: Check final trust and absence of signing keys
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        run: node --experimental-strip-types scripts/release/release-trust-report.ts
-      - name: Freeze candidate files and record source and tools
-        id: package
+        run: node --experimental-strip-types scripts/release/release-trust-report.ts --scan src-tauri/target/release/bundle/msix release-windows/meta/trust-msix.json
+      - name: Stage Windows packages and build metadata
         shell: pwsh
         env:
           VERSION: ${{ steps.preflight.outputs.version }}
           MULTIPLATFORM: ${{ steps.preflight.outputs.multiplatform }}
         run: |
-          New-Item -ItemType Directory release-candidate | Out-Null
-          Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-candidate
+          New-Item -ItemType Directory -Force release-windows/meta/sbom | Out-Null
+          Copy-Item -LiteralPath "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe", "src-tauri/target/release/bundle/nsis/FTPeach_$($env:VERSION)_x64-setup.exe.sig", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip", "src-tauri/target/release/bundle/portable/FTPeach_$($env:VERSION)_x64-portable.zip.sig" -Destination release-windows
           if ($env:MULTIPLATFORM -eq 'true') {
-            Copy-Item -LiteralPath "src-tauri/target/release/bundle/msix/FTPeach_$($env:VERSION)_x64.msix" -Destination release-candidate
-            Copy-Item -Path "src-tauri/target/release/bundle/external/*" -Destination release-candidate
+            Copy-Item -LiteralPath "src-tauri/target/release/bundle/msix/FTPeach_$($env:VERSION)_x64.msix" -Destination release-windows
           }
-          Copy-Item -LiteralPath release/release-notes.md -Destination release-candidate
-          Compress-Archive -Path release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json, release/release-trust-report.md -DestinationPath release-candidate/release-audit.zip
-          node --experimental-strip-types scripts/release/candidate.ts
+          Copy-Item -LiteralPath release/release-notes.md -Destination release-windows/meta/release-notes.md
+          Copy-Item -LiteralPath release/sbom/ftpeach-npm.cdx.json, release/sbom/ftpeach-cargo.cdx.json -Destination release-windows/meta/sbom
+          node --experimental-strip-types scripts/release/candidate.ts --record-tools release-windows/meta/tools.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "artifact=release-candidate-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
-      - name: Attest the source manifest and final package bytes
+      - name: Attest Windows package bytes
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
-            release-candidate/*-setup.exe
-            release-candidate/*-portable.zip
-            release-candidate/candidate.json
+            release-windows/*-setup.exe
+            release-windows/*-portable.zip
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-windows-${{ github.run_attempt }}
+          path: release-windows/
+          if-no-files-found: error
+          retention-days: 5
+
+  package-candidate:
+    needs: [build-windows, build-macos, build-linux]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      artifact: ${{ steps.package.outputs.artifact }}
+      candidate-id: ${{ github.run_id }}:${{ github.run_attempt }}
+      multiplatform: ${{ needs.build-windows.outputs.multiplatform }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Download Windows packages
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-windows-${{ github.run_attempt }}
+          path: release-staging/windows
+      - name: Download macOS packages
+        if: needs.build-windows.outputs.multiplatform == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-macos-${{ github.run_attempt }}
+          path: release-staging/macos
+      - name: Download Linux packages
+        if: needs.build-windows.outputs.multiplatform == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-linux-${{ github.run_attempt }}
+          path: release-staging/linux
+      - name: Stage candidate files
+        env:
+          VERSION: ${{ needs.build-windows.outputs.version }}
+          MULTIPLATFORM: ${{ needs.build-windows.outputs.multiplatform }}
+        run: |
+          mkdir -p release-candidate
+          cp "release-staging/windows/FTPeach_${VERSION}_x64-setup.exe" \
+            "release-staging/windows/FTPeach_${VERSION}_x64-setup.exe.sig" \
+            "release-staging/windows/FTPeach_${VERSION}_x64-portable.zip" \
+            "release-staging/windows/FTPeach_${VERSION}_x64-portable.zip.sig" \
+            release-staging/windows/meta/release-notes.md \
+            release-candidate/
+          if [ "$MULTIPLATFORM" = "true" ]; then
+            cp "release-staging/windows/FTPeach_${VERSION}_x64.msix" \
+              "release-staging/macos/FTPeach_${VERSION}_universal.dmg" \
+              "release-staging/macos/FTPeach_${VERSION}_universal.app.tar.gz" \
+              "release-staging/macos/FTPeach_${VERSION}_universal.app.tar.gz.sig" \
+              "release-staging/linux/FTPeach_${VERSION}_amd64.AppImage" \
+              "release-staging/linux/FTPeach_${VERSION}_amd64.AppImage.sig" \
+              "release-staging/linux/FTPeach_${VERSION}_amd64.deb" \
+              "release-staging/linux/FTPeach_${VERSION}_amd64.deb.sig" \
+              release-candidate/
+          fi
+      - name: Verify every updater signature
+        env:
+          MULTIPLATFORM: ${{ needs.build-windows.outputs.multiplatform }}
+        run: |
+          expected=$([ "$MULTIPLATFORM" = "true" ] && echo 5 || echo 2)
+          node --experimental-strip-types scripts/release/check-published.ts --verify-dir release-candidate "$expected"
+      - name: Aggregate release trust report
+        env:
+          MULTIPLATFORM: ${{ needs.build-windows.outputs.multiplatform }}
+        run: |
+          fragments=(release-staging/windows/meta/trust-windows.json)
+          if [ "$MULTIPLATFORM" = "true" ]; then
+            fragments+=(
+              release-staging/windows/meta/trust-msix.json
+              release-staging/macos/meta/trust-macos.json
+              release-staging/linux/meta/trust-linux.json
+            )
+          fi
+          node --experimental-strip-types scripts/release/release-trust-report.ts --aggregate release-candidate "${fragments[@]}"
+      - name: Freeze candidate files and record source and tools
+        id: package
+        run: |
+          zip -j release-candidate/release-audit.zip \
+            release-staging/windows/meta/sbom/ftpeach-npm.cdx.json \
+            release-staging/windows/meta/sbom/ftpeach-cargo.cdx.json \
+            release/release-trust-report.md
+          node --experimental-strip-types scripts/release/candidate.ts release-candidate --tools-file release-staging/windows/meta/tools.json
+          echo "artifact=release-candidate-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+      - name: Attest the source manifest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release-candidate/candidate.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.package.outputs.artifact }}
@@ -322,21 +406,21 @@ jobs:
           retention-days: 30
 
   acceptance:
-    needs: build-windows
-    if: always() && github.ref == 'refs/heads/master' && (needs.build-windows.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
+    needs: package-candidate
+    if: always() && github.ref == 'refs/heads/master' && (needs.package-candidate.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
     permissions:
       contents: read
       actions: read
     uses: ./.github/workflows/installer.yml
     with:
-      candidate-id: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
-      candidate-artifact: ${{ needs.build-windows.outputs.artifact }}
+      candidate-id: ${{ needs.package-candidate.outputs.candidate-id || inputs.candidate-id }}
+      candidate-artifact: ${{ needs.package-candidate.outputs.artifact }}
       installer-approved: ${{ github.event_name == 'push' || inputs.installer-approved }}
       production: true
 
   acceptance-macos:
-    needs: build-windows
-    if: always() && github.ref == 'refs/heads/master' && ((needs.build-windows.result == 'success' && needs.build-windows.outputs.multiplatform == 'true') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
+    needs: package-candidate
+    if: always() && github.ref == 'refs/heads/master' && ((needs.package-candidate.result == 'success' && needs.package-candidate.outputs.multiplatform == 'true') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
     permissions:
       contents: read
       actions: read
@@ -352,7 +436,7 @@ jobs:
           node-version: 24
           cache: npm
       - name: Validate saved candidate and check retained macOS evidence
-        if: needs.build-windows.outputs.artifact == ''
+        if: needs.package-candidate.outputs.artifact == ''
         id: resume
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -360,20 +444,20 @@ jobs:
           INSTALLER_APPROVED: ${{ inputs.installer-approved }}
         run: node --experimental-strip-types scripts/release/validate-candidate.ts prepare-macos
       - name: Download the final candidate
-        if: needs.build-windows.outputs.artifact != ''
+        if: needs.package-candidate.outputs.artifact != ''
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
-          name: ${{ needs.build-windows.outputs.artifact }}
+          name: ${{ needs.package-candidate.outputs.artifact }}
           path: release-candidate
       - name: Accept universal macOS DMG, app bundle and updater archive
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
         run: node --experimental-strip-types scripts/release/unix-acceptance.ts release-candidate --macos
       - name: Record independent macOS acceptance
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
         id: proof
         run: node --experimental-strip-types scripts/release/validate-candidate.ts record macos
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.macos == 'true'
         with:
           name: ${{ steps.proof.outputs.evidence }}
           path: release-evidence/macos/
@@ -381,8 +465,8 @@ jobs:
           retention-days: 30
 
   acceptance-linux:
-    needs: build-windows
-    if: always() && github.ref == 'refs/heads/master' && ((needs.build-windows.result == 'success' && needs.build-windows.outputs.multiplatform == 'true') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
+    needs: package-candidate
+    if: always() && github.ref == 'refs/heads/master' && ((needs.package-candidate.result == 'success' && needs.package-candidate.outputs.multiplatform == 'true') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'resume'))
     permissions:
       contents: read
       actions: read
@@ -398,7 +482,7 @@ jobs:
           node-version: 24
           cache: npm
       - name: Validate saved candidate and check retained Linux evidence
-        if: needs.build-windows.outputs.artifact == ''
+        if: needs.package-candidate.outputs.artifact == ''
         id: resume
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -406,25 +490,25 @@ jobs:
           INSTALLER_APPROVED: ${{ inputs.installer-approved }}
         run: node --experimental-strip-types scripts/release/validate-candidate.ts prepare-linux
       - name: Download the final candidate
-        if: needs.build-windows.outputs.artifact != ''
+        if: needs.package-candidate.outputs.artifact != ''
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
-          name: ${{ needs.build-windows.outputs.artifact }}
+          name: ${{ needs.package-candidate.outputs.artifact }}
           path: release-candidate
       - name: Install headless Linux runtime dependencies
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb dbus-x11 libfuse2 fuse3 libwebkit2gtk-4.1-0 libayatana-appindicator3-1
       - name: Accept Linux Debian and AppImage packages
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
         run: node --experimental-strip-types scripts/release/unix-acceptance.ts release-candidate --linux
       - name: Record independent Linux acceptance
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
         id: proof
         run: node --experimental-strip-types scripts/release/validate-candidate.ts record linux
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: needs.build-windows.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
+        if: needs.package-candidate.outputs.artifact != '' || steps.resume.outputs.linux == 'true'
         with:
           name: ${{ steps.proof.outputs.evidence }}
           path: release-evidence/linux/
@@ -432,8 +516,8 @@ jobs:
           retention-days: 30
 
   tag-and-draft:
-    needs: [build-windows, acceptance, acceptance-macos, acceptance-linux]
-    if: always() && github.ref == 'refs/heads/master' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || inputs.operation == 'deploy')
+    needs: [package-candidate, acceptance, acceptance-macos, acceptance-linux]
+    if: always() && github.ref == 'refs/heads/master' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && ((github.event_name == 'push' && needs.package-candidate.result == 'success') || inputs.operation == 'deploy')
     permissions:
       actions: read
       contents: write
@@ -456,7 +540,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           RELEASE_TAG_KEY: ${{ secrets.RELEASE_TAG_KEY }}
-          CANDIDATE_ID: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}
+          CANDIDATE_ID: ${{ needs.package-candidate.outputs.candidate-id || inputs.candidate-id }}
         run: |
           test -n "$RELEASE_TAG_KEY"
           key="$RUNNER_TEMP/release-tag-key"

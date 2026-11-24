@@ -77,7 +77,7 @@ test('public feed must offer the accepted platform files and signatures for 0.6.
   );
 });
 
-test('node:crypto minisign verifier accepts valid updater signatures and rejects tampered payloads or comments', () => {
+test('node:crypto minisign verifier accepts valid prehashed signatures and rejects legacy, tampered payloads or comments', () => {
   const pubKey = readFileSync('test/fixtures/updater/spike.key.pub', 'utf8');
   const signature = readFileSync('test/fixtures/updater/dummy-update.bin.sig', 'utf8');
   const payload = readFileSync('test/fixtures/updater/dummy-update.bin');
@@ -85,6 +85,17 @@ test('node:crypto minisign verifier accepts valid updater signatures and rejects
   assert.throws(
     () => verifyUpdaterSignature(pubKey, Buffer.concat([payload, Buffer.from('x')]), signature),
     /Updater signature verification failed/,
+  );
+  const sigLines = Buffer.from(signature.trim(), 'base64').toString('utf8').trim().split(/\r?\n/);
+  const legacySigBin = Buffer.from(sigLines[1]!, 'base64');
+  legacySigBin.write('Ed', 0, 'ascii');
+  const legacySig = Buffer.from(
+    [sigLines[0], legacySigBin.toString('base64'), sigLines[2], sigLines[3]].join('\n'),
+    'utf8',
+  ).toString('base64');
+  assert.throws(
+    () => verifyUpdaterSignature(pubKey, payload, legacySig),
+    /Unsupported minisign signature algorithm: Ed/,
   );
   const tamperedComment = Buffer.from(
     Buffer.from(signature.trim(), 'base64')

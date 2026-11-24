@@ -286,8 +286,11 @@ test('candidate records source and workflow commits and rejects source checkout 
   for (const name of candidateNames('0.6.1')) {
     await writeFile(path.join(source, 'release-candidate', name), name);
   }
-  const run = (shaEnv: string) =>
-    spawnSync(process.execPath, ['--experimental-strip-types', script], {
+  const toolsFile = path.join(directory, 'tools.json');
+  const recordedTools = { node: 'v24.0.0', rust: 'rustc 1.94.0', cargo: 'cargo 1.94.0' };
+  await writeFile(toolsFile, JSON.stringify(recordedTools));
+  const run = (shaEnv: string, extraArgs: string[] = []) =>
+    spawnSync(process.execPath, ['--experimental-strip-types', script, ...extraArgs], {
       cwd: source,
       encoding: 'utf8',
       env: {
@@ -300,13 +303,14 @@ test('candidate records source and workflow commits and rejects source checkout 
         GITHUB_STEP_SUMMARY: path.join(directory, 'summary.md'),
       },
     });
-  const success = run(sourceSha);
+  const success = run(sourceSha, ['release-candidate', '--tools-file', toolsFile]);
   assert.equal(success.status, 0, success.stderr);
   const candidate = await verifyCandidate(path.join(source, 'release-candidate'));
   assert.equal(candidate.readiness.sha, sourceSha);
   assert.equal(candidate.build.workflowSha, workflowSha);
+  assert.deepEqual(candidate.build.tools, recordedTools);
   await rm(path.join(source, 'release-candidate/candidate.json'));
-  const wrongSource = run(workflowSha);
+  const wrongSource = run(workflowSha, ['release-candidate', '--tools-file', toolsFile]);
   assert.notEqual(wrongSource.status, 0);
   assert.match(wrongSource.stderr, /build checkout is not the checked candidate/);
 });

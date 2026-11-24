@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { appendFile, readFile, readdir, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -44,6 +44,14 @@ export interface Candidate {
 }
 export const sha256 = (data: string | Buffer): string =>
   createHash('sha256').update(data).digest('hex');
+
+export function collectTools(): Record<string, string> {
+  return {
+    node: process.version,
+    rust: execFileSync('rustc', ['--version'], { encoding: 'utf8' }).trim(),
+    cargo: execFileSync('cargo', ['--version'], { encoding: 'utf8' }).trim(),
+  };
+}
 
 export function isMultiPlatformVersion(version: string): boolean {
   assert.match(version, /^\d+\.\d+\.\d+$/);
@@ -178,6 +186,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       process.env.GITHUB_OUTPUT!,
       `version=${version}\nmultiplatform=${multiplatform}\n`,
     );
+  } else if (process.argv.includes('--record-tools')) {
+    const outPath = process.argv[process.argv.indexOf('--record-tools') + 1];
+    assert.ok(outPath, 'Usage: --record-tools <outPath>');
+    await mkdir(path.dirname(outPath), { recursive: true });
+    await writeFile(outPath, `${JSON.stringify(collectTools(), null, 2)}\n`);
   } else if (process.argv.includes('--verify')) {
     await verifyCandidate(directory);
   } else {
@@ -193,6 +206,21 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const multiplatform = isMultiPlatformVersion(version);
     const workflowSha = process.env.GITHUB_WORKFLOW_SHA ?? source;
     assert.match(workflowSha, /^[0-9a-f]{40}$/, 'The build workflow SHA is required');
+    const toolsFlagIndex = process.argv.indexOf('--tools-file');
+    let tools: Record<string, string>;
+    if (toolsFlagIndex >= 0) {
+      const toolsFile = process.argv[toolsFlagIndex + 1];
+      assert.ok(toolsFile, 'Usage: --tools-file <path>');
+      tools = JSON.parse(await readFile(toolsFile, 'utf8')) as Record<string, string>;
+      for (const key of ['node', 'rust', 'cargo']) {
+        assert.ok(
+          typeof tools[key] === 'string' && tools[key].trim().length > 0,
+          `Missing ${key} tool version in ${toolsFile}`,
+        );
+      }
+    } else {
+      tools = collectTools();
+    }
     const readiness: Readiness = {
       schema: 1,
       repository: process.env.GITHUB_REPOSITORY!,
@@ -213,11 +241,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         runId: process.env.GITHUB_RUN_ID!,
         attempt: process.env.GITHUB_RUN_ATTEMPT!,
         workflowSha,
-        tools: {
-          node: process.version,
-          rust: execFileSync('rustc', ['--version'], { encoding: 'utf8' }).trim(),
-          cargo: execFileSync('cargo', ['--version'], { encoding: 'utf8' }).trim(),
-        },
+        tools,
       },
       files,
     };

@@ -206,6 +206,7 @@ export async function validateCandidate(id: string) {
     await requireJob(runId, attempt, 'build-macos');
     await requireJob(runId, attempt, 'build-linux');
   }
+  await requireJob(runId, attempt, 'package-candidate');
   const hash = sha256(await readFile(`${directory}/candidate.json`));
   const installer = await stageEvidence('installer', id, hash);
   const macos = multiplatform ? await stageEvidence('macos', id, hash) : undefined;

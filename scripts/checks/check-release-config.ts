@@ -293,7 +293,7 @@ assert.doesNotMatch(
 );
 assert.match(
   releaseWorkflow,
-  / {2}tag-and-draft:\r?\n {4}needs: \[build-windows, acceptance, acceptance-macos, acceptance-linux\]\r?\n {4}if: always\(\) && github\.ref == 'refs\/heads\/master' && !contains\(needs\.\*\.result, 'failure'\) && !contains\(needs\.\*\.result, 'cancelled'\) && \(github\.event_name == 'push' \|\| inputs\.operation == 'deploy'\)/,
+  / {2}tag-and-draft:\r?\n {4}needs: \[package-candidate, acceptance, acceptance-macos, acceptance-linux\]\r?\n {4}if: always\(\) && github\.ref == 'refs\/heads\/master' && !contains\(needs\.\*\.result, 'failure'\) && !contains\(needs\.\*\.result, 'cancelled'\) && \(\(github\.event_name == 'push' && needs\.package-candidate\.result == 'success'\) \|\| inputs\.operation == 'deploy'\)/,
   'Saved-candidate deploy must run after automatic acceptance across all target platforms or skipped build jobs on deploy without failures',
 );
 const requiredWorkflowEntries: [string, string, string][] = [
@@ -301,6 +301,7 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [releaseWorkflow, 'release.yml', '  build-macos:'],
   [releaseWorkflow, 'release.yml', '  build-linux:'],
   [releaseWorkflow, 'release.yml', '  build-windows:'],
+  [releaseWorkflow, 'release.yml', '  package-candidate:'],
   [releaseWorkflow, 'release.yml', '  acceptance-macos:'],
   [releaseWorkflow, 'release.yml', '  acceptance-linux:'],
   [releaseWorkflow, 'release.yml', '    environment: release'],
@@ -325,17 +326,17 @@ const requiredWorkflowEntries: [string, string, string][] = [
   [
     releaseWorkflow,
     'release.yml',
-    'needs: [build-windows, acceptance, acceptance-macos, acceptance-linux]',
+    'needs: [package-candidate, acceptance, acceptance-macos, acceptance-linux]',
   ],
   [
     releaseWorkflow,
     'release.yml',
-    'candidate-artifact: ${{ needs.build-windows.outputs.artifact }}',
+    'candidate-artifact: ${{ needs.package-candidate.outputs.artifact }}',
   ],
   [
     releaseWorkflow,
     'release.yml',
-    'candidate-id: ${{ needs.build-windows.outputs.candidate-id || inputs.candidate-id }}',
+    'candidate-id: ${{ needs.package-candidate.outputs.candidate-id || inputs.candidate-id }}',
   ],
   [releaseWorkflow, 'release.yml', 'scripts/release/check-release-environment.ts release'],
   [releaseWorkflow, 'release.yml', 'scripts/release/check-release-environment.ts release-tag'],
@@ -378,20 +379,46 @@ for (const [workflow, workflowName, requiredWorkflowEntry] of requiredWorkflowEn
   );
 }
 
-const buildWindowsSection = releaseWorkflow.slice(releaseWorkflow.indexOf('  build-windows:'));
+const buildWindowsSection = releaseWorkflow.slice(
+  releaseWorkflow.indexOf('  build-windows:'),
+  releaseWorkflow.indexOf('  package-candidate:'),
+);
+const packageSection = releaseWorkflow.slice(
+  releaseWorkflow.indexOf('  package-candidate:'),
+  releaseWorkflow.indexOf('  acceptance:'),
+);
 assert.ok(
-  buildWindowsSection.indexOf('signer sign') <
-    buildWindowsSection.indexOf('Verify every updater signature'),
+  !buildWindowsSection.includes('needs: [build-macos, build-linux]'),
+  'build-windows must run in parallel with build-macos and build-linux',
 );
 assert.ok(
   buildWindowsSection.indexOf('Check release controller') <
     buildWindowsSection.indexOf('npm run tauri -- build --bundles nsis'),
 );
 assert.ok(
-  buildWindowsSection.indexOf('Verify every updater signature') <
-    buildWindowsSection.indexOf('uses: actions/attest-build-provenance@') &&
-    buildWindowsSection.indexOf('uses: actions/attest-build-provenance@') <
-      buildWindowsSection.indexOf('  acceptance:'),
+  buildWindowsSection.indexOf('signer sign') <
+    buildWindowsSection.indexOf('uses: actions/attest-build-provenance@'),
+);
+assert.ok(
+  buildWindowsSection.indexOf('release-trust-report.ts --windows') <
+    buildWindowsSection.indexOf('Build Microsoft Store MSIX package'),
+  'Windows trust check must inspect FTPeach.exe before MSIX builds',
+);
+assert.ok(
+  packageSection.includes('needs: [build-windows, build-macos, build-linux]'),
+  'package-candidate must wait for all platform builds',
+);
+assert.ok(
+  !packageSection.includes('environment: release'),
+  'package-candidate must run without signing secrets or the release environment',
+);
+assert.ok(
+  packageSection.indexOf('Verify every updater signature') >= 0 &&
+    packageSection.indexOf('Verify every updater signature') <
+      packageSection.indexOf('uses: actions/attest-build-provenance@'),
+);
+assert.ok(
+  releaseWorkflow.indexOf('  package-candidate:') < releaseWorkflow.indexOf('  acceptance:'),
 );
 
 assert.match(

@@ -25,27 +25,41 @@ jobs:
     outputs:
       full: ${{ steps.mode.outputs.full }}
       release: ${{ steps.mode.outputs.release }}
+      required-gates: ${{ steps.classify.outputs.required-gates }}
+      required-checks: ${{ steps.classify.outputs.required-checks }}
+      tooling-only: ${{ steps.classify.outputs.tooling-only }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The classifier needs both commits, which a shallow clone may lack.
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           package-manager-cache: false
       - id: mode
         run: node --experimental-strip-types scripts/release/check-mode.ts
+      - id: classify
+        env:
+          FORCE_ALL: ${{ steps.mode.outputs.full }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: node --experimental-strip-types scripts/checks/classify-changes.ts --source=github
 
   # The suite itself lives in checks.yml, shared with release.yml.
   checks:
     needs: mode
+    if: ${{ !cancelled() }}
     permissions:
-      actions: read
       contents: read
-      pull-requests: read
     uses: ./.github/workflows/checks.yml
     with:
       force-all: ${{ needs.mode.outputs.full == 'true' }}
+      classified: ${{ needs.mode.result == 'success' }}
+      required-gates: ${{ needs.mode.outputs.required-gates || '[]' }}
+      required-checks: ${{ needs.mode.outputs.required-checks || '[]' }}
+      tooling-only: ${{ needs.mode.outputs.tooling-only == 'true' }}
 
   private-check:
     needs: mode

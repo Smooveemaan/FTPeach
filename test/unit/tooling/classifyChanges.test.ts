@@ -273,32 +273,34 @@ test('every selected gate controls its actual workflow job', () => {
       (match) => [match[1], match[2]],
     ),
   );
-  assert.deepEqual([...jobs.keys()].sort(), [...GATES, 'changes', 'full-result'].sort());
+  assert.deepEqual([...jobs.keys()].sort(), [...GATES, 'full-result'].sort());
   const aggregate = jobs.get('full-result')!;
   const required = aggregate
     .match(/needs:\s*\[([\s\S]*?)\]/)![1]!
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean);
-  assert.deepEqual(required.sort(), [...GATES, 'changes'].sort());
+  assert.deepEqual(required.sort(), [...GATES].sort());
   assert.ok(aggregate.includes('if: always() && inputs.force-all'));
   assert.doesNotMatch(jobs.get('rust-test-unix')!, /continue-on-error/);
   for (const id of GATES) {
     if (id === 'supply-chain') continue;
-    assert.ok(jobs.get(id)?.includes('needs: changes'), id);
+    assert.doesNotMatch(jobs.get(id)!, /needs: changes/, id);
     assert.ok(
       jobs
         .get(id)
-        ?.includes(`if: contains(fromJSON(needs.changes.outputs.required-gates), '${id}')`),
+        ?.includes(
+          `if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), '${id}')`,
+        ),
       id,
     );
   }
   assert.doesNotMatch(workflow, /outputs\.(?:rust|frontend|risk)/);
-  assert.match(workflow, /run: npm test\r?\n\s+if: .*tooling-only != 'true'/);
   assert.match(
     workflow,
-    /run: npm run build\r?\n\s+if: needs.changes.outputs.tooling-only != 'true'/,
+    /run: npm test\r?\n\s+if: \$\{\{ !inputs\.force-all && !inputs\.tooling-only \}\}/,
   );
+  assert.match(workflow, /run: npm run build\r?\n\s+if: \$\{\{ !inputs\.tooling-only \}\}/);
   assert.match(
     workflow,
     /Test development tooling[\s\S]*?find test\/unit\/tooling.*! -name 'site\*\.test\.ts'/,
@@ -307,11 +309,11 @@ test('every selected gate controls its actual workflow job', () => {
   assert.doesNotMatch(jobs.get('lint-test-build')!, /continue-on-error: true/);
   assert.match(workflow, /run: npm run coverage\r?\n\s+if: inputs.force-all/);
   const baseline = jobs.get('supply-chain')!.replaceAll('\r\n', '\n');
-  assert.match(baseline, /needs: changes\r?\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
+  assert.match(baseline, /if: \$\{\{ !cancelled\(\) \}\}/);
   for (const check of CHECKS) {
     assert.ok(
       baseline.includes(
-        `run: npm run ${check}\n        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), '${check}')`,
+        `run: npm run ${check}\n        if: \${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), '${check}') }}`,
       ),
       check,
     );
@@ -319,11 +321,10 @@ test('every selected gate controls its actual workflow job', () => {
   for (const check of ['check:tracked-secrets', 'check:command-acl', 'licenses:check']) {
     assert.match(baseline, new RegExp(`run: npm run ${check}\\r?\\n      - `));
   }
-  assert.ok(
-    readFileSync('.github/workflows/checks.yml', 'utf8').includes(
-      'required-checks: ${{ steps.classify.outputs.required-checks }}',
-    ),
-  );
+  const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+  assert.ok(ci.includes('required-checks: ${{ steps.classify.outputs.required-checks }}'));
+  assert.ok(ci.includes("classified: ${{ needs.mode.result == 'success' }}"));
+  assert.ok(ci.includes('if: ${{ !cancelled() }}'));
 });
 
 test('working-tree collection unions staged, unstaged and untracked paths', () => {
@@ -447,6 +448,8 @@ test('releases and manual full runs select every shared check without a base dif
   assert.match(ci, /workflow_dispatch:/);
   assert.ok(ci.includes("force-all: ${{ needs.mode.outputs.full == 'true' }}"));
   assert.ok(ci.includes('scripts/release/check-mode.ts'));
+  assert.ok(ci.includes('scripts/checks/classify-changes.ts --source=github'));
+  assert.ok(ci.includes('FORCE_ALL: ${{ steps.mode.outputs.full }}'));
   assert.ok(ci.includes('needs: [mode, checks, private-check]'));
   const release = readFileSync('.github/workflows/release.yml', 'utf8');
   assert.match(release, /scripts\/release\/candidate\.ts --preflight/);

@@ -29,11 +29,11 @@ files do not establish that they are enabled.
   Rulesets > New ruleset > Import a ruleset** and import each file.
   - `master.json` blocks deletion and force pushes, requires linear history and a
     pull request merged by squash or rebase, with resolved review threads, and
-    requires every job of `checks.yml` as reported by `ci.yml` (`checks / <job>`),
-    on a branch that is up to date with `master`. A job skipped by the change
-    filter counts as passing; `changes` is required so that a failed filter
-    cannot skip the rest. When a job is added to or renamed in `checks.yml`,
-    update this list.
+    requires `mode` plus every job of `checks.yml` as reported by `ci.yml`
+    (`checks / <job>`), on a branch that is up to date with `master`. A job
+    skipped by the change filter counts as passing; `mode` is required so that a
+    failed filter cannot skip the rest. When a job is added to or renamed in
+    `checks.yml`, update this list.
   - `release-tags.json` blocks creating, moving and deleting `v*` tags, which
     trigger a signed release.
   - Repository administrators bypass both rulesets, so the maintainer can still

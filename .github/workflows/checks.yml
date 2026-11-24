@@ -11,42 +11,31 @@ on:
           Run every job regardless of changed paths. Enabled for releases and manual CI.
         type: boolean
         default: false
+      classified:
+        description: >-
+          Whether the caller classified changed paths before invoking checks.
+        type: boolean
+        default: false
+      required-gates:
+        description: >-
+          JSON array of gate job IDs selected by classify-changes.ts.
+        type: string
+        default: '[]'
+      required-checks:
+        description: >-
+          JSON array of conditional baseline checks selected by classify-changes.ts.
+        type: string
+        default: '[]'
+      tooling-only:
+        description: >-
+          Skip full application tests and build when only check tooling changed.
+        type: boolean
+        default: false
 
 jobs:
-  changes:
-    permissions:
-      actions: read
-      contents: read
-      pull-requests: read
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      required-gates: ${{ steps.classify.outputs.required-gates }}
-      required-checks: ${{ steps.classify.outputs.required-checks }}
-      tooling-only: ${{ steps.classify.outputs.tooling-only }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          # The classifier needs both commits, which a shallow clone may lack.
-          fetch-depth: 0
-
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          package-manager-cache: false
-
-      - id: classify
-        env:
-          FORCE_ALL: ${{ inputs.force-all }}
-          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-        run: node --experimental-strip-types scripts/checks/classify-changes.ts --source=github
-
   supply-chain:
     permissions:
       contents: read
-    needs: changes
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -69,13 +58,13 @@ jobs:
       - run: npm run check:rust-advisories
       - run: npm run check:no-cyrillic
       - run: npm run i18n:check
-        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'i18n:check')
+        if: ${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), 'i18n:check') }}
       - run: npm run check:docs
-        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'check:docs')
+        if: ${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), 'check:docs') }}
       - run: npm run check:verified-by
-        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'check:verified-by')
+        if: ${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), 'check:verified-by') }}
       - run: npm run format:check
-        if: needs.changes.result != 'success' || contains(fromJSON(needs.changes.outputs.required-checks || '[]'), 'format:check')
+        if: ${{ !inputs.classified || contains(fromJSON(inputs.required-checks || '[]'), 'format:check') }}
       - name: Install pinned Rust toolchain
         run: rustup show
       - uses: EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246 # v2
@@ -86,8 +75,7 @@ jobs:
   sast:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'sast')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'sast')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
@@ -111,8 +99,7 @@ jobs:
   lint-test-build:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'lint-test-build')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'lint-test-build')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -140,9 +127,9 @@ jobs:
           if-no-files-found: ignore
       - run: npm run lint
       - run: npm test
-        if: ${{ !inputs.force-all && needs.changes.outputs.tooling-only != 'true' }}
+        if: ${{ !inputs.force-all && !inputs.tooling-only }}
       - name: Test development tooling
-        if: needs.changes.outputs.tooling-only == 'true'
+        if: inputs.tooling-only
         run: node --experimental-strip-types --test $(find test/unit/tooling -name '*.test.ts' ! -name 'site*.test.ts')
       - run: npm run coverage
         if: inputs.force-all
@@ -154,7 +141,7 @@ jobs:
           path: coverage/
           if-no-files-found: ignore
       - run: npm run build
-        if: needs.changes.outputs.tooling-only != 'true'
+        if: ${{ !inputs.tooling-only }}
       - name: Keep the startup bundle report
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -166,8 +153,7 @@ jobs:
   parser-regressions:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'parser-regressions')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'parser-regressions')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -186,8 +172,7 @@ jobs:
   rust-linux:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-linux')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'rust-linux')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -220,8 +205,7 @@ jobs:
   rust-test:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-test')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'rust-test')
     # This crate has unconditional Windows and WebView2 dependencies.
     runs-on: windows-latest
     # Allow headroom for a cold Rust build and cache save.
@@ -266,8 +250,7 @@ jobs:
   rust-test-unix:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-test-unix')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'rust-test-unix')
     strategy:
       fail-fast: false
       matrix:
@@ -307,8 +290,7 @@ jobs:
   rust-coverage:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'rust-coverage')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'rust-coverage')
     runs-on: windows-latest
     # An instrumented build of the whole crate, separate from rust-test's cache.
     timeout-minutes: 35
@@ -357,10 +339,10 @@ jobs:
           if-no-files-found: ignore
 
   visual-regression:
+    name: visual-regression (${{ matrix.name }})
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'visual-regression')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'visual-regression')
     strategy:
       fail-fast: false
       matrix:
@@ -408,8 +390,7 @@ jobs:
   i18n-audit-sample:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'i18n-audit-sample')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'i18n-audit-sample')
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -442,8 +423,7 @@ jobs:
   packaged-smoke:
     permissions:
       contents: read
-    needs: changes
-    if: contains(fromJSON(needs.changes.outputs.required-gates), 'packaged-smoke')
+    if: inputs.classified && contains(fromJSON(inputs.required-gates || '[]'), 'packaged-smoke')
     strategy:
       fail-fast: false
       matrix:
@@ -527,7 +507,6 @@ jobs:
   full-result:
     needs:
       [
-        changes,
         supply-chain,
         sast,
         lint-test-build,

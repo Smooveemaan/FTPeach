@@ -103,7 +103,7 @@ jobs:
       - name: Install IIS FTP and WebDAV test sites
         if: steps.resume.outputs.installer != 'false'
         shell: powershell
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-servers/iis.ps1 install -Fixtures none -FtpOnly
 
       - name: Install the OpenSSH SFTP test server
         if: ${{ !inputs.production }}

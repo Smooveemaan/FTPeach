@@ -228,6 +228,11 @@ async function timed<T>(timings: PhaseTimings, phase: string, run: () => Promise
   }
 }
 
+/** Whether `tasklist /FO CSV /NH` output contains a running `app.exe` or `FTPeach.exe`. */
+export function hasRunningAppProcess(tasklistCsv: string): boolean {
+  return /^"(?:app|FTPeach)\.exe",/im.test(tasklistCsv);
+}
+
 /**
  * Starts the application on a prepared profile, or with `null` on the
  * profile of the account running the test, as an installed copy runs. `run`
@@ -246,9 +251,8 @@ async function start(
 ): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
   // over and the test would drive the wrong profile.
-  const running = spawnSync('tasklist', ['/FI', 'IMAGENAME eq app.exe'], { encoding: 'utf8' });
-  const ftpeach = spawnSync('tasklist', ['/FI', 'IMAGENAME eq FTPeach.exe'], { encoding: 'utf8' });
-  if (running.stdout.includes('app.exe') || ftpeach.stdout.includes('FTPeach.exe')) {
+  const running = spawnSync('tasklist', ['/FO', 'CSV', '/NH'], { encoding: 'utf8' });
+  if (hasRunningAppProcess(running.stdout)) {
     throw new Error('Close every running FTPeach first: the application is single-instance');
   }
   const cdpPort = await freePort();
@@ -500,8 +504,8 @@ export async function launchApp(
    * can outlive `FTPeach.exe` and its DevTools port, holding `EBWebView` open
    * across a relaunch or profile cleanup.
    */
-  const end = async (force: boolean) => {
-    if (run.ended && !force) return;
+  const end = async (force: boolean, waitForWebviews = true) => {
+    if (run.ended) return;
     const { child, cdpPort, browser, webviewDir } = run;
     if (force) {
       await browser?.close().catch(() => {});
@@ -521,7 +525,7 @@ export async function launchApp(
       await waitFor('the app to close', async () => !(await portOpen(cdpPort)) || undefined, 30);
     }
     const markers = [...(webviewDir ? [webviewDir] : []), ...(force ? [base] : [])];
-    if (markers.length > 0) {
+    if (waitForWebviews && markers.length > 0) {
       if (force) {
         const lingering = webviewsUsing(markers);
         if (lingering.length > 0) {
@@ -555,7 +559,7 @@ export async function launchApp(
     run.ended = true;
   };
   const close = async () => {
-    await end(true);
+    await end(true, false);
     const logs = appLogs(base, 200_000);
     const markers = [...(run.webviewDir ? [run.webviewDir] : []), base];
     // WebView2 lets go of its profile a moment after the process ends.

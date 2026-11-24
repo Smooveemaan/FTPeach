@@ -10,12 +10,21 @@
   to on a development machine, from an elevated PowerShell.
 
   install    enable IIS FTP + WebDAV features (remembering which ones were
-             off), create the user, fixtures and three sites
+             off), create the user, fixtures and selected sites
   uninstall  remove everything install added, including the features it enabled
   status     show features, sites and listening ports
   fixtures   write the fixtures and their permissions afresh, leaving features,
              user, certificate and sites alone: after a run changed or deleted
              a fixture, or to apply fixture permissions changed here
+
+  Options:
+    -Fixtures full|minimal|none
+               full (default): all three sites with the full server-matrix fixtures
+               minimal: FTPeachTestFtp with names + read-only-dir fixtures, and
+               FTPeachTestDav without fixtures (skips FTPeachTestFtpUnix, many,
+               deep and big.bin)
+               none: empty site directories with grants and no fixtures
+    -FtpOnly   skip IIS WebDAV features and FTPeachTestDav
 
   Sites (all bound to 127.0.0.1):
     iis_ftp       ftp://127.0.0.1:2121   MS-DOS listing style, explicit FTPS allowed
@@ -30,7 +39,10 @@
 param(
   [Parameter(Mandatory = $true, Position = 0)]
   [ValidateSet('install', 'uninstall', 'status', 'fixtures')]
-  [string]$Action
+  [string]$Action,
+  [ValidateSet('full', 'minimal', 'none')]
+  [string]$Fixtures = 'full',
+  [switch]$FtpOnly
 )
 
 Set-StrictMode -Version Latest
@@ -39,7 +51,9 @@ $ErrorActionPreference = 'Stop'
 # The DISM and WebAdministration modules only work in Windows PowerShell 5.1
 # (PowerShell 7 fails with "Class not registered").
 if ($PSVersionTable.PSEdition -eq 'Core') {
-  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath $Action
+  $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath, $Action, '-Fixtures', $Fixtures)
+  if ($FtpOnly) { $forward += '-FtpOnly' }
+  & powershell.exe @forward
   exit $LASTEXITCODE
 }
 
@@ -80,13 +94,46 @@ $ServerFeatures = @(
   'Web-Ftp-Server', 'Web-Ftp-Service', 'Web-Scripting-Tools'
 )
 
+function Get-RequiredFeatures([bool]$ServerSku, [bool]$FtpOnlyMode) {
+  $features = if ($ServerSku) { $ServerFeatures } else { $ClientFeatures }
+  if ($FtpOnlyMode) {
+    return @($features | Where-Object { $_ -notin 'IIS-WebDAV', 'Web-DAV-Publishing' })
+  }
+  return @($features)
+}
+
+function Get-SelectedSites([string]$FixturesMode, [bool]$FtpOnlyMode) {
+  $selected = @()
+  foreach ($site in $Sites) {
+    if ($FtpOnlyMode -and $site.Kind -eq 'dav') { continue }
+    if ($FixturesMode -ne 'full' -and $site.Name -eq 'FTPeachTestFtpUnix') { continue }
+    $siteFixtureMode = if ($FixturesMode -eq 'full') {
+      'full'
+    } elseif ($FixturesMode -eq 'minimal' -and $site.Name -eq 'FTPeachTestFtp') {
+      'minimal'
+    } else {
+      'none'
+    }
+    $selected += @{
+      Name        = $site.Name
+      Kind        = $site.Kind
+      Port        = $site.Port
+      Style       = $site.Style
+      FixtureMode = $siteFixtureMode
+    }
+  }
+  return $selected
+}
+
 function Get-FeatureStates {
-  if (Test-ServerSku) {
-    return Get-WindowsFeature -Name $ServerFeatures | ForEach-Object {
+  $serverSku = Test-ServerSku
+  $features = Get-RequiredFeatures $serverSku ([bool]$FtpOnly)
+  if ($serverSku) {
+    return Get-WindowsFeature -Name $features | ForEach-Object {
       [pscustomobject]@{ Name = $_.Name; Enabled = $_.Installed; Available = $true }
     }
   }
-  return $ClientFeatures | ForEach-Object {
+  return $features | ForEach-Object {
     $feature = Get-WindowsOptionalFeature -Online -FeatureName $_ -ErrorAction SilentlyContinue
     [pscustomobject]@{
       Name      = $_
@@ -133,7 +180,7 @@ function Get-Text([int[]]$CodePoints) {
 # '"', and case.txt next to Case.txt (NTFS paths are case-insensitive). No
 # links. Non-ASCII names as code points: the repository's no-Cyrillic gate
 # scans this file.
-function New-Fixtures([string]$Base, [int]$BigMb) {
+function New-Fixtures([string]$Base, [int]$BigMb, [string]$Mode = 'full') {
   $fixtures = Join-Path $Base 'fixtures'
   if (Test-Path -LiteralPath (Get-LongPath $fixtures)) {
     [IO.Directory]::Delete((Get-LongPath $fixtures), $true)
@@ -162,10 +209,13 @@ function New-Fixtures([string]$Base, [int]$BigMb) {
     Write-Fixture (Join-Path $fixtures "names\$dir\inner.txt") "inner`n"
   }
 
+  Write-Fixture (Join-Path $fixtures 'perms\read-only-dir\inner.txt') "inner`n"
+  if ($Mode -eq 'minimal') { return }
+
   $many = Join-Path $fixtures 'many'
   [IO.Directory]::CreateDirectory($many) | Out-Null
   for ($i = 0; $i -lt 10000; $i++) {
-    [IO.File]::WriteAllText((Join-Path $many ('file-{0:d5}.txt' -f $i)), "$i`n")
+    [System.IO.File]::Create((Join-Path $many ('file-{0:d5}.txt' -f $i))).Dispose()
   }
 
   $deep = Join-Path $fixtures 'deep'
@@ -195,7 +245,6 @@ function New-Fixtures([string]$Base, [int]$BigMb) {
   Write-Fixture (Join-Path $fixtures 'perms\readable.txt') "readable`n"
   Write-Fixture (Join-Path $fixtures 'perms\no-read.txt') "secret`n"
   Write-Fixture (Join-Path $fixtures 'perms\no-read-dir\inner.txt') "inner`n"
-  Write-Fixture (Join-Path $fixtures 'perms\read-only-dir\inner.txt') "inner`n"
 
   # The client reads big_mb from this marker, as on the Docker servers.
   Write-Fixture (Join-Path $Base '.ftpeach-seed') "version=1 big_mb=$BigMb flags=iis`n"
@@ -213,20 +262,32 @@ function Invoke-Icacls {
 # file denies DELETE and the folder DELETE_CHILD. `DE`, not `D`: the simple
 # right `D` also denies SYNCHRONIZE, which every ordinary open asks for, so the
 # file could not be read either.
-function Set-FixtureDenies([string]$Base) {
+function Set-FixtureDenies([string]$Base, [string]$Mode = 'full') {
   $perms = Join-Path $Base 'fixtures\perms'
   $readOnly = Join-Path $perms 'read-only-dir'
-  Invoke-Icacls (Join-Path $perms 'no-read.txt') /deny "${UserName}:(R)"
-  Invoke-Icacls (Join-Path $perms 'no-read-dir') /deny "${UserName}:(OI)(CI)(R)"
+  if ($Mode -eq 'full') {
+    Invoke-Icacls (Join-Path $perms 'no-read.txt') /deny "${UserName}:(R)"
+    Invoke-Icacls (Join-Path $perms 'no-read-dir') /deny "${UserName}:(OI)(CI)(R)"
+  }
   Invoke-Icacls $readOnly /deny "${UserName}:(WD,AD,DC)"
   Invoke-Icacls (Join-Path $readOnly 'inner.txt') /deny "${UserName}:(DE)"
 }
 
 # Fresh fixtures with their grant and denies, for one site's directory.
-function Set-SiteFixtures([string]$Path, [int]$BigMb) {
-  New-Fixtures $Path $BigMb
+# Grants on the empty site root before creating files so NTFS inherits the ACE
+# at creation time instead of rewriting ACLs on 10 000+ fixture files afterwards.
+function Set-SiteFixtures([string]$Path, [int]$BigMb, [string]$Mode = 'full') {
+  [IO.Directory]::CreateDirectory($Path) | Out-Null
+  $fixtures = Join-Path $Path 'fixtures'
+  if (Test-Path -LiteralPath (Get-LongPath $fixtures)) {
+    [IO.Directory]::Delete((Get-LongPath $fixtures), $true)
+  }
+  $seedMarker = Join-Path $Path '.ftpeach-seed'
+  if (Test-Path -LiteralPath $seedMarker) { Remove-Item -LiteralPath $seedMarker -Force }
   Invoke-Icacls $Path /grant "${UserName}:(OI)(CI)M"
-  Set-FixtureDenies $Path
+  if ($Mode -eq 'none') { return }
+  New-Fixtures $Path $BigMb $Mode
+  Set-FixtureDenies $Path $Mode
 }
 
 function Get-BigMb {
@@ -235,10 +296,10 @@ function Get-BigMb {
 
 function Reset-Fixtures {
   Assert-Administrator
-  foreach ($site in $Sites) {
+  foreach ($site in (Get-SelectedSites $Fixtures ([bool]$FtpOnly))) {
     $path = Join-Path $Root $site.Name
     if (-not (Test-Path -LiteralPath $path)) { throw "$path is missing; run install first" }
-    Set-SiteFixtures $path (Get-BigMb)
+    Set-SiteFixtures $path (Get-BigMb) $site.FixtureMode
   }
   Write-Host 'IIS test fixtures written afresh.'
 }
@@ -309,9 +370,12 @@ function Install-Servers {
     -Name 'highDataChannelPort' -Value $PassiveHigh
 
   foreach ($site in $Sites) {
-    $path = Join-Path $Root $site.Name
     Remove-TestSite $site.Name
-    Set-SiteFixtures $path $bigMb
+  }
+  $selectedSites = @(Get-SelectedSites $Fixtures ([bool]$FtpOnly))
+  foreach ($site in $selectedSites) {
+    $path = Join-Path $Root $site.Name
+    Set-SiteFixtures $path $bigMb $site.FixtureMode
 
     if ($site.Kind -eq 'ftp') {
       New-WebFtpSite -Name $site.Name -IPAddress '127.0.0.1' -Port $site.Port -PhysicalPath $path | Out-Null
@@ -361,7 +425,9 @@ function Install-Servers {
   }
 
   Restart-Service ftpsvc
-  Start-Website -Name 'FTPeachTestDav'
+  if ($selectedSites | Where-Object { $_.Name -eq 'FTPeachTestDav' }) {
+    Start-Website -Name 'FTPeachTestDav'
+  }
   Get-Status
 }
 
@@ -393,10 +459,11 @@ function Uninstall-Servers {
 }
 
 function Get-Status {
+  $selectedSites = @(Get-SelectedSites $Fixtures ([bool]$FtpOnly))
   Get-FeatureStates | Format-Table Name, Enabled, Available -AutoSize | Out-Host
   if (Get-Module -ListAvailable WebAdministration) {
     Import-Module WebAdministration
-    $Sites | ForEach-Object {
+    $selectedSites | ForEach-Object {
       $site = Get-Website -Name $_.Name
       [pscustomobject]@{
         Site  = $_.Name
@@ -405,7 +472,7 @@ function Get-Status {
       }
     } | Format-Table -AutoSize | Out-Host
   }
-  $ports = @($Sites | ForEach-Object Port)
+  $ports = @($selectedSites | ForEach-Object Port)
   $listening = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
       Where-Object { $ports -contains $_.LocalPort } | ForEach-Object LocalPort | Sort-Object -Unique)
   Write-Host "Listening: $(if ($listening.Count) { $listening -join ', ' } else { 'none' })"

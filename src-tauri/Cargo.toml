@@ -12,7 +12,7 @@ rust-version = "1.99"
 
 [lib]
 name = "app_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [features]
 # Exposes cfg(test)-only helpers (Store::new_at) and the modules integration

@@ -12,10 +12,10 @@
 //   benchmark-listing  the listing benchmark, into .local/benchmarks
 //   verify-updater     the updater fixture is accepted, a damaged copy refused
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
-import { appendFileSync, copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { verifyUpdaterSignature } from './release/check-published.ts';
 
 const root = path.resolve(import.meta.dirname, '..');
 const manifest = path.join('src-tauri', 'Cargo.toml');
@@ -141,34 +141,23 @@ function main(): number {
       ]);
     }
     case 'verify-updater': {
-      const fixtures = path.join('test', 'fixtures', 'updater');
-      const publicKey = readFileSync(path.join(root, fixtures, 'spike.key.pub'), 'utf8').trim();
-      const signature = path.join(fixtures, 'dummy-update.bin.sig');
-      const verify = (artifact: string) =>
-        run('cargo', [
-          'run',
-          '--locked',
-          '--manifest-path',
-          manifest,
-          '--example',
-          'verify_updater',
-          '--',
-          publicKey,
-          artifact,
-          signature,
-        ]);
-      if (verify(path.join(fixtures, 'dummy-update.bin')) !== 0) {
-        throw new Error('Valid updater fixture failed signature verification.');
-      }
-      const damaged = path.join(tmpdir(), `ftpeach-damaged-update-${process.pid}.bin`);
+      // Rust's minisign-verify path is exercised on the same fixtures inside `npm run rust:test`
+      // (`src-tauri/src/runtime/update_staging_tests.rs`); this checks the Node release verifier.
+      const fixtures = path.join(root, 'test', 'fixtures', 'updater');
+      const publicKey = readFileSync(path.join(fixtures, 'spike.key.pub'), 'utf8').trim();
+      const signature = readFileSync(path.join(fixtures, 'dummy-update.bin.sig'), 'utf8').trim();
+      const validArtifact = readFileSync(path.join(fixtures, 'dummy-update.bin'));
+      verifyUpdaterSignature(publicKey, validArtifact, signature);
+      const damaged = Buffer.concat([validArtifact, Buffer.from('damaged')]);
+      let damagedAccepted = false;
       try {
-        copyFileSync(path.join(root, fixtures, 'dummy-update.bin'), damaged);
-        appendFileSync(damaged, 'damaged');
-        if (verify(damaged) === 0) {
-          throw new Error('Damaged updater artifact unexpectedly passed signature verification.');
-        }
-      } finally {
-        rmSync(damaged, { force: true });
+        verifyUpdaterSignature(publicKey, damaged, signature);
+        damagedAccepted = true;
+      } catch {
+        // Expected: modified bytes must fail signature verification.
+      }
+      if (damagedAccepted) {
+        throw new Error('Damaged updater artifact unexpectedly passed signature verification.');
       }
       console.log('Updater fixtures OK: valid artifact accepted; damaged artifact rejected.');
       return 0;

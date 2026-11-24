@@ -6,36 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Support for macOS.
-- Support for Linux with system light and dark appearance and neutral window controls.
-- Right-clicking the pane connection button offers Connect or Disconnect, copies the server address,
-  and copies the SSH fingerprint when available.
+- FTPeach now runs on macOS 13.3+ (signed and notarized universal `.dmg` for Apple Silicon and
+  Intel) with the native menu bar, `⌘` shortcuts, "Show menu bar icon", and automatic updates.
+- On macOS, saved passwords use macOS Keychain, the vault unlocks with Touch ID or your Mac
+  password and locks with the screen, and files support Finder drag-out, "Show in Finder", and
+  Trash.
+- FTPeach now runs on 64-bit Linux (`.deb` and `.AppImage`) with system light and dark
+  appearance, system tray, desktop notifications, sleep prevention, and automatic updates.
+- On Linux, saved passwords use Secret Service, the vault locks with the desktop session, and local
+  files support drag-out, "Open containing folder", Trash, and automatic refresh after external
+  moves.
+- Right-clicking the pane connection button offers Connect or Disconnect, copies the server
+  address, and copies the SSH fingerprint when available.
 - The toolbar has a Settings button to open Settings directly.
 - The Help menu includes a direct link to the User Guide.
-- Logging settings offer an extended diagnostic log for investigating startup, window and shutdown problems.
-- Open with offers the same application submenu for local and remote files.
+- "Open with…" offers the same application submenu for local and remote files on Windows, macOS,
+  and Linux.
+- Logging settings offer an extended diagnostic log for investigating startup, window, and
+  shutdown problems.
 
 ### Changed
 
-- The macOS menu bar shows a sharper peach icon with a visible seam.
 - Import Settings asks whether to import saved passwords on the first step and uses a single-row
   Cancel and Import footer on the file password step.
 
 ### Fixed
 
 - Active transfers show their speed when progress updates arrive two or more seconds apart.
-- Stopped transfers keep their last progress percentage, or show 0% when the total size is unknown.
+- Stopped transfers keep their last progress percentage, or show 0% when the total size is
+  unknown.
 - Retrying a stopped folder transfer checks for conflicts with files already at the destination.
 - FTP uploads that run out of space on the server report a full disk instead of a lost connection.
-- Switching an unlocked vault to system protection keeps the confirmation without asking for the master password again.
-- Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Files dragged out of FTPeach can be brought back into its panes during the same drag.
-- Scrolling log messages no longer overlap the log toolbar.
-- Dragging files across the log no longer selects its text.
+- Switching an unlocked vault to system protection keeps the confirmation without asking for the
+  master password again.
+- Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
 - Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
 - Unlock Vault opens in front of Import Settings when triggered during import and skips prompting
   if the vault is already unlocked.
 - The unsaved-password notice banner displays its text in the error color.
+- Scrolling log messages no longer overlap the log toolbar.
+- Dragging files across the log no longer selects its text.
 - Clicking any button or control dismisses open tooltips immediately.
 - Right-clicking in FTPeach shows only the application's own context menus.
 - Resetting the window layout while fullscreen restores the window to its centered size.

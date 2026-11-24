@@ -34,7 +34,7 @@
         </button>
         <a class="support" href="../index.html#support"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 14s-5.5-3.3-5.5-7.2A3 3 0 0 1 8 4.6a3 3 0 0 1 5.5 2.2C13.5 10.7 8 14 8 14Z" /></svg><span class="label">Donate</span></a>
         <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path class="b1" d="M4 8h16" /><path class="b2" d="M4 16h16" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="b1" d="M4 8h16" /><path class="b2" d="M4 16h16" /></svg>
         </button>
       </div>
       <nav class="menu" id="menu" aria-label="Menu" hidden>
@@ -48,6 +48,13 @@
     </header>
     <div class="wrap guide-layout">
       <aside class="guide-sidebar">
+        <div class="guide-os" role="group" aria-label="Shortcuts for">
+          <span class="guide-os-label" aria-hidden="true">Shortcuts</span>
+          <div class="guide-os-pick">
+            <button type="button" data-os-pick="pc" aria-pressed="false">Win / Linux</button>
+            <button type="button" data-os-pick="mac" aria-pressed="false">macOS</button>
+          </div>
+        </div>
         <!-- Open from the first paint on wide screens; closed on narrow ones by the script after it, before it shows. -->
         <details class="guide-chapters" open>
           <summary>Guide chapters</summary>

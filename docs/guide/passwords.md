@@ -27,10 +27,16 @@ have not created a bookmark yet.
 
 ## Set up a master password
 
-Open **Edit > Settings > Security**. **System protection** encrypts saved secrets
-for your Windows account. **Enhanced protection** uses a master password to
-unlock them, including when you carry a [portable copy](portable.md) to another
-computer.
+Open **Edit > Settings > Security**.
+
+- **System protection** (default) protects saved secrets without a master
+  password: encrypted for your Windows account, **macOS Keychain**, or
+  **Secret Service** (such as GNOME Keyring or KWallet) on Linux. On Linux, if
+  no Secret Service keyring is available, FTPeach refuses to save passwords
+  unprotected and prompts you to set up a master password instead.
+- **Enhanced protection** encrypts saved secrets in a vault unlocked with a
+  master password on Windows, macOS and Linux, including when you carry a
+  Windows [portable copy](portable.md) to another computer.
 
 1. Select **Enhanced protection**.
 2. Enter at least 12 characters in **Master password**, then repeat it in
@@ -50,7 +56,10 @@ computer.
 
 In **Settings > Security**, the open-padlock button is **Lock now**. To unlock,
 enter **Master password** and select the closed-padlock **Unlock** button or press
-**Enter**. If Windows Hello is enabled, you can use the fingerprint button instead.
+`Enter` / `Return`. If Windows Hello or Touch ID is enabled, you can use the
+system unlock button instead. The vault also locks automatically after
+inactivity (configurable in **Auto-lock after, min**), when the FTPeach window
+is hidden, or when your Windows, Mac or Linux session locks.
 
 To change the password, unlock the vault and select **Change master password**.
 Enter **Current master password**, **New master password** and **Confirm master
@@ -73,7 +82,8 @@ cannot open the vault after that, so do not go back to it.
 ## If you forget the master password
 
 If **Allow system unlock** was already enabled on this computer, try Windows
-Hello. If Hello is unavailable or refused, FTPeach asks for the master password.
+Hello or Touch ID (or your Mac password). If system unlock is unavailable or
+refused, FTPeach asks for the master password.
 
 <!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::a refused Windows Hello asks for the password, ready to type -->
 
@@ -133,10 +143,10 @@ instead of the usual controls.
 
 Exporting passwords asks for confirmation in a separate window. With enhanced
 protection, confirm with the master password even if the vault is already open.
-If Windows Hello is enabled, it is offered first; cancelling it shows the password
-field. If the password is incorrect, the dialog shows an error. Try again.
-If this computer cannot read some saved passwords, the dialog names the bookmarks
-and asks before exporting without those passwords.
+If Windows Hello or Touch ID is enabled, it is offered first; cancelling it
+shows the password field. If the password is incorrect, the dialog shows an
+error. Try again. If this computer cannot read some saved passwords, the dialog
+names the bookmarks and asks before exporting without those passwords.
 
 <!-- verified-by: pr src-tauri/src/security/sensitive_tests.rs::an_export_names_whether_it_carries_the_saved_passwords -->
 <!-- verified-by: pr test/component/platform/securityConfirmation.test.tsx::with Windows Hello on, Hello is asked alone and the password is the fallback -->
@@ -146,7 +156,8 @@ and asks before exporting without those passwords.
 Importing such a file asks for its password when **Import saved passwords** is
 checked. A wrong password is asked for again; clearing **Import saved passwords**
 skips the password step and brings in the bookmarks alone. Passwords move
-between system protection and a master password in either direction.
+between system protection and a master password in either direction, including
+between Windows, macOS and Linux.
 
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords asks for its password and keeps asking until it opens them -->
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords skips the password step when unticked on step one, or can be let go -->
@@ -178,21 +189,30 @@ know.
 <!-- verified-by: pr src-tauri/src/commands/app_settings_transfer_tests.rs::a_file_with_repeated_ids_or_a_future_format_is_refused -->
 <!-- verified-by: pr src-tauri/src/commands/app_settings_transfer_tests.rs::an_empty_or_foreign_file_is_named_as_not_a_settings_file -->
 
-## Unlocking with Windows Hello
+## Unlocking with Windows Hello or Touch ID
 
 Unlock the vault in **Settings > Security**, turn on **Allow system unlock** and
-complete the Windows Hello prompt. Keep the master password as your recovery method.
+complete the system prompt:
+
+- **Windows:** uses **Windows Hello** (PIN, face or fingerprint as configured in
+  Windows).
+- **macOS:** uses **Touch ID or your Mac password**.
+- **Linux:** system unlock is unavailable; unlock the vault with your master
+  password.
+
+Keep the master password as your recovery method.
 
 <!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::protection changes refresh status and cancelled resets preserve the setup form -->
 
-Windows Hello unlock is enabled separately on each computer. When the vault
-is moved or carried to another computer, it opens there with the master
-password, and Windows Hello can be switched on there as well. Switching it off
-on one computer leaves it on for the others.
+System unlock is enabled separately on each computer. When the vault is moved or
+carried to another computer, it opens there with the master password, and system
+unlock can be switched on there as well. Switching it off on one computer leaves
+it on for the others.
 
 <!-- verified-by: pr src-tauri/src/security/vault_tests.rs::windows_hello_is_switched_on_and_off_per_computer -->
 
-If Windows loses the key, as after a reset of the computer's security chip, the
-switch shows off and can be turned on again.
+If the operating system loses the unlock key, such as after resetting the
+computer's security chip or Keychain item, the switch shows off and can be
+turned on again.
 
 <!-- verified-by: pr src-tauri/src/security/vault_tests.rs::hello_stands_in_for_the_password_and_a_lost_key_does_not_jam_the_switch -->

@@ -34,7 +34,7 @@
         </button>
         <a class="support" href="index.html#support"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 14s-5.5-3.3-5.5-7.2A3 3 0 0 1 8 4.6a3 3 0 0 1 5.5 2.2C13.5 10.7 8 14 8 14Z" /></svg><span class="label">Donate</span></a>
         <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path class="b1" d="M4 8h16" /><path class="b2" d="M4 16h16" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="b1" d="M4 8h16" /><path class="b2" d="M4 16h16" /></svg>
         </button>
       </div>
       <nav class="menu" id="menu" aria-label="Menu" hidden>
@@ -51,7 +51,7 @@
         <header class="compare-head wrap">
           <h1>FTPeach vs FileZilla vs WinSCP</h1>
           <p class="compare-lead">All three are free and move files over FTP, FTPS and SFTP. They differ in whether you can open two servers side by side, who has scripts and a built-in editor, and how they look.</p>
-          <p class="compare-meta">Written by the developer of FTPeach. Checked against each project's own documentation on <time datetime="2026-10-20">20 October 2026</time>. This is not an independent review or a speed test.</p>
+          <p class="compare-meta">Written by the developer of FTPeach. Checked against each project's own documentation on <time datetime="2026-11-24">24 November 2026</time>. This is not an independent review or a speed test.</p>
         </header>
 
         <section class="compare-fit wrap" aria-labelledby="choose">
@@ -60,15 +60,14 @@
             <h3>Try FTPeach if you want</h3>
             <ul>
               <li>Two servers open at once, one in each pane, both visible while you copy between them.</li>
-              <li>WebDAV without paying for it. FileZilla keeps it for the Pro edition; WinSCP has it too.</li>
+              <li>WebDAV without paying for it, on Windows, macOS and Linux. FileZilla keeps WebDAV for the Pro edition; WinSCP runs on Windows only.</li>
               <li>A modern, minimal design, with 20 color schemes in light and dark and an adjustable interface size.</li>
-              <li>Saved passwords encrypted for your Windows account even without a master password, and Windows Hello to unlock them.</li>
+              <li>Saved passwords protected by your system (Windows, macOS Keychain, or Linux Secret Service) even without a master password, plus Windows Hello or Touch ID when you use a vault.</li>
             </ul>
           </div>
           <div class="fit fit-no">
             <h3>Stay with what you have if you need</h3>
             <ul>
-              <li>macOS or Linux. FTPeach is for Windows only; FileZilla runs on all three.</li>
               <li>Scripts, scheduled transfers or automatic folder synchronization. WinSCP has them; FTPeach has none.</li>
               <li>A text editor inside the client. WinSCP has one; FTPeach opens files in your own editor.</li>
               <li>A queue you can save and finish after closing the app. FileZilla can export it; FTPeach starts empty.</li>
@@ -84,15 +83,15 @@
             <table>
               <thead><tr><th scope="col"><span class="sr">What you need</span></th><th scope="col">FTPeach</th><th scope="col">FileZilla Client</th><th scope="col">WinSCP</th></tr></thead>
               <tbody>
-                <tr><th scope="row">Runs on</th><td data-label="FTPeach">Windows</td><td data-label="FileZilla Client">Windows, macOS, Linux</td><td data-label="WinSCP">Windows</td></tr>
+                <tr><th scope="row">Runs on</th><td data-label="FTPeach">Windows, macOS, Linux</td><td data-label="FileZilla Client">Windows, macOS, Linux</td><td data-label="WinSCP">Windows</td></tr>
                 <tr><th scope="row">Connections</th><td data-label="FTPeach">FTP, explicit FTPS, SFTP, WebDAV</td><td data-label="FileZilla Client">FTP, FTPS, SFTP</td><td data-label="WinSCP">FTP, FTPS, SFTP, SCP, WebDAV, S3</td></tr>
                 <tr><th scope="row">Panes</th><td data-label="FTPeach">Your computer or a server in either pane, so two servers side by side; tabs</td><td data-label="FileZilla Client">A local and a remote view; connections in tabs</td><td data-label="WinSCP">Local and remote, or two local panes; sessions in tabs</td></tr>
-                <tr><th scope="row">Look and feel</th><td data-label="FTPeach">20 color schemes, each light or dark or following Windows; adjustable interface size</td><td data-label="FileZilla Client">Icon sets and four window layouts</td><td data-label="WinSCP">Light or dark theme, or following Windows</td></tr>
+                <tr><th scope="row">Look and feel</th><td data-label="FTPeach">20 color schemes, each light or dark or following your system; adjustable interface size</td><td data-label="FileZilla Client">Icon sets and four window layouts</td><td data-label="WinSCP">Light or dark theme, or following Windows</td></tr>
                 <tr><th scope="row">Editing files</th><td data-label="FTPeach">Your own editor; asks before uploading changes</td><td data-label="FileZilla Client">Your own editor</td><td data-label="WinSCP">Built-in editor or your own</td></tr>
                 <tr><th scope="row">Scripts and folder sync</th><td data-label="FTPeach">None</td><td data-label="FileZilla Client">Folder comparison; scripts only in a paid CLI</td><td data-label="WinSCP">Scripts, .NET library, folder sync</td></tr>
-                <tr><th scope="row">Passwords without a master password</th><td data-label="FTPeach">Encrypted for your Windows account</td><td data-label="FileZilla Client">Stored in a reversible form</td><td data-label="WinSCP">Easy to decrypt, as WinSCP warns</td></tr>
+                <tr><th scope="row">Passwords without a master password</th><td data-label="FTPeach">Protected by Windows account, macOS Keychain, or Linux Secret Service</td><td data-label="FileZilla Client">Stored in a reversible form</td><td data-label="WinSCP">Easy to decrypt, as WinSCP warns</td></tr>
                 <tr><th scope="row">Interrupted transfers</th><td data-label="FTPeach">Pause and resume within each protocol's limits; the queue is cleared when you quit</td><td data-label="FileZilla Client">Requeue failed transfers; export the queue to finish later</td><td data-label="WinSCP">Reconnects and resumes FTP and SFTP, depending on settings</td></tr>
-                <tr><th scope="row">Portable copy</th><td data-label="FTPeach">ZIP; settings travel with it</td><td data-label="FileZilla Client">ZIP plus a config file</td><td data-label="WinSCP">Package with an INI file</td></tr>
+                <tr><th scope="row">Portable copy</th><td data-label="FTPeach">ZIP on Windows; settings travel with it</td><td data-label="FileZilla Client">ZIP plus a config file</td><td data-label="WinSCP">Package with an INI file</td></tr>
                 <tr><th scope="row">Price and license</th><td data-label="FTPeach">Free, Apache-2.0</td><td data-label="FileZilla Client">Free, GPL</td><td data-label="WinSCP">Free, GPL v3</td></tr>
               </tbody>
             </table>
@@ -110,7 +109,7 @@
           <p>Before moving everything, copy one real folder and edit one file on a test server. If none of the differences above solves a problem you have, there is little reason to switch.</p>
           <div class="act">
             <a class="btn" href="index.html#download">
-              Download for Windows
+              Download
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9m0 0 3.5-3.5M8 11 4.5 7.5M3 14h10" /></svg>
             </a>
             <a class="gh-link" href="https://github.com/Smooveemaan/ftpeach"><span class="label">View on GitHub</span> <span class="stars" role="img" aria-label="{{STARS_LABEL}}"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.3l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.6l-4 2.1.8-4.5L1.5 6l4.5-.6Z" /></svg>{{STARS}}</span></a>
@@ -121,11 +120,11 @@
           <h2 id="editions">FileZilla Pro and CLI</h2>
           <p><a href="https://filezillapro.com/filezilla-pro/">FileZilla Pro</a> adds WebDAV and cloud storage. <a href="https://filezillapro.com/cli/">FileZilla CLI and Pro CLI</a> are paid command-line products for automation. The table above covers only the free client.</p>
           <h2 id="limits">How this was checked</h2>
-          <p>Covers FTPeach 0.6.0, FileZilla Client 3.x and WinSCP 6.7. FileZilla and WinSCP were checked against their official documentation, not by running them side by side. FTPeach's own claims come from its tested <a href="guide/index.html">user guide</a> and source. I have not measured speed, memory use or reliability against the others. Something out of date? <a href="https://github.com/Smooveemaan/ftpeach/issues">Send a correction with a source</a>.</p>
+          <p>Covers FTPeach 0.7.0, FileZilla Client 3.x and WinSCP 6.7. FileZilla and WinSCP were checked against their official documentation, not by running them side by side. FTPeach's own claims come from its tested <a href="guide/index.html">user guide</a> and source. I have not measured speed, memory use or reliability against the others. Something out of date? <a href="https://github.com/Smooveemaan/ftpeach/issues">Send a correction with a source</a>.</p>
           <details>
             <summary>Sources</summary>
             <ul>
-              <li><strong>FTPeach:</strong> <a href="guide/interface.html#appearance">appearance</a>, <a href="guide/protocol-reference.html">protocols</a>, <a href="guide/interface.html">panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/passwords.html">passwords</a>, <a href="guide/transfers.html#before-a-full-exit-or-restart">transfers after exit</a>, <a href="guide/portable.html">portable</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.6.0/src-tauri/src/commands/app_settings_transfer.rs">settings import</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/v0.6.0/LICENSE">license</a>.</li>
+              <li><strong>FTPeach:</strong> <a href="guide/interface.html#appearance">appearance</a>, <a href="guide/protocol-reference.html">protocols</a>, <a href="guide/interface.html">panes</a>, <a href="guide/editing.html">editing</a>, <a href="guide/passwords.html">passwords</a>, <a href="guide/transfers.html#before-a-full-exit-or-restart">transfers after exit</a>, <a href="guide/portable.html">portable</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/master/src-tauri/src/commands/app_settings_transfer.rs">settings import</a>, <a href="https://github.com/Smooveemaan/ftpeach/blob/master/LICENSE">license</a>.</li>
               <li><strong>FileZilla:</strong> <a href="https://filezillapro.com/docs/v3/faq/change-the-icon-set/">icon sets</a>, <a href="https://filezillapro.com/docs/v3/advanced/change-layout/">layouts</a>, <a href="https://wiki.filezilla-project.org/Client_Installation">platforms and portable</a>, <a href="https://filezillapro.com/docs/v3/video-tutorials/the-ultimate-filezilla-video-tutorial/">features, tabs and editing</a>, <a href="https://filezillapro.com/docs/v3/features-v3/local-remote-files/">directory comparison</a>, <a href="https://filezillapro.com/docs/v3/advanced/master-password/">passwords</a>, <a href="https://filezillapro.com/docs/v3/advanced/repeat-file-transfers/">retry</a>, <a href="https://filezillapro.com/docs/v3/advanced/export-import-transferqueue/">queue export</a>, <a href="https://filezillapro.com/docs/v3/basic-usage-instructions/speed-up-file-transfers/">resume</a>, <a href="https://filezillapro.com/docs/v3/filezilla-product-comparisons/filezilla-pro-vs-filezilla-pro-cli-ui-based-transfers-vs-command-line-automation/">editions</a>.</li>
               <li><strong>WinSCP:</strong> <a href="https://winscp.net/eng/docs/ui_pref_interface">theme</a>, <a href="https://winscp.net/eng/docs/introduction">platform</a>, <a href="https://winscp.net/eng/docs/protocols">protocols</a>, <a href="https://winscp.net/eng/docs/ui_commander">panes</a>, <a href="https://winscp.net/eng/docs/task_move_duplicate">copying between servers</a>, <a href="https://winscp.net/eng/docs/task_edit">editing</a>, <a href="https://winscp.net/eng/docs/scripting">scripting</a>, <a href="https://winscp.net/eng/docs/task_synchronize">sync</a>, <a href="https://winscp.net/eng/docs/master_password">passwords</a>, <a href="https://winscp.net/eng/docs/resume">resume</a>, <a href="https://winscp.net/eng/docs/portable">portable</a>, <a href="https://winscp.net/eng/docs/license">license</a>, <a href="https://winscp.net/updatenews.php">version</a>.</li>
             </ul>

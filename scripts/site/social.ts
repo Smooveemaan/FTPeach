@@ -43,7 +43,7 @@ p { position: absolute; left: 64px; bottom: 60px; font-size: 26px; line-height: 
 </style></head><body>
 <div class="brand"><img src="data:image/png;base64,${icon}" alt="">FTPeach</div>
 <h1>Drag files to your server and back.</h1>
-<p>Free FTP, FTPS, SFTP and WebDAV<br>client for Windows</p>
+<p>Free FTP, FTPS, SFTP and WebDAV<br>for Windows, macOS and Linux</p>
 <img class="app" src="data:image/png;base64,${shot}" alt="">
 </body></html>`;
 

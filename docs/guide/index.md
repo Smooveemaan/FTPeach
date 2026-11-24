@@ -1,9 +1,9 @@
 # User guide
 
-FTPeach is a file transfer client for Windows. Use it to put files on a server,
-bring files back to your computer, or copy them between servers. For example,
-you might upload a website, collect documents from a shared server, or download
-a copy before editing it.
+FTPeach is a file transfer client for Windows, macOS and Linux. Use it to put
+files on a server, bring files back to your computer, or copy them between
+servers. For example, you might upload a website, collect documents from a
+shared server, or download a copy before editing it.
 
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::folder upload, download and relay submit endpoint intent without per-file IPC -->
 
@@ -20,7 +20,7 @@ Two locations side by side: choose where a file comes from and where it should g
 The illustrations throughout this guide use example connections and files.
 
 > [!NOTE]
-> **Click an illustration to enlarge it.** On the website, press **Esc** or use
+> **Click an illustration to enlarge it.** On the website, press `Esc` or use
 > **Close screenshot** to return to reading. Without JavaScript, the image opens
 > directly.
 
@@ -34,6 +34,7 @@ The illustrations throughout this guide use example connections and files.
 | Understand the panes, find files and select them | [Find your way around](interface.md) |
 | Change the language or appearance | [Appearance](interface.md#appearance) |
 | Change shortcuts, transfer limits or conflict handling | [Everyday settings](interface.md#everyday-settings) |
+| Use the system tray or macOS menu bar icon | [System tray and menu bar](interface.md#system-tray-and-menu-bar) |
 | Update FTPeach | [Check for updates](interface.md#check-for-updates) |
 | Choose a protocol or save a connection | [Connect to a server](connecting.md) |
 | Connect with SFTP or an SSH key | [SFTP connections](sftp.md) |
@@ -47,7 +48,7 @@ The illustrations throughout this guide use example connections and files.
 | Move bookmarks and saved passwords to another computer | [Move your settings](passwords.md#moving-bookmarks-and-passwords-to-another-computer) |
 | Set up a master password | [Password protection](passwords.md#set-up-a-master-password) |
 | Recover access after forgetting the master password | [Recovery and reset](passwords.md#if-you-forget-the-master-password) |
-| Carry FTPeach on a removable drive | [Portable version](portable.md) |
+| Carry FTPeach on a removable drive (Windows) | [Portable version](portable.md) |
 | Understand an error or recover unfinished work | [Troubleshooting](troubleshooting.md) |
 
 ## Words used in this guide

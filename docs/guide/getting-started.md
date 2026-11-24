@@ -6,9 +6,15 @@ non-sensitive file with a new name so there is no existing file to replace.
 
 ## Before you begin
 
-Download FTPeach from the [official website](https://ftpeach.com/). Choose the
-installer for a regular installation, or read [Portable version](portable.md)
-if you want to keep the application and its settings together in a folder.
+Download FTPeach for your operating system from the [official website](https://ftpeach.com/):
+
+- **Windows:** run the installer for a regular installation, or read
+  [Portable version](portable.md) if you want to keep the application and its
+  settings together in a folder.
+- **macOS:** open the `.dmg` disk image and drag **FTPeach** into
+  **Applications**.
+- **Linux:** install the `.deb` package on Debian or Ubuntu, or make the
+  `.AppImage` executable and run it.
 
 <!-- verified-by: pr test/unit/tooling/siteBuild.test.ts::a release with a portable copy offers both downloads -->
 

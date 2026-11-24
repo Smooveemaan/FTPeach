@@ -84,12 +84,15 @@ finished, look at the recovered edits it offers on startup. Follow
 
 ## Saved passwords do not work on a new computer
 
-Check how the passwords were moved. A portable copy without a master password
-keeps passwords tied to the original computer. For a separate installation,
-use [export and import with saved passwords](passwords.md#moving-bookmarks-and-passwords-to-another-computer).
+Check how the passwords were moved. A Windows portable copy without a master
+password keeps passwords tied to the original computer. For a separate
+installation, use
+[export and import with saved passwords](passwords.md#moving-bookmarks-and-passwords-to-another-computer).
 If an import was done without passwords, you will need the server credentials
-or the password-protected export. Windows Hello must be enabled on the new
-computer separately.
+or the password-protected export. System unlock (Windows Hello or Touch ID) must
+be enabled on the new computer separately. On Linux, if no Secret Service
+keyring is available, set a master password in **Settings > Security** to save
+passwords.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a portable copy says where passwords stay until a master password is set -->
 <!-- verified-by: pr test/component/settings/settingsTransfer.test.tsx::a file with passwords skips the password step when unticked on step one, or can be let go -->
@@ -98,9 +101,10 @@ computer separately.
 ## I cannot unlock saved passwords
 
 Check whether the prompt wants the FTPeach master password, a server password or
-an export file password. If Windows Hello fails, try the master password.
-For a forgotten password, read [recovery and reset](passwords.md#if-you-forget-the-master-password)
-before deleting anything: resetting the vault loses its stored secrets.
+an export file password. If Windows Hello or Touch ID fails, try the master
+password. For a forgotten password, read
+[recovery and reset](passwords.md#if-you-forget-the-master-password) before
+deleting anything: resetting the vault loses its stored secrets.
 
 <!-- verified-by: pr test/component/settings/vaultSettings.test.tsx::a refused Windows Hello asks for the password, ready to type -->
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a vault reset tells the owner that the saved secrets are gone -->
@@ -108,7 +112,8 @@ before deleting anything: resetting the vault loses its stored secrets.
 ## Ask for help
 
 Open **View > Log** to show the log panel. To find your FTPeach version,
-open **Help > About** and note the version beside the application name.
+open **Help > About** (Windows and Linux) or **FTPeach > About FTPeach** (macOS)
+and note the version beside the application name.
 
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
 <!-- verified-by: pr test/unit/application/menus.test.ts::View Log toggles the log panel -->
@@ -132,7 +137,7 @@ For account details, permissions, quota or server identity, contact your server
 administrator or hosting provider. If the problem appears to be in FTPeach,
 [report an issue](https://github.com/Smooveemaan/ftpeach/issues/new/choose) with:
 
-- Your FTPeach version and Windows version.
+- Your FTPeach version and operating system (Windows, macOS or Linux, with its version).
 - The protocol and operation, such as uploading a folder over SFTP.
 - The steps to reproduce it, the expected result and the exact error text.
 - Whether it happens every time, and whether a small test file behaves the same.

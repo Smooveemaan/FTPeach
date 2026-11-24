@@ -1,12 +1,22 @@
-// Applies the remembered theme before the first paint, and marks that scripts run, so controls
-// that need them show from the first paint too. Each page puts the reader back itself after a
-// reload, once its layout is settled; the browser's own restore lands off and drifts.
+// Applies the remembered theme and detected OS before the first paint, and marks that scripts run,
+// so controls that need them show from the first paint too. Each page puts the reader back itself
+// after a reload, once its layout is settled; the browser's own restore lands off and drifts.
 document.documentElement.classList.add('js');
 history.scrollRestoration = 'manual';
+let savedOs;
 try {
   const saved = localStorage.getItem('theme');
   if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  savedOs = localStorage.getItem('os');
 } catch {}
+document.documentElement.dataset.os =
+  savedOs === 'mac' || savedOs === 'pc'
+    ? savedOs
+    : /Mac|iPhone|iPad|iPod/i.test(
+          navigator.userAgentData?.platform || navigator.platform || navigator.userAgent,
+        )
+      ? 'mac'
+      : 'pc';
 
 /* exported switchTheme */
 // The whole page changes theme as one cross-fade at one speed (--fade), pictures included: `change`

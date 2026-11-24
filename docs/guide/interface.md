@@ -8,11 +8,12 @@ download folder.
 
 ## Work with tabs
 
-Use **File > New Tab** or **Ctrl+T** to open another workspace. **Ctrl+Tab**
-switches to the next tab; **Ctrl+Shift+Tab** goes to the previous one.
-Use **File > Close Tab** or **Ctrl+W** to close the current tab, and **Ctrl+Shift+T**
-to reopen the most recently closed tab. The last remaining tab stays open.
-Check running transfers before closing a server connection.
+Use **File > New Tab** or `Ctrl+T` / `⌘T` to open another workspace.
+`Ctrl+Tab` / `⌃Tab` switches to the next tab; `Ctrl+Shift+Tab` / `⌃⇧Tab` goes to
+the previous one. Use **File > Close Tab** or `Ctrl+W` / `⌘W` to close the
+current tab, and `Ctrl+Shift+T` / `⇧⌘T` to reopen the most recently closed tab.
+The last remaining tab stays open; on macOS, `⌘W` hides the window when only one
+tab is open. Check running transfers before closing a server connection.
 
 <!-- verified-by: pr test/component/application/applicationCommands.test.tsx::tab shortcuts open, close, reopen and cycle tabs -->
 <!-- verified-by: pr test/component/application/applicationCommands.test.tsx::the last tab is not closed and a single tab does not cycle -->
@@ -24,9 +25,10 @@ Check running transfers before closing a server connection.
 
 Read each pane from top to bottom: connection or computer, open folder, then files.
 
-Double-click a folder to open it. **Backspace** goes up one directory level.
-Click a column heading to sort the listing. The file filter helps narrow the
-current list; use it after opening the folder you want to search.
+Double-click a folder to open it, or press `Enter` / `⌘↓`. `Backspace` / `⌘↑`
+goes up one directory level. Click a column heading to sort the listing. The
+file filter helps narrow the current list; use it after opening the folder you
+want to search.
 
 <!-- verified-by: pr test/component/file-browser/paneWiring.test.tsx::a folder opens in the pane and a server file opens with its program -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Backspace navigates the pane up one directory level -->
@@ -36,16 +38,18 @@ current list; use it after opening the folder you want to search.
 
 In a **Computer** pane, right-click a file or folder and choose **Show in File Explorer**
 (Windows), **Show in Finder** (macOS), or **Open containing folder** (Linux),
-next to **Open**, to show it in the system file manager. The command uses only the
-entry you right-clicked, even when several entries are selected. Server panes
-do not have this command.
+next to **Open**, to show it in the system file manager. On Windows and macOS
+this selects the item directly. On Linux, FTPeach highlights it if your file
+manager (such as Nautilus or Dolphin) supports it, or opens the parent folder
+instead. The command uses only the entry you right-clicked, even when several
+entries are selected. Server panes do not have this command.
 
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Reveal location targets only the clicked local file or folder -->
 
-Click a file to select it. **Ctrl+click** adds or removes individual files from
-the selection; **Ctrl+A** selects the list. Right-click a file for the actions
-available there, or right-click empty space for folder actions such as **Refresh**
-and **New Folder**.
+Click a file to select it. `Ctrl+click` / `⌘+click` adds or removes individual
+files from the selection; `Ctrl+A` / `⌘A` selects the list. Right-click a file
+for the actions available there, or right-click empty space for folder actions
+such as **Refresh** and **New Folder**.
 
 [![Two highlighted files selected together in the computer pane.](../../site/images/guide/selection.png)](../../site/images/guide/selection.png)
 
@@ -60,10 +64,11 @@ that pane when the pointer crosses into the neighbouring pane.
 
 <!-- verified-by: manual Selection rectangle with system animations disabled -->
 
-When a folder's list is refreshed, with F5 or because a transfer finished
-there, the files still in it stay selected, and the arrow keys and Shift carry
-on from the same file. Files you select while the list is still loading are the
-ones that stay selected.
+When a folder's list is refreshed, with `F5` / `⌘R` or because a transfer
+finished there, the files still in it stay selected, and the arrow keys and
+`Shift` carry on from the same file. Files you select while the list is still
+loading are the ones that stay selected. On Linux, visible local folders also
+refresh automatically when files are moved or changed outside FTPeach.
 
 <!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a transfer refresh leaves a pane the user browsed away from, and keeps the selection -->
 <!-- verified-by: pr test/component/file-browser/paneRefresh.test.tsx::a selection made while the folder is listed again is the one kept -->
@@ -98,17 +103,35 @@ operation's message, even when the two messages have the same text.
 
 ## Useful default shortcuts
 
-Use these with the file pane focused. If you have changed your keyboard
-shortcuts, your own bindings apply.
+Windows and Linux share the same default shortcuts. macOS uses `⌘` bindings and
+keeps the function-key shortcuts (`F2`, `F5`–`F8`) working as aliases until you
+change them in **Settings > Shortcuts**. File actions apply with the file pane
+focused.
 
-| Key | Action |
-| --- | --- |
-| Backspace | Go up one folder |
-| F2 | Rename the selected entry |
-| F7 | Create a folder |
-| Shift+F7 | Create a file |
-| F8 | Copy the selection to the other pane |
-| Ctrl+C, then Ctrl+V | Copy, then paste into the destination |
+| Action | Windows / Linux | macOS |
+| --- | --- | --- |
+| Search left / right pane | `Ctrl+F` / `Ctrl+Shift+F` | `⌘F` / `⇧⌘F` |
+| New connection (left / right) | `Ctrl+N` / `Ctrl+Shift+N` | `⌘K` / `⇧⌘K` |
+| Save connection or path (left / right) | `Ctrl+S` / `Ctrl+Shift+S` | `⌘S` / `⇧⌘S` |
+| Open Settings | `Ctrl+,` | `⌘,` |
+| Toggle hidden files | `Ctrl+H` | `⇧⌘.` |
+| Refresh both panes | `F5` | `⌘R` (also `F5`) |
+| New tab / close tab / reopen tab | `Ctrl+T` / `Ctrl+W` / `Ctrl+Shift+T` | `⌘T` / `⌘W` / `⇧⌘T` |
+| Next / previous tab | `Ctrl+Tab` / `Ctrl+Shift+Tab` | `⌃Tab` / `⌃⇧Tab` |
+| Open selected file or folder | `Enter` | `⌘↓` or `⌘O` |
+| Go up one folder | `Backspace` | `⌘↑` |
+| Go back / forward / home | `Alt+←` / `Alt+→` / `Alt+Home` | `⌘[` / `⌘]` / `⇧⌘H` |
+| Rename the selected entry | `F2` | `Return` (also `F2`) |
+| Move to Recycle Bin / Trash | `Delete` | `⌘⌫` |
+| Delete permanently | `Shift+Delete` | `⌥⌘⌫` |
+| Move to folder | `F6` | `⇧⌘M` (also `F6`) |
+| Create a folder / file | `F7` / `Shift+F7` | `⇧⌘N` / `⌥⌘N` |
+| Copy selection to the other pane | `F8` | `⌥⌘C` (also `F8`) |
+| Copy / cut / paste | `Ctrl+C` / `Ctrl+X` / `Ctrl+V` | `⌘C` / `⌘X` / `⌘V` |
+
+On macOS, `⌥⌘V` moves copied items into the destination folder, and the
+application menus live in the system menu bar, with `⌘Q` to quit and `⌘H` to
+hide FTPeach.
 
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Backspace navigates the pane up one directory level -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::selects, sorts, filters and supports keyboard actions -->
@@ -120,7 +143,8 @@ shortcuts, your own bindings apply.
 
 [![Settings with the Interface category selected and theme, color scheme, language and scale controls.](../../site/images/guide/appearance.png)](../../site/images/guide/appearance.png)
 
-Open **Edit > Settings > Interface** to find the appearance controls shown here.
+Open **Edit > Settings > Interface** (or select the **Settings** button in the
+toolbar) to find the appearance controls shown here.
 
 Choose **Theme** (light, dark or system) and **Color scheme** separately. Changes
 preview immediately; **Save** keeps them and **Cancel** restores the previous
@@ -162,13 +186,33 @@ port in **Test against**.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::a proxy test error fades once a tested field changes -->
 
+## System tray and menu bar
+
+How FTPeach stays accessible in the background depends on your operating system:
+
+- **Windows and Linux:** In **Edit > Settings > Interface**, turn on
+  **Minimize to tray** to hide the window to the system tray instead of the
+  taskbar, or **Close to tray** to hide the window when you click the close
+  button instead of quitting. Click the tray icon to restore the window, or
+  right-click it to pause or resume transfers, set a speed limit, toggle
+  **Keep the computer awake** or **Notify when transfers finish**, open
+  **Recent connections**, or **Quit**.
+- **macOS:** In **Edit > Settings > Interface**, **Show menu bar icon** (enabled
+  by default) keeps the peach icon in the macOS menu bar with the same transfer
+  and connection controls plus **Hide menu bar icon**. Closing the main window
+  hides it while keeping FTPeach running in the Dock so transfers continue;
+  click the Dock or menu bar icon to reopen it, or press `⌘Q` (**FTPeach >
+  Quit FTPeach**) to exit completely.
+
 ## Check for updates
 
 Use **Help > Check for Updates** or **Edit > Settings > Updates > Check Now**.
 The **Update automatically** setting controls automatic updates. Finish your
-work before selecting **Install update** in the status bar.
-If checking fails, keep using the current version and try again when the network
-is available.
+work before selecting **Install update** in the status bar. A downloaded update
+installs on the next launch or when you choose **Restart and Install**. On macOS
+and Linux (`.deb` and `.AppImage`), FTPeach needs an internet connection to
+confirm the release is still current before installing. If checking fails, keep
+using the current version and try again when the network is available.
 
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->

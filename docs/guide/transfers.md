@@ -22,7 +22,7 @@ folder open on the other side.
 
 1. Check the server or computer and the open path in both panes.
 2. Select the files or folders in the source pane. Choose the action above, or
-   press **F8** with that pane focused using the default shortcuts.
+   press `F8` / `⌥⌘C` with that pane focused using the default shortcuts.
 3. If asked about existing files, decide whether those destination copies should
    be replaced. A matching name does not mean that the contents are the same.
 4. Follow the job in **Transfers** and check its final result before closing the
@@ -48,7 +48,7 @@ want to review replacements. See [Everyday settings](interface.md#everyday-setti
 For each existing file, **Ask** offers **Overwrite**, **Create a copy** and **Skip**.
 Copies are named `file (copy).txt`, then `file (copy 2).txt` and so on, without
 replacing existing files. For several conflicts, **Apply to all remaining conflicts**
-reuses your choice; closing the question or pressing Escape skips only the current file.
+reuses your choice; closing the question or pressing `Esc` skips only the current file.
 Files without a conflict transfer without a question.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Transfers saves speed, concurrency and conflict handling and Updates checks on request -->
@@ -99,11 +99,12 @@ is unavailable.
 
 ### Before a full exit or restart
 
-If FTPeach is still in the system tray, reopen it and check **Transfers**
-before starting another copy of the same job. The instructions below concern
-a full application exit, not just a hidden window.
+If FTPeach is still in the system tray (Windows and Linux) or running in the
+Dock or menu bar (macOS), reopen it and check **Transfers** before starting
+another copy of the same job. The instructions below concern a full application
+exit, not just a hidden window.
 
-Finish important transfers before exiting FTPeach or restarting Windows.
+Finish important transfers before exiting FTPeach or restarting your computer.
 The transfer queue does not return in a fresh application process. A paused
 upload is not a saved job for the next launch: keep its server connection open
 if you want to resume it. After exiting, select the source again and start
@@ -207,23 +208,28 @@ on the server, leaves nothing beside the destination.
 
 ## Downloaded files
 
-On NTFS, FTPeach writes a Windows origin mark to downloaded files. It identifies
-local-network servers as intranet and other servers as internet. The mark
-records the server address without your user name or password and stays with
-the file when it is renamed. A drive formatted as FAT32 or exFAT, as many USB
-sticks are, cannot keep this mark. See [download security limits](../security.md#rust-and-remote-servers).
+On Windows (NTFS drives), FTPeach writes an origin mark to downloaded files. It
+identifies local-network servers as intranet and other servers as internet. The
+mark records the server address without your user name or password and stays
+with the file when it is renamed. A drive formatted as FAT32 or exFAT, as many
+USB sticks are, cannot keep this mark.
 
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::a_host_that_cannot_be_reached_from_outside_is_the_intranet -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::anything_else_is_the_internet -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::the_mark_carries_the_address_but_never_an_account -->
 <!-- verified-by: pr src-tauri/src/local_fs/provenance.rs::the_mark_lands_beside_the_file_and_survives_being_renamed -->
 
+On macOS, FTPeach applies the standard macOS quarantine mark to downloaded
+files. On Linux, downloaded files do not receive a system quarantine mark. See
+[download security limits](../security.md#rust-and-remote-servers).
+
 ## Copying files and folders
 
 To copy within your computer, keep both panes on **Computer**, open the source
-and destination folders, select the entries and press **F8**. You can also use
-**Ctrl+C**, open the destination and press **Ctrl+V**. To create a destination
-folder first, right-click empty space and choose **New Folder**, or press **F7**.
+and destination folders, select the entries and press `F8` / `⌥⌘C`. You can also
+use `Ctrl+C` / `⌘C`, open the destination and press `Ctrl+V` / `⌘V`. To create a
+destination folder first, right-click empty space and choose **New Folder**, or
+press `F7` / `⇧⌘N`.
 
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::F7/Shift+F7 create a new folder/file and F8 copies the selection to the other pane -->
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::Ctrl+C/Ctrl+X mark the selection for the clipboard and Ctrl+V pastes it -->
@@ -246,10 +252,11 @@ skipped names; other selected files can still be copied.
 
 ## Renaming and moving
 
-To rename, select one entry, press **F2**, type the new name and press **Enter**.
-To move, right-click the selection and choose **Move to folder…**, then choose
-the destination folder. Alternatively, press **Ctrl+X**, open the destination
-on the same computer or server connection and press **Ctrl+V**.
+To rename, select one entry, press `F2` / `Return`, type the new name and
+confirm with `Enter` / `Return`. To move, right-click the selection and choose
+**Move to folder…**, then choose the destination folder. Alternatively, press
+`Ctrl+X` / `⌘X`, open the destination on the same computer or server connection
+and press `Ctrl+V` / `⌘V`.
 
 <!-- verified-by: pr test/component/file-browser/filePane.test.tsx::selects, sorts, filters and supports keyboard actions -->
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::move destinations preserve display order and exclude selected folders -->
@@ -280,12 +287,14 @@ move and changes nothing. Copy the files instead.
 
 Select the entries, right-click and choose **Delete**. Read the confirmation
 and check the location and selection before approving it. Local files normally
-go to the Recycle Bin. If that location has no Recycle Bin, FTPeach asks again
-before permanently deleting them; cancelling keeps the files.
+go to the Recycle Bin (Windows) or Trash (macOS and Linux). If that location has
+no Recycle Bin or Trash, FTPeach asks again before permanently deleting them;
+cancelling keeps the files.
 
 > [!WARNING]
-> **Deleting from a server is permanent in FTPeach:** remote files do not go to your
-> computer's Recycle Bin. Download a backup first if you may need them again.
+> **Deleting from a server is permanent in FTPeach:** remote files do not go to
+> your computer's Recycle Bin or Trash. Download a backup first if you may need
+> them again.
 
 <!-- verified-by: pr test/component/file-browser/paneActions.test.ts::Shift on this computer turns Delete into Delete permanently; a server has no bin to skip -->
 <!-- verified-by: pr test/unit/file-browser/paneFileOperations.test.ts::what has no Recycle Bin is offered for a permanent delete, the rest goes to the bin -->

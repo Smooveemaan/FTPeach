@@ -15,6 +15,50 @@
   overflow-y: auto;
   scrollbar-width: thin;
 }
+/* Shown from the first paint when script runs (the class is set in the head); without script both platforms show. */
+.guide-os {
+  display: none;
+}
+.js .guide-os {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+.guide-os-label {
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.guide-os-pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--raise);
+}
+.guide-os-pick button {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 14px / 1.3 var(--font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+.guide-os-pick button:hover {
+  color: var(--ink);
+  background: var(--soft);
+}
+:root[data-os='pc'] .guide-os-pick [data-os-pick='pc'],
+:root[data-os='mac'] .guide-os-pick [data-os-pick='mac'] {
+  background: var(--peach-wash);
+  color: var(--peach-ink);
+  font-weight: 600;
+}
 .guide-chapters summary,
 .guide-toc summary {
   display: flex;
@@ -268,6 +312,30 @@
   font: 0.86em var(--font-mono);
   overflow-wrap: anywhere;
 }
+.guide-content kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  background: var(--soft);
+  box-shadow: 0 1px 0 var(--edge);
+  font: 0.84em / 1.45 var(--font-mono);
+  white-space: nowrap;
+}
+/* Show only the reader's OS shortcuts when JS detects or switches OS; without JS both stay visible. */
+:root[data-os='pc'] .shortcut-mac,
+:root[data-os='pc'] .shortcut-sep,
+:root[data-os='mac'] .shortcut-pc,
+:root[data-os='mac'] .shortcut-sep {
+  display: none;
+}
+:root[data-os='pc'] .shortcut-table :is(th, td):nth-child(3),
+:root[data-os='mac'] .shortcut-table :is(th, td):nth-child(2) {
+  display: none;
+}
+:root[data-os='pc'] .shortcut-table :is(th, td):nth-child(2) {
+  padding-right: 0;
+}
 .guide-content pre {
   overflow: auto;
   margin: 8px 0 26px;
@@ -387,6 +455,29 @@
     padding: 16px 10px;
     border-radius: 16px;
     background: var(--raise);
+  }
+  .js .guide-os {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    margin: 0 0 12px;
+    padding: 0 8px 12px 12px;
+    border-bottom: 1px solid var(--edge);
+  }
+  .guide-os-label {
+    padding: 0;
+  }
+  .guide-os-pick {
+    grid-template-columns: auto auto;
+    border-radius: 10px;
+    background: var(--bg);
+  }
+  .guide-os-pick button {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 13px;
   }
   .guide-chapters summary {
     padding: 0 12px;

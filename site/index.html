@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FTPeach: free FTP, FTPS, SFTP and WebDAV client for Windows</title>
+    <title>FTPeach: free FTP, FTPS, SFTP and WebDAV client</title>
     <meta
       name="description"
-      content="A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows. Two panes side by side, drag and drop, and a transfer queue you can pause and resume."
+      content="A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows, macOS and Linux. Two panes side by side, drag and drop, and a transfer queue you can pause and resume."
     />
     <link rel="canonical" href="https://ftpeach.com/" />
     <link rel="icon" href="favicon.ico" />
@@ -18,7 +18,7 @@
     <meta property="og:site_name" content="FTPeach" />
     <meta property="og:url" content="https://ftpeach.com/" />
     <meta property="og:title" content="FTPeach: drag files to your server and back" />
-    <meta property="og:description" content="A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows." />
+    <meta property="og:description" content="A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows, macOS and Linux." />
     <meta property="og:image" content="https://ftpeach.com/og.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -37,14 +37,14 @@
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
           "name": "FTPeach",
-          "description": "A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows.",
+          "description": "A free desktop client for FTP, FTPS, SFTP and WebDAV on Windows, macOS and Linux.",
           "url": "https://ftpeach.com/",
           "downloadUrl": "{{SETUP_URL}}",
           "softwareVersion": "{{SOFTWARE_VERSION}}",
           "screenshot": "https://ftpeach.com/ftpeach-dark.png",
           "image": "https://ftpeach.com/icon.png",
           "applicationCategory": "UtilitiesApplication",
-          "operatingSystem": "Windows 10, Windows 11",
+          "operatingSystem": "Windows 10, Windows 11, macOS 13.3+, Linux",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
           "license": "https://www.apache.org/licenses/LICENSE-2.0",
           "isAccessibleForFree": true,
@@ -88,7 +88,7 @@
         </button>
         <a class="support" href="#support"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 14s-5.5-3.3-5.5-7.2A3 3 0 0 1 8 4.6a3 3 0 0 1 5.5 2.2C13.5 10.7 8 14 8 14Z" /></svg><span class="label">Donate</span></a>
         <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path class="b1" d="M4 8h16" /><path class="b2" d="M4 16h16" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="b1" d="M4 8h16" /><path class="b2" d="M4 16h16" /></svg>
         </button>
       </div>
       <nav class="menu" id="menu" aria-label="Menu" hidden>
@@ -106,19 +106,20 @@
       <div class="sheet">
       <section class="hero" aria-labelledby="title">
         <div class="wrap">
-          <h1 id="title">Drag files to your server and back.</h1>
+          <h1 id="title">Drag files to your server and back</h1>
           <div class="row">
             <p class="what">
-              FTPeach is a free FTP, FTPS, SFTP and WebDAV client for Windows. Open your computer or
-              any server in two panes, side by side, then drag files from one to the other.
+              FTPeach is a free FTP, FTPS, SFTP and WebDAV client for Windows, macOS and Linux. Open
+              your computer or any server in two panes, side by side, then drag files from one to the
+              other.
             </p>
             <ul class="facts">
-              <li>Windows 10 and 11, 64-bit</li>
+              <li>Windows, macOS and Linux</li>
               <li>Free and open source, Apache-2.0</li>
             </ul>
             <div class="act">
               <a class="btn" href="#download">
-                Download for Windows
+                Download
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v9m0 0 3.5-3.5M8 11 4.5 7.5M3 14h10" /></svg>
               </a>
               <a class="gh-link" href="https://github.com/Smooveemaan/ftpeach"><span class="label">View on GitHub</span> <span class="stars" role="img" aria-label="{{STARS_LABEL}}"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.3l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.6l-4 2.1.8-4.5L1.5 6l4.5-.6Z" /></svg>{{STARS}}</span></a>
@@ -133,32 +134,12 @@
           </div>
         </div>
       </section>
-
-      <section id="how" class="how" aria-labelledby="how-title">
-        <div class="wrap">
-          <h2 id="how-title">Three steps. You’ll mostly repeat the last two.</h2>
-          <ol class="steps">
-            <li>
-              <h3>Add your server</h3>
-              <p>Type in the address and your login once and save it. Next time it is one click away. Several servers can stay open at once, each in its own tab.</p>
-            </li>
-            <li>
-              <h3>Drag files across</h3>
-              <p>Each pane can show your computer or a server, so copying between two servers is just as easy. Filter the open folder by name or click a column to sort it, then drag the files over.</p>
-            </li>
-            <li>
-              <h3>Watch them arrive</h3>
-              <p>Every file shows up in the queue with its speed and time left. Pause one, cancel another, or set a speed limit. A paused transfer can continue where it stopped when its source and partial data still match.</p>
-            </li>
-          </ol>
-        </div>
-      </section>
       </div>
 
       <section id="features" class="features" aria-labelledby="features-title">
         <div class="wrap">
           <div class="features-head">
-            <h2 id="features-title">What else you get.</h2>
+            <h2 id="features-title">What’s included</h2>
           </div>
           <div class="shown">
             <div class="feature">
@@ -166,17 +147,17 @@
               <p>Open one server in each pane and copy between them. Files pass through your computer on the way.</p>
             </div>
             <div class="feature">
-              <h3>Passwords kept safe</h3>
-              <p>Saved passwords are encrypted for your Windows account. Add a master password and unlock it with Windows Hello if you like.</p>
+              <h3>Saved passwords</h3>
+              <p>Saved passwords use your Windows account, macOS Keychain, or Linux Secret Service. Add a master password and unlock it with Windows Hello or Touch ID.</p>
             </div>
             <div class="feature">
-              <h3>Edit in your own editor</h3>
+              <h3>Use your own editor</h3>
               <p>Open a file from the server in the app you like, then upload your changes back.</p>
             </div>
           </div>
           <div class="feature-list">
             <div class="feature">
-              <h3>Absolutely free</h3>
+              <h3>Free and open source</h3>
               <p>No trial, no paid edition, no features held back. The code is open under the Apache 2.0 license.</p>
             </div>
             <div class="feature">
@@ -184,33 +165,28 @@
               <p>Nothing to sign up for and nothing extra in the installer. FTPeach only goes online to reach your servers and to check GitHub for updates.</p>
             </div>
             <div class="feature">
-              <h3>Modern and minimal</h3>
-              <p>Two panes with your files, the queue and the log below them. Pick one of 20 color schemes, each in light and dark.</p>
+              <h3>Clean interface</h3>
+              <p>Two panes with tabs, filtering, the transfer queue and the log below. Pause or cancel transfers, or set a speed limit anytime.</p>
             </div>
             <div class="feature">
-              <h3>Updates on their own</h3>
-              <p>New versions download in the background and install the next time you start FTPeach. Each one is checked before it installs.</p>
+              <h3>Automatic updates</h3>
+              <p>New versions download in the background and install the next time you start FTPeach. Each one is verified before it installs.</p>
             </div>
             <div class="feature">
-              <h3>Take it with you</h3>
-              <p>The portable version runs from a folder. Your settings and bookmarks travel with it.</p>
+              <h3>Portable version</h3>
+              <p>The Windows portable version runs from a folder. Your settings and bookmarks travel with it.</p>
             </div>
-          </div>
-          <div class="feature languages">
-            <div>
-              <h3>In your language</h3>
-              <p>27 languages to choose from.</p>
+            <div class="feature">
+              <h3>27 languages</h3>
+              <p>The interface is translated into 27 languages, including right-to-left scripts. Switch anytime in Settings.</p>
             </div>
-              <ul class="langs" aria-label="Interface languages">
-                <li lang="id">Bahasa Indonesia</li><li lang="cs">Čeština</li><li lang="da">Dansk</li><li lang="de">Deutsch</li><li lang="en">English</li><li lang="es">Español</li><li lang="fr">Français</li><li lang="it">Italiano</li><li lang="hu">Magyar</li><li lang="nl">Nederlands</li><li lang="pl">Polski</li><li lang="pt-BR">Português (Brasil)</li><li lang="ro">Română</li><li lang="sv">Svenska</li><li lang="vi">Tiếng Việt</li><li lang="tr">Türkçe</li><li lang="el">Ελληνικά</li><li lang="ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</li><li lang="uk">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</li><li lang="he">עברית</li><li lang="ar">العربية</li><li lang="hi">हिन्दी</li><li lang="th">ไทย</li><li lang="ko">한국어</li><li lang="ja">日本語</li><li lang="zh-Hans">简体中文</li><li lang="zh-Hant">繁體中文</li>
-              </ul>
           </div>
         </div>
       </section>
 
       <section id="themes" class="schemes" aria-labelledby="themes-title">
         <div class="wrap">
-          <h2 id="themes-title">20 color schemes, each in light and dark.</h2>
+          <h2 id="themes-title">20 color schemes, light and dark</h2>
           <div class="palette-toolbar">
             <div class="palette-pick">
             <div class="swatches" role="group" aria-label="Color schemes"><button class="swatch" type="button" data-palette="peach" style="--swatch: #ff9d72" aria-label="Peach" aria-pressed="true"></button><button class="swatch" type="button" data-palette="black" style="--swatch: #eeeeee" aria-label="Onyx" aria-pressed="false"></button><button class="swatch" type="button" data-palette="gray" style="--swatch: #c4c4c4" aria-label="Ash" aria-pressed="false"></button><button class="swatch" type="button" data-palette="graphite" style="--swatch: #b6cbe1" aria-label="Graphite" aria-pressed="false"></button><button class="swatch" type="button" data-palette="linen" style="--swatch: #dfca94" aria-label="Linen" aria-pressed="false"></button><button class="swatch" type="button" data-palette="sand" style="--swatch: #f0c36c" aria-label="Sand" aria-pressed="false"></button><button class="swatch" type="button" data-palette="cocoa" style="--swatch: #e6bb87" aria-label="Cocoa" aria-pressed="false"></button><button class="swatch" type="button" data-palette="amber" style="--swatch: #ffb16f" aria-label="Amber" aria-pressed="false"></button><button class="swatch" type="button" data-palette="clay" style="--swatch: #edac91" aria-label="Clay" aria-pressed="false"></button><button class="swatch" type="button" data-palette="leaves" style="--swatch: #bed397" aria-label="Grass" aria-pressed="false"></button><button class="swatch" type="button" data-palette="forest" style="--swatch: #8cddb5" aria-label="Forest" aria-pressed="false"></button><button class="swatch" type="button" data-palette="solarized" style="--swatch: #65d5c4" aria-label="Lagoon" aria-pressed="false"></button><button class="swatch" type="button" data-palette="nord" style="--swatch: #a1dce5" aria-label="Frost" aria-pressed="false"></button><button class="swatch" type="button" data-palette="ocean" style="--swatch: #69c8ed" aria-label="Ocean" aria-pressed="false"></button><button class="swatch" type="button" data-palette="midnight" style="--swatch: #a7b9f5" aria-label="Midnight" aria-pressed="false"></button><button class="swatch" type="button" data-palette="catppuccin" style="--swatch: #89b4fa" aria-label="Bluebell" aria-pressed="false"></button><button class="swatch" type="button" data-palette="dracula" style="--swatch: #bd93f9" aria-label="Orchid" aria-pressed="false"></button><button class="swatch" type="button" data-palette="plum" style="--swatch: #dbace0" aria-label="Plum" aria-pressed="false"></button><button class="swatch" type="button" data-palette="burgundy" style="--swatch: #ee9fb5" aria-label="Burgundy" aria-pressed="false"></button><button class="swatch" type="button" data-palette="rose" style="--swatch: #f0a0bf" aria-label="Rose" aria-pressed="false"></button></div>
@@ -240,7 +216,7 @@
       <section id="protocols" class="protocols" aria-labelledby="protocols-title">
         <div class="wrap">
           <div>
-            <h2 id="protocols-title">Which servers it talks to.</h2>
+            <h2 id="protocols-title">Supported protocols</h2>
             <p class="note">Implicit FTPS is not supported. Your server and your permissions decide the rest. <a href="guide/protocol-reference.html">All the details</a></p>
           </div>
           <table class="proto">
@@ -259,34 +235,64 @@
 
       <section id="download" class="download" aria-labelledby="download-title">
         <div class="wrap">
-          <h2 id="download-title">Two ways to run it.</h2>
-          <p class="lead">Both are the same FTPeach.</p>
+          <h2 id="download-title">Download FTPeach</h2>
+          <p class="lead">Available for Windows, macOS and Linux.</p>
           <div class="choices">
             <div class="choice">
-              <h3>Installer<span>Recommended</span></h3>
-              <p>Installs FTPeach like any other Windows app, with a Start menu entry and a normal uninstall. Not code-signed yet, <a href="#unsigned">see the note below</a>.</p>
-              <a class="btn" href="{{SETUP_URL}}">Download installer <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
+              <h3>Windows<span>10 and 11, 64-bit</span></h3>
+              <p>Standard installer with a Start menu shortcut, or a portable .zip that keeps settings beside FTPeach.exe. Not code-signed yet, <a href="#unsigned">see the note below</a>.</p>
+              <div class="choice-actions">
+                <a class="btn" href="{{SETUP_URL}}">Download installer <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
+                <!-- portable:available -->
+                <a class="btn btn-line" href="{{PORTABLE_URL}}">Download portable <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
+                <!-- /portable:available -->
+                <!-- portable:missing -->
+                <span class="btn btn-line btn-off" aria-disabled="true">Coming in the next release</span>
+                <!-- /portable:missing -->
+              </div>
             </div>
             <div class="choice">
-              <h3>Portable</h3>
-              <p>Nothing to install. Unpack the .zip anywhere, even on a USB stick, and start FTPeach.exe. Settings stay in the folder beside it.</p>
-              <!-- portable:available -->
-              <a class="btn btn-line" href="{{PORTABLE_URL}}">Download portable <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
-              <!-- /portable:available -->
-              <!-- portable:missing -->
-              <span class="btn btn-line btn-off" aria-disabled="true">Coming in the next release</span>
-              <!-- /portable:missing -->
+              <h3>macOS<span>13.3+, Apple Silicon &amp; Intel</span></h3>
+              <p>Signed and notarized universal disk image. Open the .dmg and drag FTPeach into Applications.</p>
+              <div class="choice-actions">
+                <!-- macos:available -->
+                <a class="btn" href="{{MACOS_URL}}">Download .dmg <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
+                <!-- /macos:available -->
+                <!-- macos:missing -->
+                <span class="btn btn-line btn-off" aria-disabled="true">Coming in the next release</span>
+                <!-- /macos:missing -->
+              </div>
+            </div>
+            <div class="choice">
+              <h3>Linux<span>64-bit x86_64</span></h3>
+              <p>Package for Debian and Ubuntu, or a standalone AppImage (requires FUSE).</p>
+              <div class="choice-actions">
+                <!-- linux:available -->
+                <!-- linux-deb:available -->
+                <a class="btn" href="{{LINUX_DEB_URL}}">Download .deb <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
+                <!-- /linux-deb:available -->
+                <!-- linux-deb:missing -->
+                <!-- /linux-deb:missing -->
+                <!-- linux-appimage:available -->
+                <a class="btn btn-line" href="{{LINUX_APPIMAGE_URL}}">Download AppImage <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" /></svg></a>
+                <!-- /linux-appimage:available -->
+                <!-- linux-appimage:missing -->
+                <!-- /linux-appimage:missing -->
+                <!-- /linux:available -->
+                <!-- linux:missing -->
+                <span class="btn btn-line btn-off" aria-disabled="true">Coming in the next release</span>
+                <!-- /linux:missing -->
+              </div>
             </div>
           </div>
           <p class="thanks" id="thanks" role="status"></p>
           <template id="thanks-text"><span><strong>Thanks for downloading!</strong> Hope it serves you well. <a href="#support">Ways to help</a></span></template>
           <div class="reqs">
-            <p>Version {{SOFTWARE_VERSION}} for Windows 10 and 11, 64-bit.<!-- downloads --> Downloaded {{DOWNLOADS}} times.<!-- /downloads --> <a href="https://github.com/Smooveemaan/ftpeach/blob/master/CHANGELOG.md">See what&rsquo;s new</a></p>
-            <p>macOS and Linux are coming soon.</p>
+            <p>Version {{SOFTWARE_VERSION}} for Windows, macOS and Linux.<!-- downloads --> Downloaded {{DOWNLOADS}} times.<!-- /downloads --> <a href="https://github.com/Smooveemaan/ftpeach/blob/master/CHANGELOG.md">See what&rsquo;s new</a></p>
           </div>
           <div class="notes">
             <p>I made FTPeach with a lot of help from AI and tested it carefully. Please back up files that matter, and <a href="https://github.com/Smooveemaan/ftpeach/issues">tell me on GitHub</a> if anything is off.</p>
-            <p id="unsigned">The download is not code-signed, so Windows may say it protected your PC. Choose <kbd>More info</kbd>, then <kbd>Run anyway</kbd>.</p>
+            <p id="unsigned">The macOS build is signed and notarized. The Windows download is not code-signed yet, so Windows may say it protected your PC: choose <kbd>More info</kbd>, then <kbd>Run anyway</kbd>.</p>
           </div>
         </div>
       </section>
@@ -294,8 +300,8 @@
         <div class="wrap">
           <div class="give-text">
             <div>
-              <h2 id="give-title">FTPeach is free, and it stays free.</h2>
-              <p>If it saves you time, you can help keep it going. Every donation goes back into FTPeach. Thanks for stopping by!</p>
+              <h2 id="give-title">Free to use,<br />supported by donations</h2>
+              <p>FTPeach has no paid version. If it saves you time, a donation helps keep it going.</p>
             </div>
             <div class="give-links">
               <a class="btn btn-dark" href="https://www.patreon.com/Smooveemaan">Patreon <span class="per">monthly</span></a>

@@ -24,6 +24,27 @@ guideToggle.addEventListener('click', () => {
 guideSystemDark.addEventListener('change', syncGuideTheme);
 syncGuideTheme();
 
+const guideOs = document.querySelector('.guide-os');
+if (guideOs) {
+  const buttons = [...guideOs.querySelectorAll('[data-os-pick]')];
+  const syncOs = () => {
+    const active = guideRoot.dataset.os === 'mac' ? 'mac' : 'pc';
+    for (const button of buttons)
+      button.setAttribute('aria-pressed', String(button.dataset.osPick === active));
+  };
+  syncOs();
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const os = button.dataset.osPick === 'mac' ? 'mac' : 'pc';
+      guideRoot.dataset.os = os;
+      try {
+        localStorage.setItem('os', os);
+      } catch {}
+      syncOs();
+    });
+  }
+}
+
 // The menu on narrow screens: a link, Esc, a tap outside or a wider window closes it.
 const guideHeader = document.querySelector('.site-header');
 const guideBurger = guideHeader.querySelector('.burger');

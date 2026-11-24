@@ -1,11 +1,11 @@
 # Portable version
 
-Choose the portable download when you want to keep FTPeach and its settings in
-one folder, for example on a removable drive.
+Choose the Windows portable download when you want to keep FTPeach and its
+settings in one folder, for example on a removable drive.
 
 ## Start and carry a portable copy
 
-1. Download the portable zip from the [website](https://ftpeach.com/).
+1. Download the Windows portable zip from the [website](https://ftpeach.com/).
 2. Unpack the whole archive into a writable folder, then start FTPeach from
    that folder. Keep the `FTPeach.portable` marker beside the program.
 3. When moving the copy, keep its `data` folder with it. This is where your

@@ -73,7 +73,7 @@ An existing bookmark's editor.
 <!-- verified-by: pr test/component/sites/siteManager.test.tsx::creates and edits a bookmark through the form -->
 <!-- verified-by: pr test/unit/application/menus.test.ts::menu commands bind current tab, pane and theme and both copy refresh callbacks -->
 
-Click a bookmark row, or focus it and press **Enter**, to connect. Search can find
+Click a bookmark row, or focus it and press `Enter` / `Return`, to connect. Search can find
 bookmarks by name, host, user or folder. Use names that distinguish production
 and test servers before you start copying files.
 

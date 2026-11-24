@@ -399,7 +399,7 @@ section[id] {
 
 /* Hero */
 .hero {
-  padding-top: clamp(56px, 11vh, 128px);
+  padding: clamp(56px, 11vh, 128px) 0 var(--section);
   overflow: hidden;
 }
 .hero h1 {
@@ -460,37 +460,46 @@ section[id] {
   margin-top: clamp(40px, 6vh, 64px);
   padding: 10px;
   border: 1px solid var(--edge);
-  border-radius: 18px;
+  border-radius: 22px;
   background: var(--raise);
 }
 .stage {
   position: relative;
 }
-/* The screenshots are --iw x --ih with the window at --x, --y, --w x --h; the crop shows just the window. */
+/* The screenshots are --iw x --ih with the window at --x, --y, --w x --h; trim 2 px of window chrome and match its corners cleanly. */
 .crop {
   --iw: 2721;
   --ih: 1761;
-  --x: 178;
-  --y: 138;
-  --w: 2364;
-  --h: 1484;
+  --x: 180;
+  --y: 140;
+  --w: 2360;
+  --h: 1480;
   position: relative;
+  overflow: hidden;
   aspect-ratio: var(--w) / var(--h);
-  border-radius: 10px;
+  border-radius: calc(1650% / 1474) / calc(1650% / 924);
   background: var(--shot) no-repeat;
   background-size: calc(var(--iw) / var(--w) * 100%) auto;
   background-position: calc(var(--x) / (var(--iw) - var(--w)) * 100%) calc(var(--y) / (var(--ih) - var(--h)) * 100%);
 }
+.crop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px light-dark(rgb(31 29 27 / 0.08), rgb(242 240 237 / 0.08));
+  pointer-events: none;
+}
 /* The demo is downloaded only when its button is pressed and fades in over the screenshot;
-   both theme videos play in step and only the current theme's one is opaque. */
+   both theme videos play in step and only the current theme's one is opaque.
+   Bleed 2 px of the 1478x928 recording past .crop so its outer frame and rounded shadow stay clipped. */
 .demo {
   display: block;
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  inset: calc(-200% / 924) calc(-200% / 1474);
+  width: calc(100% + 400% / 1474);
+  height: calc(100% + 400% / 924);
   object-fit: cover;
-  clip-path: inset(calc(300% / var(--h)) calc(300% / var(--w)) round 8px);
   opacity: 0;
   transition: opacity 0.4s;
 }
@@ -609,7 +618,7 @@ section[id] {
     border-radius: 14px;
   }
   .crop {
-    border-radius: 8px;
+    border-radius: calc(1650% / 1474) / calc(1650% / 924);
   }
   .play {
     --size: 48px;
@@ -620,53 +629,7 @@ section[id] {
   }
 }
 
-/* How it works: the heading stays in its column while the three steps run down the other. */
-.how {
-  padding: var(--section) 0;
-}
-.how .wrap {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 40px clamp(32px, 5vw, 80px);
-  align-items: start;
-}
-.how h2 {
-  max-width: 22ch;
-  margin: 0;
-  font-size: clamp(30px, 3.6vw, 52px);
-  font-weight: 650;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
-  text-wrap: balance;
-}
-.steps {
-  display: grid;
-  gap: clamp(40px, 6vh, 64px);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.steps h3 {
-  margin: 0 0 12px;
-  font-size: 24px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-.steps p {
-  margin: 0;
-  max-width: 40ch;
-  color: var(--muted);
-  font-size: 20px;
-  line-height: 1.5;
-}
-@media (max-width: 900px) {
-  .how .wrap {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Features: heading and lead, three points shown with a piece of the real app, five short ones, then the languages. */
+/* Features: heading, three primary points and six additional points in a balanced grid. */
 .features {
   --text: light-dark(#4a4540, #c9c4be);
   padding: var(--section) 0;
@@ -725,32 +688,11 @@ section[id] {
   gap: 40px clamp(20px, 2.4vw, 32px);
   margin-top: 40px;
 }
-/* The languages close the section on a strip of their own. */
-.languages {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
-  gap: 24px clamp(24px, 2.4vw, 40px);
-  margin-top: clamp(56px, 8vh, 88px);
-  padding: clamp(28px, 4vh, 40px);
-  border-radius: 18px;
-  background: light-dark(#f0ede9, #211f1c);
-}
-.langs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 24px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 16px;
-  line-height: 1.4;
-}
 .feature-list .feature {
   max-width: 40ch;
 }
 @media (max-width: 1040px) {
-  .features-head,
-  .languages {
+  .features-head {
     grid-template-columns: minmax(0, 1fr);
   }
   .feature-list {
@@ -1011,9 +953,9 @@ section[id] {
 }
 .choices {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(16px, 2vw, 24px);
-  max-width: 920px;
+  max-width: 1080px;
   margin: clamp(40px, 6vh, 64px) auto 0;
   text-align: left;
 }
@@ -1022,7 +964,7 @@ section[id] {
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  padding: clamp(24px, 3vw, 36px);
+  padding: clamp(22px, 2.5vw, 32px);
   border-radius: 18px;
   background: var(--raise);
 }
@@ -1033,7 +975,8 @@ section[id] {
   letter-spacing: -0.025em;
 }
 .choice h3 span {
-  margin-left: 10px;
+  display: block;
+  margin-top: 4px;
   color: var(--muted);
   font-size: 14px;
   font-weight: 500;
@@ -1043,8 +986,16 @@ section[id] {
   margin: 0 0 12px;
   color: var(--muted);
 }
-.choice .btn {
+.choice-actions {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.choice .btn {
+  width: 100%;
+  justify-content: center;
 }
 .btn-line {
   background: transparent;
@@ -1063,7 +1014,7 @@ section[id] {
   cursor: default;
 }
 .thanks {
-  max-width: 920px;
+  max-width: 1080px;
   margin: 24px auto 0;
   text-wrap: pretty;
   color: var(--muted);
@@ -1144,8 +1095,8 @@ section[id] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   /* The cards' gap and inner padding, so the notes' text lines up with the text inside the cards. */
   gap: 24px clamp(16px, 2vw, 24px);
-  padding-inline: clamp(24px, 3vw, 36px);
-  max-width: 920px;
+  padding-inline: clamp(22px, 2.5vw, 32px);
+  max-width: 1080px;
   margin: clamp(56px, 8vh, 88px) auto 0;
   text-align: left;
 }
@@ -1176,15 +1127,15 @@ section[id] {
   font-weight: 600;
   color: var(--ink);
 }
+@media (max-width: 900px) {
+  .choices {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 560px;
+  }
+}
 @media (max-width: 760px) {
-  .choices,
   .notes {
     grid-template-columns: minmax(0, 1fr);
-  }
-  /* One card above the other: each download is the card's full width, an easy target for a thumb. */
-  .choice .btn {
-    align-self: stretch;
-    justify-content: center;
   }
 }
 
@@ -1278,7 +1229,7 @@ section[id] {
 }
 .give h2 {
   color: light-dark(var(--on-peach), var(--peach));
-  max-width: 18ch;
+  max-width: 24ch;
   margin: 0 0 16px;
   font-size: clamp(30px, 3.6vw, 52px);
   font-weight: 650;

@@ -45,7 +45,7 @@ See [Moving bookmarks and passwords to another computer](guide/passwords.md#movi
 
 ## Unlocking with Windows Hello
 
-See [Unlocking with Windows Hello](guide/passwords.md#unlocking-with-windows-hello).
+See [Unlocking with Windows Hello or Touch ID](guide/passwords.md#unlocking-with-windows-hello-or-touch-id).
 
 ## Connecting safely
 

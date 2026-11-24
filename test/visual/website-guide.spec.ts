@@ -289,6 +289,53 @@ test('screenshots enlarge without leaving the guide and restore reading position
   );
 });
 
+test('shortcut switcher filters inline keys and table columns and persists across pages', async ({
+  page,
+  browser,
+}) => {
+  await serveGuide(page);
+  await page.goto('https://guide.test/guide/interface.html');
+  const switcher = page.getByRole('group', { name: 'Shortcuts for' });
+  await expect(switcher).toBeVisible();
+  const macBtn = switcher.getByRole('button', { name: 'macOS' });
+  const pcBtn = switcher.getByRole('button', { name: 'Win / Linux' });
+  await macBtn.click();
+  await expect(page.locator('html')).toHaveAttribute('data-os', 'mac');
+  await expect(macBtn).toHaveAttribute('aria-pressed', 'true');
+  await expect(pcBtn).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('.shortcut-mac').first()).toBeVisible();
+  await expect(page.locator('.shortcut-pc').first()).toBeHidden();
+  await expect(page.locator('.shortcut-table thead th').nth(2)).toBeVisible();
+  await expect(page.locator('.shortcut-table thead th').nth(1)).toBeHidden();
+  await page.setViewportSize({ width: 320, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+
+  await page.goto('https://guide.test/guide/transfers.html');
+  await expect(page.locator('html')).toHaveAttribute('data-os', 'mac');
+  await expect(page.locator('.shortcut-mac').first()).toBeVisible();
+  await expect(page.locator('.shortcut-pc').first()).toBeHidden();
+
+  // The switcher stays visible on every guide page so the sidebar never jumps while reading.
+  await page.goto('https://guide.test/guide/getting-started.html');
+  await expect(page.getByRole('group', { name: 'Shortcuts for' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'macOS' })).toHaveAttribute('aria-pressed', 'true');
+
+  // Without JavaScript, both platforms stay readable and the interactive switcher stays hidden.
+  const noJsContext = await browser.newContext({ javaScriptEnabled: false });
+  const noJsPage = await noJsContext.newPage();
+  try {
+    await serveGuide(noJsPage);
+    await noJsPage.goto('https://guide.test/guide/interface.html');
+    await expect(noJsPage.locator('.guide-os')).toBeHidden();
+    await expect(noJsPage.locator('.shortcut-pc').first()).toBeVisible();
+    await expect(noJsPage.locator('.shortcut-mac').first()).toBeVisible();
+    await expect(noJsPage.locator('.shortcut-table thead th').nth(1)).toBeVisible();
+    await expect(noJsPage.locator('.shortcut-table thead th').nth(2)).toBeVisible();
+  } finally {
+    await noJsContext.close();
+  }
+});
+
 test('theme choice persists between guide pages and keyboard links reach sections', async ({
   page,
 }) => {

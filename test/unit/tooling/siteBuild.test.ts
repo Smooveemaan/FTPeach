@@ -68,19 +68,39 @@ test('a release with a portable copy offers both downloads', () => {
   const page = fillPage(html, release, stats);
   assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-setup\.exe"/);
   assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-portable\.zip"/);
-  assert.match(page, /Version 1\.2\.3 for Windows/);
-  assert.doesNotMatch(page, /Coming in the next release/);
+  assert.match(page, /Version 1\.2\.3 for Windows, macOS and Linux\./);
   assert.match(page, /"downloadUrl": "[^"]+\/FTPeach_1\.2\.3_x64-setup\.exe"/);
 });
 
-test('a release without a portable copy says it is coming', () => {
+test('a multi-platform release offers downloads for Windows, macOS and Linux', () => {
+  const release: Release = {
+    tag_name: 'v1.2.3',
+    assets: [
+      download('latest.json'),
+      download('FTPeach_1.2.3_x64-setup.exe'),
+      download('FTPeach_1.2.3_x64-portable.zip'),
+      download('FTPeach_1.2.3_universal.dmg'),
+      download('FTPeach_1.2.3_amd64.deb'),
+      download('FTPeach_1.2.3_amd64.AppImage'),
+    ],
+  };
+  const page = fillPage(html, release, stats);
+  assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-setup\.exe"/);
+  assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_x64-portable\.zip"/);
+  assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_universal\.dmg"/);
+  assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_amd64\.deb"/);
+  assert.match(page, /href="[^"]+\/FTPeach_1\.2\.3_amd64\.AppImage"/);
+  assert.doesNotMatch(page, /Coming in the next release/);
+});
+
+test('a Windows-only release keeps coming notes for missing packages', () => {
   const release: Release = {
     tag_name: 'v1.2.3',
     assets: [download('FTPeach_1.2.3_x64-setup.exe')],
   };
   const page = fillPage(html, release, stats);
   assert.match(page, /Coming in the next release/);
-  assert.doesNotMatch(page, /Download portable|portable\.zip"/);
+  assert.doesNotMatch(page, /Download portable|portable\.zip"|Download \.dmg|Download \.deb/);
 });
 
 test('search metadata describes the released app and the FTPeach project', () => {
@@ -96,6 +116,7 @@ test('search metadata describes the released app and the FTPeach project', () =>
     const app = data.find((entry) => entry['@type'] === 'SoftwareApplication');
     assert.ok(app);
     assert.equal(app.softwareVersion, '1.2.3');
+    assert.equal(app.operatingSystem, 'Windows 10, Windows 11, macOS 13.3+, Linux');
     assert.equal(app.screenshot, 'https://ftpeach.com/ftpeach-dark.png');
     assert.equal(app.image, 'https://ftpeach.com/icon.png');
     const project = data.find((entry) => entry['@type'] === 'Organization');
@@ -127,12 +148,12 @@ test('the download count appears only once it is large enough', () => {
   };
   const few = fillPage(html, release, { stars: 10, downloads: DOWNLOADS_SHOWN_FROM - 1 });
   assert.doesNotMatch(few, /Downloaded/);
-  assert.match(few, /64-bit\. <a /);
+  assert.match(few, /Linux\. <a /);
   const many = fillPage(html, release, { stars: 10, downloads: 12_345 });
-  assert.match(many, /64-bit\. Downloaded 12\.3K times\. <a /);
+  assert.match(many, /Linux\. Downloaded 12\.3K times\. <a /);
 });
 
-test('downloads count installers and portable copies, not updater checks', () => {
+test('downloads count installers and platform packages, not updater checks', () => {
   const asset = (name: string, download_count: number) => ({ ...download(name), download_count });
   const releases: Release[] = [
     {
@@ -140,10 +161,14 @@ test('downloads count installers and portable copies, not updater checks', () =>
       assets: [
         asset('FTPeach_1.2.3_x64-setup.exe', 20),
         asset('FTPeach_1.2.3_x64-portable.zip', 5),
+        asset('FTPeach_1.2.3_universal.dmg', 12),
+        asset('FTPeach_1.2.3_amd64.deb', 7),
+        asset('FTPeach_1.2.3_amd64.AppImage', 3),
+        asset('FTPeach_1.2.3_universal.app.tar.gz', 400),
         asset('latest.json', 900),
       ],
     },
     { tag_name: 'v1.2.2', assets: [asset('FTPeach_1.2.2_x64-setup.exe', 10)] },
   ];
-  assert.equal(countDownloads(releases), 35);
+  assert.equal(countDownloads(releases), 57);
 });

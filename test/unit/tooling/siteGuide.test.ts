@@ -51,6 +51,54 @@ test('Markdown keeps tables, code and unique GitHub headings, rewrites links and
   );
 });
 
+test('cross-platform shortcut pairs, standalone keys and shortcut tables are annotated while regular code stays intact', () => {
+  const markdown = [
+    '# Guide',
+    '',
+    'Press `Ctrl+T` / `⌘T`, `F2` / `Return`, or `⌘W` on macOS. Install `.deb` or check `FileManager1`.',
+    '',
+    '```text',
+    '`Ctrl+T` / `⌘T` and `⌘W`',
+    '```',
+    '',
+    '| Action | Windows / Linux | macOS |',
+    '| --- | --- | --- |',
+    '| Search | `Ctrl+F` / `Ctrl+Shift+F` | `⌘F` / `⇧⌘F` |',
+    '',
+    '| Item | Value |',
+    '| --- | --- |',
+    '| Mode | `Passive` |',
+  ].join('\n');
+  const document = new JSDOM(renderGuide(markdown, 'interface').content).window.document;
+  assert.deepEqual(
+    [...document.querySelectorAll('.shortcut')].map((node) => ({
+      pc: node.querySelector('.shortcut-pc')?.textContent,
+      mac: node.querySelector('.shortcut-mac')?.textContent,
+    })),
+    [
+      { pc: 'Ctrl+T', mac: '⌘T' },
+      { pc: 'F2', mac: 'Return' },
+    ],
+  );
+  assert.deepEqual(
+    [...document.querySelectorAll('p kbd')].map((node) => node.textContent),
+    ['Ctrl+T', '⌘T', 'F2', 'Return', '⌘W'],
+  );
+  assert.deepEqual(
+    [...document.querySelectorAll('p code')].map((node) => node.textContent),
+    ['.deb', 'FileManager1'],
+  );
+  assert.equal(document.querySelectorAll('table.shortcut-table').length, 1);
+  assert.equal(document.querySelectorAll('table').length, 2);
+  // Same-platform pairs inside the shortcuts table become individual <kbd> keys without .shortcut pairing.
+  assert.equal(document.querySelectorAll('.shortcut-table .shortcut').length, 0);
+  assert.deepEqual(
+    [...document.querySelectorAll('.shortcut-table kbd')].map((node) => node.textContent),
+    ['Ctrl+F', 'Ctrl+Shift+F', '⌘F', '⇧⌘F'],
+  );
+  assert.equal(document.querySelector('pre')?.textContent?.trim(), '`Ctrl+T` / `⌘T` and `⌘W`');
+});
+
 test('technical links follow the built revision while policies and changelog stay current', () => {
   const revision = '1234567890abcdef1234567890abcdef12345678';
   const document = new JSDOM(

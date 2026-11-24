@@ -27,48 +27,74 @@ export const DOWNLOADS_SHOWN_FROM = 1000;
 
 const SETUP = '_x64-setup.exe';
 const PORTABLE = '_x64-portable.zip';
+const MACOS = '_universal.dmg';
+const LINUX_DEB = '_amd64.deb';
+const LINUX_APPIMAGE = '_amd64.AppImage';
+const DOWNLOAD_SUFFIXES = [SETUP, PORTABLE, MACOS, LINUX_DEB, LINUX_APPIMAGE];
 const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
 
+function toggleBlock(html: string, name: string, available: boolean): string {
+  const [keep, drop] = available ? ['available', 'missing'] : ['missing', 'available'];
+  return html
+    .replace(
+      new RegExp(`[ \\t]*<!-- ${name}:${drop} -->[\\s\\S]*?<!-- /${name}:${drop} -->\\n`),
+      '',
+    )
+    .replace(new RegExp(`[ \\t]*<!-- /?${name}:${keep} -->\\n`, 'g'), '');
+}
+
 /**
- * Fills the release and count placeholders. The portable copy is offered only
- * when the release has one; otherwise the page keeps its "coming" note. The
- * download count is left out until it reaches DOWNLOADS_SHOWN_FROM.
+ * Fills the release and count placeholders. Optional packages (portable ZIP,
+ * macOS DMG, Linux .deb and .AppImage) are offered only when the release has
+ * them; otherwise the page keeps its "coming" note. The download count is left
+ * out until it reaches DOWNLOADS_SHOWN_FROM.
  */
 export function fillPage(html: string, release: Release, stats: Stats): string {
   const asset = (suffix: string) => release.assets.find((a) => a.name.endsWith(suffix));
   const setup = asset(SETUP);
   if (!setup) throw new Error(`${release.tag_name} has no installer`);
   const portable = asset(PORTABLE);
-  const [keep, drop] = portable ? ['available', 'missing'] : ['missing', 'available'];
-  const filled = html
-    .replace(
-      new RegExp(`[ \\t]*<!-- portable:${drop} -->[\\s\\S]*?<!-- /portable:${drop} -->\\n`),
-      '',
-    )
-    .replace(new RegExp(`[ \\t]*<!-- /?portable:${keep} -->\\n`, 'g'), '')
+  const macos = asset(MACOS);
+  const linuxDeb = asset(LINUX_DEB);
+  const linuxAppImage = asset(LINUX_APPIMAGE);
+  const hasLinux = Boolean(linuxDeb || linuxAppImage);
+  let filled = toggleBlock(html, 'portable', Boolean(portable));
+  filled = toggleBlock(filled, 'macos', Boolean(macos));
+  filled = toggleBlock(filled, 'linux', hasLinux);
+  filled = toggleBlock(filled, 'linux-deb', Boolean(linuxDeb));
+  filled = toggleBlock(filled, 'linux-appimage', Boolean(linuxAppImage));
+  filled = filled
     .replace(/<!-- downloads -->([\s\S]*?)<!-- \/downloads -->/, (_, shown: string) =>
       stats.downloads >= DOWNLOADS_SHOWN_FROM ? shown : '',
     )
-    .replaceAll('{{PALETTE_DATA}}', JSON.stringify(palettes).replaceAll('<', '\u003c'))
+    .replaceAll('{{PALETTE_DATA}}', JSON.stringify(palettes).replaceAll('<', '\\u003c'))
     .replaceAll('{{VERSION}}', release.tag_name)
     .replaceAll('{{SOFTWARE_VERSION}}', release.tag_name.replace(/^v/, ''))
     .replaceAll('{{SETUP_URL}}', setup.browser_download_url)
     .replaceAll('{{SETUP_NAME}}', setup.name)
     .replaceAll('{{PORTABLE_URL}}', portable?.browser_download_url ?? '')
     .replaceAll('{{PORTABLE_NAME}}', portable?.name ?? '')
+    .replaceAll('{{MACOS_URL}}', macos?.browser_download_url ?? '')
+    .replaceAll('{{MACOS_NAME}}', macos?.name ?? '')
+    .replaceAll('{{LINUX_DEB_URL}}', linuxDeb?.browser_download_url ?? '')
+    .replaceAll('{{LINUX_DEB_NAME}}', linuxDeb?.name ?? '')
+    .replaceAll('{{LINUX_APPIMAGE_URL}}', linuxAppImage?.browser_download_url ?? '')
+    .replaceAll('{{LINUX_APPIMAGE_NAME}}', linuxAppImage?.name ?? '')
     .replaceAll('{{STARS}}', compact.format(stats.stars))
     .replaceAll('{{STARS_LABEL}}', `${stats.stars.toLocaleString('en')} stars on GitHub`)
     .replaceAll('{{DOWNLOADS}}', compact.format(stats.downloads));
-  const left = /\{\{\w+\}\}|<!-- \/?(?:portable|downloads)/.exec(filled);
+  const left = /\{\{\w+\}\}|<!-- \/?(?:portable|macos|linux(?:-deb|-appimage)?|downloads)/.exec(
+    filled,
+  );
   if (left) throw new Error(`site/index.html still has ${left[0]}`);
   return filled;
 }
 
-/** People's downloads of the app: installers and portable copies, not updater checks. */
+/** People's downloads of the app: installers and packages, not updater checks. */
 export function countDownloads(releases: Release[]): number {
   return releases
     .flatMap((r) => r.assets)
-    .filter((a) => a.name.endsWith(SETUP) || a.name.endsWith(PORTABLE))
+    .filter((a) => DOWNLOAD_SUFFIXES.some((suffix) => a.name.endsWith(suffix)))
     .reduce((sum, a) => sum + (a.download_count ?? 0), 0);
 }
 

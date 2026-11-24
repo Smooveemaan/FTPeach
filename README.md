@@ -1,6 +1,6 @@
 # <img src="assets/images/icon.png" width="32" height="32" alt=""> FTPeach
 
-A desktop file transfer client for Windows.
+A desktop file transfer client for Windows, macOS, and Linux.
 
 [![CI](https://github.com/Smooveemaan/ftpeach/actions/workflows/ci.yml/badge.svg)](https://github.com/Smooveemaan/ftpeach/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/Smooveemaan/ftpeach)](https://github.com/Smooveemaan/ftpeach/releases/latest)
@@ -8,7 +8,7 @@ A desktop file transfer client for Windows.
 
 Browse local and remote folders side by side, copy files between servers, and keep track of every transfer in one window. FTPeach supports **FTP, FTPS, SFTP, and WebDAV**, with tabs, saved connections, and an interface available in 27 languages.
 
-**[Download for Windows](https://github.com/Smooveemaan/ftpeach/releases/latest)** · [Website](https://ftpeach.com/) · [Release notes](CHANGELOG.md) · [Documentation](docs/README.md) · [Report a bug](https://github.com/Smooveemaan/ftpeach/issues)
+**[Download FTPeach](https://github.com/Smooveemaan/ftpeach/releases/latest)** · [Website](https://ftpeach.com/) · [Release notes](CHANGELOG.md) · [Documentation](docs/README.md) · [Report a bug](https://github.com/Smooveemaan/ftpeach/issues)
 
 > **Made with AI. Use at your own risk!**<br>
 > I made FTPeach with a lot of help from AI, and the project is in pre-release.<br>
@@ -24,24 +24,54 @@ Support FTPeach:&emsp;<a href="https://ko-fi.com/smooveemaan"><picture><source m
 
 ## Get started
 
-FTPeach supports **Windows 10 and 11, x64**. Versions for macOS and Linux are coming soon.
+Download the package for your operating system from the [latest release](https://github.com/Smooveemaan/ftpeach/releases/latest):
 
-1. Download the installer from the [latest release](https://github.com/Smooveemaan/ftpeach/releases/latest) and run it.
-2. Open FTPeach and enter your server's connection details.
-3. Browse your folders and drag files to the destination pane. Follow their progress in the transfer queue.
+- **Windows** (Windows 10 and 11, 64-bit)
+  - **Installer:** run `FTPeach_<version>_x64-setup.exe`. The Windows installer is not code-signed yet; if SmartScreen warns you, choose **More info**, then **Run anyway**.
+  - **Portable:** unpack `FTPeach_<version>_x64-portable.zip` anywhere and run `FTPeach.exe`. Everything stays in the `data` folder beside it; set a master password in Settings if saved passwords need to work on another computer (see [portable mode](docs/storage.md#portable-mode)).
+- **macOS** (macOS 13.3 Ventura or later, Apple Silicon and Intel)
+  - Open `FTPeach_<version>_universal.dmg` and drag **FTPeach** into **Applications**. The macOS build is signed and notarized with Apple.
+- **Linux** (64-bit x86_64)
+  - **Debian / Ubuntu (`.deb`):** install `FTPeach_<version>_amd64.deb` with your software manager or `sudo apt install ./FTPeach_<version>_amd64.deb`.
+  - **AppImage (`.AppImage`):** make `FTPeach_<version>_amd64.AppImage` executable (`chmod +x FTPeach_<version>_amd64.AppImage`) and run it (requires FUSE / `libfuse2`).
 
-You can save connections for your next session. With automatic updates enabled, FTPeach checks for updates at startup and daily, downloads them in the background, and installs them on the next launch or when you choose to restart. Update signatures are verified before installation.
+Once installed:
 
-To run FTPeach without installing it, download `FTPeach_<version>_x64-portable.zip` from the same page, unpack it and start `FTPeach.exe`. Settings, bookmarks, and saved passwords stay in the `data` folder beside the program, so moving the folder moves everything. Set a master password in Settings if saved passwords should work on another computer. What a portable copy leaves on a computer is listed under [portable mode](docs/storage.md#portable-mode).
+1. Open FTPeach and enter your server's connection details.
+2. Browse your folders and drag files to the destination pane. Follow their progress in the transfer queue.
+3. Save connections you use often as bookmarks.
+
+With automatic updates enabled, FTPeach checks for updates at startup and daily, downloads them in the background, and verifies signatures before installing. A downloaded update installs on the next launch or when you choose **Restart and Install**.
 
 ## Made for everyday file transfers
 
 - **Work side by side.** Two independent file panes with tabs, search, and sorting help you find and organize files.
-- **Move files where you need them.** Upload, download, or copy between servers through FTPeach, with drag and drop for everyday operations.
-- **Stay in control.** Run concurrent transfers, pause or cancel transfers, and set speed limits from the transfer queue.
+- **Move files where you need them.** Upload, download, or copy between servers through FTPeach, with drag and drop into and out of your desktop file manager.
+- **Stay in control.** Run concurrent transfers, pause or cancel transfers, and set speed limits from the transfer queue, the system tray (Windows and Linux), or the menu bar icon (macOS).
 - **Use your own editor.** Open remote files in an external application and upload your changes back to the server.
 - **Make it comfortable.** Choose from 20 color schemes in light or dark mode, and use the interface in any of 27 languages.
-- **Keep connections handy.** Save server details, protect stored passwords, and optionally add a master password.
+- **Keep connections handy.** Save server details, protect stored passwords with your operating system or a master password, and unlock the vault with Windows Hello or Touch ID.
+
+## Keyboard shortcuts
+
+Windows and Linux share the same default shortcuts. macOS uses standard `⌘` bindings, while keeping function-key aliases (`F2`, `F5`–`F8`) working until you customize them in **Settings > Shortcuts**.
+
+| Action | Windows / Linux | macOS |
+| --- | --- | --- |
+| Search in left / right pane | `Ctrl+F` / `Ctrl+Shift+F` | `⌘F` / `⇧⌘F` |
+| New connection (left / right pane) | `Ctrl+N` / `Ctrl+Shift+N` | `⌘K` / `⇧⌘K` |
+| Open Settings | `Ctrl+,` | `⌘,` |
+| Open selected file or folder | `Enter` | `⌘↓` or `⌘O` |
+| Rename selected item | `F2` | `Return` (also `F2`) |
+| Move to Recycle Bin / Trash | `Delete` | `⌘⌫` |
+| Delete permanently | `Shift+Delete` | `⌥⌘⌫` |
+| Go up / back / forward | `Backspace` / `Alt+←` / `Alt+→` | `⌘↑` / `⌘[` / `⌘]` |
+| Toggle hidden files | `Ctrl+H` | `⇧⌘.` |
+| Refresh both panes | `F5` | `⌘R` (also `F5`) |
+| New tab / close tab | `Ctrl+T` / `Ctrl+W` | `⌘T` / `⌘W` |
+| New folder / copy to other pane | `F7` / `F8` | `⇧⌘N` / `⌥⌘C` |
+
+On macOS, the application menus live in the system menu bar, with `⌘Q` to quit and `⌘H` to hide FTPeach. See the [interface guide](docs/guide/interface.md#useful-default-shortcuts) for the full shortcut list.
 
 ## Color schemes
 
@@ -74,12 +104,12 @@ See [protocol support](docs/protocol-support.md) for the full compatibility matr
 
 ## Passwords and server verification
 
-Saved passwords and SSH-key passphrases follow the protection mode selected in settings:
+Saved passwords and SSH-key passphrases follow the protection mode selected in **Settings > Security**:
 
-- **System protection** (default) encrypts secrets for your Windows account, without a master password. Anyone acting as that Windows user can access them.
-- **Enhanced protection** stores secrets in a vault encrypted with a master password. You can optionally enable Windows Hello to unlock it on this computer.
+- **System protection** (default) protects secrets without a master password: encrypted for your Windows account, **macOS Keychain**, or **Secret Service** (such as GNOME Keyring or KWallet) on Linux. Anyone acting as that signed-in user can access them. On Linux, if no Secret Service keyring is available, FTPeach refuses to save passwords unprotected and prompts you to set a master password.
+- **Enhanced protection** encrypts saved secrets in a master-password vault. You can optionally unlock it with **Windows Hello** or **Touch ID** (or your Mac password); on Linux, it unlocks with the master password.
 
-Keep the master password safe: it cannot be recovered, and it remains the recovery method if Windows Hello becomes unavailable.
+Keep the master password safe: it cannot be recovered, and it remains the recovery method if Windows Hello or Touch ID becomes unavailable.
 
 For SFTP, the default settings require you to confirm the server's host key before the first connection can authenticate. Verify the displayed fingerprint with your server administrator before trusting it. FTPeach remembers the approved key and blocks subsequent connections if it changes, pending a new confirmation.
 
@@ -101,7 +131,7 @@ The [documentation index](docs/README.md) includes validation reports, IPC permi
 
 ## Help and contributions
 
-Found a bug, have an idea, or want to report a translation problem? [Open an issue](https://github.com/Smooveemaan/ftpeach/issues). For bug reports, include your FTPeach version, Windows version, protocol, and steps to reproduce the problem. Remove passwords and private connection details from logs and screenshots before sharing them.
+Found a bug, have an idea, or want to report a translation problem? [Open an issue](https://github.com/Smooveemaan/ftpeach/issues). For bug reports, include your FTPeach version, operating system and version, protocol, and steps to reproduce the problem. Remove passwords and private connection details from logs and screenshots before sharing them.
 
 FTPeach does not accept pull requests: part of the tests a change has to pass are closed, so a pull request could not be checked here. See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 

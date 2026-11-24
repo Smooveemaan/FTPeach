@@ -6,6 +6,9 @@ import { Marked } from 'marked';
 import { getHeadingList, gfmHeadingId } from 'marked-gfm-heading-id';
 
 const repositoryBase = 'https://github.com/Smooveemaan/ftpeach/blob/';
+const macKey = /[⌘⌃⌥⇧⌫]/;
+const keyCap =
+  /^(?:[⌘⌃⌥⇧⌫][\w+[\].,←→↑↓⌫⌘⌃⌥⇧]*|(?:(?:Ctrl|Alt|Shift)\+)+(?:F(?:[1-9]|1[0-2])|Tab|Delete|Home|Enter|Backspace|Esc|Escape|Return|click|[A-Z,←→↑↓])|F(?:[1-9]|1[0-2])|Enter|Backspace|Delete|Esc|Escape|Return|Shift|Tab)$/;
 
 /** Published pages, in reading order; the Markdown supplies each title. */
 export const GUIDE_PAGES = [
@@ -58,12 +61,12 @@ export const GUIDE_PAGES = [
   {
     slug: 'portable',
     description:
-      'Use the portable copy of FTPeach, carry its settings and passwords, and update it.',
+      'Use the portable copy of FTPeach on Windows, carry its settings and passwords, and update it.',
   },
   {
     slug: 'passwords',
     description:
-      'Move FTPeach bookmarks and saved passwords between computers, and unlock with Windows Hello.',
+      'Protect saved passwords with your system or a master password, move settings between computers, and unlock with Windows Hello or Touch ID.',
   },
   {
     slug: 'protocol-reference',
@@ -90,6 +93,33 @@ function escapeHtml(value: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+/** Wrap keyboard shortcuts in <kbd>, pair PC / macOS bindings, and tag the shortcuts table. */
+function annotateShortcuts(html: string): string {
+  return html
+    .replace(
+      /(<pre[\s\S]*?<\/pre>)|<code>([^<]+)<\/code>\s*\/\s*<code>([^<]+)<\/code>/g,
+      (match, pre: string | undefined, pc: string, mac: string) => {
+        if (pre) return pre;
+        const isPair =
+          (!macKey.test(pc) && macKey.test(mac)) ||
+          ((pc === 'F2' || pc === 'Enter') && mac === 'Return');
+        if (!isPair) return match;
+        return `<span class="shortcut"><kbd class="shortcut-pc">${pc}</kbd><span class="shortcut-sep" aria-hidden="true"> / </span><kbd class="shortcut-mac">${mac}</kbd></span>`;
+      },
+    )
+    .replace(
+      /(<pre[\s\S]*?<\/pre>)|<code>([^<]+)<\/code>/g,
+      (match, pre: string | undefined, text: string) => {
+        if (pre || !keyCap.test(text)) return match;
+        return `<kbd>${text}</kbd>`;
+      },
+    )
+    .replace(
+      /<table>(\s*<thead>\s*<tr>\s*<th>[^<]+<\/th>\s*<th>Windows \/ Linux<\/th>\s*<th>macOS<\/th>)/g,
+      '<table class="shortcut-table">$1',
+    );
 }
 
 /** Render repository Markdown with GitHub-compatible anchors and website links. */
@@ -163,7 +193,7 @@ export function renderGuide(markdown: string, slug: string, revision = 'master')
       },
     },
   });
-  const content = parser.parse(markdown, { async: false });
+  const content = annotateShortcuts(parser.parse(markdown, { async: false }));
   const headings = [...getHeadingList()];
   const titles = headings.filter((heading) => heading.level === 1);
   if (titles.length !== 1) throw new Error(`${slug}.md must have exactly one level-one heading`);

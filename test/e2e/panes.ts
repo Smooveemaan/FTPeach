@@ -71,7 +71,7 @@ export function serverTest(server: Server, setup: string) {
 export const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 export const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Not a multiple of any buffer size, so a lost or doubled last chunk shows. */
-export const payload = () => randomBytes(3 * 1024 * 1024 + 17);
+export const payload = (bytes = 3 * 1024 * 1024 + 17) => randomBytes(bytes);
 export const uniqueName = () => `e2e-${randomUUID()}.bin`;
 /** The staging files FTPeach writes beside an upload's destination. */
 export const isStaging = (name: string) => /^\.ftpeach-.*\.part$/.test(name);

@@ -248,6 +248,7 @@ async function start(
   realDialogs: boolean,
   run: Partial<Run>,
   timings: PhaseTimings = {},
+  extraEnv: Record<string, string> = {},
 ): Promise<Page> {
   // The application is single-instance: a running copy would take the launch
   // over and the test would drive the wrong profile.
@@ -273,6 +274,7 @@ async function start(
     stdio: ['ignore', 'pipe', 'pipe'],
     env: {
       ...env,
+      ...extraEnv,
       TEMP: tempDir,
       TMP: tempDir,
       TMPDIR: tempDir,
@@ -455,6 +457,7 @@ export async function launchApp(
   realDialogs = false,
   onPhaseEnd: (_page: Page) => Promise<void> = async () => {},
   timings: PhaseTimings = {},
+  extraEnv: Record<string, string> = {},
 ): Promise<RunningApp> {
   if (!existsSync(APP_PATH)) {
     throw new Error(`${APP_PATH} is missing; run npm run build:packaged-smoke first`);
@@ -645,6 +648,7 @@ export async function launchApp(
         realDialogs,
         run,
         timings,
+        extraEnv,
       );
       await onStart(app.page);
     },
@@ -659,7 +663,17 @@ export async function launchApp(
     },
   };
   try {
-    app.page = await start(exe, profile, workDir, savedDir, pickFile, realDialogs, run, timings);
+    app.page = await start(
+      exe,
+      profile,
+      workDir,
+      savedDir,
+      pickFile,
+      realDialogs,
+      run,
+      timings,
+      extraEnv,
+    );
     await onStart(app.page);
     return app;
   } catch (error) {
@@ -720,15 +734,17 @@ export function shouldTrace(
 export const test = base.extend<{
   appSettings: Record<string, unknown>;
   appStore: Record<string, unknown>;
+  appEnv: Record<string, string>;
   appPortable: boolean;
   appRealDialogs: boolean;
   app: RunningApp;
 }>({
   appSettings: [{}, { option: true }],
   appStore: [{}, { option: true }],
+  appEnv: [{}, { option: true }],
   appPortable: [false, { option: true }],
   appRealDialogs: [false, { option: true }],
-  app: async ({ appSettings, appStore, appPortable, appRealDialogs }, use, testInfo) => {
+  app: async ({ appSettings, appStore, appEnv, appPortable, appRealDialogs }, use, testInfo) => {
     const timings: PhaseTimings = {};
     const trace = shouldTrace(testInfo.retry, testInfo.project.retries);
     let phase = 0;
@@ -753,6 +769,7 @@ export const test = base.extend<{
         );
       },
       timings,
+      appEnv,
     );
     let held: string[] = [];
     try {

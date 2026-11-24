@@ -38,6 +38,25 @@ pub fn apply_idle_timeout(settings: &JsonMap, auto_lock: &AutoLock) {
     );
 }
 
+#[cfg(any(feature = "smoke-test", test))]
+fn apply_idle_timeout_override(
+    configured: Option<Duration>,
+    override_timeout: Option<Duration>,
+) -> Option<Duration> {
+    configured.map(|timeout| override_timeout.unwrap_or(timeout))
+}
+
+fn effective_idle_timeout(configured: Option<Duration>) -> Option<Duration> {
+    #[cfg(feature = "smoke-test")]
+    {
+        apply_idle_timeout_override(configured, super::e2e_browser::idle_timeout_override())
+    }
+    #[cfg(not(feature = "smoke-test"))]
+    {
+        configured
+    }
+}
+
 pub fn start(app: &tauri::AppHandle) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
@@ -67,7 +86,7 @@ async fn enforce(app: &tauri::AppHandle) {
     };
     let auto_lock = app.state::<AutoLock>();
     let idle_for = auto_lock.idle_for();
-    let idle_timeout = auto_lock.idle_timeout();
+    let idle_timeout = effective_idle_timeout(auto_lock.idle_timeout());
     let Some(reason) = crate::security::auto_lock::lock_reason(idle_for, idle_timeout, presence)
     else {
         return;
@@ -157,6 +176,20 @@ mod tests {
             &auto_lock,
         );
         assert_eq!(auto_lock.idle_timeout(), None);
+    }
+
+    #[test]
+    fn idle_timeout_override_only_replaces_an_enabled_timer() {
+        let five = Duration::from_secs(5);
+        assert_eq!(apply_idle_timeout_override(None, Some(five)), None);
+        assert_eq!(
+            apply_idle_timeout_override(Some(Duration::from_secs(60)), Some(five)),
+            Some(five)
+        );
+        assert_eq!(
+            apply_idle_timeout_override(Some(Duration::from_secs(60)), None),
+            Some(Duration::from_secs(60))
+        );
     }
 
     /// What a window hears of each lock, in order.

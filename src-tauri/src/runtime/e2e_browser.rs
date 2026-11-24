@@ -41,6 +41,19 @@ pub(crate) fn active() -> bool {
         || std::env::var_os("FTPEACH_E2E_CONTROL_PORT").is_some()
 }
 
+/// Shortens a non-zero idle-lock timeout while desktop tests drive the run so
+/// idle-lock tests exercise the real timer without waiting a full minute.
+pub(crate) fn idle_timeout_override() -> Option<std::time::Duration> {
+    if !active() {
+        return None;
+    }
+    let seconds: u64 = std::env::var("FTPEACH_E2E_IDLE_LOCK_SECS")
+        .ok()?
+        .parse()
+        .ok()?;
+    (seconds > 0).then(|| std::time::Duration::from_secs(seconds))
+}
+
 /// Whether to hold back opening `what` outside FTPeach: a program, Explorer or
 /// Windows' own Open with chooser would come up on the screen of whoever works
 /// at it while the desktop tests drive the run. The log says what was held

@@ -269,8 +269,10 @@ jobs:
         if: steps.preflight.outputs.multiplatform == 'true'
         shell: bash
         run: |
-          cargo build --release --locked --manifest-path src-tauri/Cargo.toml --features custom-protocol,ms-store --target-dir src-tauri/target/ms-store
-          node --experimental-strip-types scripts/release/msix.ts build src-tauri/target/release src-tauri/target/ms-store/release/FTPeach.exe
+          cp src-tauri/target/release/FTPeach.exe "$RUNNER_TEMP/FTPeach-standard.exe"
+          trap 'mv -f "$RUNNER_TEMP/FTPeach-standard.exe" src-tauri/target/release/FTPeach.exe' EXIT
+          cargo build --release --locked --manifest-path src-tauri/Cargo.toml --features ms-store
+          node --experimental-strip-types scripts/release/msix.ts build src-tauri/target/release src-tauri/target/release/FTPeach.exe
       - name: Check MSIX package for signing key leaks
         if: steps.preflight.outputs.multiplatform == 'true'
         env:

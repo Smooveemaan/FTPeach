@@ -405,6 +405,15 @@ assert.ok(
   'Windows trust check must inspect FTPeach.exe before MSIX builds',
 );
 assert.ok(
+  !buildWindowsSection.includes('custom-protocol'),
+  'MSIX build must not pass the nonexistent custom-protocol feature',
+);
+assert.ok(
+  buildWindowsSection.includes('--features ms-store') &&
+    !buildWindowsSection.includes('--target-dir src-tauri/target/ms-store'),
+  'MSIX build must reuse src-tauri/target with --features ms-store',
+);
+assert.ok(
   packageSection.includes('needs: [build-windows, build-macos, build-linux]'),
   'package-candidate must wait for all platform builds',
 );

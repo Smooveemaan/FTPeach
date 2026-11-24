@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fillPage } from '../../scripts/site/build.ts';
@@ -19,33 +21,40 @@ const html = fillPage(
   { stars: 10, downloads: 0 },
 );
 
+function resolveSiteAsset(name: string): { file: string; type: string } {
+  const file =
+    name === 'palettes.js' ||
+    name === 'theme-init.js' ||
+    name === 'styles.css' ||
+    name.startsWith('fonts/')
+      ? 'site/' + name
+      : name === 'favicon.ico'
+        ? 'public/favicon.ico'
+        : 'assets/images/' + name;
+  const type = name.endsWith('.js')
+    ? 'text/javascript'
+    : name.endsWith('.css')
+      ? 'text/css'
+      : name.endsWith('.woff2')
+        ? 'font/woff2'
+        : name.endsWith('.webp')
+          ? 'image/webp'
+          : name.endsWith('.mp4')
+            ? 'video/mp4'
+            : 'image/png';
+  return { file, type };
+}
+
 /** `routes` adds the test's own routes before the page opens; Playwright tries the latest route first. */
 async function openSite(page: Page, routes?: () => Promise<unknown>) {
   await page.route('https://preview.test/**', async (route) => {
     const name = new URL(route.request().url()).pathname.slice(1);
-    const file =
-      name === 'palettes.js' ||
-      name === 'theme-init.js' ||
-      name === 'styles.css' ||
-      name.startsWith('fonts/')
-        ? 'site/' + name
-        : name === 'favicon.ico'
-          ? 'public/favicon.ico'
-          : 'assets/images/' + name;
-    const type = name.endsWith('.js')
-      ? 'text/javascript'
-      : name.endsWith('.css')
-        ? 'text/css'
-        : name.endsWith('.woff2')
-          ? 'font/woff2'
-          : name.endsWith('.webp')
-            ? 'image/webp'
-            : 'image/png';
-    await route.fulfill(
-      name === ''
-        ? { contentType: 'text/html', body: html }
-        : { contentType: type, body: await readFile(path.join(root, file)) },
-    );
+    if (name === '') {
+      await route.fulfill({ contentType: 'text/html', body: html });
+      return;
+    }
+    const { file, type } = resolveSiteAsset(name);
+    await route.fulfill({ contentType: type, body: await readFile(path.join(root, file)) });
   });
   await routes?.();
   await page.goto('https://preview.test/');
@@ -445,4 +454,53 @@ test('after a reload the page stays where it was read', async ({ page }) => {
   expect(await page.evaluate(() => Math.round(scrollY))).toBe(2400);
   await page.waitForTimeout(400);
   expect(await page.evaluate(() => Math.round(scrollY))).toBe(2400);
+});
+
+test('the hero demo loads AV1 on play and hides Play without AV1 support', async ({ page }) => {
+  // Real loopback HTTP so WebKit's media pipeline (which bypasses page.route) fetches the MP4 too.
+  const mp4Requests: string[] = [];
+  const server = createServer(async (req, res) => {
+    const name = new URL(req.url ?? '/', 'http://127.0.0.1').pathname.slice(1);
+    if (name === '') {
+      res.writeHead(200, { 'content-type': 'text/html' });
+      res.end(html);
+      return;
+    }
+    if (name.endsWith('.mp4')) mp4Requests.push(name);
+    const { file, type } = resolveSiteAsset(name);
+    const body = await readFile(path.join(root, file));
+    res.writeHead(200, { 'content-type': type, 'content-length': body.length });
+    res.end(body);
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  try {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto(origin);
+    expect(mp4Requests).toEqual([]);
+    await page.getByRole('button', { name: 'Play the demo' }).click();
+    await expect
+      .poll(() =>
+        page
+          .locator('.demo')
+          .first()
+          .evaluate((v: HTMLVideoElement) => v.readyState),
+      )
+      .toBeGreaterThanOrEqual(2);
+    expect(
+      await page
+        .locator('.demo')
+        .first()
+        .evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight]),
+    ).toEqual([2364, 1484]);
+
+    // Older browsers without AV1 keep the static screenshot with Play hidden.
+    await page.addInitScript(() => {
+      HTMLMediaElement.prototype.canPlayType = () => '';
+    });
+    await page.goto(origin);
+    await expect(page.locator('.play')).toBeHidden();
+  } finally {
+    server.close();
+  }
 });

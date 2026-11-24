@@ -466,7 +466,7 @@ section[id] {
 .stage {
   position: relative;
 }
-/* The screenshots are --iw x --ih with the window at --x, --y, --w x --h; trim 2 px of window chrome and match its corners cleanly. */
+/* Both the 200%-DPI screenshot (window 2364x1484 at 178, 138) and the 200%-DPI video have a 2 px border; trim 2 px per side on both so they match 1:1. */
 .crop {
   --iw: 2721;
   --ih: 1761;
@@ -477,7 +477,7 @@ section[id] {
   position: relative;
   overflow: hidden;
   aspect-ratio: var(--w) / var(--h);
-  border-radius: calc(1650% / 1474) / calc(1650% / 924);
+  border-radius: calc(1600% / 2360) / calc(1600% / 1480);
   background: var(--shot) no-repeat;
   background-size: calc(var(--iw) / var(--w) * 100%) auto;
   background-position: calc(var(--x) / (var(--iw) - var(--w)) * 100%) calc(var(--y) / (var(--ih) - var(--h)) * 100%);
@@ -492,13 +492,13 @@ section[id] {
 }
 /* The demo is downloaded only when its button is pressed and fades in over the screenshot;
    both theme videos play in step and only the current theme's one is opaque.
-   Bleed 2 px of the 1478x928 recording past .crop so its outer frame and rounded shadow stay clipped. */
+   Bleed 2 px of the 2364x1484 recording past .crop so its outer frame and rounded corners stay clipped. */
 .demo {
   display: block;
   position: absolute;
-  inset: calc(-200% / 924) calc(-200% / 1474);
-  width: calc(100% + 400% / 1474);
-  height: calc(100% + 400% / 924);
+  inset: calc(-200% / 1480) calc(-200% / 2360);
+  width: calc(100% + 400% / 2360);
+  height: calc(100% + 400% / 1480);
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.4s;

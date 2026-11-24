@@ -414,7 +414,7 @@
           setTimeout(resolve, 1500);
         });
       }
-      play.hidden = false;
+      if (demos[0].canPlayType('video/mp4; codecs="av01.0.12M.08"')) play.hidden = false;
       // Play and Stop fade out once the pointer has been away from the picture for a while,
       // longer after the page opens so the visitor notices Play at all. A touch counts as a visit too.
       let inside = false;

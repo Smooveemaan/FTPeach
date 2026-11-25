@@ -495,16 +495,16 @@
 /* The base bottom padding reserves the height of a file-list header. When an
    error is present, that reserve becomes the space below the credentials
    row for the error to sit in, so shrink it to just the error's own line
-   plus even breathing room above and below (3.2px each side of its 20px-tall
+   plus even breathing room above and below (4px each side of its 20px-tall
    row) instead of adding a whole extra row; wrapped lines still grow the
    form naturally past that. The margin-top claws back part of the row-gap
    above the error so the row centers between the credentials row and the
    panel's bottom edge rather than hugging one side. */
 .pane-source-wrap .connection-bar:has(> .conn-error) {
-  padding-bottom: 3.2px;
+  padding-bottom: 4px;
 }
 .pane-source-wrap .connection-bar > .conn-error {
-  margin-top: -2.8px;
+  margin-top: -2px;
 }
 .saved-secret-control .password-input {
   flex: 1 1 auto;

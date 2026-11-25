@@ -103,6 +103,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                     size.width,
                     size.height
                 );
+                super::window_scale::sync_min_size_if_pending(&window_for_events);
                 persister.schedule(window_for_events.clone());
                 if window_for_events.is_minimized().unwrap_or(false) {
                     log::debug!("window: minimized");

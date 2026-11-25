@@ -4,11 +4,21 @@ use anyhow::Result;
 use std::sync::Mutex;
 use tauri::{Manager, WebviewWindow};
 
-pub(crate) struct InterfaceScale(Mutex<f64>);
+struct ScaleState {
+    scale: f64,
+    applied_min: (f64, f64),
+    min_size_pending: bool,
+}
+
+pub(crate) struct InterfaceScale(Mutex<ScaleState>);
 
 impl Default for InterfaceScale {
     fn default() -> Self {
-        Self(Mutex::new(1.0))
+        Self(Mutex::new(ScaleState {
+            scale: 1.0,
+            applied_min: MIN_SIZE,
+            min_size_pending: false,
+        }))
     }
 }
 
@@ -17,12 +27,48 @@ impl InterfaceScale {
         if !scale.is_finite() || !(0.8..=1.5).contains(&scale) {
             return Err("Interface scale must be between 0.8 and 1.5");
         }
-        *self.0.lock().unwrap_or_else(|e| e.into_inner()) = scale;
+        self.0.lock().unwrap_or_else(|e| e.into_inner()).scale = scale;
         Ok(())
     }
 
     pub(crate) fn get(&self) -> f64 {
-        *self.0.lock().unwrap_or_else(|e| e.into_inner())
+        self.0.lock().unwrap_or_else(|e| e.into_inner()).scale
+    }
+
+    fn defer_min_size(&self) {
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .min_size_pending = true;
+    }
+
+    fn has_pending_min_size(&self) -> bool {
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .min_size_pending
+    }
+
+    fn take_pending_min_size(&self) -> bool {
+        let mut state = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        std::mem::replace(&mut state.min_size_pending, false)
+    }
+
+    fn needs_min_size_update(&self, desired: (f64, f64)) -> bool {
+        self.0.lock().unwrap_or_else(|e| e.into_inner()).applied_min != desired
+    }
+
+    fn record_min_size(&self, applied: (f64, f64)) {
+        let mut state = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        state.applied_min = applied;
+        state.min_size_pending = false;
+    }
+
+    fn clear_pending_min_size(&self) {
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .min_size_pending = false;
     }
 }
 
@@ -36,9 +82,24 @@ fn scaled_min_size(scale: f64, work: (f64, f64)) -> (f64, f64) {
     (fit(MIN_SIZE.0, work.0), fit(MIN_SIZE.1, work.1))
 }
 
+fn window_accepts_min_size(window: &WebviewWindow) -> Result<bool> {
+    Ok(!window.is_maximized().map_err(scale_error)?
+        && !window.is_minimized().map_err(scale_error)?
+        && !window.is_fullscreen().map_err(scale_error)?)
+}
+
 /// Grows the main window's minimum with the interface scale, and the window
 /// with it: a program's resize is not held to the minimum, so it is done here.
 fn fit_min_size(window: &WebviewWindow) -> Result<()> {
+    let scale_state = window.state::<InterfaceScale>();
+    // On Windows, tao's set_min_size calls set_inner_size, which unmaximizes
+    // a maximized window and resizes it to the maximized dimensions as a
+    // floating window. Defer while maximized, minimized, or fullscreen and
+    // skip no-op updates.
+    if !window_accepts_min_size(window)? {
+        scale_state.defer_min_size();
+        return Ok(());
+    }
     let work = match window.current_monitor().map_err(scale_error)? {
         Some(monitor) => {
             let area = monitor
@@ -49,16 +110,21 @@ fn fit_min_size(window: &WebviewWindow) -> Result<()> {
         }
         None => (f64::INFINITY, f64::INFINITY),
     };
-    let (width, height) = scaled_min_size(window.state::<InterfaceScale>().get(), work);
-    window
-        .set_min_size(Some(tauri::LogicalSize::new(width, height)))
-        .map_err(scale_error)?;
+    let desired = scaled_min_size(scale_state.get(), work);
+    let (width, height) = desired;
+    if scale_state.needs_min_size_update(desired) {
+        window
+            .set_min_size(Some(tauri::LogicalSize::new(width, height)))
+            .map_err(scale_error)?;
+        scale_state.record_min_size(desired);
+    } else {
+        scale_state.clear_pending_min_size();
+    }
     let size = window
         .inner_size()
         .map_err(scale_error)?
         .to_logical::<f64>(window.scale_factor().map_err(scale_error)?);
-    if !window.is_maximized().map_err(scale_error)? && (size.width < width || size.height < height)
-    {
+    if size.width < width || size.height < height {
         window
             .set_size(tauri::LogicalSize::new(
                 size.width.max(width),
@@ -67,6 +133,25 @@ fn fit_min_size(window: &WebviewWindow) -> Result<()> {
             .map_err(scale_error)?;
     }
     Ok(())
+}
+
+/// Applies a deferred minimum-size update once the main window returns to its
+/// normal (unmaximized, unminimized, non-fullscreen) state.
+pub(crate) fn sync_min_size_if_pending(window: &WebviewWindow) {
+    let state = window.state::<InterfaceScale>();
+    if !state.has_pending_min_size() || !window_accepts_min_size(window).unwrap_or(false) {
+        return;
+    }
+    if !state.take_pending_min_size() {
+        return;
+    }
+    let window = window.clone();
+    tauri::async_runtime::spawn(async move {
+        if let Err(error) = fit_min_size(&window) {
+            window.state::<InterfaceScale>().defer_min_size();
+            log::warn!("Could not sync interface minimum size: {error:?}");
+        }
+    });
 }
 
 fn scale_error(error: impl std::fmt::Display) -> anyhow::Error {
@@ -127,6 +212,13 @@ fn configure(
     use windows::core::{BOOL, Interface};
 
     unsafe {
+        if let Ok(core) = controller.CoreWebView2()
+            && let Ok(settings) = core.Settings()
+        {
+            // Keep WebView2 user zoom off so Ctrl+Wheel and Ctrl++/-/0 drive
+            // FTPeach content zoom instead of stacking on top of InterfaceScale.
+            let _ = settings.SetIsZoomControlEnabled(false);
+        }
         let raster = controller.cast::<ICoreWebView2Controller3>()?;
         let (mut old_scale, mut old_zoom, mut old_auto) = (1.0, 1.0, BOOL::default());
         raster.RasterizationScale(&mut old_scale)?;
@@ -206,5 +298,33 @@ mod tests {
             scale.set(valid).unwrap();
             assert_eq!(scale.get(), valid);
         }
+    }
+
+    #[test]
+    fn min_size_updates_only_when_changed_and_tracks_deferred_sync() {
+        let scale = InterfaceScale::default();
+        assert!(!scale.needs_min_size_update(MIN_SIZE));
+        assert!(!scale.has_pending_min_size());
+
+        // Deferring while maximized/minimized/fullscreen keeps applied_min intact
+        // until the window returns to normal and consumes the pending sync.
+        scale.set(1.5).unwrap();
+        let larger = scaled_min_size(scale.get(), (2560.0, 1400.0));
+        scale.defer_min_size();
+        assert!(scale.has_pending_min_size());
+        assert!(scale.needs_min_size_update(larger));
+        assert!(scale.take_pending_min_size());
+        assert!(!scale.take_pending_min_size());
+
+        scale.record_min_size(larger);
+        assert!(!scale.needs_min_size_update(larger));
+        assert!(!scale.has_pending_min_size());
+
+        // Returning to 1.0 needs an update back to MIN_SIZE; once cleared without
+        // recording, pending flag drops without mutating applied_min.
+        scale.defer_min_size();
+        scale.clear_pending_min_size();
+        assert!(!scale.has_pending_min_size());
+        assert!(scale.needs_min_size_update(MIN_SIZE));
     }
 }

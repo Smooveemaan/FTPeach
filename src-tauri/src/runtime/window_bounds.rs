@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
-use tauri::{LogicalPosition, LogicalSize, WebviewWindow};
+use tauri::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize, WebviewWindow};
 
 const MIN_WIDTH: f64 = 480.0;
 const MIN_HEIGHT: f64 = 520.0;
@@ -170,6 +170,36 @@ pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
     let _ = window.show();
 }
 
+fn build_persist_patch(
+    minimized: bool,
+    maximized: bool,
+    geometry: Option<(PhysicalPosition<i32>, PhysicalSize<u32>, f64)>,
+) -> Option<JsonMap> {
+    // Minimizing on Windows moves the window off-screen (-32000, -32000) with
+    // a tiny taskbar placeholder size; keep the pre-minimize state untouched.
+    if minimized {
+        return None;
+    }
+    let mut patch = JsonMap::new();
+    patch.insert("windowMaximized".into(), Value::Bool(maximized));
+    // The outer size counts the frame around the page, which set_size
+    // does not: saved, it would grow the window by it at every start.
+    if !maximized
+        && let Some((pos, size, sf)) = geometry
+        && size.width > 0
+        && size.height > 0
+    {
+        let bounds = serde_json::json!({
+            "width": size.width as f64 / sf,
+            "height": size.height as f64 / sf,
+            "x": pos.x as f64 / sf,
+            "y": pos.y as f64 / sf,
+        });
+        patch.insert("windowBounds".into(), bounds);
+    }
+    Some(patch)
+}
+
 #[derive(Clone)]
 pub struct BoundsPersister {
     store: Store,
@@ -197,22 +227,19 @@ impl BoundsPersister {
     }
 
     pub async fn persist_now<R: tauri::Runtime>(&self, window: &WebviewWindow<R>) {
-        let maximized = window.is_maximized().unwrap_or(false);
-        let mut patch = JsonMap::new();
-        patch.insert("windowMaximized".into(), Value::Bool(maximized));
-        // The outer size counts the frame around the page, which set_size
-        // does not: saved, it would grow the window by it at every start.
-        if !maximized && let (Ok(pos), Ok(size)) = (window.outer_position(), window.inner_size()) {
-            let sf = window.scale_factor().unwrap_or(1.0);
-            let bounds = serde_json::json!({
-                "width": size.width as f64 / sf,
-                "height": size.height as f64 / sf,
-                "x": pos.x as f64 / sf,
-                "y": pos.y as f64 / sf,
-            });
-            patch.insert("windowBounds".into(), bounds);
+        let minimized = window.is_minimized().unwrap_or(false);
+        let maximized = !minimized && window.is_maximized().unwrap_or(false);
+        let geometry = if minimized || maximized {
+            None
+        } else {
+            match (window.outer_position(), window.inner_size()) {
+                (Ok(pos), Ok(size)) => Some((pos, size, window.scale_factor().unwrap_or(1.0))),
+                _ => None,
+            }
+        };
+        if let Some(patch) = build_persist_patch(minimized, maximized, geometry) {
+            let _ = self.store.set_settings(patch).await;
         }
-        let _ = self.store.set_settings(patch).await;
     }
 }
 
@@ -325,5 +352,44 @@ mod tests {
     fn clamps_to_work_area_when_window_exceeds_monitor() {
         let (x, y) = calculate_center_position((100.0, 50.0, 1000.0, 600.0), 1180.0, 740.0);
         assert_eq!((x, y), (100.0, 50.0));
+    }
+
+    #[test]
+    fn persist_patch_skips_minimized_and_zero_sized_geometry() {
+        let normal = Some((
+            PhysicalPosition::new(200, 100),
+            PhysicalSize::new(1500, 1000),
+            1.25,
+        ));
+        assert_eq!(build_persist_patch(true, false, normal), None);
+        assert_eq!(build_persist_patch(true, true, None), None);
+
+        let max_patch = build_persist_patch(false, true, normal).unwrap();
+        assert_eq!(max_patch.get("windowMaximized"), Some(&Value::Bool(true)));
+        assert!(!max_patch.contains_key("windowBounds"));
+
+        let zero_patch = build_persist_patch(
+            false,
+            false,
+            Some((PhysicalPosition::new(0, 0), PhysicalSize::new(0, 600), 1.0)),
+        )
+        .unwrap();
+        assert_eq!(zero_patch.get("windowMaximized"), Some(&Value::Bool(false)));
+        assert!(!zero_patch.contains_key("windowBounds"));
+
+        let normal_patch = build_persist_patch(false, false, normal).unwrap();
+        assert_eq!(
+            normal_patch.get("windowMaximized"),
+            Some(&Value::Bool(false))
+        );
+        assert_eq!(
+            normal_patch.get("windowBounds"),
+            Some(&serde_json::json!({
+                "width": 1200.0,
+                "height": 800.0,
+                "x": 160.0,
+                "y": 80.0,
+            }))
+        );
     }
 }

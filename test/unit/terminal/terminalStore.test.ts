@@ -353,4 +353,28 @@ describe('terminalStore', () => {
     assert.equal(store.getSession('conn-race'), null);
     assert.deepEqual(fakeApi.calls.close, ['late-term']);
   });
+
+  it('toggles dock between same and other pane without reopening channel and expands collapsed', async () => {
+    const fakeApi = makeFakeApi();
+    const fakeXterm = makeFakeXterm();
+    const store = createTerminalStore({
+      terminalApi: () => fakeApi.api,
+      createXterm: async () => fakeXterm.instance,
+    });
+
+    await store.open('conn-dock');
+    assert.equal(store.getSession('conn-dock')?.dock, 'same');
+
+    store.toggleCollapse('conn-dock');
+    assert.equal(store.getSession('conn-dock')?.mode, 'collapsed');
+
+    store.toggleDock('conn-dock');
+    assert.equal(store.getSession('conn-dock')?.dock, 'other');
+    assert.equal(store.getSession('conn-dock')?.mode, 'split');
+    assert.equal(fakeApi.calls.open.length, 1);
+
+    store.toggleDock('conn-dock');
+    assert.equal(store.getSession('conn-dock')?.dock, 'same');
+    assert.equal(fakeApi.calls.open.length, 1);
+  });
 });

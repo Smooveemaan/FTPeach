@@ -221,3 +221,76 @@ test('shellRefused notice and non-zero exit with Reconnect placed left of Copy/P
   await runTerminalLine(page, panel, 'after-reconnect');
   await expect(rows).toContainText('OUT:after-reconnect');
 });
+
+test('moving terminal to opposite pane preserves live session in horizontal, vertical and single-pane layouts', async ({
+  page,
+}) => {
+  const { remote, panel } = await openTerminal(page);
+  const left = page.locator('.pane[data-side="a"]');
+  const rows = panel.locator('.xterm-rows');
+  await expect(rows).toContainText('deploy@sftp:~$');
+
+  await runTerminalLine(page, panel, 'dock-marker');
+  await expect(rows).toContainText('OUT:dock-marker');
+
+  const moveRightToLeft = panel.locator('[data-action="terminal-move-pane"]');
+  await expect(moveRightToLeft).toHaveAttribute('aria-label', 'Move terminal to pane on the left');
+  await moveRightToLeft.click();
+
+  // Terminal now fills pane A without reconnecting; pane B shows its files and keeps toggle active.
+  const dockedPanel = left.locator('.terminal-panel');
+  await expect(dockedPanel).toBeVisible();
+  await expect(dockedPanel).toHaveAttribute('data-terminal-dock', 'other');
+  await expect(dockedPanel.locator('.terminal-panel-source')).toBeVisible();
+  await expect(dockedPanel.locator('.xterm-rows')).toContainText('OUT:dock-marker');
+  await expect(dockedPanel.locator('[data-action="terminal-collapse"]')).toHaveCount(0);
+  await expect(dockedPanel.locator('[data-action="terminal-maximize"]')).toHaveCount(0);
+  await expect(remote.locator('.terminal-panel')).toHaveCount(0);
+  await expect(remote.locator('.terminal-toggle-btn')).toHaveAttribute('aria-pressed', 'true');
+  await expect(dockedPanel.locator('[data-action="terminal-move-pane"]')).toHaveAttribute(
+    'aria-label',
+    'Move terminal to pane on the right',
+  );
+
+  // Switch to stacked (vertical) pane layout: move icon/label adapts to top/bottom.
+  const orientationToggle = page.locator('.orientation-toggle');
+  await orientationToggle.click();
+  await expect(dockedPanel.locator('[data-action="terminal-move-pane"]')).toHaveAttribute(
+    'aria-label',
+    'Move terminal to pane below',
+  );
+
+  // Move back to pane B (bottom pane) and verify local pane A restores and buffer survives.
+  await dockedPanel.locator('[data-action="terminal-move-pane"]').click();
+  await expect(left.locator('.terminal-panel')).toHaveCount(0);
+  await expect(left.locator('.pane-list')).toBeVisible();
+  await expect(remote.locator('.terminal-panel')).toHaveAttribute('data-terminal-dock', 'same');
+  await expect(remote.locator('.terminal-panel .xterm-rows')).toContainText('OUT:dock-marker');
+  await expect(remote.locator('[data-action="terminal-move-pane"]')).toHaveAttribute(
+    'aria-label',
+    'Move terminal to pane above',
+  );
+
+  // Return to horizontal layout and hide the left pane: docking still works and opens a temporary slot.
+  await orientationToggle.click();
+  const leftPaneToggle = page.getByRole('button', { name: 'Show/hide left pane', exact: true });
+  await leftPaneToggle.click();
+  await expect(left).toHaveCount(0);
+  await expect(remote.locator('[data-action="terminal-move-pane"]')).toHaveAttribute(
+    'aria-label',
+    'Move terminal to pane on the left',
+  );
+
+  await remote.locator('[data-action="terminal-move-pane"]').click();
+  await expect(left).toHaveCount(1);
+  await expect(page.locator('.pane-resizer')).toBeVisible();
+  await expect(dockedPanel).toBeVisible();
+  await expect(dockedPanel.locator('.xterm-rows')).toContainText('OUT:dock-marker');
+  await expect(leftPaneToggle).not.toHaveClass(/\bactive\b/);
+
+  // Moving the terminal back hides the temporary left slot again without losing the session.
+  await dockedPanel.locator('[data-action="terminal-move-pane"]').click();
+  await expect(left).toHaveCount(0);
+  await expect(remote.locator('.terminal-panel')).toHaveAttribute('data-terminal-dock', 'same');
+  await expect(remote.locator('.terminal-panel .xterm-rows')).toContainText('OUT:dock-marker');
+});

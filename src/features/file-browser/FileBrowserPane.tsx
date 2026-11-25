@@ -20,6 +20,7 @@ import { usePaneActions } from './usePaneActions.ts';
 import type { PanesModel } from './usePanes.ts';
 import { terminalStore, useTerminalSession } from '../terminal/index.ts';
 import { TerminalPanel } from '../terminal/ui.ts';
+import type { TerminalMoveDirection } from '../terminal/ui.ts';
 
 // Typed as ColumnKey rather than string so a name that COLUMN_DEFS does not
 // define fails to compile here instead of rendering `undefined.render(...)`.
@@ -65,6 +66,7 @@ export interface FileBrowserPaneProps {
   };
   columns: PaneColumnChanges;
   paneOrientation: 'horizontal' | 'vertical';
+  otherPaneEnabled?: boolean | undefined;
   shell: FileBrowserShell;
   terminalLayout?: {
     splitRatio: number;
@@ -72,6 +74,14 @@ export interface FileBrowserPaneProps {
     onCommit: (ratio: number) => void;
     onReset: () => void;
   };
+}
+
+function moveDirectionForPane(
+  renderedSide: PaneId,
+  paneOrientation: 'horizontal' | 'vertical',
+): TerminalMoveDirection {
+  if (paneOrientation === 'vertical') return renderedSide === 'a' ? 'below' : 'above';
+  return renderedSide === 'a' ? 'right' : 'left';
 }
 
 function FileBrowserPane({
@@ -84,6 +94,7 @@ function FileBrowserPane({
   settings,
   columns,
   paneOrientation,
+  otherPaneEnabled = true,
   shell,
   terminalLayout,
 }: FileBrowserPaneProps) {
@@ -113,9 +124,18 @@ function FileBrowserPane({
     pane.kind === 'local' ? layout.localColumnWidths : layout.remoteColumnWidths
   )[id];
   const disconnected = pane.kind === 'remote' && pane.status !== 'connected';
-  const terminalSession = useTerminalSession(
+  const ownTerminalSession = useTerminalSession(
     pane.kind === 'remote' && pane.status === 'connected' ? pane.connectionId : null,
   );
+  const otherTerminalSession = useTerminalSession(
+    otherPane.kind === 'remote' && otherPane.status === 'connected' ? otherPane.connectionId : null,
+  );
+  const dockedFromOther =
+    otherPaneEnabled && otherTerminalSession?.dock === 'other' ? otherTerminalSession : null;
+  const ownInPane =
+    ownTerminalSession && ownTerminalSession.dock !== 'other' ? ownTerminalSession : null;
+  const moveDirection = moveDirectionForPane(id, paneOrientation);
+  const otherSourceLabel = otherPane.siteLabel || otherPane.form.host || undefined;
   const showHiddenFiles = layout.showHiddenFiles;
   const entries = useMemo(
     () =>
@@ -140,7 +160,7 @@ function FileBrowserPane({
       style={style}
       updatedAt={pane.refreshedAt}
       disconnected={disconnected}
-      onActivate={() => browser.activatePane(id)}
+      onActivate={() => browser.activatePane(dockedFromOther ? otherId : id)}
       searchInputRef={searchInputRef}
       titleSlot={
         <PaneSourceSwitcher
@@ -159,7 +179,7 @@ function FileBrowserPane({
           onSiteConnect={(site) => browser.siteConnectPane(id, site)}
           onLocalPathOpen={(site) => browser.switchPaneToLocal(id, activeTabId, site.localPath)}
           onSaveSite={shell.saveSite(id)}
-          terminalActive={Boolean(terminalSession)}
+          terminalActive={Boolean(ownTerminalSession)}
           onToggleTerminal={() => {
             if (pane.connectionId) terminalStore.toggle(pane.connectionId);
           }}
@@ -241,8 +261,20 @@ function FileBrowserPane({
       onColumnWidthsChange={(pane.kind === 'local'
         ? columns.changeLocalColumnWidths
         : columns.changeRemoteColumnWidths)(id)}
-      terminalSlot={terminalSession ? <TerminalPanel session={terminalSession} /> : null}
-      terminalMode={terminalSession?.mode ?? 'closed'}
+      dockedTerminalSlot={
+        dockedFromOther ? (
+          <TerminalPanel
+            session={dockedFromOther}
+            dockedInOtherPane
+            sourceLabel={otherSourceLabel}
+            movePaneDirection={moveDirection}
+          />
+        ) : null
+      }
+      terminalSlot={
+        ownInPane ? <TerminalPanel session={ownInPane} movePaneDirection={moveDirection} /> : null
+      }
+      terminalMode={ownInPane?.mode ?? 'closed'}
       terminalSplitRatio={terminalLayout?.splitRatio ?? 0.5}
       onTerminalSplitChange={terminalLayout?.onChange}
       onTerminalSplitCommit={terminalLayout?.onCommit}

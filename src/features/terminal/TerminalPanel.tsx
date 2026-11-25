@@ -3,24 +3,44 @@ import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import ContextMenu from '../../components/ContextMenu.tsx';
 import Icon from '../../components/Icon.tsx';
+import type { IconName } from '../../components/Icon.tsx';
 import { handler } from '../../shared/asyncFailure.ts';
 import { terminalStore } from './terminalStore.ts';
 import type { TerminalSessionSnapshot, TerminalStore } from './terminalStore.ts';
+
+export type TerminalMoveDirection = 'left' | 'right' | 'above' | 'below';
+
+const MOVE_PANE_META: Record<TerminalMoveDirection, { icon: IconName; labelKey: string }> = {
+  left: { icon: 'panelDockLeft', labelKey: 'terminal.moveToPaneLeft' },
+  right: { icon: 'panelDockRight', labelKey: 'terminal.moveToPaneRight' },
+  above: { icon: 'panelDockTop', labelKey: 'terminal.moveToPaneAbove' },
+  below: { icon: 'panelDockBottom', labelKey: 'terminal.moveToPaneBelow' },
+};
 
 export interface TerminalPanelProps {
   session: TerminalSessionSnapshot;
   style?: CSSProperties | undefined;
   store?: TerminalStore;
+  dockedInOtherPane?: boolean | undefined;
+  sourceLabel?: string | undefined;
+  movePaneDirection?: TerminalMoveDirection | undefined;
 }
 
-function TerminalPanel({ session, style, store = terminalStore }: TerminalPanelProps) {
+function TerminalPanel({
+  session,
+  style,
+  store = terminalStore,
+  dockedInOtherPane = false,
+  sourceLabel,
+  movePaneDirection,
+}: TerminalPanelProps) {
   const { t } = useTranslation();
   const { connectionId, mode, status, exitCode, message, hasSelection } = session;
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  const isCollapsed = mode === 'collapsed';
-  const isMaximized = mode === 'maximized';
+  const isCollapsed = !dockedInOtherPane && mode === 'collapsed';
+  const isMaximized = !dockedInOtherPane && mode === 'maximized';
 
   useEffect(() => {
     const container = bodyRef.current;
@@ -55,7 +75,7 @@ function TerminalPanel({ session, style, store = terminalStore }: TerminalPanelP
       observer.disconnect();
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [connectionId, isCollapsed, isMaximized, store]);
+  }, [connectionId, isCollapsed, isMaximized, dockedInOtherPane, store]);
 
   const handleContextMenu = (event: ReactMouseEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -82,16 +102,27 @@ function TerminalPanel({ session, style, store = terminalStore }: TerminalPanelP
   }
 
   const nonZeroExit = status === 'exited' && exitCode !== null && exitCode !== 0;
+  const moveMeta = movePaneDirection ? MOVE_PANE_META[movePaneDirection] : null;
+  const moveLabel = moveMeta ? t(moveMeta.labelKey) : undefined;
 
   return (
     <section
-      className={`terminal-panel ${isCollapsed ? 'is-collapsed' : ''} ${isMaximized ? 'is-maximized' : ''}`}
+      className={`terminal-panel ${isCollapsed ? 'is-collapsed' : ''} ${isMaximized ? 'is-maximized' : ''} ${dockedInOtherPane ? 'is-docked-other' : ''}`}
       style={style}
-      data-terminal-mode={mode}
+      data-terminal-mode={dockedInOtherPane ? 'docked' : mode}
+      data-terminal-dock={dockedInOtherPane ? 'other' : 'same'}
       aria-label={t('terminal.title')}
     >
       <div className="section-panel-header terminal-panel-header">
         <span className="terminal-panel-title">{t('terminal.title')}</span>
+        {dockedInOtherPane && sourceLabel && (
+          <>
+            <span className="toolbar-divider" />
+            <span className="terminal-panel-source" data-tooltip={sourceLabel}>
+              {sourceLabel}
+            </span>
+          </>
+        )}
         {statusText && (
           <>
             <span className="toolbar-divider" />
@@ -143,26 +174,42 @@ function TerminalPanel({ session, style, store = terminalStore }: TerminalPanelP
             <Icon name="clipboard" size={12} />
           </button>
           <span className="toolbar-divider" />
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon header-icon-btn"
-            data-action="terminal-collapse"
-            data-tooltip={isCollapsed ? t('terminal.expand') : t('terminal.collapse')}
-            aria-label={isCollapsed ? t('terminal.expand') : t('terminal.collapse')}
-            onClick={() => store.toggleCollapse(connectionId)}
-          >
-            <Icon name={isCollapsed ? 'chevronUp' : 'chevronDown'} size={12} />
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon header-icon-btn"
-            data-action="terminal-maximize"
-            data-tooltip={isMaximized ? t('terminal.restore') : t('terminal.maximize')}
-            aria-label={isMaximized ? t('terminal.restore') : t('terminal.maximize')}
-            onClick={() => store.toggleMaximize(connectionId)}
-          >
-            <Icon name={isMaximized ? 'chevronsCollapse' : 'chevronsExpand'} size={12} />
-          </button>
+          {moveMeta && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-icon header-icon-btn"
+              data-action="terminal-move-pane"
+              data-tooltip={moveLabel}
+              aria-label={moveLabel}
+              onClick={() => store.toggleDock(connectionId)}
+            >
+              <Icon name={moveMeta.icon} size={12} />
+            </button>
+          )}
+          {!dockedInOtherPane && (
+            <>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon header-icon-btn"
+                data-action="terminal-collapse"
+                data-tooltip={isCollapsed ? t('terminal.expand') : t('terminal.collapse')}
+                aria-label={isCollapsed ? t('terminal.expand') : t('terminal.collapse')}
+                onClick={() => store.toggleCollapse(connectionId)}
+              >
+                <Icon name={isCollapsed ? 'chevronUp' : 'chevronDown'} size={12} />
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon header-icon-btn"
+                data-action="terminal-maximize"
+                data-tooltip={isMaximized ? t('terminal.restore') : t('terminal.maximize')}
+                aria-label={isMaximized ? t('terminal.restore') : t('terminal.maximize')}
+                onClick={() => store.toggleMaximize(connectionId)}
+              >
+                <Icon name={isMaximized ? 'chevronsCollapse' : 'chevronsExpand'} size={12} />
+              </button>
+            </>
+          )}
           <button
             type="button"
             className="btn btn-ghost btn-icon header-icon-btn"

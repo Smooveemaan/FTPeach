@@ -16,6 +16,7 @@ import {
 } from '../features/file-browser/index.ts';
 import type { FileBrowserShell, FileSearchHandle } from '../features/file-browser/index.ts';
 import { useOpenWithLifecycle, useRecoveredEdits } from '../features/open-with/index.ts';
+import { useTerminalSession } from '../features/terminal/index.ts';
 import { useAppBootstrap } from './useAppBootstrap.ts';
 import { anyDialogOpen, useAppDialogs } from './useAppDialogs.ts';
 import { useAppEffects } from './useAppEffects.ts';
@@ -377,6 +378,19 @@ export default function Application() {
     checkForUpdates: updateStatus?.state === 'store-managed' ? undefined : checkForUpdates,
   });
 
+  // Docking a terminal to the opposite side opens that slot even when the
+  // user hid its file pane, without changing the saved layout toggle.
+  const paneATerminal = useTerminalSession(
+    panes.a.kind === 'remote' && panes.a.status === 'connected' ? panes.a.connectionId : null,
+  );
+  const paneBTerminal = useTerminalSession(
+    panes.b.kind === 'remote' && panes.b.status === 'connected' ? panes.b.connectionId : null,
+  );
+  const showPaneA =
+    layout.showLocalPane || (layout.showRemotePane && paneBTerminal?.dock === 'other');
+  const showPaneB =
+    layout.showRemotePane || (layout.showLocalPane && paneATerminal?.dock === 'other');
+
   // What a pane cannot do inside the file browser: the dialogs, transfers and
   // error banner this shell owns.
   const paneShell: FileBrowserShell = {
@@ -398,6 +412,7 @@ export default function Application() {
       settings={settings}
       columns={applicationSettings}
       paneOrientation={effectivePaneOrientation}
+      otherPaneEnabled={id === 'a' ? layout.showRemotePane : layout.showLocalPane}
       shell={paneShell}
       terminalLayout={{
         splitRatio: terminalSplitRatio,
@@ -410,8 +425,8 @@ export default function Application() {
 
   const workspaceModel = buildApplicationWorkspaceModel({
     effectivePaneOrientation,
-    showLocalPane: layout.showLocalPane,
-    showRemotePane: layout.showRemotePane,
+    showLocalPane: showPaneA,
+    showRemotePane: showPaneB,
     panesRef,
     splitRatio,
     resizing,

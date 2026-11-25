@@ -182,6 +182,54 @@ const PATHS = {
       <path d="M15 3v18" />
     </>
   ),
+  panelDockLeft: (
+    <>
+      <path
+        d="M5 3h7v18H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
+        fill="currentColor"
+        fillOpacity="0.45"
+        stroke="none"
+      />
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M12 3v18" />
+    </>
+  ),
+  panelDockRight: (
+    <>
+      <path
+        d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7Z"
+        fill="currentColor"
+        fillOpacity="0.45"
+        stroke="none"
+      />
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M12 3v18" />
+    </>
+  ),
+  panelDockTop: (
+    <>
+      <path
+        d="M5 3h14a2 2 0 0 1 2 2v7H3V5a2 2 0 0 1 2-2Z"
+        fill="currentColor"
+        fillOpacity="0.45"
+        stroke="none"
+      />
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 12h18" />
+    </>
+  ),
+  panelDockBottom: (
+    <>
+      <path
+        d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"
+        fill="currentColor"
+        fillOpacity="0.45"
+        stroke="none"
+      />
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 12h18" />
+    </>
+  ),
   arrowDownUp: (
     <>
       <path d="m3 16 4 4 4-4" />

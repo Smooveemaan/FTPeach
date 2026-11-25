@@ -581,3 +581,47 @@ test('siteConnectPane auto-opens terminal for SFTP bookmarks with openTerminalOn
   await lifecycle.disconnectPane('b', 't1');
   expect(closeSpy).toHaveBeenCalledWith(openedConnId);
 });
+
+test('TerminalPanel renders directional move-pane button and docked source label', async () => {
+  const fakeXterm = makeFakeXterm();
+  const fakeApi = makeFakeApi();
+  const store = createTerminalStore({
+    terminalApi: () => fakeApi.api,
+    createXterm: async () => fakeXterm,
+  });
+
+  await act(async () => {
+    await store.open('conn-move');
+  });
+
+  const session = store.getSession('conn-move')!;
+  const { container, rerender } = render(
+    <TerminalPanel session={session} store={store} movePaneDirection="left" />,
+  );
+
+  const moveBtn = container.querySelector<HTMLButtonElement>('[data-action="terminal-move-pane"]')!;
+  expect(moveBtn).not.toBeNull();
+  expect(moveBtn.getAttribute('aria-label')).toBe('Move terminal to pane on the left');
+  expect(container.querySelector('[data-action="terminal-collapse"]')).not.toBeNull();
+  expect(container.querySelector('[data-action="terminal-maximize"]')).not.toBeNull();
+
+  fireEvent.click(moveBtn);
+  expect(store.getSession('conn-move')?.dock).toBe('other');
+  expect(fakeApi.open).toHaveBeenCalledOnce();
+
+  rerender(
+    <TerminalPanel
+      session={store.getSession('conn-move')!}
+      store={store}
+      dockedInOtherPane
+      sourceLabel="Prod SSH"
+      movePaneDirection="below"
+    />,
+  );
+  expect(container.querySelector('.terminal-panel-source')?.textContent).toBe('Prod SSH');
+  expect(
+    container.querySelector('[data-action="terminal-move-pane"]')?.getAttribute('aria-label'),
+  ).toBe('Move terminal to pane below');
+  expect(container.querySelector('[data-action="terminal-collapse"]')).toBeNull();
+  expect(container.querySelector('[data-action="terminal-maximize"]')).toBeNull();
+});

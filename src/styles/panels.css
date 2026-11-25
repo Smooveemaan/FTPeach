@@ -417,6 +417,13 @@ body.resize-active .app-shell {
   overflow: hidden;
 }
 
+.pane-docked-terminal {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
 .pane-terminal-slot {
   display: flex;
   flex-direction: column;
@@ -479,6 +486,18 @@ body.resize-active .app-shell {
   display: none;
 }
 
+.terminal-panel-source {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .terminal-panel-status {
   flex: 0 1 auto;
   min-width: 0;

@@ -11,11 +11,13 @@ import { createXtermInstance } from './xtermRuntime.ts';
 import type { XtermFactory, XtermInstance } from './xtermRuntime.ts';
 
 export type TerminalMode = 'closed' | 'split' | 'collapsed' | 'maximized';
+export type TerminalDock = 'same' | 'other';
 export type TerminalStatus = 'connecting' | 'open' | 'exited' | 'refused' | 'error';
 
 export interface TerminalSessionSnapshot {
   readonly connectionId: string;
   readonly mode: TerminalMode;
+  readonly dock: TerminalDock;
   readonly status: TerminalStatus;
   readonly terminalId: string | null;
   readonly exitCode: number | null;
@@ -27,6 +29,7 @@ export interface TerminalSessionSnapshot {
 interface InternalSession {
   connectionId: string;
   mode: Exclude<TerminalMode, 'closed'>;
+  dock: TerminalDock;
   status: TerminalStatus;
   terminalId: string | null;
   exitCode: number | null;
@@ -71,6 +74,7 @@ function toSnapshot(entry: InternalSession): TerminalSessionSnapshot {
   return {
     connectionId: entry.connectionId,
     mode: entry.mode,
+    dock: entry.dock,
     status: entry.status,
     terminalId: entry.terminalId,
     exitCode: entry.exitCode,
@@ -367,6 +371,7 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
     const entry: InternalSession = {
       connectionId,
       mode: 'split',
+      dock: 'same',
       status: 'connecting',
       terminalId: null,
       exitCode: null,
@@ -435,6 +440,23 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
     const entry = sessions.get(connectionId);
     if (!entry) return;
     setMode(connectionId, entry.mode === 'maximized' ? 'split' : 'maximized');
+  }
+
+  function setDock(connectionId: string, nextDock: TerminalDock): void {
+    const entry = sessions.get(connectionId);
+    if (!entry || entry.dock === nextDock) return;
+    entry.dock = nextDock;
+    if (nextDock === 'other' && entry.mode === 'collapsed') {
+      entry.mode = 'split';
+    }
+    emit();
+    schedulePostLayoutSync(entry, true);
+  }
+
+  function toggleDock(connectionId: string): void {
+    const entry = sessions.get(connectionId);
+    if (!entry) return;
+    setDock(connectionId, entry.dock === 'other' ? 'same' : 'other');
   }
 
   function reconnect(connectionId: string): Promise<void> {
@@ -557,6 +579,8 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
     toggle,
     toggleCollapse,
     toggleMaximize,
+    setDock,
+    toggleDock,
     reconnect,
     close,
     closeAll,

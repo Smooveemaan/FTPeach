@@ -1,5 +1,6 @@
 export { createTerminalStore, terminalStore } from './terminalStore.ts';
 export type {
+  TerminalDock,
   TerminalMode,
   TerminalSessionSnapshot,
   TerminalStatus,

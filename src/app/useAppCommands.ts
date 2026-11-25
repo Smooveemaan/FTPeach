@@ -53,15 +53,25 @@ export function useAppCommands(
       shortcutsApi.onKeyDown((event) => {
         if (event.defaultPrevented) return;
         // Let the embedded SSH terminal claim Ctrl+C/R/W/F/N/T/F5 etc.; only
-        // DevTools and tab switching escape out to the application.
+        // DevTools, tab switching and content zoom escape out to the application.
         if (
           event.target instanceof Element &&
           event.target.closest('[data-terminal-input="true"]')
         ) {
           const action = resolveGlobalAction(event, keyboardShortcutsRef.current);
-          if (action === 'open-devtools' || action === 'next-tab' || action === 'prev-tab') {
+          if (
+            action === 'open-devtools' ||
+            action === 'next-tab' ||
+            action === 'prev-tab' ||
+            action === 'zoom-in' ||
+            action === 'zoom-out' ||
+            action === 'zoom-reset'
+          ) {
             const handled = dispatchAppCommand(action, commandsRef.current);
-            if (handled) event.preventDefault();
+            if (handled) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
           }
           return;
         }
@@ -79,11 +89,19 @@ export function useAppCommands(
         )
           event.preventDefault();
         // Prevent browser default actions that treat the window like a web page:
-        // reload (Cmd/Ctrl+R), print (Cmd/Ctrl+P), and browser in-page find (Cmd/Ctrl+F).
+        // reload, print, browser find, and native page zoom.
         if (
           (event.ctrlKey || event.metaKey) &&
           !event.altKey &&
-          (event.code === 'KeyR' || event.code === 'KeyP' || event.code === 'KeyF')
+          (event.code === 'KeyR' ||
+            event.code === 'KeyP' ||
+            event.code === 'KeyF' ||
+            event.code === 'Equal' ||
+            event.code === 'Minus' ||
+            event.code === 'Digit0' ||
+            event.code === 'NumpadAdd' ||
+            event.code === 'NumpadSubtract' ||
+            event.code === 'Numpad0')
         )
           event.preventDefault();
         const action = resolveGlobalAction(event, keyboardShortcutsRef.current);

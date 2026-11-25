@@ -14,7 +14,11 @@ const KEY_NAME_MAP: Record<string, string> = {
   '/': 'Slash',
   '\\': 'Backslash',
   '=': 'Equal',
+  '+': 'Equal',
   '-': 'Minus',
+  'Num+': 'NumpadAdd',
+  'Num-': 'NumpadSubtract',
+  Num0: 'Numpad0',
   Return: 'Enter',
   '⌫': 'Backspace',
   '←': 'ArrowLeft',
@@ -25,7 +29,7 @@ const KEY_NAME_MAP: Record<string, string> = {
 
 export function macDisplayToMuda(shortcut?: string): string | undefined {
   if (!shortcut || typeof shortcut !== 'string') return undefined;
-  if (shortcut.includes('+')) return shortcut;
+  if (!/[⌃⌥⇧⌘]/.test(shortcut) && shortcut.includes('+')) return shortcut;
 
   const mods: string[] = [];
   if (shortcut.includes('⌘')) mods.push('Cmd');

@@ -38,7 +38,7 @@
   border-radius: 3px;
   padding: 1px 4px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--file-list-scale, 1));
   line-height: 1.25;
   color: var(--text-primary);
   outline: none;

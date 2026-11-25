@@ -4,6 +4,7 @@ import { api } from '../../platform/api/index.ts';
 import { CommandFailure } from '../../platform/ipcContracts.ts';
 import type { AppSettings, SettingsSetResult } from '../../platform/api/settings.ts';
 import { normalizeColorScheme } from '../../shared/appearance.ts';
+import { clampFileListScale, clampTerminalFontSize } from '../../shared/contentZoom.ts';
 import SETTINGS_DEFAULTS from '../../shared/settingsDefaults.ts';
 import { isValidBinding } from '../../shortcuts/bindings.ts';
 import { SHORTCUT_ACTIONS } from '../../shortcuts/registry.ts';
@@ -26,6 +27,8 @@ export interface SettingsValues {
   colorScheme: string;
   language: string;
   interfaceScale: number;
+  fileListScale: number;
+  terminalFontSize: number;
   dateFormat: string;
   defaultLocalPath: string;
   concurrency: number;
@@ -92,6 +95,8 @@ export const SETTING_GROUPS = {
     'colorScheme',
     'language',
     'interfaceScale',
+    'fileListScale',
+    'terminalFontSize',
     'dateFormat',
     'defaultLocalPath',
     'coloredTabs',
@@ -301,6 +306,14 @@ function normalizeValues(settings: AppSettings): SettingsValues {
       typeof s.interfaceScale === 'number'
         ? Math.min(150, Math.max(80, s.interfaceScale))
         : SETTINGS_DEFAULTS.interfaceScale,
+    fileListScale:
+      typeof s.fileListScale === 'number'
+        ? clampFileListScale(s.fileListScale)
+        : SETTINGS_DEFAULTS.fileListScale,
+    terminalFontSize:
+      typeof s.terminalFontSize === 'number'
+        ? clampTerminalFontSize(s.terminalFontSize)
+        : SETTINGS_DEFAULTS.terminalFontSize,
     dateFormat: stringSetting(s.dateFormat, SETTINGS_DEFAULTS.dateFormat),
     defaultLocalPath: stringSetting(s.defaultLocalPath, SETTINGS_DEFAULTS.defaultLocalPath),
     concurrency: typeof s.concurrency === 'number' ? s.concurrency : SETTINGS_DEFAULTS.concurrency,

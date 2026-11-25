@@ -49,13 +49,12 @@ export function resolveAction(
   for (const [actionId, binding] of effectiveBindingsByScope(scope, overrides, platform)) {
     if (matchesBinding(event, binding, platform)) return actionId;
   }
-  if (platform === 'macos') {
-    for (const action of shortcutActionsByScope(scope)) {
-      if (overrides && overrides[action.id] !== undefined) continue;
-      if (action.aliasesMac) {
-        for (const alias of action.aliasesMac) {
-          if (matchesBinding(event, alias, platform)) return action.id;
-        }
+  for (const action of shortcutActionsByScope(scope)) {
+    if (overrides && overrides[action.id] !== undefined) continue;
+    const aliases = platform === 'macos' ? action.aliasesMac : action.aliases;
+    if (aliases) {
+      for (const alias of aliases) {
+        if (matchesBinding(event, alias, platform)) return action.id;
       }
     }
   }

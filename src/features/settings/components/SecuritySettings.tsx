@@ -110,15 +110,7 @@ export default function SecuritySettings({
         {vaultStatus?.portable && !vaultStatus.configured && (
           <p className="settings-hint">{t('settings.security.portableSystemModeHint')}</p>
         )}
-        {(!vaultStatus || vaultStatus.configured) && (
-          <p className="settings-hint">
-            {!vaultStatus
-              ? t('settings.security.loading')
-              : vaultStatus.locked
-                ? t('settings.security.configuredLocked')
-                : t('settings.security.configuredUnlocked')}
-          </p>
-        )}
+        {!vaultStatus && <p className="settings-hint">{t('settings.security.loading')}</p>}
       </div>
       {!vaultStatus ? null : vaultStatus.damaged ? (
         <div className="settings-danger-zone settings-option-group">

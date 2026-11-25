@@ -30,6 +30,8 @@ export type SettingsDraftValues = Pick<
   | 'colorScheme'
   | 'language'
   | 'interfaceScale'
+  | 'fileListScale'
+  | 'terminalFontSize'
   | 'dateFormat'
   | 'defaultLocalPath'
   | 'showHiddenFiles'
@@ -60,6 +62,11 @@ export type SettingsSaveResult = void | { ok: boolean; error?: string };
 export type SaveSettings = (
   patch: SettingsPatch,
 ) => SettingsSaveResult | Promise<SettingsSaveResult>;
+
+export interface SaveDraftOptions {
+  closeAfter?: boolean;
+  onSaved?: () => void;
+}
 
 interface UseSettingsDraftOptions extends SettingsDraftValues {
   onPreview: (patch: SettingsPatch) => unknown;
@@ -92,6 +99,8 @@ interface SettingsDraft {
   colorSchemeValue: string;
   languageValue: SupportedLanguage;
   interfaceScaleValue: number;
+  fileListScaleValue: number;
+  terminalFontSizeValue: number;
   dateFormatValue: SettingsValues['dateFormat'];
   defaultLocalPathValue: string;
   showHiddenFilesValue: boolean;
@@ -112,12 +121,15 @@ interface SettingsDraft {
   strictHostKeyCheckValue: boolean;
 }
 
-type DraftAction = {
-  [Key in keyof SettingsDraft]: {
-    field: Key;
-    value: SetStateAction<SettingsDraft[Key]>;
-  };
-}[keyof SettingsDraft];
+type DraftAction =
+  | { type: 'reset'; draft: SettingsDraft }
+  | {
+      [Key in keyof SettingsDraft]: {
+        type?: 'set';
+        field: Key;
+        value: SetStateAction<SettingsDraft[Key]>;
+      };
+    }[keyof SettingsDraft];
 
 const MIN_TIMEOUT_SEC = 5;
 export const MAX_TIMEOUT_SEC = 120;
@@ -144,6 +156,8 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
     colorSchemeValue: settings.colorScheme,
     languageValue: matchSupportedLanguage(settings.language) || 'en',
     interfaceScaleValue: settings.interfaceScale || 100,
+    fileListScaleValue: settings.fileListScale || 100,
+    terminalFontSizeValue: settings.terminalFontSize || 12,
     dateFormatValue: settings.dateFormat || 'locale',
     defaultLocalPathValue: settings.defaultLocalPath || '',
     showHiddenFilesValue: !!settings.showHiddenFiles,
@@ -166,6 +180,7 @@ function createDraft(settings: SettingsDraftValues): SettingsDraft {
 }
 
 function draftReducer(state: SettingsDraft, action: DraftAction): SettingsDraft {
+  if (action.type === 'reset') return action.draft;
   const previous = state[action.field];
   const next =
     typeof action.value === 'function'
@@ -215,6 +230,8 @@ function buildPatch(draft: SettingsDraft): SettingsPatch {
     colorScheme: draft.colorSchemeValue,
     language: draft.languageValue,
     interfaceScale: Number(draft.interfaceScaleValue),
+    fileListScale: Number(draft.fileListScaleValue),
+    terminalFontSize: Number(draft.terminalFontSizeValue),
     dateFormat: draft.dateFormatValue,
     defaultLocalPath: draft.defaultLocalPathValue.trim(),
     showHiddenFiles: draft.showHiddenFilesValue,
@@ -243,13 +260,15 @@ const LINKED_SETTINGS: readonly (readonly string[])[] = [
 ];
 
 /**
- * The part of `patch` that differs from how the dialog opened. Only that is
+ * The part of `patch` that differs from the last saved baseline. Only that is
  * previewed, reverted and saved, so a setting changed elsewhere while the
  * dialog is open, such as from the tray icon's menu, is not put back.
  */
-function changedSettings(patch: SettingsPatch, opened: SettingsPatch): SettingsPatch {
+function changedSettings(patch: SettingsPatch, baseline: SettingsPatch): SettingsPatch {
   const changed = new Set(
-    Object.keys(patch).filter((key) => JSON.stringify(patch[key]) !== JSON.stringify(opened[key])),
+    Object.keys(patch).filter(
+      (key) => JSON.stringify(patch[key]) !== JSON.stringify(baseline[key]),
+    ),
   );
   for (const group of LINKED_SETTINGS) {
     if (group.some((key) => changed.has(key))) for (const key of group) changed.add(key);
@@ -277,27 +296,45 @@ export interface SettingsDraftModel extends SettingsDraft, SettingsDraftSetters 
   securityConfirmationPending: boolean;
   changeShowSecurityConfirmationsValue: (next: boolean) => Promise<void>;
   changeStrictHostKeyCheckValue: (next: boolean) => Promise<void>;
-  markUnsavedChanges: () => void;
-  handleSave: (vaultBusy: boolean, proxyPasswordPatch?: ProxyPasswordPatch) => Promise<void>;
+  handleSave: (
+    vaultBusy: boolean,
+    proxyPasswordPatch?: ProxyPasswordPatch,
+    saveOptions?: SaveDraftOptions,
+  ) => Promise<void>;
+  discardChanges: () => void;
   discardAndClose: () => void;
-  requestClose: (vaultBusy: boolean) => void;
+  requestClose: (vaultBusy: boolean, extraUnsavedChanges?: boolean) => void;
 }
 
 export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraftModel {
   const { onPreview, onSave, onClose, onVaultUnlockRequired, ...initialSettings } = options;
-  const [draft, dispatch] = useReducer(draftReducer, initialSettings, createDraft);
+  const [baseline, setBaseline] = useState<{
+    draft: SettingsDraft;
+    patch: SettingsPatch;
+    rawPatch: SettingsPatch;
+  }>(() => {
+    const initialDraft = createDraft(initialSettings);
+    return {
+      draft: initialDraft,
+      // Normalized through the same rules a save applies, so already-loaded
+      // fallback values do not count as unsaved edits.
+      patch: buildPatch(initialDraft),
+      rawPatch: initialSettings,
+    };
+  });
+  const [draft, dispatch] = useReducer(draftReducer, baseline.draft);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const [saveError, setSaveError] = useState<string>();
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [confirmCloseArmed, setConfirmCloseArmed] = useState(false);
   const [securityConfirmationPending, setSecurityConfirmationPending] = useState(false);
   const securityConfirmationPendingRef = useRef(false);
-  const isFirstPreviewRef = useRef(true);
-  const originalPatchRef = useRef<SettingsPatch>(initialSettings);
-  // The draft as it opened, through the same normalization a save applies.
-  const [openedPatch] = useState(() => buildPatch(createDraft(initialSettings)));
   const previewedRef = useRef(new Set<string>());
+
+  const currentPatch = buildPatch(draft);
+  const hasUnsavedChanges =
+    Object.keys(changedSettings(currentPatch, baseline.patch)).length > 0 ||
+    JSON.stringify(draft) !== JSON.stringify(baseline.draft);
 
   const setter =
     <Key extends keyof SettingsDraft>(field: Key): Dispatch<SetStateAction<SettingsDraft[Key]>> =>
@@ -306,19 +343,17 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
 
   useEffect(() => {
     const patch = buildPatch(draft);
-    for (const key of Object.keys(changedSettings(patch, openedPatch))) {
+    for (const key of Object.keys(changedSettings(patch, baseline.patch))) {
       previewedRef.current.add(key);
     }
     // A setting edited and then put back is previewed once more, which undoes
     // its earlier preview.
-    onPreview(pick(patch, previewedRef.current));
-    if (isFirstPreviewRef.current) isFirstPreviewRef.current = false;
-    else setHasUnsavedChanges(true);
+    if (previewedRef.current.size > 0) {
+      onPreview(pick(patch, previewedRef.current));
+    }
     // Preview callbacks intentionally retain the instance captured when the dialog opened.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft]);
-
-  const markUnsavedChanges = () => setHasUnsavedChanges(true);
+  }, [draft, baseline]);
 
   /**
    * Turning a protective setting off is confirmed by the backend in a window
@@ -358,20 +393,26 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
   const changeStrictHostKeyCheckValue = (next: boolean) =>
     changeProtectedToggle('strictHostKeyCheckValue', 'strictHostKeyCheck', next);
 
-  const handleSave = async (vaultBusy: boolean, proxyPasswordPatch: ProxyPasswordPatch = {}) => {
+  const handleSave = async (
+    vaultBusy: boolean,
+    proxyPasswordPatch: ProxyPasswordPatch = {},
+    saveOptions: SaveDraftOptions = {},
+  ) => {
     if (vaultBusy || savingRef.current) return;
     savingRef.current = true;
     setSaving(true);
     setSaveError(undefined);
     try {
+      const patch = buildPatch(draft);
+      const changes = changedSettings(patch, baseline.patch);
       const result = await onSave({
-        ...changedSettings(buildPatch(draft), openedPatch),
+        ...changes,
         ...proxyPasswordPatch,
       });
       if (result && typeof result === 'object' && 'ok' in result && result.ok === false) {
         if ('errorCode' in result && result.errorCode === 'cancelled') return;
         if ('errorCode' in result && result.errorCode === 'vaultLocked') {
-          onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
+          onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch, saveOptions));
           return;
         }
         // The code goes with it, so the message below is the translated one.
@@ -380,14 +421,27 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
           { code: 'errorCode' in result ? result.errorCode : undefined },
         );
       }
-      onClose();
+      const nextRawPatch = { ...baseline.rawPatch, ...changes };
+      const savedDraft = createDraft({
+        ...baseline.rawPatch,
+        ...patch,
+      } as SettingsDraftValues);
+      previewedRef.current.clear();
+      setBaseline({
+        draft: savedDraft,
+        patch,
+        rawPatch: nextRawPatch,
+      });
+      dispatch({ type: 'reset', draft: savedDraft });
+      saveOptions.onSaved?.();
+      if (saveOptions.closeAfter) onClose();
     } catch (error) {
       // The user declined a confirmation. They know they did; the dialog stays
       // open with the draft untouched and says nothing further about it.
       if (isCancellation(error)) return;
       // A new proxy password under enhanced protection needs the vault unlocked.
       if (error instanceof CommandFailure && error.code === 'vaultLocked') {
-        onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch));
+        onVaultUnlockRequired(() => void handleSave(false, proxyPasswordPatch, saveOptions));
         return;
       }
       setSaveError(friendlyError(error instanceof Error ? error : String(error)) || String(error));
@@ -396,18 +450,23 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
       setSaving(false);
     }
   };
-  const discardAndClose = () => {
+  const discardChanges = () => {
     if (savingRef.current) return;
     api.settings.releaseSecurityChange();
-    onPreview(pick(originalPatchRef.current, previewedRef.current));
+    const revertPatch = pick(baseline.rawPatch, previewedRef.current);
+    previewedRef.current.clear();
+    if (Object.keys(revertPatch).length > 0) onPreview(revertPatch);
+    dispatch({ type: 'reset', draft: baseline.draft });
+    setSaveError(undefined);
+  };
+  const discardAndClose = () => {
+    if (savingRef.current) return;
+    discardChanges();
     onClose();
   };
-  const requestClose = (vaultBusy: boolean) => {
+  const requestClose = (vaultBusy: boolean, extraUnsavedChanges = false) => {
     if (vaultBusy || savingRef.current) return;
-    // The flag is set after the change is drawn; a close clicked before
-    // then still sees the change in the draft.
-    const changed = Object.keys(changedSettings(buildPatch(draft), openedPatch)).length > 0;
-    if (hasUnsavedChanges || changed) {
+    if (hasUnsavedChanges || extraUnsavedChanges) {
       setConfirmCloseArmed(true);
       return;
     }
@@ -434,6 +493,8 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setColorSchemeValue: setter('colorSchemeValue'),
     setLanguageValue: setter('languageValue'),
     setInterfaceScaleValue: setter('interfaceScaleValue'),
+    setFileListScaleValue: setter('fileListScaleValue'),
+    setTerminalFontSizeValue: setter('terminalFontSizeValue'),
     setDateFormatValue: setter('dateFormatValue'),
     setDefaultLocalPathValue: setter('defaultLocalPathValue'),
     setShowHiddenFilesValue: setter('showHiddenFilesValue'),
@@ -460,8 +521,8 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setConfirmCloseArmed,
     securityConfirmationPending,
     changeShowSecurityConfirmationsValue,
-    markUnsavedChanges,
     handleSave,
+    discardChanges,
     discardAndClose,
     requestClose,
   };

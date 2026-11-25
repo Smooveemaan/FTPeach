@@ -77,6 +77,9 @@ test('formatBinding produces a readable display string', () => {
   assert.equal(formatBinding('Ctrl+Shift+KeyT'), 'Ctrl+Shift+T');
   assert.equal(formatBinding('Alt+ArrowLeft'), 'Alt+←');
   assert.equal(formatBinding('F5'), 'F5');
+  assert.equal(formatBinding('Ctrl+Equal'), 'Ctrl++');
+  assert.equal(formatBinding('Ctrl+Minus'), 'Ctrl+-');
+  assert.equal(formatBinding('Ctrl+Digit0'), 'Ctrl+0');
   assert.equal(formatBinding(''), '');
 });
 
@@ -179,6 +182,9 @@ test('formatBinding displays macOS modifier symbols in ⌃⌥⇧⌘ order and re
   assert.equal(formatBinding('Alt+Cmd+KeyN', 'macos'), '⌥⌘N');
   assert.equal(formatBinding('Alt+Cmd+KeyC', 'macos'), '⌥⌘C');
   assert.equal(formatBinding('Shift+Cmd+KeyH', 'macos'), '⇧⌘H');
+  assert.equal(formatBinding('Cmd+Equal', 'macos'), '⌘+');
+  assert.equal(formatBinding('Cmd+Minus', 'macos'), '⌘-');
+  assert.equal(formatBinding('Cmd+Digit0', 'macos'), '⌘0');
 });
 
 test('resolveAction resolves macOS defaults and aliases', () => {
@@ -251,6 +257,73 @@ test('resolveAction resolves macOS defaults and aliases', () => {
     'new-file',
   );
   assert.equal(resolveAction(fakeEvent({ code: 'F8' }), 'pane', {}, 'macos'), 'copy-to-other-pane');
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'Equal', metaKey: true, shiftKey: true }),
+      'global',
+      {},
+      'macos',
+    ),
+    'zoom-in',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'NumpadAdd', metaKey: true }), 'global', {}, 'macos'),
+    'zoom-in',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'NumpadSubtract', metaKey: true }), 'global', {}, 'macos'),
+    'zoom-out',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'Numpad0', metaKey: true }), 'global', {}, 'macos'),
+    'zoom-reset',
+  );
+});
+
+test('resolveAction resolves zoom default aliases on non-macOS and disables them when overridden', () => {
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'Equal', ctrlKey: true }), 'global', {}, 'windows'),
+    'zoom-in',
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'Equal', ctrlKey: true, shiftKey: true }),
+      'global',
+      {},
+      'windows',
+    ),
+    'zoom-in',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'NumpadAdd', ctrlKey: true }), 'global', {}, 'windows'),
+    'zoom-in',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'NumpadSubtract', ctrlKey: true }), 'global', {}, 'windows'),
+    'zoom-out',
+  );
+  assert.equal(
+    resolveAction(fakeEvent({ code: 'Numpad0', ctrlKey: true }), 'global', {}, 'windows'),
+    'zoom-reset',
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'NumpadAdd', ctrlKey: true }),
+      'global',
+      { 'zoom-in': 'Alt+Equal' },
+      'windows',
+    ),
+    null,
+  );
+  assert.equal(
+    resolveAction(
+      fakeEvent({ code: 'NumpadAdd', ctrlKey: true }),
+      'global',
+      { 'zoom-in': '' },
+      'windows',
+    ),
+    null,
+  );
 });
 
 test('resolveDropAction respects macOS Option key for copying', () => {

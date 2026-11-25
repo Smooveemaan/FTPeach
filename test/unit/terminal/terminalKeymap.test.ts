@@ -84,5 +84,22 @@ describe('classifyTerminalKey', () => {
       classifyTerminalKey(key({ code: 'KeyI', altKey: true, metaKey: true }), 'macos'),
       'pass-through-app',
     );
+    for (const code of ['Equal', 'Minus', 'Digit0', 'NumpadAdd', 'NumpadSubtract', 'Numpad0']) {
+      for (const platform of ['windows', 'linux'] as const) {
+        assert.equal(
+          classifyTerminalKey(key({ code, ctrlKey: true }), platform),
+          'pass-through-app',
+        );
+      }
+      assert.equal(classifyTerminalKey(key({ code, metaKey: true }), 'macos'), 'pass-through-app');
+    }
+    assert.equal(
+      classifyTerminalKey(key({ code: 'Equal', ctrlKey: true, shiftKey: true }), 'windows'),
+      'pass-through-app',
+    );
+    assert.equal(
+      classifyTerminalKey(key({ code: 'Equal', metaKey: true, shiftKey: true }), 'macos'),
+      'pass-through-app',
+    );
   });
 });

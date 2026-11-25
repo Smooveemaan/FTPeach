@@ -84,12 +84,21 @@ export default function SettingsDialog({
     proxyHostValue: draft.proxyHostValue,
     proxyPortValue: draft.proxyPortValue,
     proxyUsernameValue: draft.proxyUsernameValue,
-    markUnsavedChanges: draft.markUnsavedChanges,
   });
 
-  const requestClose = () => draft.requestClose(vault.vaultBusy);
-  const handleSave = () => {
-    void draft.handleSave(vault.vaultBusy, proxyPassword.buildPasswordPatch());
+  const hasPasswordChanges = proxyPassword.proxyPasswordDirty || proxyPassword.proxyPasswordRemoved;
+  const hasUnsavedChanges = draft.hasUnsavedChanges || hasPasswordChanges;
+  const requestClose = () => draft.requestClose(vault.vaultBusy, hasPasswordChanges);
+  const handleCancel = () => {
+    if (vault.vaultBusy || draft.saving) return;
+    draft.discardChanges();
+    proxyPassword.resetProxyPassword();
+  };
+  const handleSave = (closeAfter = false) => {
+    void draft.handleSave(vault.vaultBusy, proxyPassword.buildPasswordPatch(), {
+      closeAfter,
+      onSaved: proxyPassword.resetProxyPassword,
+    });
   };
 
   return (
@@ -115,26 +124,48 @@ export default function SettingsDialog({
             scrolls in narrow layouts, instead of the buttons scrolling away
             with the rest of the content. */}
           <div className="settings-nav-footer">
-            <button
-              type="button"
-              className="btn"
-              onClick={draft.discardAndClose}
-              disabled={vault.vaultBusy || draft.saving}
+            {/* Kept mounted when clean so the sidebar column reserves the width of
+                Cancel + Save across all translations and never jumps on first edit. */}
+            <div
+              className="settings-nav-footer-slot"
+              aria-hidden={!hasUnsavedChanges || undefined}
+              inert={!hasUnsavedChanges || undefined}
             >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleSave}
-              disabled={
-                vault.vaultBusy ||
-                draft.saving ||
-                (draft.proxyEnabledValue && !draft.proxyHostValue.trim())
-              }
-            >
-              {t('common.save')}
-            </button>
+              <button
+                type="button"
+                className="btn"
+                tabIndex={hasUnsavedChanges ? undefined : -1}
+                onClick={handleCancel}
+                disabled={vault.vaultBusy || draft.saving}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                tabIndex={hasUnsavedChanges ? undefined : -1}
+                onClick={() => handleSave(false)}
+                disabled={
+                  vault.vaultBusy ||
+                  draft.saving ||
+                  (draft.proxyEnabledValue && !draft.proxyHostValue.trim())
+                }
+              >
+                {t('common.save')}
+              </button>
+            </div>
+            {!hasUnsavedChanges && (
+              <div className="settings-nav-footer-slot">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={requestClose}
+                  disabled={vault.vaultBusy || draft.saving}
+                >
+                  {t('common.close')}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="settings-panel" ref={panelRef} tabIndex={-1}>
@@ -192,6 +223,10 @@ export default function SettingsDialog({
                 setLanguageValue={draft.setLanguageValue}
                 interfaceScaleValue={draft.interfaceScaleValue}
                 setInterfaceScaleValue={draft.setInterfaceScaleValue}
+                fileListScaleValue={draft.fileListScaleValue}
+                setFileListScaleValue={draft.setFileListScaleValue}
+                terminalFontSizeValue={draft.terminalFontSizeValue}
+                setTerminalFontSizeValue={draft.setTerminalFontSizeValue}
                 dateFormatValue={draft.dateFormatValue}
                 setDateFormatValue={draft.setDateFormatValue}
                 defaultLocalPathValue={draft.defaultLocalPathValue}
@@ -264,10 +299,13 @@ export default function SettingsDialog({
         <UnsavedChangesDialog
           message={t('settings.unsavedChangesMessage')}
           onCancel={() => draft.setConfirmCloseArmed(false)}
-          onDiscard={draft.discardAndClose}
+          onDiscard={() => {
+            proxyPassword.resetProxyPassword();
+            draft.discardAndClose();
+          }}
           onSave={() => {
             draft.setConfirmCloseArmed(false);
-            handleSave();
+            handleSave(true);
           }}
         />
       )}

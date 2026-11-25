@@ -7,6 +7,7 @@ export interface ShortcutAction {
   scope: ShortcutScope;
   default: string;
   defaultMac?: string;
+  aliases?: readonly string[];
   aliasesMac?: readonly string[];
   labelKey: string;
   pane?: PaneSide;
@@ -17,6 +18,7 @@ interface ShortcutActionDefinition {
   scope: ShortcutScope;
   default: string;
   defaultMac?: string;
+  aliases?: readonly string[];
   aliasesMac?: readonly string[];
   labelKey: string;
   pane?: PaneSide;
@@ -139,6 +141,33 @@ export const SHORTCUT_ACTIONS: readonly ShortcutAction[] = [
     defaultMac: 'Cmd+KeyR',
     aliasesMac: ['F5'],
     labelKey: 'settings.shortcuts.actions.refresh',
+  }),
+  makeAction({
+    id: 'zoom-in',
+    scope: 'global',
+    default: 'Ctrl+Equal',
+    defaultMac: 'Cmd+Equal',
+    aliases: ['Ctrl+Shift+Equal', 'Ctrl+NumpadAdd'],
+    aliasesMac: ['Shift+Cmd+Equal', 'Cmd+NumpadAdd'],
+    labelKey: 'settings.shortcuts.actions.zoomIn',
+  }),
+  makeAction({
+    id: 'zoom-out',
+    scope: 'global',
+    default: 'Ctrl+Minus',
+    defaultMac: 'Cmd+Minus',
+    aliases: ['Ctrl+NumpadSubtract'],
+    aliasesMac: ['Cmd+NumpadSubtract'],
+    labelKey: 'settings.shortcuts.actions.zoomOut',
+  }),
+  makeAction({
+    id: 'zoom-reset',
+    scope: 'global',
+    default: 'Ctrl+Digit0',
+    defaultMac: 'Cmd+Digit0',
+    aliases: ['Ctrl+Numpad0'],
+    aliasesMac: ['Cmd+Numpad0'],
+    labelKey: 'settings.shortcuts.actions.zoomReset',
   }),
 
   // Pane scope (src/features/file-browser/FilePane.tsx)

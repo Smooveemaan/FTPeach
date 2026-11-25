@@ -18,6 +18,7 @@ interface FakeXtermHandle {
   scrollFromBottom: number;
   restoredScrolls: number[];
   themesApplied: number;
+  fontSizes: number[];
   emitInput: (_data: string) => void;
   setFitSize: (_cols: number, _rows: number) => void;
   setSelection: (_text: string) => void;
@@ -43,6 +44,7 @@ function makeFakeXterm(initialCols = 80, initialRows = 24): FakeXtermHandle {
     scrollFromBottom: 0,
     restoredScrolls,
     themesApplied: 0,
+    fontSizes: [],
     emitInput(data: string) {
       dataHandler?.(data);
     },
@@ -115,6 +117,9 @@ function makeFakeXterm(initialCols = 80, initialRows = 24): FakeXtermHandle {
       },
       setTheme() {
         handle.themesApplied += 1;
+      },
+      setFontSize(size) {
+        handle.fontSizes.push(size);
       },
       onData(fn) {
         dataHandler = fn;
@@ -376,5 +381,33 @@ describe('terminalStore', () => {
     store.toggleDock('conn-dock');
     assert.equal(store.getSession('conn-dock')?.dock, 'same');
     assert.equal(fakeApi.calls.open.length, 1);
+  });
+
+  it('updates font size on open sessions, clamps bounds, and passes it to new sessions', async () => {
+    const fakeApi = makeFakeApi();
+    const receivedInitialSizes: (number | undefined)[] = [];
+    const xterms = [makeFakeXterm(), makeFakeXterm()];
+    let index = 0;
+    const store = createTerminalStore({
+      terminalApi: () => fakeApi.api,
+      createXterm: async (opts) => {
+        receivedInitialSizes.push(opts.fontSize);
+        return xterms[index++]!.instance;
+      },
+    });
+
+    await store.open('conn-a');
+    xterms[0]!.scrollFromBottom = 7;
+    store.setFontSize(16);
+    assert.deepEqual(xterms[0]!.fontSizes, [16]);
+    assert.ok(xterms[0]!.restoredScrolls.includes(7));
+
+    // Clamps out-of-range sizes.
+    store.setFontSize(40);
+    assert.deepEqual(xterms[0]!.fontSizes, [16, 24]);
+
+    // Newly opened session receives the active font size.
+    await store.open('conn-b');
+    assert.deepEqual(receivedInitialSizes, [12, 24]);
   });
 });

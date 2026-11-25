@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import LanguageSelect from '../../../components/LanguageSelect.tsx';
-import InterfaceScaleSelect from '../../../components/InterfaceScaleSelect.tsx';
 import DateFormatSelect, {
   DATE_FORMAT_OPTIONS,
   TimeFormatSelect,
@@ -9,9 +8,19 @@ import Icon from '../../../components/Icon.tsx';
 import type { SupportedLanguage } from '../../../i18n/index.ts';
 import SelectMenu from '../../../components/SelectMenu.tsx';
 import { COLOR_SCHEMES } from '../../../shared/appearance.ts';
+import {
+  FILE_LIST_SCALE_DEFAULT,
+  FILE_LIST_SCALE_OPTIONS,
+  TERMINAL_FONT_SIZE_DEFAULT,
+  TERMINAL_FONT_SIZE_OPTIONS,
+} from '../../../shared/contentZoom.ts';
 import SegmentedControl from './SegmentedControl.tsx';
+import StepSlider from './StepSlider.tsx';
 import { handler } from '../../../shared/asyncFailure.ts';
 import { hostPlatform } from '../../../platform/os.ts';
+
+const INTERFACE_SCALE_OPTIONS = [80, 90, 100, 110, 125, 150] as const;
+const INTERFACE_SCALE_DEFAULT = 100;
 
 interface InterfaceSettingsProps {
   colorSchemeValue: string;
@@ -22,6 +31,10 @@ interface InterfaceSettingsProps {
   setLanguageValue: (value: SupportedLanguage) => void;
   interfaceScaleValue: number;
   setInterfaceScaleValue: (value: number) => void;
+  fileListScaleValue: number;
+  setFileListScaleValue: (value: number) => void;
+  terminalFontSizeValue: number;
+  setTerminalFontSizeValue: (value: number) => void;
   dateFormatValue: string;
   setDateFormatValue: (value: string) => void;
   defaultLocalPathValue: string;
@@ -49,6 +62,10 @@ export default function InterfaceSettings({
   setLanguageValue,
   interfaceScaleValue,
   setInterfaceScaleValue,
+  fileListScaleValue,
+  setFileListScaleValue,
+  terminalFontSizeValue,
+  setTerminalFontSizeValue,
   dateFormatValue,
   setDateFormatValue,
   defaultLocalPathValue,
@@ -126,15 +143,35 @@ export default function InterfaceSettings({
         </label>
       </div>
       <div className="settings-option-group">
-        <label className="settings-field">
-          <span>{t('settings.interfaceScaleLabel')}</span>
-          <InterfaceScaleSelect
-            value={interfaceScaleValue}
-            onChange={setInterfaceScaleValue}
-            label={t('settings.interfaceScaleLabel')}
-          />
-        </label>
-        <p className="settings-hint">{t('settings.interfaceScaleHint')}</p>
+        <StepSlider
+          value={interfaceScaleValue}
+          options={INTERFACE_SCALE_OPTIONS}
+          defaultValue={INTERFACE_SCALE_DEFAULT}
+          label={t('settings.interfaceScaleLabel')}
+          formatValue={(value) => `${value}%`}
+          onChange={setInterfaceScaleValue}
+          commitOnRelease
+        />
+      </div>
+      <div className="settings-option-group">
+        <StepSlider
+          value={fileListScaleValue}
+          options={FILE_LIST_SCALE_OPTIONS}
+          defaultValue={FILE_LIST_SCALE_DEFAULT}
+          label={t('settings.fileListScaleLabel')}
+          formatValue={(value) => `${value}%`}
+          onChange={setFileListScaleValue}
+        />
+      </div>
+      <div className="settings-option-group">
+        <StepSlider
+          value={terminalFontSizeValue}
+          options={TERMINAL_FONT_SIZE_OPTIONS}
+          defaultValue={TERMINAL_FONT_SIZE_DEFAULT}
+          label={t('settings.terminalFontSizeLabel')}
+          formatValue={(value) => `${value} px`}
+          onChange={setTerminalFontSizeValue}
+        />
       </div>
       <div className="settings-option-group">
         <label className="settings-field">
@@ -229,7 +266,6 @@ export default function InterfaceSettings({
               />
               {t('settings.minimizeToTray')}
             </label>
-            <p className="settings-hint">{t('settings.minimizeToTrayHint')}</p>
           </div>
           <div className="settings-option-group">
             <label className="secure-toggle settings-toggle">
@@ -240,7 +276,6 @@ export default function InterfaceSettings({
               />
               {t('settings.closeToTray')}
             </label>
-            <p className="settings-hint">{t('settings.closeToTrayHint')}</p>
           </div>
         </>
       )}

@@ -17,7 +17,15 @@ interface AppEffectsOptions {
 }
 
 export function useAppEffects({
-  interface: { theme, colorScheme, language, interfaceScale, dateFormat },
+  interface: {
+    theme,
+    colorScheme,
+    language,
+    interfaceScale,
+    fileListScale,
+    terminalFontSize,
+    dateFormat,
+  },
 }: AppEffectsOptions): void {
   useEffect(() => {
     void api.app.doubleClickTime().then(setDoubleClickMs, reportAsyncFailure);
@@ -44,6 +52,14 @@ export function useAppEffects({
   useEffect(() => {
     void applyInterfaceScale(interfaceScale).catch(reportAsyncFailure);
   }, [interfaceScale]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--file-list-scale', String(fileListScale / 100));
+  }, [fileListScale]);
+
+  useEffect(() => {
+    terminalStore.setFontSize(terminalFontSize);
+  }, [terminalFontSize]);
 
   useEffect(() => {
     setDateFormatPreference(dateFormat);

@@ -34,6 +34,8 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     colorScheme: 'peach',
     language: 'en',
     interfaceScale: 100,
+    fileListScale: 100,
+    terminalFontSize: 12,
     dateFormat: 'locale',
     defaultLocalPath: '',
     showHiddenFiles: false,
@@ -98,7 +100,7 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(props.onSave).toHaveBeenCalledWith({ colorScheme: 'ocean' });
   });
 
-  test('Cancel restores the palette before preview', async () => {
+  test('Cancel restores the palette before preview without closing', async () => {
     const user = userEvent.setup({ delay: null });
     const { props } = renderDialog({ colorScheme: 'forest' });
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
@@ -107,6 +109,8 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await user.click(screen.getByRole('button', { name: 'common.cancel' }));
     expect(props.onPreview).toHaveBeenLastCalledWith({ colorScheme: 'forest' });
     expect(props.onSave).not.toHaveBeenCalled();
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
   });
 
   test('awaits persistence, prevents duplicate saves and preserves the draft on failure', async () => {
@@ -139,7 +143,9 @@ describe('SettingsDialog unsaved-changes gate', () => {
       expect.objectContaining({ notifyOnTransferComplete: true }),
     );
     finish({ ok: true });
-    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull());
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
+    expect(props.onClose).not.toHaveBeenCalled();
   });
   test('asks to unlock the vault and retries the same save', async () => {
     const user = userEvent.setup({ delay: null });
@@ -156,8 +162,9 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(props.onClose).not.toHaveBeenCalled();
     const [[retry]] = onVaultUnlockRequired.mock.calls as [[() => void]];
     retry();
-    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
-    expect(onSave).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull());
+    expect(props.onClose).not.toHaveBeenCalled();
     const [[firstPatch], [retriedPatch]] = onSave.mock.calls as [[unknown], [unknown]];
     expect(retriedPatch).toEqual(firstPatch);
   });
@@ -308,19 +315,65 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(screen.getByRole('dialog', { name: 'settings.title' })).toBeTruthy();
   });
 
-  test('Cancel discards an edit and closes without prompting', async () => {
+  test('Cancel discards an edit without closing and swaps the footer back to Close', async () => {
     const user = userEvent.setup({ delay: null });
-    const { props } = renderDialog();
+    const { container, props } = renderDialog();
+    const footer = container.querySelector<HTMLElement>('.settings-nav-footer')!;
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
+    expect(within(footer).getByRole('button', { name: 'common.close' })).toBeTruthy();
 
     await toggleNotifyOnComplete(user);
-    await user.click(screen.getByRole('button', { name: 'common.cancel' }));
+    expect(within(footer).queryByRole('button', { name: 'common.close' })).toBeNull();
+    const cancelBtn = screen.getByRole<HTMLButtonElement>('button', { name: 'common.cancel' });
+    const saveBtn = screen.getByRole<HTMLButtonElement>('button', { name: 'common.save' });
+    expect(cancelBtn.disabled).toBe(false);
+    expect(saveBtn.disabled).toBe(false);
+
+    await user.click(cancelBtn);
 
     expect(screen.queryByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeNull();
     expect(props.onSave).not.toHaveBeenCalled();
-    expect(props.onClose).toHaveBeenCalledOnce();
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole<HTMLInputElement>('checkbox', { name: 'settings.notifyOnComplete' }).checked,
+    ).toBe(false);
     expect(props.onPreview).toHaveBeenLastCalledWith(
       expect.objectContaining({ notifyOnTransferComplete: false }),
     );
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
+    await user.click(within(footer).getByRole('button', { name: 'common.close' }));
+    expect(props.onClose).toHaveBeenCalledOnce();
+  });
+
+  test('Save keeps the dialog open and later Cancel reverts only edits since that save', async () => {
+    const user = userEvent.setup({ delay: null });
+    const { container, props } = renderDialog({ colorScheme: 'forest', theme: 'system' });
+    const footer = container.querySelector<HTMLElement>('.settings-nav-footer')!;
+
+    await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
+    await user.click(screen.getByRole('button', { name: 'settings.colorSchemeLabel' }));
+    await user.click(screen.getByRole('option', { name: 'settings.colorSchemes.ocean' }));
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+
+    expect(props.onSave).toHaveBeenCalledWith({ colorScheme: 'ocean' });
+    expect(props.onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull());
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
+    expect(within(footer).getByRole('button', { name: 'common.close' })).toBeTruthy();
+
+    await user.click(screen.getByRole('radio', { name: 'settings.themeDark' }));
+    await user.click(screen.getByRole('button', { name: 'common.cancel' }));
+
+    expect(props.onPreview).toHaveBeenLastCalledWith({ theme: 'system' });
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'settings.unsavedChangesTitle' })).toBeNull();
+    expect(props.onClose).toHaveBeenCalledOnce();
   });
 
   test('"Don\'t Save" discards the edit, reverts the preview and closes', async () => {
@@ -481,6 +534,8 @@ describe('SettingsDialog unsaved-changes gate', () => {
 
     window.dispatchEvent(new Event('blur'));
     await waitFor(() => expect(input.value).toBe(''));
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
+    await user.click(screen.getByLabelText('settings.autoReconnectTabs'));
     await user.click(screen.getByRole('button', { name: 'common.save' }));
     expect(props.onSave).toHaveBeenCalledWith(
       expect.not.objectContaining({ proxyPassword: expect.anything() }),
@@ -630,14 +685,14 @@ describe('SettingsDialog unsaved-changes gate', () => {
       'long-password-123',
     );
     await user.click(screen.getByRole('button', { name: 'settings.security.setup' }));
-    await screen.findByText('settings.security.configuredUnlocked');
+    await screen.findByRole('button', { name: 'settings.security.lockNow' });
     expect(window.api.vault.setup).toHaveBeenCalledWith('long-password-123');
     await user.click(screen.getByRole('button', { name: 'settings.security.lockNow' }));
     await user.type(
       await screen.findByLabelText('settings.security.masterPassword'),
       'long-password-123{Enter}',
     );
-    await screen.findByText('settings.security.configuredUnlocked');
+    await screen.findByRole('button', { name: 'settings.security.changePassword' });
     expect(window.api.vault.unlock).toHaveBeenCalledWith('long-password-123');
     await user.click(screen.getByRole('button', { name: 'settings.security.changePassword' }));
     await user.type(screen.getByLabelText('settings.security.oldPassword'), 'long-password-123');
@@ -658,10 +713,22 @@ describe('SettingsDialog unsaved-changes gate', () => {
     await user.click(screen.getByRole('button', { name: 'settings.categories.interface' }));
     await user.click(screen.getByRole('button', { name: 'settings.languageLabel' }));
     await user.click(screen.getByRole('option', { name: 'Deutsch' }));
-    await user.click(screen.getByRole('button', { name: 'settings.interfaceScaleLabel' }));
-    await user.click(screen.getByRole('option', { name: '125%' }));
+    fireEvent.change(screen.getByRole('slider', { name: 'settings.interfaceScaleLabel' }), {
+      target: { value: '4' },
+    });
+    fireEvent.change(screen.getByRole('slider', { name: 'settings.fileListScaleLabel' }), {
+      target: { value: '5' },
+    });
+    fireEvent.change(screen.getByRole('slider', { name: 'settings.terminalFontSizeLabel' }), {
+      target: { value: '7' },
+    });
     await user.click(screen.getByRole('button', { name: 'common.save' }));
-    expect(props.onSave).toHaveBeenCalledWith({ language: 'de', interfaceScale: 125 });
+    expect(props.onSave).toHaveBeenCalledWith({
+      language: 'de',
+      interfaceScale: 125,
+      fileListScale: 130,
+      terminalFontSize: 16,
+    });
   });
 
   test('Transfers saves speed, concurrency and conflict handling and Updates checks on request', async () => {
@@ -717,16 +784,20 @@ describe('SettingsDialog unsaved-changes gate', () => {
     expect(props.onSave).toHaveBeenCalledWith({ concurrency: 64 });
   });
 
-  test('an edit put back is previewed once more and then left out of the save', async () => {
+  test('an edit put back is previewed once more and hides Save and Cancel again', async () => {
     const user = userEvent.setup({ delay: null });
     const { props } = renderDialog();
 
     await toggleNotifyOnComplete(user);
     await user.click(screen.getByRole('checkbox', { name: 'settings.notifyOnComplete' }));
     expect(props.onPreview).toHaveBeenLastCalledWith({ notifyOnTransferComplete: false });
-    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(screen.queryByRole('button', { name: 'common.cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
 
-    expect(props.onSave).toHaveBeenCalledWith({});
+    await user.click(screen.getByRole('button', { name: 'settings.categories.connection' }));
+    await user.click(screen.getByLabelText('settings.ftpActiveMode'));
+    await user.click(screen.getByRole('button', { name: 'common.save' }));
+    expect(props.onSave).toHaveBeenCalledWith({ ftpActiveMode: true });
   });
 
   test('a change to one proxy setting saves the proxy settings together', async () => {
@@ -803,10 +874,8 @@ describe('SettingsDialog unsaved-changes gate', () => {
 
     await waitFor(() => expect(toggle.checked).toBe(true));
     expect(screen.queryByRole('alert')).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'common.save' }));
-    expect(props.onSave).toHaveBeenCalledWith(
-      expect.not.objectContaining({ showSecurityConfirmations: expect.anything() }),
-    );
+    expect(screen.queryByRole('button', { name: 'common.save' })).toBeNull();
+    expect(props.onSave).not.toHaveBeenCalled();
   });
 
   test('a save cancelled in the confirmation window reports nothing and keeps the dialog', async () => {

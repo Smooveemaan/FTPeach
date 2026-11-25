@@ -18,7 +18,6 @@ test('a proxy test result fades for good once a field it was tested with changes
       proxyHostValue: '127.0.0.1',
       proxyPortValue: '1080',
       proxyUsernameValue: 'user',
-      markUnsavedChanges: () => {},
     }),
   );
   act(() => result.current.setProxyPasswordValue('wrong'));

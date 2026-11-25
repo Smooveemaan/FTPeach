@@ -76,6 +76,7 @@ function makeFakeXterm(): XtermInstance & {
     focus() {},
     paste() {},
     setTheme() {},
+    setFontSize() {},
     onData() {
       return { dispose() {} };
     },

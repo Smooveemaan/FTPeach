@@ -2,6 +2,8 @@
   "theme": "dark",
   "language": "en",
   "interfaceScale": 100,
+  "fileListScale": 100,
+  "terminalFontSize": 12,
   "dateFormat": "locale",
   "defaultLocalPath": "",
   "concurrency": 3,

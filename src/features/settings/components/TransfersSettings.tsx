@@ -98,7 +98,6 @@ export default function TransfersSettings({
             ]}
           />
         </label>
-        <p className="settings-hint">{t('settings.overwriteHint')}</p>
       </div>
       <div className="settings-option-group">
         <label className="secure-toggle settings-toggle">
@@ -109,7 +108,6 @@ export default function TransfersSettings({
           />
           {t('settings.preventSleep')}
         </label>
-        <p className="settings-hint">{t('settings.preventSleepHint')}</p>
       </div>
       <div className="settings-option-group">
         <div className="settings-openwith-heading">

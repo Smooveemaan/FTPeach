@@ -13,13 +13,14 @@ import { useDateFormatter } from '../../settings/index.ts';
 interface FileColumnCellProps {
   columnKey: ColumnKey;
   entry: FileEntry;
+  fileListScale: number;
   t: Translate;
 }
 
-function FileColumnCell({ columnKey, entry, t }: FileColumnCellProps) {
+function FileColumnCell({ columnKey, entry, fileListScale, t }: FileColumnCellProps) {
   const formatDate = useDateFormatter();
   const content = COLUMN_DEFS[columnKey].render(entry, t, formatDate);
-  const [ref, truncated] = useTruncated<HTMLSpanElement>([content]);
+  const [ref, truncated] = useTruncated<HTMLSpanElement>([content, fileListScale]);
   return (
     <span
       ref={ref}
@@ -41,6 +42,9 @@ interface FileRowProps {
   dragTarget: boolean;
   gridTemplateColumns: string;
   nameWidth: number;
+  fileListScale?: number | undefined;
+  iconSize?: number | undefined;
+  iconTrackWidth?: number | undefined;
   activeColumns: readonly ColumnKey[];
   t: Translate;
   onRowMouseDown?: ((entry: FileEntry, event: ReactMouseEvent<HTMLDivElement>) => void) | undefined;
@@ -63,6 +67,9 @@ function FileRow({
   dragTarget,
   gridTemplateColumns,
   nameWidth,
+  fileListScale = 100,
+  iconSize = 13,
+  iconTrackWidth = 20,
   activeColumns,
   t,
   onRowMouseDown,
@@ -71,7 +78,11 @@ function FileRow({
   rename,
 }: FileRowProps) {
   const rtl = document.documentElement.dir === 'rtl';
-  const [nameRef, nameTruncated] = useTruncated<HTMLSpanElement>([rename, entry.name]);
+  const [nameRef, nameTruncated] = useTruncated<HTMLSpanElement>([
+    rename,
+    entry.name,
+    fileListScale,
+  ]);
 
   return (
     <div
@@ -97,7 +108,7 @@ function FileRow({
           right: rtl ? 0 : style?.right,
           gridTemplateColumns,
           width: 'fit-content',
-          '--name-cell-width': `${28 + nameWidth}px`,
+          '--name-cell-width': `${iconTrackWidth + 8 + nameWidth}px`,
         } as CSSProperties
       }
       onClick={(e) => {
@@ -110,7 +121,7 @@ function FileRow({
       onContextMenu={(e) => onRowContextMenu?.(e, entry, index)}
     >
       <span className="icon">
-        <Icon name={fileIconName(entry)} size={13} />
+        <Icon name={fileIconName(entry)} size={iconSize} />
       </span>
       <span
         ref={nameRef}
@@ -120,7 +131,13 @@ function FileRow({
         {rename || <bdi>{entry.name}</bdi>}
       </span>
       {activeColumns.map((key) => (
-        <FileColumnCell key={key} columnKey={key} entry={entry} t={t} />
+        <FileColumnCell
+          key={key}
+          columnKey={key}
+          entry={entry}
+          fileListScale={fileListScale}
+          t={t}
+        />
       ))}
     </div>
   );

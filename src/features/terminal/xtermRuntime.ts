@@ -17,6 +17,7 @@ export interface XtermInstance {
   focus(): void;
   paste(text: string): void;
   setTheme(theme: TerminalTheme, fontFamily?: string): void;
+  setFontSize(fontSize: number): void;
   onData(handler: (data: string) => void): { dispose(): void };
   onSelectionChange(handler: () => void): { dispose(): void };
   attachCustomKeyEventHandler(handler: (event: KeyboardEvent) => boolean): void;
@@ -144,6 +145,9 @@ export const createXtermInstance: XtermFactory = async ({ theme, fontFamily, fon
       if (nextFontFamily) {
         term.options.fontFamily = nextFontFamily;
       }
+    },
+    setFontSize(nextFontSize) {
+      term.options.fontSize = nextFontSize;
     },
     onData(handler) {
       return term.onData(handler);

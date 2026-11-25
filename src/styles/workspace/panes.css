@@ -373,7 +373,7 @@
   align-items: center;
   gap: 8px;
 
-  padding-block: 5px;
+  padding-block: calc(5px * var(--file-list-scale, 1));
   padding-inline: 12px 0;
   cursor: default;
 }
@@ -584,7 +584,7 @@ body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
 }
 .row .name {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--file-list-scale, 1));
   overflow: hidden;
   white-space: nowrap;
   color: var(--text-primary);
@@ -622,6 +622,9 @@ body.drag-move-active .pane[data-disconnected="true"] .pane-list * {
   color: var(--text-secondary);
   overflow: hidden;
   white-space: nowrap;
+}
+.row:not(.row-header) [class^='col-'] {
+  font-size: calc(11.5px * var(--file-list-scale, 1));
 }
 .row [class^='col-'].truncated {
   mask-image: var(--truncate-fade);

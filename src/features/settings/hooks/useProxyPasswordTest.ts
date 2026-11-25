@@ -11,7 +11,6 @@ interface UseProxyPasswordTestOptions {
   proxyHostValue: string;
   proxyPortValue: string;
   proxyUsernameValue: string;
-  markUnsavedChanges: () => void;
 }
 
 export interface ProxyPasswordTestModel {
@@ -21,6 +20,7 @@ export interface ProxyPasswordTestModel {
   proxyPasswordRemoved: boolean;
   removeSavedProxyPassword: () => void;
   revealSavedProxyPassword: () => Promise<boolean>;
+  resetProxyPassword: () => void;
   proxyTestHost: string;
   setProxyTestHost: Dispatch<SetStateAction<string>>;
   proxyTestPort: string;
@@ -41,7 +41,6 @@ export function useProxyPasswordTest({
   proxyHostValue,
   proxyPortValue,
   proxyUsernameValue,
-  markUnsavedChanges,
 }: UseProxyPasswordTestOptions): ProxyPasswordTestModel {
   const { t } = useTranslation();
   const [proxyPasswordValue, setProxyPasswordValueState] = useState('');
@@ -71,10 +70,6 @@ export function useProxyPasswordTest({
   ]);
   if (proxyTest && !proxyTest.stale && proxyTest.inputs !== proxyTestInputs)
     setProxyTest({ ...proxyTest, stale: true });
-
-  useEffect(() => {
-    if (proxyPasswordDirty || proxyPasswordRemoved) markUnsavedChanges();
-  }, [proxyPasswordDirty, proxyPasswordRemoved, markUnsavedChanges]);
 
   useEffect(() => {
     const clearRevealed = () => {
@@ -107,6 +102,13 @@ export function useProxyPasswordTest({
     setProxyPasswordValueState('');
     setProxyPasswordDirty(false);
     setProxyPasswordRemoved(true);
+  };
+
+  const resetProxyPassword = () => {
+    revealedRef.current = false;
+    setProxyPasswordValueState('');
+    setProxyPasswordDirty(false);
+    setProxyPasswordRemoved(false);
   };
 
   const revealSavedProxyPassword = async () => {
@@ -157,6 +159,7 @@ export function useProxyPasswordTest({
     proxyPasswordRemoved,
     removeSavedProxyPassword,
     revealSavedProxyPassword,
+    resetProxyPassword,
     proxyTestHost,
     setProxyTestHost,
     proxyTestPort,

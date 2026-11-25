@@ -73,7 +73,11 @@ function harness() {
       requestConfirm: record('confirm'),
     },
     transfers: { hasCompletedTransfers: false, clearCompletedTransfers: record('clear') },
-    applicationSettings: { changeTheme: record('theme') },
+    applicationSettings: {
+      changeTheme: record('theme'),
+      setFileListScale: record('fileListScale'),
+      setTerminalFontSize: record('terminalFontSize'),
+    },
     searchInputRefs: { a: { current: null }, b: { current: null } },
     saveSite: (id) => () => record('save')(id),
     quit: { request: record('quit') },

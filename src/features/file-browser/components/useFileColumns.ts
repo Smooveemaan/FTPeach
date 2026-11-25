@@ -21,6 +21,7 @@ interface FileColumnsOptions {
   nameAscExplicit: boolean;
   rows: readonly FileEntry[];
   columnLabels: Record<ColumnKey, string>;
+  iconTrackWidth?: number | undefined;
   t: Translate;
 }
 
@@ -103,6 +104,7 @@ export default function useFileColumns({
   nameAscExplicit,
   rows: sorted,
   columnLabels: COLUMN_LABELS,
+  iconTrackWidth = 20,
   t,
 }: FileColumnsOptions): FileColumnsModel {
   const formatDate = useDateFormatter();
@@ -120,8 +122,8 @@ export default function useFileColumns({
   const widthOf = (key: SortKey): number =>
     columnWidths[key] || (key === 'name' ? NAME_DEFAULT_WIDTH : COLUMN_DEFS[key].defaultWidth);
   const columnTracks = activeColumns.map((key) => `${widthOf(key)}px`).join(' ');
-  const gridTemplateColumns = `20px ${widthOf('name')}px ${columnTracks} 1fr`;
-  const rowGridTemplateColumns = `20px ${widthOf('name')}px ${columnTracks}`;
+  const gridTemplateColumns = `${iconTrackWidth}px ${widthOf('name')}px ${columnTracks} 1fr`;
+  const rowGridTemplateColumns = `${iconTrackWidth}px ${widthOf('name')}px ${columnTracks}`;
 
   const {
     draggedColumn,
@@ -142,7 +144,7 @@ export default function useFileColumns({
   });
   const { startColumnResize: startResize } = useColumnResize();
 
-  const columnWidthsKey = `${widthOf('name')},${availableColumns.map(widthOf).join(',')}`;
+  const columnWidthsKey = `${iconTrackWidth},${widthOf('name')},${availableColumns.map(widthOf).join(',')}`;
   useLayoutEffect(() => {
     refreshRects();
     // `refreshRects` closes over the current header elements and is rebuilt on

@@ -16,6 +16,9 @@ test('macDisplayToMuda parses macOS shortcut representations into muda accelerat
   assert.equal(macDisplayToMuda('⌥⌘T'), 'Cmd+Alt+T');
   assert.equal(macDisplayToMuda('⌘Return'), 'Cmd+Enter');
   assert.equal(macDisplayToMuda('⌃⌘A'), 'Cmd+Ctrl+A');
+  assert.equal(macDisplayToMuda('⌘+'), 'Cmd+Equal');
+  assert.equal(macDisplayToMuda('⌘-'), 'Cmd+Minus');
+  assert.equal(macDisplayToMuda('⌘0'), 'Cmd+0');
   assert.equal(macDisplayToMuda('Ctrl+Shift+T'), 'Ctrl+Shift+T');
 });
 

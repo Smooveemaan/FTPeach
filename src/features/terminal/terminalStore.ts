@@ -4,6 +4,7 @@ import { clipboard } from '../../platform/clipboard.ts';
 import { hostPlatform } from '../../platform/os.ts';
 import type { Platform } from '../../platform/os.ts';
 import { reportRejection } from '../../shared/asyncFailure.ts';
+import { clampTerminalFontSize, TERMINAL_FONT_SIZE_DEFAULT } from '../../shared/contentZoom.ts';
 import { classifyTerminalKey } from './terminalKeymap.ts';
 import { readDocumentTerminalTheme } from './terminalTheme.ts';
 import type { TerminalTheme } from './terminalTheme.ts';
@@ -95,6 +96,7 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
   const sessions = new Map<string, InternalSession>();
   const listeners = new Set<() => void>();
   let snapshot: ReadonlyMap<string, TerminalSessionSnapshot> = new Map();
+  let fontSize = TERMINAL_FONT_SIZE_DEFAULT;
 
   function emit(): void {
     const next = new Map<string, TerminalSessionSnapshot>();
@@ -215,10 +217,14 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
       return entry.xterm;
     }
     const { theme, fontFamily } = readTheme();
-    const xterm = await createXterm({ theme, fontFamily });
+    const initialFontSize = fontSize;
+    const xterm = await createXterm({ theme, fontFamily, fontSize: initialFontSize });
     if (sessions.get(entry.connectionId) !== entry) {
       xterm.dispose();
       throw new Error('Terminal closed before runtime initialized');
+    }
+    if (fontSize !== initialFontSize) {
+      xterm.setFontSize(fontSize);
     }
     ensureHostElement(entry);
     attachKeyHandler(entry, xterm);
@@ -520,6 +526,22 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
     }
   }
 
+  function setFontSize(nextFontSize: number): void {
+    const clamped = clampTerminalFontSize(nextFontSize);
+    if (clamped === fontSize) return;
+    fontSize = clamped;
+    for (const entry of sessions.values()) {
+      if (!entry.xterm) continue;
+      if (entry.mode !== 'collapsed') {
+        entry.savedScrollFromBottom = entry.xterm.getScrollFromBottom();
+      }
+      entry.xterm.setFontSize(fontSize);
+      if (entry.mode !== 'collapsed') {
+        schedulePostLayoutSync(entry, false);
+      }
+    }
+  }
+
   function copySelection(connectionId: string): boolean {
     const xterm = sessions.get(connectionId)?.xterm;
     if (!xterm || !xterm.hasSelection()) return false;
@@ -586,6 +608,7 @@ export function createTerminalStore(deps: TerminalStoreDeps = {}) {
     closeAll,
     syncResize,
     updateTheme,
+    setFontSize,
     copySelection,
     hasSelection,
     pasteFromClipboard,

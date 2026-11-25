@@ -533,6 +533,7 @@
   border-radius: var(--radius-sm);
   font-size: 10px;
   font-family: var(--font-mono);
+  cursor: pointer;
 }
 
 .shortcut-recorder-text {
@@ -597,12 +598,20 @@
 
 .settings-nav-footer {
   grid-area: footer;
-  display: flex;
-  gap: 6px;
+  display: grid;
   padding: 8px 8px 10px;
   background: var(--bg-panel-alt);
   border-inline-end: 1px solid var(--border-soft);
   border-top: 1px solid var(--border-soft);
+}
+.settings-nav-footer-slot {
+  grid-area: 1 / 1;
+  display: flex;
+  gap: 6px;
+}
+.settings-nav-footer-slot[aria-hidden='true'] {
+  visibility: hidden;
+  pointer-events: none;
 }
 .settings-nav-footer .btn {
   flex: 1 1 auto;

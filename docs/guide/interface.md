@@ -152,7 +152,7 @@ appearance. Use **Interface language** to choose your language and **Interface
 scale** to make text and controls larger or smaller, then select **Save**.
 
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::previews and saves a palette independently of the theme -->
-<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Cancel restores the palette before preview -->
+<!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Cancel restores the palette before preview without closing -->
 <!-- verified-by: pr test/component/settings/settingsDialog.test.tsx::Interface saves a chosen language and text scale -->
 
 Transfer states keep the same meaning across color schemes: orange for active transfers,

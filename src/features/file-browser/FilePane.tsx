@@ -34,6 +34,7 @@ import type { ColumnKey } from './components/fileListModel.ts';
 import useFilePaneKeyboard from './components/useFilePaneKeyboard.ts';
 import useFilePaneSorting from './components/useFilePaneSorting.ts';
 import type { ShortcutOverrides } from '../../shortcuts/resolve.ts';
+import { FILE_LIST_SCALE_DEFAULT, fileListIconMetrics } from '../../shared/contentZoom.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { PaneId, PaneKind } from './panes/paneModel.ts';
 import { getDoubleClickMs } from './doubleClick.ts';
@@ -106,6 +107,7 @@ export interface FilePaneProps {
   onColumnWidthsChange?: ((widths: Record<string, number>) => void) | undefined;
   searchInputRef?: MutableRefObject<FileSearchHandle | null> | null | undefined;
   keyboardShortcuts?: ShortcutOverrides | null | undefined;
+  fileListScale?: number | undefined;
   dockedTerminalSlot?: ReactNode | undefined;
   terminalSlot?: ReactNode | undefined;
   terminalMode?: 'closed' | 'split' | 'collapsed' | 'maximized' | undefined;
@@ -162,6 +164,7 @@ function FilePane({
   onColumnWidthsChange,
   searchInputRef,
   keyboardShortcuts,
+  fileListScale = FILE_LIST_SCALE_DEFAULT,
   dockedTerminalSlot,
   terminalSlot,
   terminalMode = 'closed',
@@ -335,6 +338,7 @@ function FilePane({
     sortedFolderNames,
     toggleSort,
   } = useFilePaneSorting({ entries, filterText, t });
+  const { iconSize, iconTrackWidth } = fileListIconMetrics(fileListScale);
   const {
     activeColumns,
     widthOf,
@@ -360,6 +364,7 @@ function FilePane({
     nameAscExplicit,
     rows: sorted,
     columnLabels,
+    iconTrackWidth,
     t,
   });
   const dragDrop = useFileDragDrop({
@@ -518,6 +523,9 @@ function FilePane({
         dragTarget={dragOverRowName === entry.name}
         gridTemplateColumns={rowGridTemplateColumns}
         nameWidth={widthOf('name')}
+        fileListScale={fileListScale}
+        iconSize={iconSize}
+        iconTrackWidth={iconTrackWidth}
         activeColumns={activeColumns}
         t={t}
         onRowMouseDown={handleRowMouseDown}
@@ -657,11 +665,11 @@ function FilePane({
                   top: -9999,
                   left: -9999,
                   width: 300,
-                  gridTemplateColumns: '20px 1fr',
+                  gridTemplateColumns: `${iconTrackWidth}px 1fr`,
                 }}
               >
                 <span className="icon">
-                  <Icon name="file" size={13} />
+                  <Icon name="file" size={iconSize} />
                 </span>
                 <span className="name">{t('filePane.rowProbeSample')}</span>
               </div>

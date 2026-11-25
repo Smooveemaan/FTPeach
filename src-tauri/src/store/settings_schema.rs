@@ -50,6 +50,8 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
     }
     let bounded = [
         ("interfaceScale", 50, 300),
+        ("fileListScale", 80, 160),
+        ("terminalFontSize", 9, 24),
         ("concurrency", 0, 128),
         ("connectTimeout", 0, 86_400_000),
         ("proxyPort", 1, 65_535),
@@ -279,8 +281,11 @@ mod tests {
             }
             let zeros = serde_json::json!({"concurrency":0,"connectTimeout":0});
             assert!(validate_settings(zeros.as_object().unwrap(), allow_secrets).is_ok());
-            let largest = serde_json::json!({"concurrency":128});
+            let largest =
+                serde_json::json!({"concurrency":128,"fileListScale":160,"terminalFontSize":24});
             assert!(validate_settings(largest.as_object().unwrap(), allow_secrets).is_ok());
+            let smallest = serde_json::json!({"fileListScale":80,"terminalFontSize":9});
+            assert!(validate_settings(smallest.as_object().unwrap(), allow_secrets).is_ok());
             for invalid in [
                 serde_json::json!({"concurrency":0.5}),
                 serde_json::json!({"connectTimeout":-1}),
@@ -290,6 +295,10 @@ mod tests {
                 serde_json::json!({"colorScheme":"invalid"}),
                 serde_json::json!({"colorScheme":"ember"}),
                 serde_json::json!({"proxyPort":"21"}),
+                serde_json::json!({"fileListScale":79}),
+                serde_json::json!({"fileListScale":161}),
+                serde_json::json!({"terminalFontSize":8}),
+                serde_json::json!({"terminalFontSize":25}),
             ] {
                 assert!(
                     validate_settings(invalid.as_object().unwrap(), allow_secrets).is_err(),

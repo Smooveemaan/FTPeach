@@ -47,6 +47,8 @@ function harness({
     search: { a: vi.fn(), b: vi.fn() },
     saveSite: vi.fn((_id: PaneId) => saveNow),
     saveNow,
+    setFileListScale: vi.fn(),
+    setTerminalFontSize: vi.fn(),
     openDevtools: vi.fn(),
   };
   let listener: ((_event: KeyboardEvent) => void) | null = null;
@@ -117,7 +119,11 @@ function mount(h: Harness) {
       setShowImportSettings: menuOnly,
     },
     transfers: { hasCompletedTransfers: false, clearCompletedTransfers: menuOnly },
-    applicationSettings: { changeTheme: menuOnly },
+    applicationSettings: {
+      changeTheme: menuOnly,
+      setFileListScale: h.setFileListScale,
+      setTerminalFontSize: h.setTerminalFontSize,
+    },
     searchInputRefs: {
       a: { current: { toggle: h.search.a } as unknown as FileSearchHandle },
       b: { current: { toggle: h.search.b } as unknown as FileSearchHandle },
@@ -233,4 +239,60 @@ test('a rebound shortcut runs its command and the menu shows the new keys', () =
   expect(newTab?.shortcut).toBe('Alt+N');
   newTab?.onClick?.();
   expect(h.browser.openNewTab).toHaveBeenCalledTimes(2);
+});
+
+test('zoom shortcuts and Ctrl+Wheel target file list or terminal based on focus and hover', () => {
+  const h = harness();
+  expect(h.press('Equal', ctrl)).toBe(true);
+  expect(h.press('Minus', ctrl)).toBe(true);
+  expect(h.press('Digit0', ctrl)).toBe(true);
+  expect(h.setFileListScale).toHaveBeenCalledTimes(3);
+  expect(h.setTerminalFontSize).not.toHaveBeenCalled();
+
+  const paneList = document.createElement('div');
+  paneList.className = 'pane-list';
+  const terminalPanel = document.createElement('div');
+  terminalPanel.className = 'terminal-panel';
+  const terminalBody = document.createElement('div');
+  terminalBody.setAttribute('data-terminal-input', 'true');
+  terminalBody.tabIndex = 0;
+  terminalPanel.appendChild(terminalBody);
+  document.body.append(paneList, terminalPanel);
+
+  try {
+    const paneWheel = new WheelEvent('wheel', {
+      ctrlKey: true,
+      deltaY: -100,
+      bubbles: true,
+      cancelable: true,
+    });
+    paneList.dispatchEvent(paneWheel);
+    expect(paneWheel.defaultPrevented).toBe(true);
+    expect(h.setFileListScale).toHaveBeenCalledTimes(4);
+
+    const termWheel = new WheelEvent('wheel', {
+      ctrlKey: true,
+      deltaY: -100,
+      bubbles: true,
+      cancelable: true,
+    });
+    terminalBody.dispatchEvent(termWheel);
+    expect(termWheel.defaultPrevented).toBe(true);
+    expect(h.setTerminalFontSize).toHaveBeenCalledTimes(1);
+
+    // Focusing inside the terminal routes keyboard and View-menu zoom to terminal font size.
+    terminalBody.focus();
+    expect(h.press('Equal', ctrl)).toBe(true);
+    expect(h.setTerminalFontSize).toHaveBeenCalledTimes(2);
+    const viewZoomIn = h
+      .menus()
+      .flatMap((menu) => menu.items)
+      .find((item) => item.id === 'zoom-in');
+    expect(viewZoomIn?.shortcut).toBe('Ctrl++');
+    viewZoomIn?.onClick?.();
+    expect(h.setTerminalFontSize).toHaveBeenCalledTimes(3);
+  } finally {
+    paneList.remove();
+    terminalPanel.remove();
+  }
 });

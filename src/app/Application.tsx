@@ -144,6 +144,7 @@ export default function Application() {
 
   // The pane columns and the theme go on with the object; the rest is read here.
   const applicationSettings = useApplicationSettings({
+    interface: settings.interface,
     layout,
     applySettings: applySettingsState,
     hydrateLayout: hydrateSectionResizeFromSettings,

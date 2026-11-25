@@ -19,6 +19,23 @@ import type { WorkspaceLayoutModel } from './useWorkspaceLayout.ts';
 import { handler } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
 import { hostPlatform } from '../platform/os.ts';
+import {
+  FILE_LIST_SCALE_DEFAULT,
+  stepFileListScale,
+  stepTerminalFontSize,
+  TERMINAL_FONT_SIZE_DEFAULT,
+} from '../shared/contentZoom.ts';
+
+export type ZoomTarget = 'fileList' | 'terminal';
+
+export function resolveZoomTarget(lastNonMenuTarget: ZoomTarget = 'fileList'): ZoomTarget {
+  if (typeof document === 'undefined') return lastNonMenuTarget;
+  const active = document.activeElement;
+  if (!(active instanceof Element)) return lastNonMenuTarget;
+  if (active.closest('.terminal-panel, [data-terminal-input="true"]')) return 'terminal';
+  if (active.closest('.menu-bar, .menu-dropdown')) return lastNonMenuTarget;
+  return 'fileList';
+}
 
 /**
  * Everything the menu bar and the global shortcuts act on, as the objects
@@ -81,7 +98,11 @@ export interface ApplicationCommandContext {
     | 'requestConfirm'
   >;
   transfers: Pick<TransfersModel, 'hasCompletedTransfers' | 'clearCompletedTransfers'>;
-  applicationSettings: Pick<ApplicationSettingsResult, 'changeTheme'>;
+  applicationSettings: Pick<
+    ApplicationSettingsResult,
+    'changeTheme' | 'setFileListScale' | 'setTerminalFontSize'
+  >;
+  getZoomTarget?: (() => ZoomTarget) | undefined;
   searchInputRefs: Record<PaneId, MutableRefObject<FileSearchHandle | null>>;
   /** Opens the dialog that saves a pane as a bookmark or a local path. */
   saveSite: (id: PaneId) => () => unknown;
@@ -93,7 +114,13 @@ export interface ApplicationCommandContext {
 }
 
 /** The commands a menu entry and a global shortcut both run. */
-function applicationCommands({ browser, dialogs, saveSite }: ApplicationCommandContext) {
+function applicationCommands({
+  browser,
+  dialogs,
+  saveSite,
+  applicationSettings,
+  getZoomTarget,
+}: ApplicationCommandContext) {
   // save-site (pane a) / save-site-secondary (pane b) are side-fixed, not
   // kind-fixed — each saves whatever that side currently holds. A server side
   // needs what its Save Connection button needs: an address, connected or not.
@@ -119,6 +146,22 @@ function applicationCommands({ browser, dialogs, saveSite }: ApplicationCommandC
       );
     },
     openSettings: () => dialogs.setShowSettings(true),
+    zoom: (action: 'in' | 'out' | 'reset') => {
+      const target = getZoomTarget ? getZoomTarget() : resolveZoomTarget();
+      if (target === 'terminal') {
+        applicationSettings.setTerminalFontSize((current) =>
+          action === 'reset'
+            ? TERMINAL_FONT_SIZE_DEFAULT
+            : stepTerminalFontSize(current, action === 'in' ? 1 : -1),
+        );
+      } else {
+        applicationSettings.setFileListScale((current) =>
+          action === 'reset'
+            ? FILE_LIST_SCALE_DEFAULT
+            : stepFileListScale(current, action === 'in' ? 1 : -1),
+        );
+      }
+    },
   };
 }
 
@@ -148,6 +191,9 @@ export function applicationShortcuts(ctx: ApplicationCommandContext) {
     'reopen-closed-tab': browser.reopenClosedTab,
     'next-tab': () => cycleTab(1),
     'prev-tab': () => cycleTab(-1),
+    'zoom-in': () => commands.zoom('in'),
+    'zoom-out': () => commands.zoom('out'),
+    'zoom-reset': () => commands.zoom('reset'),
   };
 }
 
@@ -369,6 +415,28 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
           checked: effectivePaneOrientation === 'vertical',
           disabled: workspace.windowNarrow,
           onClick: workspace.togglePaneOrientation,
+        },
+        { separator: true },
+        {
+          id: 'zoom-in',
+          label: t('menu.view.zoomIn'),
+          shortcut: shortcutLabel('zoom-in'),
+          disabled: modalOpen,
+          onClick: () => commands.zoom('in'),
+        },
+        {
+          id: 'zoom-out',
+          label: t('menu.view.zoomOut'),
+          shortcut: shortcutLabel('zoom-out'),
+          disabled: modalOpen,
+          onClick: () => commands.zoom('out'),
+        },
+        {
+          id: 'zoom-reset',
+          label: t('menu.view.resetZoom'),
+          shortcut: shortcutLabel('zoom-reset'),
+          disabled: modalOpen,
+          onClick: () => commands.zoom('reset'),
         },
         { separator: true },
         {

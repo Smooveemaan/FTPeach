@@ -38,6 +38,20 @@ export function classifyTerminalKey(
   if (ctrlKey && !metaKey && !altKey && (code === 'Tab' || key === 'Tab')) {
     return 'pass-through-app';
   }
+  const zoomMod =
+    platform === 'macos' ? metaKey && !ctrlKey && !altKey : ctrlKey && !metaKey && !altKey;
+  if (
+    zoomMod &&
+    (code === 'Equal' ||
+      (!shiftKey &&
+        (code === 'Minus' ||
+          code === 'Digit0' ||
+          code === 'NumpadAdd' ||
+          code === 'NumpadSubtract' ||
+          code === 'Numpad0')))
+  ) {
+    return 'pass-through-app';
+  }
 
   if (platform === 'macos') {
     if (metaKey && !ctrlKey && !altKey && !shiftKey) {

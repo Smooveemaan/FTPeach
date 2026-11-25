@@ -8,6 +8,7 @@ import PaneSourceSwitcher from './components/PaneSourceSwitcher.tsx';
 import PaneToolbar from './components/PaneToolbar.tsx';
 import { otherPaneId } from './panes/paneModel.ts';
 import type { PaneId } from './panes/paneModel.ts';
+import { FILE_LIST_SCALE_DEFAULT } from '../../shared/contentZoom.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import type { FileSearchHandle } from './components/useFileSearch.ts';
 import { isColumnKey } from './components/fileListModel.ts';
@@ -54,6 +55,7 @@ export interface FileBrowserPaneProps {
     localPaths: readonly ManagedSite[];
   };
   settings: {
+    interface?: Pick<SettingsState['interface'], 'fileListScale'> | undefined;
     layout: Pick<
       SettingsState['layout'],
       | 'showHiddenFiles'
@@ -101,6 +103,7 @@ function FileBrowserPane({
   const { t } = useTranslation();
   const { layout } = settings;
   const { keyboardShortcuts } = settings.shortcuts;
+  const fileListScale = settings.interface?.fileListScale ?? FILE_LIST_SCALE_DEFAULT;
   const actions = usePaneActions({
     t,
     keyboardShortcuts,
@@ -252,6 +255,7 @@ function FileBrowserPane({
       }
       getContextMenuItems={actions.buildPaneMenu(id)}
       keyboardShortcuts={keyboardShortcuts}
+      fileListScale={fileListScale}
       availableColumns={availableColumns}
       visibleColumns={visibleColumns}
       onVisibleColumnsChange={(pane.kind === 'local'

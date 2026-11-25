@@ -9,7 +9,7 @@
     },
     "perSecond": "{{value}}/sn",
     "noLoginUser": "kullanıcı adı yok",
-    "anonymousUser": "isimsiz",
+    "anonymousUser": "anonim",
     "rootFolder": "Kök klasör",
     "close": "Kapat",
     "reset": "Sıfırla",
@@ -43,7 +43,7 @@
         "approve": "Kasayı sil"
       },
       "vaultStartOver": {
-        "message": "Hasarlı kasaya kaydedilen parolalar açılamaz. Kalan dosya silinmez, kenara ayrılır. Yer imlerindeki parolaların yeniden girilmesi gerekecek.",
+        "message": "Hasarlı kasada kayıtlı şifreler açılamaz. Kalan dosya silinmez, kenara ayrılır. Yer imlerindeki şifrelerin yeniden girilmesi gerekecek.",
         "approve": "Baştan başla"
       },
       "executeLocalFile": {
@@ -176,7 +176,7 @@
     "installAction": "Güncellemeyi yükle",
     "downloadTooltip": "İndirmek için tıklayın",
     "downloadingTooltip": "İndiriliyor",
-    "installTooltip": "Yüklemek için şimdi yeniden başlatın. Aksi takdirde güncelleme FTPeach bir sonraki açılışında yüklenir."
+    "installTooltip": "Yüklemek için şimdi yeniden başlatın. Aksi takdirde güncelleme FTPeach'in bir sonraki açılışında yüklenir."
   },
   "legacyPasswordNotice": {
     "message": "Kaydedilmiş bazı sunucuların şifreleri okunamadı — lütfen bunları yer imi yöneticisinde yeniden girin."
@@ -205,7 +205,7 @@
   },
   "openWithChanged": {
     "title": "Dosya değiştirildi",
-    "message": "\"{{name}}\" dosyası harici uygulamada değiştirildi. Güncellenmiş dosyayı sunucuya yüklemek ister misiniz? \"Daha sonra\" seçerseniz, dosyayı bir sonraki kaydedişinizde yeniden sorulur."
+    "message": "\"{{name}}\" dosyası harici uygulamada değiştirildi. Güncellenmiş dosyayı sunucuya yüklemek ister misiniz? \"Daha sonra\"yı seçerseniz, dosyayı bir sonraki kaydedişinizde yeniden sorulur."
   },
   "recoveredEdits": {
     "title": "Yüklenmeyen değişiklikler",
@@ -311,6 +311,9 @@
       "transferQueue": "Aktarım Kuyruğu",
       "log": "Günlük",
       "stackedPanes": "Alt Alta Bölmeler",
+      "zoomIn": "Yakınlaştır",
+      "zoomOut": "Uzaklaştır",
+      "resetZoom": "Yakınlaştırmayı Sıfırla",
       "refreshBothPanes": "Her İki Bölmeyi de Yenile"
     },
     "transfer": {
@@ -365,7 +368,7 @@
     "replaceUnsupported": "Sunucu, mevcut dosyanın üzerine yazılmasına izin vermedi.",
     "stagingLeft": "{{path}} geçici dosyası sunucudan silinemedi.",
     "replaceInterrupted": "Dosya değiştirilirken bağlantı koptu. Eski sürüm bir sonraki bağlantıda geri yüklenecek.",
-    "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu sunuyorsa SFTP veya WebDAV deneyin.",
+    "createUnsupported": "Bu FTP sunucusu yeni dosya oluşturmayı desteklemiyor. Sunucu destekliyorsa SFTP veya WebDAV deneyin.",
     "activeModeFailed": "Sunucu, aktif FTP modunda bu bilgisayara bağlanamadı. Pasif modu deneyin.",
     "linkNotFollowed": "Yol bir bağlantıdan geçiyor (junction veya sembolik bağlantı). Bağlantılar izlenmez.",
     "noRecycleBin": "Bu konumda Geri Dönüşüm Kutusu yok, bu yüzden hiçbir şey silinmedi.",
@@ -385,18 +388,18 @@
     "invalidFileName_linux": "\"{{name}}\" adına burada izin verilmiyor.",
     "insideSource": "Bir klasör kendi içine kopyalanamaz veya taşınamaz.",
     "webdavRedirect": "Sunucu başka bir adrese yönlendiriyor: {{address}}",
-    "cleartextSignIn": "Sunucu şifrelenmemiş bir bağlantı üzerinden parola istiyor. https:// kullanın veya şifrelenmemiş oturum açmaya izin verin.",
+    "cleartextSignIn": "Sunucu şifrelenmemiş bir bağlantı üzerinden şifre istiyor. https:// kullanın veya şifrelenmemiş oturum açmaya izin verin.",
     "editsRetained": "Yüklenmeyen değişiklikler 1 GB'tan fazla yer kaplıyor veya 30 günden eski. Önce bunları yükleyin ya da silin.",
     "resumeExpired": "Duraklatılan bu aktarım sürdürülemez. Yeniden başlatın.",
     "programUnavailable": "Program bulunamadı veya çalıştırılamıyor.",
-    "secretNotProtected": "Parola şifrelenemedi, bu nedenle değişiklik kaydedilmedi. Şifreleri kaydetmek için Ayarlar > Güvenlik bölümünde bir ana şifre belirleyin.",
+    "secretNotProtected": "Şifre şifrelenemedi, bu nedenle değişiklik kaydedilmedi. Şifreleri kaydetmek için Ayarlar > Güvenlik bölümünde bir ana şifre belirleyin.",
     "serverRefused": "Sunucu işlemi reddetti: {{reply}}",
     "importRefused": "Dosya içe aktarılamıyor."
   },
   "settings": {
     "openWithAssociations": {
       "title": "İlişkilendirmeler",
-      "hint": "Bir uzantı için uygulama seçin. Kuralı olmayan dosyalar sistemin varsayılan uygulamasıyla açılır.",
+      "hint": "İlişkilendirmesi olmayan dosyalar sistemin varsayılan uygulamasıyla açılır.",
       "extension": "Uzantı",
       "extensionPlaceholder": "txt",
       "application": "Uygulama",
@@ -406,11 +409,9 @@
       "add": "İlişkilendirme ekle"
     },
     "minimizeToTray": "Sistem tepsisine küçült",
-    "minimizeToTrayHint": "Küçültme düğmesi, pencereyi görev çubuğuna değil, sistem tepsisine gizler.",
     "closeToTray": "Kapatınca sistem tepsisine küçült",
-    "closeToTrayHint": "Kapat düğmesi, uygulamayı sonlandırmak yerine pencereyi sistem tepsisine gizler. Uygulamayı sonlandırmak için sistem tepsisi simgesinin menüsünü kullanın.",
     "showMenuBarIcon": "Menü çubuğu simgesini göster",
-    "showMenuBarIconHint": "Aktarımlara ve son bağlantılara hızlı erişim için FTPeach simgesini menü çubuğunda tutun.",
+    "showMenuBarIconHint": "Menü çubuğundan aktarımları yönetin ve son bağlantıları açın.",
     "title": "Ayarlar",
     "unsavedChangesTitle": "Kaydedilmemiş değişiklikler",
     "unsavedChangesMessage": "Ayarlardaki değişiklikler kaydedilsin mi?",
@@ -436,7 +437,7 @@
       "unassign": "Kısayolu kaldır",
       "conflict": "Şunun için de kullanılıyor: {{action}}",
       "actions": {
-        "search": "Arama ({{side}})",
+        "search": "Ara ({{side}})",
         "toggleHiddenFiles": "Gizli dosyaları göster/gizle",
         "newConnection": "Yeni bağlantı",
         "save": "Kaydet ({{side}})",
@@ -447,6 +448,9 @@
         "nextTab": "Sonraki sekme",
         "prevTab": "Önceki sekme",
         "refresh": "Yenile",
+        "zoomIn": "Yakınlaştır",
+        "zoomOut": "Uzaklaştır",
+        "zoomReset": "Yakınlaştırmayı sıfırla",
         "selectAll": "Tümünü seç",
         "delete": "Sil",
         "deletePermanent": "Kalıcı olarak sil",
@@ -475,8 +479,6 @@
       "strongholdMode": "Gelişmiş koruma",
       "strongholdModeHint": "Ana şifre gerekir. Kaydedilmiş bir şifreyi görmek için ana şifreyi yeniden girmeniz gerekir.",
       "loading": "Kasa kontrol ediliyor…",
-      "configuredLocked": "Kasa bir ana şifreyle korunuyor ve kilitli.",
-      "configuredUnlocked": "Kasa bir ana şifreyle korunuyor ve kilidi açık.",
       "masterPassword": "Ana şifre",
       "confirmPassword": "Ana şifreyi onaylayın",
       "oldPassword": "Mevcut ana şifre",
@@ -496,7 +498,7 @@
       "autoLockHint_linux": "Belirli bir süre işlem yapılmazsa, ayrıca oturum kilitlendiğinde veya FTPeach penceresi gizlendiğinde kasayı kilitler. 0 zamanlayıcıyı kapatır. Açık bağlantılar etkin kalır.",
       "lockScope": "Kilitleme açık bağlantıları kesmez; bu bağlantıların başlattığı yeni aktarımlar da sürer. Bir şifreyi kaydetmek veya göstermek için kilidi yeniden açmanız gerekir.",
       "strictHostKey": "Yeni SSH sunucu anahtarını onayla",
-      "strictHostKeyHint": "Bir SSH sunucusunun anahtarına ilk kez güvenmeden önce sorar ve parmak izini gösterir. Bu olmadan, herhangi bir sunucunun sunduğu ilk anahtara sessizce güvenilir.",
+      "strictHostKeyHint": "İlk bağlantıda anahtarın parmak izini gösterir. Kapalıyken FTPeach ilk anahtara sormadan güvenir.",
       "changePassword": "Ana şifreyi değiştir",
       "change": "Şifreyi değiştir",
       "systemUnlock": "Sistem üzerinden kilit açmaya izin ver",
@@ -514,30 +516,30 @@
       "passwordTooShort": "Ana şifre olarak en az 12 karakter kullanın.",
       "strength": {
         "tooShort": "Çok kısa — en az 12 karakter kullanın.",
-        "acceptable": "Kabul edilebilir. Daha uzun bir parola ifadesi daha güvenlidir.",
+        "acceptable": "Kabul edilebilir. Daha uzun bir şifre ifadesi daha güvenlidir.",
         "strong": "Güçlü ana şifre."
       },
       "reset": "Kasayı sıfırla",
-      "damaged": "Kasa hasarlı: iki dosyasından biri eksik, bu nedenle içine kaydedilen parolalar açılamıyor. Korumayı yeniden kurmak için baştan başlayın.",
+      "damaged": "Kasa hasarlı: iki dosyasından biri eksik, bu nedenle içine kaydedilen şifreler açılamıyor. Korumayı yeniden kurmak için baştan başlayın.",
       "startOver": "Baştan başla",
-      "resetHint": "Kasayı ve içinde saklanan tüm şifreleri ve SSH anahtar parolalarını siler. Gelişmiş korumanın yeniden ayarlanması gerekecektir.",
+      "resetHint": "Kasayı, kaydedilen tüm şifreler ve SSH anahtar parolalarıyla birlikte siler.",
       "resetWarning": "Bu işlem, kaydedilmiş tüm şifreleri ve anahtar parolalarını kalıcı olarak siler. Devam etmek için mevcut ana şifreyi girin.",
       "confirmReset": "Kaydedilmiş şifreleri sil",
       "showConfirmations": "Güvenlik onaylarını göster",
-      "showConfirmationsHint": "Kaydedilmiş bir şifreyi göstermeden, yürütülebilir bir dosyayı çalıştırmadan veya bir dosyayı daha önce kullanılmamış bir programla açmadan önce onay iste. Kasayı sıfırlamak, kaydedilmiş bir şifreyi başka bir sunucuya taşımak ve bu seçeneği kapatmak her zaman onay gerektirir.",
+      "showConfirmationsHint": "Kaydedilmiş bir şifreyi göstermeden, yürütülebilir bir dosyayı çalıştırmadan veya bir dosyayı daha önce kullanılmamış bir programla açmadan önce onay ister. Kasayı sıfırlamak, kaydedilmiş bir şifreyi başka bir sunucuya taşımak ve bu seçeneği kapatmak her zaman onay gerektirir.",
       "unavailable": "Kasa kullanılamıyor.",
       "failed": "Kasa işlemi başarısız oldu.",
       "unlockRefused": "Ana şifre kabul edilmedi. Yeniden denemeden önce biraz bekleyin."
     },
     "unlimitedPlaceholder": "Sınırsız",
     "connectTimeoutLabel": "Bağlantı zaman aşımı, sn",
-    "connectTimeoutHint": "Bağlanırken sunucu erişilemez sayılmadan önce yanıt için ne kadar bekleneceği (0 veya boş — sınır yok, aksi halde en az 5). Kapalı bir sunucu beklemeden hemen reddeder. Bir sonraki bağlantıda geçerli olur.",
+    "connectTimeoutHint": "Sınırsız için 0 veya en az 5 saniye girin. Yeni bağlantılar için geçerlidir.",
     "ftpActiveMode": "Aktif FTP modu (pasif yerine)",
-    "ftpActiveModeHint": "Yalnızca FTP/FTPS için geçerlidir — SFTP/WebDAV üzerinde herhangi bir etkisi yoktur. Nadiren gereklidir; yalnızca pasif modun NAT'tan geçemediği ağlarda/sunucularda kullanılır. Bir sonraki bağlantıya uygulanır.",
-    "ftpActiveModeDisabledByProxy": "Proxy etkinken kullanılamaz — bir proxy tüneli yalnızca dışa doğru bağlantıları desteklediğinden, FTP'nin pasif modda kalması gerekir.",
+    "ftpActiveModeHint": "Yalnızca FTP ve FTPS için; pasif modun NAT'tan geçemediği ağlarda kullanılır. Yeni bağlantılar için geçerlidir.",
+    "ftpActiveModeDisabledByProxy": "Proxy açıkken devre dışıdır, çünkü FTP pasif modda kalmalıdır.",
     "proxy": {
       "enable": "Bağlantılar için proxy kullan",
-      "enableHint": "SOCKS4, SOCKS5 veya HTTP CONNECT — FTP, FTPS, SFTP ve WebDAV için geçerlidir. Bir sonraki bağlantı için geçerlidir.",
+      "enableHint": "Yeni FTP, FTPS, SFTP ve WebDAV bağlantıları için kullanılır.",
       "typeLabel": "Proxy türü",
       "hostLabel": "Proxy adresi",
       "hostPlaceholder": "proxy.example.com",
@@ -555,25 +557,24 @@
       "testFailed": "Proxy testi başarısız oldu."
     },
     "concurrencyLabel": "Eşzamanlı aktarımlar",
-    "concurrencyHint": "Tüm sekmelerde aynı anda kaç dosyanın yükleneceği ve indirileceği (0 veya boş — sınır yok). Hemen geçerli olur; süren aktarımlar normal şekilde tamamlanır.",
+    "concurrencyHint": "Tüm sekmeler için toplam sayıdır. Sınırsız için 0 girin.",
     "speedLimitLabel": "Hız sınırı, KB/sn",
-    "speedLimitHint": "Eşzamanlı tüm aktarımların toplamına uygulanır (0 veya boş — sınır yok). Bir sonraki bağlantıyı beklemeden hemen geçerli olur.",
+    "speedLimitHint": "Tüm etkin aktarımlar için toplam sınırdır. Sınırsız için 0 girin.",
     "notifyOnComplete": "Aktarımlar bittiğinde bildirim gönder",
     "notifyOnCompleteHint": "Aktarım hataları ve kuyruğun tamamlanması için sistem bildirimleri — yalnızca pencere odaklanmamışken.",
     "overwriteActionLabel": "Ad çakışmasında",
     "overwriteAsk": "Sor",
     "overwriteOverwrite": "Üzerine yaz",
     "overwriteSkip": "Atla",
-    "overwriteHint": "Kopyalanan dosya hedef klasörde zaten varsa ne yapılacağı.",
     "preventSleep": "Aktarımlar sırasında sistemin uyku moduna geçmesini önle",
-    "preventSleepHint": "Bir sonraki bağlantıyı beklemeden hemen yürürlüğe girer. En az bir aktarım devam ettiği sürece etkindir; aksi takdirde uyku modunu engellemez.",
     "themeLabel": "Tema",
     "themeDark": "Koyu",
     "themeLight": "Açık",
     "themeSystem": "Sistem",
     "languageLabel": "Arayüz dili",
     "interfaceScaleLabel": "Arayüz ölçeği",
-    "interfaceScaleHint": "Uygulama genelinde metin ve denetimlerin boyutunu değiştirir.",
+    "fileListScaleLabel": "Dosya listesi boyutu",
+    "terminalFontSizeLabel": "Terminal yazı tipi boyutu",
     "dateFormatLabel": "Tarih/saat biçimi",
     "dateFormatOnlyLabel": "Tarih biçimi",
     "timeFormatLabel": "Saat biçimi",
@@ -582,16 +583,16 @@
     "dateFormatLocale": "Bölgesel",
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "\"Bilgisayar\" için varsayılan klasör",
-    "defaultLocalPathHint": "\"Bilgisayar\" bölmesinin başlangıçta ve bir sunucudan geçiş yapıldığında açtığı klasör. Kendi ana klasörünüzü kullanmak için boş bırakın.",
+    "defaultLocalPathHint": "Başlangıçta ve bir sunucudan geçiş yapıldığında açılır. Ana klasörünüz için boş bırakın.",
     "chooseDefaultLocalPath": "Varsayılan klasörü seç",
     "showHiddenFiles": "Gizli dosya ve klasörleri göster",
     "showHiddenFilesHint": "Hem yerel hem de sunucu bölmeleri için geçerlidir.",
     "coloredTabs": "Renkli sekmeler",
     "coloredTabsHint": "Sekme adını ve simgesini, kaydedilmiş yer imi rengini kullanarak renklendirir.",
     "autoCheckUpdates": "Otomatik olarak güncelle",
-    "autoCheckUpdatesHint": "Başlangıçta ve günde bir kez güncellemeleri denetler ve arka planda indirir. İndirilen güncelleme, FTPeach bir sonraki açılışında sessizce yüklenir ya da durum çubuğundan hemen yüklenebilir.",
+    "autoCheckUpdatesHint": "Başlangıçta ve günde bir kez güncellemeleri denetler ve arka planda indirir. İndirilen güncelleme, FTPeach'in bir sonraki açılışında sessizce yüklenir ya da durum çubuğundan hemen yüklenebilir.",
     "autoReconnectTabs": "Başlangıçta geri yüklenen sekmeleri yeniden bağla",
-    "autoReconnectTabsHint": "Varsayılan olarak kapalıdır. Etkinleştirildiğinde, yer imlerine ait geri yüklenen sekmeler otomatik olarak bağlanır.",
+    "autoReconnectTabsHint": "Yalnızca yer imlerinden açılan sekmeleri yeniden bağlar.",
     "saveSessionOnExit": "Çıkışta oturumu kaydet",
     "saveSessionOnExitHint": "Bir sonraki başlatmada açık sekmeleri, bölme türlerini ve yolları geri yükler. Bu seçeneği devre dışı bırakmak, kaydedilmiş oturumu siler.",
     "checkNow": "Şimdi kontrol et",
@@ -737,7 +738,7 @@
     "pauseUnsupportedServerCopy": "Sunucuda kopyalarken duraklatma desteklenmiyor",
     "pauseUnsupportedWebdav": "WebDAV duraklatmayı desteklemiyor",
     "retryUnsupportedConnection": "Yeniden denenemiyor: bağlantı kapatıldı",
-    "pauseUnsupportedLocal": "Bu yerel dosya kopyalama duraklatılamaz."
+    "pauseUnsupportedLocal": "Bu yerel dosya kopyalama işlemi duraklatılamaz."
   },
   "log": {
     "connecting": "{{addr}} adresine bağlanılıyor...",
@@ -800,7 +801,7 @@
     "confirmDeleteSite": "\"{{name}}\" yer imi silinsin mi?"
   },
   "siteManagerDialog": {
-    "titleNew": "Yeni Yer İmi",
+    "titleNew": "Yeni yer imi",
     "titleEdit": "Yer imini düzenle",
     "titleList": "Yer imlerini yönet",
     "titleLocalPathList": "Yerel yolları yönet",
@@ -859,11 +860,11 @@
     "removeSavedPassword": "Kaydedilmiş şifreyi sil",
     "removeSavedPassphrase": "Kaydedilmiş anahtar parolasını sil",
     "secretWillBeRemoved": "Kaydedince silinecek",
-    "addBookmark": "Yeni Yer İmi",
-    "addLocalBookmark": "Yerel Klasör İçin Yer İmi Ekle",
+    "addBookmark": "Yeni yer imi",
+    "addLocalBookmark": "Yerel klasör için yer imi ekle",
     "chooseLocalPath": "Yerel klasör seç",
-    "importBookmarks": "İçe Aktar",
-    "exportBookmarks": "Dışa Aktar",
+    "importBookmarks": "İçe aktar",
+    "exportBookmarks": "Dışa aktar",
     "sortMode": "Yer imlerini sıralama",
     "sortManual": "Manuel",
     "sortName": "Adına göre",
@@ -871,7 +872,7 @@
     "duplicateWarning": "Aynı hedefe ait bir yer imi zaten mevcut: \"{{name}}\". Bir tane daha kaydetmek ister misiniz?",
     "saveAnyway": "Yine de kaydet",
     "unsavedChangesMessage": "Yer imindeki değişiklikler kaydedilsin mi?",
-    "newFolder": "Yeni Klasör",
+    "newFolder": "Yeni klasör",
     "folderNamePlaceholder": "Klasör adı",
     "confirmDeleteFolder": "\"{{name}}\" klasörünü silmek istiyor musunuz? Bu klasördeki yer imleri bir üst düzeye taşınacaktır.",
     "searchPlaceholder": "Ara…",
@@ -883,7 +884,7 @@
     "collapseFolder": "\"{{name}}\" klasörünü daralt",
     "noFolder": "Klasör yok",
     "maxConnectionsHint": "En az 2: bir bağlantı klasörlere göz atar, diğerleri dosyaları aktarır. Her bölmenin kendi sınırı vardır.",
-    "encodingHint": "Yalnızca bu sunucudaki dosya adları bozuk görünüyorsa değiştirin.",
+    "encodingHint": "Dosya adları bozuk görünüyorsa değiştirin.",
     "encodings": {
       "utf8": "UTF-8 (varsayılan)",
       "cyrillic": "Kiril",
@@ -929,7 +930,7 @@
       "chooseCaCertFile": "CA sertifikası seç…"
     },
     "secureToggle": {
-      "tooltip": "Kendi imzalı ve geçersiz sunucu sertifikalarını kabul etmek için işaretini kaldırın",
+      "tooltip": "Kendinden imzalı ve geçersiz sunucu sertifikalarını kabul etmek için işareti kaldırın",
       "label": "Sertifikayı doğrula"
     },
     "cleartextToggle": {
@@ -948,7 +949,7 @@
     }
   },
   "protocolSelect": {
-    "insecureWarning": "Sıradan FTP, kullanıcı adınızı, şifrenizi ve dosyalarınızı şifrelenmemiş olarak iletir. Mümkün olduğunda FTPS veya SFTP kullanın."
+    "insecureWarning": "Düz FTP, kullanıcı adınızı, şifrenizi ve dosyalarınızı şifrelenmemiş olarak iletir. Mümkün olduğunda FTPS veya SFTP kullanın."
   },
   "titleBar": {
     "minimize": "Küçült",
@@ -1020,7 +1021,7 @@
     "toggleLog": "Günlüğü göster/gizle",
     "orientationNarrow": "Bölmeler üst üste — pencere yan yana görünüm için çok dar",
     "orientationToRow": "Bölmeleri yan yana düzenle",
-    "orientationToStacked": "Bölmeleri üst üste istifle",
+    "orientationToStacked": "Bölmeleri alt alta yerleştir",
     "pauseUnsupportedWebdav": "WebDAV duraklatmayı desteklemiyor",
     "pauseActive": "Etkin aktarımları duraklat",
     "resumeAllPaused": "Duraklatılmış tüm aktarımları sürdür",
@@ -1043,8 +1044,8 @@
     "remote": "Sunucu",
     "updatedAtTooltip": "Güncellendi: {{date}}",
     "connectToServer": "Sunucu",
-    "copyConnectionAddress": "Bağlantı Adresini Kopyala",
-    "copySshFingerprint": "SSH Parmak İzini Kopyala"
+    "copyConnectionAddress": "Bağlantı adresini kopyala",
+    "copySshFingerprint": "SSH parmak izini kopyala"
   },
   "paneConnectEmptyState": {
     "noSavedConnectionsTitle": "Son bağlantı yok",
@@ -1063,8 +1064,8 @@
     "unsyncedEdits": "Değişiklikleri henüz sunucuya yüklenmemiş dosyalar: {{count}}. Çıkışta kopyaları kurtarma için saklanacak ve FTPeach'i bir sonraki başlatışınızda size sunulacak.",
     "preserveAndQuit": "Kurtarma için sakla ve çık",
     "return": "Geri dön",
-    "message_one": "{{count}} aktarım hâlâ sürüyor. Çıkılsın ve durdurulsun mu?",
-    "message_other": "{{count}} aktarım hâlâ sürüyor. Çıkılsın ve durdurulsun mu?",
+    "message_one": "{{count}} aktarım hâlâ sürüyor. Çıkıp aktarımı durdurmak ister misiniz?",
+    "message_other": "{{count}} aktarım hâlâ sürüyor. Çıkıp aktarımları durdurmak ister misiniz?",
     "quitNow": "Şimdi çık",
     "quitWhenDone": "Aktarımlar bitince çık"
   },

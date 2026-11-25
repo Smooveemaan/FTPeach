@@ -21,7 +21,7 @@
     "increase": "Verhogen",
     "decrease": "Verlagen",
     "showPassword": "Wachtwoord weergeven",
-    "savedSecretProtected": "Het opgeslagen wachtwoord is beveiligd; verifieer je om het te bekijken",
+    "savedSecretProtected": "Het opgeslagen wachtwoord is beveiligd; bevestig je identiteit om het te bekijken",
     "hidePassword": "Wachtwoord verbergen"
   },
   "securityConfirmation": {
@@ -39,11 +39,11 @@
         "message": "Het opgeslagen proxywachtwoord tonen?"
       },
       "vaultReset": {
-        "message": "Alle opgeslagen wachtwoorden en wachtwoordzinnen van SSH-sleutels worden permanent verwijderd.",
+        "message": "Alle opgeslagen wachtwoorden en wachtwoordzinnen van SSH-sleutels worden definitief verwijderd.",
         "approve": "Kluis verwijderen"
       },
       "vaultStartOver": {
-        "message": "De wachtwoorden in de beschadigde kluis kunnen niet worden geopend. Het overgebleven bestand wordt apart gezet, niet verwijderd. Wachtwoorden in bladwijzers moeten opnieuw worden ingevoerd.",
+        "message": "De wachtwoorden in de beschadigde kluis kunnen niet worden ontsleuteld. Het overgebleven bestand wordt apart gezet, niet verwijderd. Wachtwoorden in bladwijzers moeten opnieuw worden ingevoerd.",
         "approve": "Opnieuw beginnen"
       },
       "executeLocalFile": {
@@ -111,8 +111,8 @@
       "linux": "Bovenliggende map openen"
     },
     "uploadToOtherPane": "Uploaden naar het andere paneel",
-    "copyToOtherPane": "Naar het andere paneel kopiëren",
-    "downloadToOtherPane": "Naar het andere paneel downloaden",
+    "copyToOtherPane": "Kopiëren naar het andere paneel",
+    "downloadToOtherPane": "Downloaden naar het andere paneel",
     "openWith": "Openen met…",
     "permissions": "Rechten…",
     "moveTo": "Verplaatsen naar map…",
@@ -145,7 +145,7 @@
     "fileTypeGeneric": "Bestand",
     "fileTypeWithExt": "{{ext}}-bestand",
     "columnSize": "Grootte",
-    "columnModifiedAt": "Datum van wijziging",
+    "columnModifiedAt": "Wijzigingsdatum",
     "columnCreatedAt": "Aanmaakdatum",
     "columnType": "Type",
     "columnPermissions": "Rechten",
@@ -236,8 +236,8 @@
   },
   "moveToDialog": {
     "title": "Verplaatsen naar map…",
-    "labelSingle": "Verplaats \"{{name}}\" naar de map:",
-    "labelMultiple": "Verplaats de geselecteerde items ({{count}}) naar de map:"
+    "labelSingle": "\"{{name}}\" verplaatsen naar map:",
+    "labelMultiple": "De geselecteerde items ({{count}}) verplaatsen naar map:"
   },
   "confirm": {
     "resetLayout": "De afmetingen van vensters en panelen opnieuw instellen, de standaardkolommen herstellen en de cache van de interface wissen?",
@@ -311,6 +311,9 @@
       "transferQueue": "Overdrachtswachtrij",
       "log": "Logboek",
       "stackedPanes": "Panelen boven elkaar",
+      "zoomIn": "Inzoomen",
+      "zoomOut": "Uitzoomen",
+      "resetZoom": "Zoom opnieuw instellen",
       "refreshBothPanes": "Beide panelen vernieuwen"
     },
     "transfer": {
@@ -338,7 +341,7 @@
     "timeout": "De server reageert niet. Controleer het adres, de poort en het netwerk.",
     "connectionReset": "De verbinding met de server is onverwacht verbroken.",
     "networkUnreachable": "De server is niet bereikbaar — controleer je netwerkverbinding.",
-    "loginIncorrect": "Onjuiste gebruikersnaam of wachtwoord.",
+    "loginIncorrect": "Onjuiste gebruikersnaam of onjuist wachtwoord.",
     "invalidCertificate": "Het certificaat van de server is ongeldig.",
     "tlsNegotiationFailed": "Kan geen versleuteling (TLS) met de server opzetten.",
     "sshNegotiationFailed": "De server en FTPeach hebben geen SSH-algoritme gemeen.",
@@ -396,7 +399,7 @@
   "settings": {
     "openWithAssociations": {
       "title": "Koppelingen",
-      "hint": "Kies een toepassing voor een extensie. Bestanden zonder regel worden geopend met de standaardtoepassing van het systeem.",
+      "hint": "Bestanden zonder koppeling worden geopend met de standaardtoepassing van het systeem.",
       "extension": "Extensie",
       "extensionPlaceholder": "txt",
       "application": "Toepassing",
@@ -406,14 +409,12 @@
       "add": "Koppeling toevoegen"
     },
     "minimizeToTray": "Naar systeemvak minimaliseren",
-    "minimizeToTrayHint": "Met de knop \"Minimaliseren\" wordt het venster naar het systeemvak verplaatst in plaats van naar de taakbalk.",
     "closeToTray": "Bij sluiten naar systeemvak minimaliseren",
-    "closeToTrayHint": "Met de knop \"Sluiten\" gaat het venster naar het systeemvak in plaats van dat de app wordt afgesloten. Afsluiten kan via het menu van het pictogram in het systeemvak.",
     "showMenuBarIcon": "Pictogram in menubalk weergeven",
-    "showMenuBarIconHint": "Houd het FTPeach-pictogram in de menubalk voor snelle toegang tot overdrachten en recente verbindingen.",
+    "showMenuBarIconHint": "Beheer overdrachten en open recente verbindingen vanuit de menubalk.",
     "title": "Instellingen",
     "unsavedChangesTitle": "Niet-opgeslagen wijzigingen",
-    "unsavedChangesMessage": "Wil je de wijzigingen in de instellingen opslaan?",
+    "unsavedChangesMessage": "Wijzigingen in de instellingen opslaan?",
     "discardChanges": "Niet opslaan",
     "categories": {
       "connection": "Verbinding",
@@ -447,6 +448,9 @@
         "nextTab": "Volgend tabblad",
         "prevTab": "Vorig tabblad",
         "refresh": "Vernieuwen",
+        "zoomIn": "Inzoomen",
+        "zoomOut": "Uitzoomen",
+        "zoomReset": "Zoom opnieuw instellen",
         "selectAll": "Alles selecteren",
         "delete": "Verwijderen",
         "deletePermanent": "Definitief verwijderen",
@@ -457,7 +461,7 @@
         "moveTo": "Verplaatsen naar map…",
         "newFolder": "Nieuwe map…",
         "newFile": "Nieuw bestand…",
-        "copyToOtherPane": "Naar het andere paneel kopiëren",
+        "copyToOtherPane": "Kopiëren naar het andere paneel",
         "copy": "Kopiëren",
         "cut": "Knippen",
         "paste": "Plakken",
@@ -475,10 +479,8 @@
       "strongholdMode": "Uitgebreide beveiliging",
       "strongholdModeHint": "Vereist een hoofdwachtwoord. Om een opgeslagen wachtwoord te bekijken, moet je het hoofdwachtwoord opnieuw invoeren.",
       "loading": "Kluis wordt gecontroleerd…",
-      "configuredLocked": "De kluis is beveiligd met een hoofdwachtwoord en vergrendeld.",
-      "configuredUnlocked": "De kluis is beveiligd met een hoofdwachtwoord en ontgrendeld.",
       "masterPassword": "Hoofdwachtwoord",
-      "confirmPassword": "Bevestig het hoofdwachtwoord",
+      "confirmPassword": "Hoofdwachtwoord bevestigen",
       "oldPassword": "Huidig hoofdwachtwoord",
       "newPassword": "Nieuw hoofdwachtwoord",
       "setup": "Opgeslagen wachtwoorden beveiligen",
@@ -496,7 +498,7 @@
       "autoLockHint_linux": "Vergrendelt de kluis na een periode van inactiviteit, en ook wanneer je sessie wordt vergrendeld of het FTPeach-venster wordt verborgen. 0 schakelt de timer uit. Open verbindingen blijven actief.",
       "lockScope": "Vergrendelen laat open verbindingen doorlopen, inclusief nieuwe overdrachten die ze starten. Om een wachtwoord op te slaan of te tonen, moet je opnieuw ontgrendelen.",
       "strictHostKey": "Nieuwe SSH-serversleutel bevestigen",
-      "strictHostKeyHint": "Vraagt om bevestiging voordat de sleutel van een SSH-server voor het eerst wordt vertrouwd en toont de vingerafdruk. Zonder deze optie wordt de eerste sleutel die een server aanbiedt stilzwijgend vertrouwd.",
+      "strictHostKeyHint": "Toont de vingerafdruk van de sleutel bij de eerste verbinding. Als dit uit staat, vertrouwt FTPeach de eerste sleutel zonder te vragen.",
       "changePassword": "Hoofdwachtwoord wijzigen",
       "change": "Wachtwoord wijzigen",
       "systemUnlock": "Ontgrendelen via het systeem toestaan",
@@ -518,26 +520,26 @@
         "strong": "Sterk hoofdwachtwoord."
       },
       "reset": "Kluis resetten",
-      "damaged": "De kluis is beschadigd: een van de twee bestanden ontbreekt, dus de wachtwoorden die erin zijn opgeslagen kunnen niet worden geopend. Met Opnieuw beginnen kan de beveiliging opnieuw worden ingesteld.",
+      "damaged": "De kluis is beschadigd: een van de twee bestanden ontbreekt, dus de wachtwoorden die erin zijn opgeslagen kunnen niet worden ontsleuteld. Met \"Opnieuw beginnen\" kan de beveiliging opnieuw worden ingesteld.",
       "startOver": "Opnieuw beginnen",
-      "resetHint": "Verwijdert de kluis en alle wachtwoorden en wachtwoordzinnen van SSH-sleutels die erin staan. De uitgebreide beveiliging moet opnieuw worden ingesteld.",
+      "resetHint": "Verwijdert de kluis met alle opgeslagen wachtwoorden en wachtwoordzinnen van SSH-sleutels.",
       "resetWarning": "Hiermee worden alle opgeslagen wachtwoorden en wachtwoordzinnen van sleutels definitief verwijderd. Voer het huidige hoofdwachtwoord in om door te gaan.",
       "confirmReset": "Opgeslagen wachtwoorden verwijderen",
       "showConfirmations": "Beveiligingsbevestigingen tonen",
-      "showConfirmationsHint": "Vraag bevestiging voordat een opgeslagen wachtwoord wordt getoond, een uitvoerbaar bestand wordt uitgevoerd of een bestand wordt geopend met een programma dat nog niet is gebruikt. Het resetten van de kluis, het verplaatsen van een opgeslagen wachtwoord naar een andere server en het uitschakelen van deze optie worden altijd bevestigd.",
+      "showConfirmationsHint": "Vraagt om bevestiging voordat een opgeslagen wachtwoord wordt getoond, een uitvoerbaar bestand wordt uitgevoerd of een bestand wordt geopend met een programma dat nog niet is gebruikt. Het resetten van de kluis, het verplaatsen van een opgeslagen wachtwoord naar een andere server en het uitschakelen van deze optie worden altijd bevestigd.",
       "unavailable": "De kluis is niet beschikbaar.",
       "failed": "De bewerking op de kluis is mislukt.",
       "unlockRefused": "Het hoofdwachtwoord is niet geaccepteerd. Wacht even voordat je het opnieuw probeert."
     },
     "unlimitedPlaceholder": "Geen limiet",
     "connectTimeoutLabel": "Time-out verbinding, s",
-    "connectTimeoutHint": "Hoe lang bij het verbinden op een reactie van de server wordt gewacht voordat die als onbereikbaar geldt (0 of leeg — geen limiet, anders minimaal 5). Een uitgeschakelde server weigert meteen, zonder wachttijd. Geldt voor de volgende verbinding.",
+    "connectTimeoutHint": "Gebruik 0 voor geen limiet, of minimaal 5 seconden. Geldt voor nieuwe verbindingen.",
     "ftpActiveMode": "Actieve FTP-modus (in plaats van passieve)",
-    "ftpActiveModeHint": "Alleen FTP/FTPS — geen effect op SFTP/WebDAV. Zelden nodig, alleen op netwerken of servers waar de passieve modus niet door NAT komt. Geldt voor de volgende verbinding.",
-    "ftpActiveModeDisabledByProxy": "Niet beschikbaar wanneer een proxy is ingeschakeld — een proxytunnel ondersteunt alleen uitgaande verbindingen, dus FTP moet in de passieve modus blijven.",
+    "ftpActiveModeHint": "Alleen voor FTP en FTPS, voor netwerken waar de passieve modus niet door NAT komt. Geldt voor nieuwe verbindingen.",
+    "ftpActiveModeDisabledByProxy": "Uitgeschakeld zolang een proxy aan staat, omdat FTP in de passieve modus moet blijven.",
     "proxy": {
       "enable": "Proxy gebruiken voor verbindingen",
-      "enableHint": "SOCKS4, SOCKS5 of HTTP CONNECT — geldt voor FTP, FTPS, SFTP en WebDAV. Geldt voor de volgende verbinding.",
+      "enableHint": "Wordt gebruikt voor nieuwe FTP-, FTPS-, SFTP- en WebDAV-verbindingen.",
       "typeLabel": "Proxytype",
       "hostLabel": "Proxyhost",
       "hostPlaceholder": "proxy.example.com",
@@ -555,25 +557,24 @@
       "testFailed": "De proxytest is mislukt."
     },
     "concurrencyLabel": "Gelijktijdige overdrachten",
-    "concurrencyHint": "Hoeveel bestanden er in alle tabbladen tegelijk worden geüpload en gedownload (0 of leeg — geen limiet). Geldt direct; lopende overdrachten worden normaal afgerond.",
+    "concurrencyHint": "Totaal over alle tabbladen. Gebruik 0 voor geen limiet.",
     "speedLimitLabel": "Snelheidslimiet, KB/s",
-    "speedLimitHint": "Geldt voor het totaal van alle gelijktijdige overdrachten (0 of leeg — geen limiet). Geldt direct, zonder te wachten op de volgende verbinding.",
+    "speedLimitHint": "Totaal voor alle actieve overdrachten. Gebruik 0 voor geen limiet.",
     "notifyOnComplete": "Melden wanneer overdrachten klaar zijn",
     "notifyOnCompleteHint": "Systeemmeldingen bij overdrachtsfouten en voltooiing van de wachtrij — alleen als het venster niet actief is.",
     "overwriteActionLabel": "Bij naamconflict",
     "overwriteAsk": "Vragen",
     "overwriteOverwrite": "Overschrijven",
     "overwriteSkip": "Overslaan",
-    "overwriteHint": "Wat er moet gebeuren als het gekopieerde bestand al in de doelmap staat.",
     "preventSleep": "Slaapstand voorkomen tijdens overdrachten",
-    "preventSleepHint": "Treedt onmiddellijk in werking, zonder te wachten op de volgende verbinding. Blijft actief zolang er ten minste één overdracht gaande is — blokkeert de slaapstand anders niet.",
     "themeLabel": "Thema",
     "themeDark": "Donker",
     "themeLight": "Licht",
     "themeSystem": "Systeem",
     "languageLabel": "Taal van de gebruikersinterface",
     "interfaceScaleLabel": "Schaal van de interface",
-    "interfaceScaleHint": "Wijzigt de grootte van tekst en bedieningselementen in de hele app.",
+    "fileListScaleLabel": "Grootte van bestandenlijst",
+    "terminalFontSizeLabel": "Tekengrootte terminal",
     "dateFormatLabel": "Datum-/tijdnotatie",
     "dateFormatOnlyLabel": "Datumnotatie",
     "timeFormatLabel": "Tijdnotatie",
@@ -582,7 +583,7 @@
     "dateFormatLocale": "Regionaal",
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "Standaardmap voor \"Computer\"",
-    "defaultLocalPathHint": "De map die het paneel \"Computer\" opent bij het opstarten en bij het overschakelen vanaf een server. Laat leeg om je thuismap te gebruiken.",
+    "defaultLocalPathHint": "Opent bij het opstarten en bij het overschakelen vanaf een server. Laat leeg voor je thuismap.",
     "chooseDefaultLocalPath": "Standaardmap kiezen",
     "showHiddenFiles": "Verborgen bestanden en mappen weergeven",
     "showHiddenFilesHint": "Geldt voor lokale panelen en serverpanelen.",
@@ -591,7 +592,7 @@
     "autoCheckUpdates": "Automatisch bijwerken",
     "autoCheckUpdatesHint": "Controleert bij het opstarten en eenmaal per dag op updates en downloadt ze op de achtergrond. Een gedownloade update wordt stil geïnstalleerd wanneer FTPeach de volgende keer start, of meteen via de statusbalk.",
     "autoReconnectTabs": "Herstelde tabbladen bij het opstarten opnieuw verbinden",
-    "autoReconnectTabsHint": "Standaard uitgeschakeld. Indien ingeschakeld, maken herstelde tabbladen van bladwijzers automatisch verbinding.",
+    "autoReconnectTabsHint": "Maakt alleen opnieuw verbinding met tabbladen uit bladwijzers.",
     "saveSessionOnExit": "Sessie opslaan bij afsluiten",
     "saveSessionOnExitHint": "Hiermee worden geopende tabbladen, paneeltypen en paden bij de volgende start hersteld. Als je deze optie uitschakelt, wordt de opgeslagen sessie gewist.",
     "checkNow": "Nu controleren",
@@ -658,8 +659,8 @@
     "passwordTooShort": "Gebruik minstens 12 tekens; een lange zin die je nergens anders gebruikt, is het beste.",
     "passwordMismatch": "De wachtwoorden komen niet overeen.",
     "keysHint": "Bestanden met privésleutels worden niet meegenomen. Kopieer ze apart; op de andere computer moeten de paden misschien worden aangepast.",
-    "unreadable": "De opgeslagen wachtwoorden van deze bladwijzers kunnen op deze computer niet worden geopend:",
-    "exportWithoutThem": "Exporteren zonder hun wachtwoorden"
+    "unreadable": "De opgeslagen wachtwoorden van deze bladwijzers kunnen op deze computer niet worden ontsleuteld:",
+    "exportWithoutThem": "Exporteren zonder deze wachtwoorden"
   },
   "importSettingsDialog": {
     "title": "Instellingen importeren",
@@ -671,16 +672,16 @@
     "filePasswordHint": "Dit bestand bevat opgeslagen wachtwoorden. Voer het wachtwoord in waarmee het bestand is geëxporteerd om ook die te importeren.",
     "includePasswords": "Opgeslagen wachtwoorden importeren",
     "filePassword": "Bestandswachtwoord",
-    "wrongPassword": "Dit wachtwoord opent de wachtwoorden in het bestand niet.",
+    "wrongPassword": "Met dit wachtwoord kunnen de wachtwoorden in het bestand niet worden ontsleuteld.",
     "importAction": "Importeren",
-    "scopeMismatch": "De verbindingsinstellingen van deze bladwijzers zijn na de export gewijzigd, dus hun wachtwoorden zijn niet geïmporteerd:",
-    "unmatched": "Deze bladwijzers zijn meer dan eens opgeslagen voor dezelfde server, dus hun wachtwoorden zijn niet geïmporteerd:"
+    "scopeMismatch": "De verbindingsinstellingen van deze bladwijzers zijn na de export gewijzigd, dus de bijbehorende wachtwoorden zijn niet geïmporteerd:",
+    "unmatched": "Deze bladwijzers zijn meer dan eens opgeslagen voor dezelfde server, dus de bijbehorende wachtwoorden zijn niet geïmporteerd:"
   },
   "openWithDialog": {
     "title": "Openen in toepassing",
     "downloading": "\"{{fileName}}\" wordt gedownload…",
     "progress": "{{loaded}} van {{total}} ({{percent}}%)",
-    "connecting": "Wordt verbonden…"
+    "connecting": "Verbinding maken…"
   },
   "transfers": {
     "notifyErrorTitle": "Overdrachtsfout",
@@ -757,7 +758,7 @@
     "uploadRestartedMismatch": "Wat al op de server staat, komt niet overeen met het lokale bestand — {{path}} wordt opnieuw vanaf het begin verzonden.",
     "uploadRestartedUnverified": "De gepauzeerde upload van {{path}} kon niet worden geverifieerd ({{error}}) — het bestand wordt opnieuw vanaf het begin verzonden.",
     "stagingLeft": "Kan het tijdelijke bestand {{path}} niet van de server verwijderen: {{error}}",
-    "droppedRecords": "Enkele regels van het protocollogboek zijn verloren omdat het wegschrijven het niet bijhield: {{dropped}}"
+    "droppedRecords": "Enkele regels van het protocollogboek zijn verloren gegaan omdat het wegschrijven het niet bijhield: {{dropped}}"
   },
   "storageWarnings": {
     "recovered": "Het bestand \"{{file}}\" was beschadigd of ontbrak, dus FTPeach heeft het hersteld uit de reservekopie.",
@@ -868,9 +869,9 @@
     "sortManual": "Handmatig",
     "sortName": "Op naam",
     "sortProtocol": "Op protocol",
-    "duplicateWarning": "Er bestaat al een bladwijzer voor dezelfde bestemming: \"{{name}}\". Wil je er nog een opslaan?",
+    "duplicateWarning": "Er bestaat al een bladwijzer voor dezelfde bestemming: \"{{name}}\". Nog een opslaan?",
     "saveAnyway": "Toch opslaan",
-    "unsavedChangesMessage": "Wil je de wijzigingen in de bladwijzer opslaan?",
+    "unsavedChangesMessage": "Wijzigingen in deze bladwijzer opslaan?",
     "newFolder": "Nieuwe map",
     "folderNamePlaceholder": "Naam van de map",
     "confirmDeleteFolder": "De map \"{{name}}\" verwijderen? De bladwijzers daarin worden dan één niveau hoger geplaatst.",
@@ -895,7 +896,7 @@
       "arabic": "Arabisch",
       "baltic": "Baltisch",
       "vietnamese": "Vietnamees",
-      "thai": "Thai",
+      "thai": "Thais",
       "japanese": "Japans",
       "simplifiedChinese": "Chinees (vereenvoudigd)",
       "traditionalChinese": "Chinees (traditioneel)",
@@ -929,7 +930,7 @@
       "chooseCaCertFile": "CA-certificaat kiezen…"
     },
     "secureToggle": {
-      "tooltip": "Schakel dit vinkje uit om zelfondertekende en ongeldige servercertificaten te accepteren",
+      "tooltip": "Vink dit uit om zelfondertekende en ongeldige servercertificaten te accepteren",
       "label": "Certificaat controleren"
     },
     "cleartextToggle": {
@@ -995,7 +996,7 @@
       "paused": "Gepauzeerd",
       "connected": "Verbonden",
       "connecting": "Verbinding maken",
-      "connectFailed": "Er kon geen verbinding worden gemaakt",
+      "connectFailed": "Verbinding mislukt",
       "disconnected": "Geen verbinding"
     },
     "exported": "Geëxporteerd: {{parts}}",

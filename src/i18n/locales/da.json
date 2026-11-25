@@ -33,10 +33,10 @@
     "typeToConfirm": "Skriv {{phrase}} for at bekræfte",
     "operations": {
       "revealSiteSecret": {
-        "message": "Vis den gemte adgangskode til dette bogmærke?"
+        "message": "Vil du vise den gemte adgangskode til dette bogmærke?"
       },
       "revealProxyPassword": {
-        "message": "Vis den gemte proxyadgangskode?"
+        "message": "Vil du vise den gemte proxyadgangskode?"
       },
       "vaultReset": {
         "message": "Alle gemte adgangskoder og adgangssætninger til SSH-nøgler slettes permanent.",
@@ -47,13 +47,13 @@
         "approve": "Start forfra"
       },
       "executeLocalFile": {
-        "message": "Kør denne eksekverbare fil eller dette script?"
+        "message": "Vil du køre denne eksekverbare fil eller dette script?"
       },
       "executeRemoteFile": {
-        "message": "Download og kør denne eksekverbare fil eller dette script?"
+        "message": "Vil du downloade og køre denne eksekverbare fil eller dette script?"
       },
       "openWithApplication": {
-        "message": "Åbn denne fil med et program, der ikke har været brugt med FTPeach før?",
+        "message": "Vil du åbne denne fil med et program, der ikke har været brugt med FTPeach før?",
         "approve": "Åbn"
       },
       "weakenSecuritySettings": {
@@ -61,13 +61,13 @@
         "approve": "Anvend"
       },
       "useSystemProtection": {
-        "message": "Slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af din Windows-konto i stedet for hovedadgangskoden.",
-        "message_macos": "Slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af macOS-nøgleringen i stedet for hovedadgangskoden.",
-        "message_linux": "Slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af Secret Service i stedet for hovedadgangskoden.",
+        "message": "Vil du slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af din Windows-konto i stedet for hovedadgangskoden.",
+        "message_macos": "Vil du slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af macOS-nøgleringen i stedet for hovedadgangskoden.",
+        "message_linux": "Vil du slå udvidet beskyttelse fra? Gemte adgangskoder beskyttes derefter af Secret Service i stedet for hovedadgangskoden.",
         "approve": "Slå fra"
       },
       "transferSecret": {
-        "message": "Behold den gemte adgangskode og send den til den nye server?",
+        "message": "Vil du beholde den gemte adgangskode og sende den til den nye server?",
         "approve": "Behold adgangskode"
       },
       "trustHostKeyFirst": {
@@ -79,7 +79,7 @@
         "approve": "Stol på den nye nøgle"
       },
       "exportSecrets": {
-        "message": "Eksportér de gemte adgangskoder til dine bogmærker til en fil?",
+        "message": "Vil du eksportere de gemte adgangskoder til dine bogmærker til en fil?",
         "approve": "Eksportér"
       }
     },
@@ -108,7 +108,7 @@
     "revealLocation": {
       "windows": "Vis i Stifinder",
       "macos": "Vis i Finder",
-      "linux": "Åbn den indeholdende mappe"
+      "linux": "Åbn indeholdende mappe"
     },
     "uploadToOtherPane": "Upload til den anden rude",
     "copyToOtherPane": "Kopiér til den anden rude",
@@ -129,8 +129,8 @@
     }
   },
   "chmodDialog": {
-    "title": "SFTP-rettigheder",
-    "label": "Oktalformat til »{{name}}« (f.eks. 644 eller 0755)",
+    "title": "SFTP-tilladelser",
+    "label": "Oktalformat for »{{name}}« (f.eks. 644 eller 0755)",
     "invalid": "Indtast tre eller fire cifre fra 0 til 7, f.eks. 644 eller 0755."
   },
   "filePane": {
@@ -161,8 +161,8 @@
     "editPathAriaLabel": "Rediger sti",
     "changeDriveTooltip": "Skift drev",
     "chooseColumnsTooltip": "Højreklik for at vælge kolonner",
-    "sortByNameTooltip": "Sorter efter navn",
-    "sortByColumnTooltip": "Sorter efter kolonnen »{{column}}«",
+    "sortByNameTooltip": "Sortér efter navn",
+    "sortByColumnTooltip": "Sortér efter kolonnen »{{column}}«",
     "rowProbeSample": "Eksempel",
     "loading": "Indlæser…",
     "nothingFound": "Intet fundet"
@@ -190,7 +190,7 @@
     "message": "Adgangskoden eller adgangssætningen kunne ikke krypteres og blev ikke gemt. En eksisterende forbindelse kan fortsætte, indtil den afbrydes; ellers skal du indtaste adgangskoden igen næste gang. Opret en hovedadgangskode under Indstillinger > Sikkerhed for at gemme adgangskoder."
   },
   "resize": {
-    "paneSize": "Træk for at ændre størrelsen på ruder (dobbeltklik for at nulstille)",
+    "paneSize": "Træk for at ændre størrelsen på ruderne (dobbeltklik for at nulstille)",
     "height": "Træk for at ændre højden (dobbeltklik for at nulstille)",
     "ratio": "Træk for at ændre fordelingen (dobbeltklik for at nulstille)"
   },
@@ -240,7 +240,7 @@
     "labelMultiple": "Flyt de valgte elementer ({{count}}) til mappen:"
   },
   "confirm": {
-    "resetLayout": "Nulstil vindues- og rudestørrelser, gendan standardkolonnerne og ryd brugergrænsefladens cache?",
+    "resetLayout": "Vil du nulstille vindues- og rudestørrelser, gendanne standardkolonnerne og rydde brugergrænsefladens cache?",
     "closeTabWithActiveTransfers": "Der er aktive overførsler i denne fane. Vil du lukke fanen og stoppe dem?",
     "closeTabLabel": "Luk fane",
     "overwriteSingleExists": "»{{name}}« findes allerede i målmappen. Skal den overskrives?",
@@ -311,6 +311,9 @@
       "transferQueue": "Overførselskø",
       "log": "Log",
       "stackedPanes": "Ruder over hinanden",
+      "zoomIn": "Zoom ind",
+      "zoomOut": "Zoom ud",
+      "resetZoom": "Nulstil zoom",
       "refreshBothPanes": "Opdater begge ruder"
     },
     "transfer": {
@@ -396,7 +399,7 @@
   "settings": {
     "openWithAssociations": {
       "title": "Tilknytninger",
-      "hint": "Vælg et program til en filtype. Filer uden en regel åbnes med systemets standardprogram.",
+      "hint": "Filer uden en tilknytning åbnes i systemets standardprogram.",
       "extension": "Filtype",
       "extensionPlaceholder": "txt",
       "application": "Program",
@@ -406,11 +409,9 @@
       "add": "Tilføj tilknytning"
     },
     "minimizeToTray": "Minimer til systemfeltet",
-    "minimizeToTrayHint": "Minimeringsknappen skjuler vinduet i systemfeltet i stedet for på proceslinjen.",
     "closeToTray": "Minimer til systemfeltet ved lukning",
-    "closeToTrayHint": "Luk-knappen skjuler vinduet i systemfeltet i stedet for at afslutte appen. Afslut via menuen på ikonet i systemfeltet.",
     "showMenuBarIcon": "Vis ikon på menulinjen",
-    "showMenuBarIconHint": "Behold FTPeach-ikonet på menulinjen for hurtig adgang til overførsler og seneste forbindelser.",
+    "showMenuBarIconHint": "Styr overførsler, og åbn seneste forbindelser fra menulinjen.",
     "title": "Indstillinger",
     "unsavedChangesTitle": "Ugemte ændringer",
     "unsavedChangesMessage": "Vil du gemme ændringerne i indstillingerne?",
@@ -426,7 +427,7 @@
     },
     "shortcuts": {
       "title": "Tastaturgenveje",
-      "hint": "Klik på en genvej, og tryk derefter på en ny tastkombination for at ændre den.",
+      "hint": "Klik på en genvej, og tryk derefter på en ny tastekombination for at ændre den.",
       "globalTitle": "Globalt",
       "paneTitle": "Filrude",
       "recording": "Tryk på taster…",
@@ -447,6 +448,9 @@
         "nextTab": "Næste fane",
         "prevTab": "Forrige fane",
         "refresh": "Opdater",
+        "zoomIn": "Zoom ind",
+        "zoomOut": "Zoom ud",
+        "zoomReset": "Nulstil zoom",
         "selectAll": "Vælg alt",
         "delete": "Slet",
         "deletePermanent": "Slet permanent",
@@ -475,8 +479,6 @@
       "strongholdMode": "Udvidet beskyttelse",
       "strongholdModeHint": "Kræver en hovedadgangskode. For at se en gemt adgangskode skal du indtaste hovedadgangskoden igen.",
       "loading": "Kontrollerer boksen…",
-      "configuredLocked": "Boksen er sikret med en hovedadgangskode og låst.",
-      "configuredUnlocked": "Boksen er sikret med en hovedadgangskode og låst op.",
       "masterPassword": "Hovedadgangskode",
       "confirmPassword": "Bekræft hovedadgangskoden",
       "oldPassword": "Nuværende hovedadgangskode",
@@ -496,11 +498,11 @@
       "autoLockHint_linux": "Låser boksen efter en periode med inaktivitet, og også når din session låses, eller FTPeach-vinduet skjules. 0 slår timeren fra. Åbne forbindelser forbliver aktive.",
       "lockScope": "Låsning afbryder ikke åbne forbindelser, heller ikke nye overførsler, de starter. Når du gemmer eller viser en adgangskode, skal du låse op igen.",
       "strictHostKey": "Bekræft ny SSH-servernøgle",
-      "strictHostKeyHint": "Spørger, før en SSH-servers nøgle godkendes første gang, og viser dens fingeraftryk. Uden dette godkendes den første nøgle, en server tilbyder, uden varsel.",
+      "strictHostKeyHint": "Viser nøglens fingeraftryk ved første forbindelse. Når funktionen er slået fra, godkender FTPeach den første nøgle uden at spørge.",
       "changePassword": "Skift hovedadgangskode",
       "change": "Skift adgangskode",
-      "systemUnlock": "Tillad oplåsning via systemet",
-      "systemUnlockLockedHint": "Lås boksen op for at slå oplåsning via systemet til.",
+      "systemUnlock": "Tillad systemoplåsning",
+      "systemUnlockLockedHint": "Lås boksen op for at slå systemoplåsning til.",
       "systemUnlockEnabling": "Windows opretter en Windows Hello-nøgle til FTPeach. Det kan tage op til et minut.",
       "systemUnlockEnabling_macos": "Konfigurerer oplåsning med Touch ID eller din Mac-adgangskode til FTPeach.",
       "systemUnlockEnabling_linux": "Systemoplåsning er ikke tilgængelig på Linux.",
@@ -508,7 +510,7 @@
       "systemUnlockHint_macos": "Bruger Touch ID eller din Mac-adgangskode. Din hovedadgangskode forbliver din gendannelsesmetode.",
       "systemUnlockHint_linux": "Systemoplåsning er ikke tilgængelig på Linux. Brug din hovedadgangskode.",
       "unlockWithSystem": "Lås op med systemgodkendelse",
-      "systemUnavailable": "Oplåsning via systemet er ikke tilgængelig på denne platform.",
+      "systemUnavailable": "Systemoplåsning er ikke tilgængelig på denne platform.",
       "noRecovery": "En glemt hovedadgangskode kan ikke gendannes. Hvis du nulstiller boksen, slettes alle gemte adgangskoder og adgangssætninger.",
       "passwordMismatch": "Adgangskoderne stemmer ikke overens.",
       "passwordTooShort": "Hovedadgangskoden skal bestå af mindst 12 tegn.",
@@ -520,7 +522,7 @@
       "reset": "Nulstil boksen",
       "damaged": "Boksen er beskadiget: en af dens to filer mangler, så de adgangskoder, der er gemt i den, kan ikke åbnes. Start forfra for at konfigurere beskyttelsen igen.",
       "startOver": "Start forfra",
-      "resetHint": "Sletter boksen samt alle adgangskoder og adgangssætninger til SSH-nøgler, der er gemt i den. Den udvidede beskyttelse skal konfigureres på ny.",
+      "resetHint": "Sletter boksen sammen med alle gemte adgangskoder og adgangssætninger til SSH-nøgler.",
       "resetWarning": "Dette sletter alle gemte adgangskoder og adgangssætninger til nøgler permanent. Indtast den aktuelle hovedadgangskode for at fortsætte.",
       "confirmReset": "Slet gemte adgangskoder",
       "showConfirmations": "Vis sikkerhedsbekræftelser",
@@ -531,15 +533,15 @@
     },
     "unlimitedPlaceholder": "Ingen begrænsning",
     "connectTimeoutLabel": "Tidsgrænse for forbindelse, s",
-    "connectTimeoutHint": "Hvor længe der skal ventes på et svar fra serveren ved oprettelse af forbindelse, før den betragtes som utilgængelig (0 eller tomt felt – ingen begrænsning, ellers mindst 5). En server, der er slukket, afviser med det samme uden at vente. Gælder for den næste forbindelse.",
+    "connectTimeoutHint": "Brug 0 for ingen begrænsning, eller mindst 5 sekunder. Gælder for nye forbindelser.",
     "ftpActiveMode": "Aktiv FTP-tilstand (i stedet for passiv)",
-    "ftpActiveModeHint": "Gælder kun FTP/FTPS – har ingen indflydelse på SFTP/WebDAV. Er sjældent nødvendigt, kun på netværk/servere, hvor passiv tilstand ikke kommer igennem NAT. Gælder for den næste forbindelse.",
-    "ftpActiveModeDisabledByProxy": "Kan ikke bruges, når en proxy er aktiveret – en proxytunnel understøtter kun udgående forbindelser, så FTP skal forblive i passiv tilstand.",
+    "ftpActiveModeHint": "Kun FTP og FTPS, til netværk, hvor passiv tilstand ikke kan komme igennem NAT. Gælder for nye forbindelser.",
+    "ftpActiveModeDisabledByProxy": "Deaktiveret, mens en proxy er slået til, fordi FTP skal forblive i passiv tilstand.",
     "proxy": {
       "enable": "Brug en proxy til forbindelser",
-      "enableHint": "SOCKS4, SOCKS5 eller HTTP CONNECT – gælder for FTP, FTPS, SFTP og WebDAV. Gælder for den næste forbindelse.",
+      "enableHint": "Bruges til nye FTP-, FTPS-, SFTP- og WebDAV-forbindelser.",
       "typeLabel": "Proxytype",
-      "hostLabel": "Proxyhost",
+      "hostLabel": "Proxyvært",
       "hostPlaceholder": "proxy.example.com",
       "portLabel": "Port",
       "usernameLabel": "Brugernavn",
@@ -555,25 +557,24 @@
       "testFailed": "Proxytesten mislykkedes."
     },
     "concurrencyLabel": "Samtidige overførsler",
-    "concurrencyHint": "Hvor mange filer der uploades og downloades samtidigt på tværs af alle faner (0 eller tomt felt – ingen begrænsning). Gælder med det samme; igangværende overførsler afsluttes normalt.",
+    "concurrencyHint": "I alt på tværs af alle faner. Brug 0 for ingen begrænsning.",
     "speedLimitLabel": "Hastighedsbegrænsning, KB/s",
-    "speedLimitHint": "Gælder for summen af alle samtidige overførsler (0 eller tomt felt – ingen begrænsning). Træder i kraft med det samme, uden at vente på den næste forbindelse.",
+    "speedLimitHint": "I alt for alle aktive overførsler. Brug 0 for ingen begrænsning.",
     "notifyOnComplete": "Giv besked, når overførslerne er afsluttet",
     "notifyOnCompleteHint": "Systemmeddelelser om overførselsfejl og afsluttet kø – kun når vinduet ikke har fokus.",
     "overwriteActionLabel": "Ved navnekonflikt",
     "overwriteAsk": "Spørg",
     "overwriteOverwrite": "Overskriv",
     "overwriteSkip": "Spring over",
-    "overwriteHint": "Hvad der skal ske, hvis filen, der kopieres, allerede findes i målmappen.",
     "preventSleep": "Forhindr, at systemet går i dvale under overførsler",
-    "preventSleepHint": "Træder i kraft med det samme, uden at vente på den næste forbindelse. Er aktiv, så længe der er mindst én igangværende overførsel – ellers blokerer den ikke dvaletilstanden.",
     "themeLabel": "Tema",
     "themeDark": "Mørkt",
     "themeLight": "Lyst",
     "themeSystem": "System",
     "languageLabel": "Grænsefladesprog",
     "interfaceScaleLabel": "Grænsefladeskala",
-    "interfaceScaleHint": "Ændrer størrelsen på tekst og betjeningselementer i hele programmet.",
+    "fileListScaleLabel": "Størrelse på filliste",
+    "terminalFontSizeLabel": "Skriftstørrelse i terminal",
     "dateFormatLabel": "Dato-/tidsformat",
     "dateFormatOnlyLabel": "Datoformat",
     "timeFormatLabel": "Tidsformat",
@@ -582,7 +583,7 @@
     "dateFormatLocale": "Regionalt",
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "Standardmappe for »Computer«",
-    "defaultLocalPathHint": "Mappen, som ruden »Computer« åbner ved opstart, og når du skifter fra en server. Lad stå tomt for at bruge din hjemmemappe.",
+    "defaultLocalPathHint": "Åbner ved opstart, og når du skifter fra en server. Lad feltet stå tomt for din hjemmemappe.",
     "chooseDefaultLocalPath": "Vælg standardmappe",
     "showHiddenFiles": "Vis skjulte filer og mapper",
     "showHiddenFilesHint": "Gælder både lokale ruder og serverruder.",
@@ -591,7 +592,7 @@
     "autoCheckUpdates": "Opdater automatisk",
     "autoCheckUpdatesHint": "Søger efter opdateringer ved opstart og én gang dagligt og henter dem i baggrunden. En hentet opdatering installeres lydløst, næste gang FTPeach starter, eller med det samme fra statuslinjen.",
     "autoReconnectTabs": "Genopret forbindelse for gendannede faner ved opstart",
-    "autoReconnectTabsHint": "Slået fra som standard. Når funktionen er slået til, forbindes gendannede faner fra bogmærker automatisk.",
+    "autoReconnectTabsHint": "Opretter kun forbindelse igen til faner fra bogmærker.",
     "saveSessionOnExit": "Gem sessionen ved afslutning",
     "saveSessionOnExitHint": "Gendanner åbne faner, rudetyper og stier ved næste opstart. Hvis du slår dette fra, slettes den gemte session.",
     "checkNow": "Tjek nu",
@@ -695,7 +696,7 @@
     "moveSourceNotRemoved": "Alt blev kopieret, men originalen »{{name}}« kunne ikke fjernes. {{reason}} Den og de originaler, der endnu ikke er fjernet, er stadig på plads."
   },
   "transferQueue": {
-    "capacity": "Køen er fuld (op til {{limit}} aktive eller ventende opgaver). Vent på afslutning.",
+    "capacity": "Køen er fuld (op til {{limit}} aktive eller ventende opgaver). Vent på, at opgaver afsluttes.",
     "title": "Overførsler",
     "columns": {
       "file": "Fil",
@@ -793,7 +794,7 @@
     "sourceCode": "Kildekode",
     "reportIssue": "Rapportér et problem",
     "checkForUpdates": "Se efter opdateringer",
-    "updateDownloaded": "Opdatering v{{version}} er blevet downloadet – du kan installere den nu."
+    "updateDownloaded": "Opdatering v{{version}} er hentet – du kan installere den nu."
   },
   "siteManager": {
     "emptyList": "Der er endnu ingen bogmærker",
@@ -910,7 +911,7 @@
       "limited": "Begræns til…",
       "count": "Forbindelsesgrænse"
     },
-    "maxConnectionsChanged": "Træder i kraft efter genforbindelse.",
+    "maxConnectionsChanged": "Træder i kraft, når du opretter forbindelse igen.",
     "footerFolders": "Mapper: {{count}}",
     "footerSites": "Bogmærker: {{count}}",
     "footerPaths": "Stier: {{count}}",
@@ -1020,7 +1021,7 @@
     "toggleLog": "Vis/skjul log",
     "orientationNarrow": "Ruderne er stablet oven på hinanden – vinduet er for smalt til at vise dem side om side",
     "orientationToRow": "Placer ruder side om side",
-    "orientationToStacked": "Stak ruder oven på hinanden",
+    "orientationToStacked": "Stabl ruder oven på hinanden",
     "pauseUnsupportedWebdav": "Pause understøttes ikke af WebDAV",
     "pauseActive": "Sæt aktive overførsler på pause",
     "resumeAllPaused": "Genoptag alle overførsler på pause",
@@ -1047,7 +1048,7 @@
     "copySshFingerprint": "Kopiér SSH-fingeraftryk"
   },
   "paneConnectEmptyState": {
-    "noSavedConnectionsTitle": "Ingen nylige forbindelser",
+    "noSavedConnectionsTitle": "Ingen seneste forbindelser",
     "noSavedConnectionsBody": "Indtast serveradressen ovenfor, eller tilføj et bogmærke for at oprette forbindelse med et enkelt klik.",
     "manageBookmarksCta": "{{label}}",
     "manageBookmarksLink": "Administrer bogmærker",
@@ -1075,7 +1076,7 @@
     "sftpOnlyTooltip": "SSH-terminal er kun tilgængelig for SFTP-forbindelser",
     "collapse": "Fold terminal sammen",
     "expand": "Udvid terminal",
-    "maximize": "Maksimér terminal",
+    "maximize": "Maksimer terminal",
     "restore": "Gendan terminalstørrelse",
     "moveToPaneLeft": "Flyt terminal til venstre rude",
     "moveToPaneRight": "Flyt terminal til højre rude",

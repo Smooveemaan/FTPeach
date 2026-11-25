@@ -67,7 +67,7 @@
         "approve": "Vypnout"
       },
       "transferSecret": {
-        "message": "Zachovat uložené heslo a posílat je na nový server?",
+        "message": "Zachovat uložené heslo a posílat ho na nový server?",
         "approve": "Zachovat heslo"
       },
       "trustHostKeyFirst": {
@@ -134,7 +134,7 @@
   },
   "chmodDialog": {
     "title": "Oprávnění SFTP",
-    "label": "Oktalový režim pro „{{name}}“ (například 644 nebo 0755)",
+    "label": "Oktálový režim pro „{{name}}“ (například 644 nebo 0755)",
     "invalid": "Zadejte tři nebo čtyři číslice od 0 do 7, například 644 nebo 0755."
   },
   "filePane": {
@@ -153,14 +153,14 @@
     "columnCreatedAt": "Datum vytvoření",
     "columnType": "Typ",
     "columnPermissions": "Oprávnění",
-    "columnOwner": "Majitel",
+    "columnOwner": "Vlastník",
     "columnGroup": "Skupina",
     "columnName": "Název",
     "filesAriaLabel": "Soubory",
     "rename": "Přejmenovat",
     "resetColumnWidths": "Obnovit šířky sloupců",
     "updatedAtTooltip": "Aktualizováno: {{date}}",
-    "searchTooltip": "Vyhledávání ({{shortcut}})",
+    "searchTooltip": "Hledat ({{shortcut}})",
     "searchPlaceholder": "Hledat… ({{shortcut}})",
     "editPathAriaLabel": "Upravit cestu",
     "changeDriveTooltip": "Změnit disk",
@@ -183,7 +183,7 @@
     "installTooltip": "Restartovat nyní a nainstalovat. Jinak se aktualizace nainstaluje při příštím spuštění FTPeach."
   },
   "legacyPasswordNotice": {
-    "message": "Hesla k některým uloženým serverům se nepodařilo načíst – zadejte je prosím znovu ve správci záložek."
+    "message": "Hesla k některým uloženým serverům se nepodařilo načíst – zadejte je prosím znovu v okně „Správa záložek“."
   },
   "plaintextSecretNotice": {
     "message": "Heslo nebo přístupovou frázi záložky nebylo možné zašifrovat, protože ochrana dat systému Windows není k dispozici, a byly proto uloženy jako prostý text.",
@@ -211,7 +211,7 @@
   },
   "openWithChanged": {
     "title": "Soubor byl změněn",
-    "message": "V externí aplikaci došlo ke změně souboru „{{name}}“. Chcete nahrát aktualizovaný soubor na server? Když zvolíte „Později“, zeptáme se znovu, až soubor příště uložíte."
+    "message": "V externí aplikaci došlo ke změně souboru „{{name}}“. Chcete nahrát aktualizovaný soubor na server? Když zvolíte „Později“, dotaz se zobrazí znovu, až soubor příště uložíte."
   },
   "recoveredEdits": {
     "title": "Neodeslané úpravy",
@@ -246,7 +246,7 @@
     "labelMultiple": "Přesunout vybrané položky ({{count}}) do složky:"
   },
   "confirm": {
-    "resetLayout": "Obnovit velikost oken a panelů, vrátit výchozí sloupce a vymazat mezipaměť rozhraní?",
+    "resetLayout": "Obnovit velikost okna a panelů, vrátit výchozí sloupce a vymazat mezipaměť rozhraní?",
     "closeTabWithActiveTransfers": "Na této kartě probíhají přenosy. Zavřít kartu a přenosy zastavit?",
     "closeTabLabel": "Zavřít kartu",
     "overwriteSingleExists": "„{{name}}“ již v cílové složce existuje. Chcete položku přepsat?",
@@ -254,9 +254,9 @@
     "createCopyLabel": "Vytvořit kopii",
     "skipLabel": "Přeskočit",
     "applyToAllRemaining": "Použít na všechny zbývající konflikty",
-    "replaceConnection": "Tento panel je již připojen k „{{current}}“. Nahradit připojení za „{{next}}“?",
+    "replaceConnection": "Tento panel je již připojen k „{{current}}“. Nahradit připojení připojením k „{{next}}“?",
     "replaceConnectionLabel": "Nahradit",
-    "newConnectionReplaces": "Tento panel je připojen k „{{current}}“. Odpojit ho a začít nové připojení?",
+    "newConnectionReplaces": "Tento panel je připojen k „{{current}}“. Odpojit ho a navázat nové připojení?",
     "deleteSelected": "Chcete odstranit vybrané položky ({{count}})? Tuto akci nelze vrátit zpět.",
     "deleteEntry": "Odstranit „{{name}}“? Tuto akci nelze vrátit zpět.",
     "recycleSelected": "Chcete přesunout vybrané položky ({{count}}) do koše?",
@@ -317,6 +317,9 @@
       "transferQueue": "Fronta přenosů",
       "log": "Protokol",
       "stackedPanes": "Panely nad sebou",
+      "zoomIn": "Přiblížit",
+      "zoomOut": "Oddálit",
+      "resetZoom": "Resetovat přiblížení",
       "refreshBothPanes": "Obnovit oba panely"
     },
     "transfer": {
@@ -346,7 +349,7 @@
     "networkUnreachable": "Server je nedostupný – zkontrolujte připojení k síti.",
     "loginIncorrect": "Nesprávné uživatelské jméno nebo heslo.",
     "invalidCertificate": "Certifikát serveru je neplatný.",
-    "tlsNegotiationFailed": "Šifrování (TLS) se serverem se nepodařilo navázat.",
+    "tlsNegotiationFailed": "Nepodařilo se navázat šifrované spojení (TLS) se serverem.",
     "sshNegotiationFailed": "Server a FTPeach nemají žádný společný algoritmus SSH.",
     "proxyFailed": "Přes proxy se nepodařilo připojit.",
     "keyReadFailed": "Nepodařilo se přečíst klíč – soubor je poškozený nebo je přístupová fráze nesprávná.",
@@ -364,7 +367,7 @@
     "hostKeyMismatch": "Klíč hostitele serveru se změnil, proto se FTPeach nepřipojil.",
     "integrityMismatch": "Soubor se během přenosu změnil nebo ho nebylo možné ověřit.",
     "cleanupIncomplete": "Některé soubory byly zachovány: FTPeach nedokázal ověřit, že je vytvořil.",
-    "resourceLimit": "Příliš mnoho připojení nebo požadavků, nebo příliš mnoho dat. Zkuste to později.",
+    "resourceLimit": "Příliš mnoho připojení, požadavků nebo dat. Zkuste to znovu později.",
     "internal": "Došlo k neočekávané chybě.",
     "connectFailedPrefix": "Nepodařilo se navázat spojení se serverem. {{raw}}",
     "alreadyExists": "„{{name}}“ již existuje",
@@ -373,7 +376,7 @@
     "replaceInterrupted": "Během nahrazování souboru se přerušilo připojení. Původní verze bude obnovena při příštím připojení.",
     "createUnsupported": "Tento FTP server nepodporuje vytváření nových souborů. Zkuste SFTP nebo WebDAV, pokud je server nabízí.",
     "activeModeFailed": "Server se v aktivním režimu FTP nedokázal připojit k tomuto počítači. Zkuste pasivní režim.",
-    "linkNotFollowed": "Cesta vede přes odkaz (junction nebo symbolický odkaz). Přes odkazy nelze procházet.",
+    "linkNotFollowed": "Cesta vede přes odkaz (junction nebo symbolický odkaz). Odkazy nejsou sledovány.",
     "noRecycleBin": "Toto umístění nemá koš, proto nebylo nic odstraněno.",
     "noRecycleBin_macos": "Toto umístění nemá koš, proto nebylo nic odstraněno.",
     "noRecycleBin_linux": "Toto umístění nemá koš, proto nebylo nic odstraněno.",
@@ -384,7 +387,7 @@
     "storeNotWritable": "Změny v {{path}} se nepodařilo uložit: FTPeach nemá oprávnění zapisovat do této složky.",
     "moveBetweenEndpoints": "Soubory lze přesouvat pouze v rámci tohoto počítače nebo jednoho připojení k serveru. Místo toho je zkopírujte.",
     "vaultUnreadable": "Trezor hesel se nepodařilo přečíst nebo uložit. Vaše hlavní heslo nebylo započítáno jako nesprávné.",
-    "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte je znovu v záložce nebo v nastavení proxy.",
+    "savedSecretUnreadable": "Uložené heslo nelze na tomto počítači přečíst. Zadejte ho znovu v záložce nebo v nastavení proxy.",
     "typeConflict": "Přeskočeno: {{name}}. Soubor a složka se nemohou navzájem nahradit.",
     "invalidFileName": "Windows nepovoluje název „{{name}}“.",
     "invalidFileName_macos": "Název „{{name}}“ zde není povolen.",
@@ -393,7 +396,7 @@
     "webdavRedirect": "Server přesměrovává na jinou adresu: {{address}}",
     "cleartextSignIn": "Server žádá heslo přes nešifrované připojení. Použijte https:// nebo povolte nešifrované přihlášení.",
     "editsRetained": "Neodeslané úpravy zabírají více než 1 GB nebo jsou starší než 30 dní. Nejprve je nahrajte nebo odstraňte.",
-    "resumeExpired": "Tento pozastavený přenos nelze obnovit. Spusťte ho znovu.",
+    "resumeExpired": "V tomto pozastaveném přenosu nelze pokračovat. Spusťte ho znovu.",
     "programUnavailable": "Program nebyl nalezen nebo ho nelze spustit.",
     "secretNotProtected": "Heslo se nepodařilo zašifrovat, proto změna nebyla uložena. Chcete-li ukládat hesla, nastavte hlavní heslo v Nastavení > Zabezpečení.",
     "serverRefused": "Server operaci odmítl: {{reply}}",
@@ -402,7 +405,7 @@
   "settings": {
     "openWithAssociations": {
       "title": "Přiřazení",
-      "hint": "Vyberte aplikaci pro příponu. Soubory bez pravidla se otevřou výchozí aplikací systému.",
+      "hint": "Soubory bez přiřazení se otevřou ve výchozí aplikaci systému.",
       "extension": "Přípona",
       "extensionPlaceholder": "txt",
       "application": "Aplikace",
@@ -412,11 +415,9 @@
       "add": "Přidat přiřazení"
     },
     "minimizeToTray": "Minimalizovat do oznamovací oblasti",
-    "minimizeToTrayHint": "Tlačítko minimalizace skryje okno do oznamovací oblasti místo na hlavní panel.",
     "closeToTray": "Při zavření skrýt do oznamovací oblasti",
-    "closeToTrayHint": "Tlačítko „Zavřít“ skryje okno do oznamovací oblasti, místo aby aplikaci ukončilo. Aplikaci ukončíte z nabídky její ikony v oznamovací oblasti.",
     "showMenuBarIcon": "Zobrazovat ikonu v řádku nabídek",
-    "showMenuBarIconHint": "Ponechat ikonu FTPeach v řádku nabídek pro rychlý přístup k přenosům a nedávným připojením.",
+    "showMenuBarIconHint": "Ovládejte přenosy a otevírejte nedávná připojení z řádku nabídek.",
     "title": "Nastavení",
     "unsavedChangesTitle": "Neuložené změny",
     "unsavedChangesMessage": "Chcete změny v nastavení uložit?",
@@ -428,7 +429,7 @@
       "shortcuts": "Klávesové zkratky",
       "updates": "Aktualizace",
       "logging": "Protokolování",
-      "security": "Bezpečnost"
+      "security": "Zabezpečení"
     },
     "shortcuts": {
       "title": "Klávesové zkratky",
@@ -442,7 +443,7 @@
       "unassign": "Odebrat zkratku",
       "conflict": "Používá se také pro: {{action}}",
       "actions": {
-        "search": "Vyhledávání ({{side}})",
+        "search": "Hledat ({{side}})",
         "toggleHiddenFiles": "Zobrazit/skrýt skryté soubory",
         "newConnection": "Nové připojení",
         "save": "Uložit ({{side}})",
@@ -453,6 +454,9 @@
         "nextTab": "Další karta",
         "prevTab": "Předchozí karta",
         "refresh": "Obnovit",
+        "zoomIn": "Přiblížit",
+        "zoomOut": "Oddálit",
+        "zoomReset": "Resetovat přiblížení",
         "selectAll": "Vybrat vše",
         "delete": "Odstranit",
         "deletePermanent": "Trvale odstranit",
@@ -481,8 +485,6 @@
       "strongholdMode": "Rozšířená ochrana",
       "strongholdModeHint": "Vyžaduje hlavní heslo. Pro zobrazení uloženého hesla je nutné znovu zadat hlavní heslo.",
       "loading": "Kontrola trezoru…",
-      "configuredLocked": "Trezor je zabezpečen hlavním heslem a uzamčen.",
-      "configuredUnlocked": "Trezor je zabezpečen hlavním heslem a odemčen.",
       "masterPassword": "Hlavní heslo",
       "confirmPassword": "Potvrďte hlavní heslo",
       "oldPassword": "Aktuální hlavní heslo",
@@ -502,11 +504,11 @@
       "autoLockHint_linux": "Uzamkne trezor po době nečinnosti a také při uzamčení relace nebo skrytí okna FTPeach. 0 časovač vypne. Otevřená připojení zůstanou aktivní.",
       "lockScope": "Uzamčení nepřeruší otevřená připojení ani nové přenosy, které v nich začnou. Uložení nebo zobrazení hesla bude vyžadovat nové odemknutí.",
       "strictHostKey": "Potvrzovat nový klíč SSH serveru",
-      "strictHostKeyHint": "Před prvním přijetím klíče SSH serveru se zeptá a zobrazí jeho otisk. Bez toho se první klíč, který server nabídne, přijme bez upozornění.",
+      "strictHostKeyHint": "Zobrazí otisk klíče při prvním připojení. Když je vypnuto, FTPeach důvěřuje prvnímu klíči bez dotazu.",
       "changePassword": "Změnit hlavní heslo",
       "change": "Změnit heslo",
-      "systemUnlock": "Povolit odemknutí přes systém",
-      "systemUnlockLockedHint": "Chcete-li zapnout odemknutí přes systém, odemkněte trezor.",
+      "systemUnlock": "Povolit systémové odemknutí",
+      "systemUnlockLockedHint": "Chcete-li zapnout systémové odemknutí, odemkněte trezor.",
       "systemUnlockEnabling": "Windows vytváří pro FTPeach klíč Windows Hello. Může to trvat až minutu.",
       "systemUnlockEnabling_macos": "Nastavuje se odemykání FTPeach pomocí Touch ID nebo hesla k Macu.",
       "systemUnlockEnabling_linux": "Systémové odemknutí není v Linuxu k dispozici.",
@@ -514,8 +516,8 @@
       "systemUnlockHint_macos": "Využívá Touch ID nebo heslo k Macu. Jako způsob obnovení zůstává vaše hlavní heslo.",
       "systemUnlockHint_linux": "Systémové odemknutí není v Linuxu k dispozici. Použijte hlavní heslo.",
       "unlockWithSystem": "Odemknout pomocí systémového ověření",
-      "systemUnavailable": "Odemknutí přes systém není na této platformě k dispozici.",
-      "noRecovery": "Zapomenuté hlavní heslo nelze obnovit. Resetování trezoru vymaže všechna uložená hesla a přístupové fráze.",
+      "systemUnavailable": "Systémové odemknutí není na této platformě k dispozici.",
+      "noRecovery": "Zapomenuté hlavní heslo nelze obnovit. Resetování trezoru odstraní všechna uložená hesla a přístupové fráze.",
       "passwordMismatch": "Hesla se neshodují.",
       "passwordTooShort": "Hlavní heslo musí mít alespoň 12 znaků.",
       "strength": {
@@ -526,7 +528,7 @@
       "reset": "Resetovat trezor",
       "damaged": "Trezor je poškozený: jeden z jeho dvou souborů chybí, takže hesla v něm uložená nelze otevřít. Začněte znovu a ochranu nastavte znovu.",
       "startOver": "Začít znovu",
-      "resetHint": "Vymaže trezor a všechna hesla a přístupové fráze k SSH klíčům, které jsou v něm uloženy. Bude nutné znovu nastavit rozšířenou ochranu.",
+      "resetHint": "Odstraní trezor spolu se všemi uloženými hesly a přístupovými frázemi k SSH klíčům.",
       "resetWarning": "Tím se trvale odstraní všechna uložená hesla a přístupové fráze ke klíčům. Chcete-li pokračovat, zadejte aktuální hlavní heslo.",
       "confirmReset": "Odstranit uložená hesla",
       "showConfirmations": "Zobrazovat bezpečnostní potvrzení",
@@ -537,13 +539,13 @@
     },
     "unlimitedPlaceholder": "Bez omezení",
     "connectTimeoutLabel": "Časový limit připojení, s",
-    "connectTimeoutHint": "Jak dlouho čekat při připojování na odpověď serveru, než bude považován za nedostupný (0 nebo prázdné pole – bez omezení, jinak alespoň 5). Vypnutý server odmítne okamžitě, bez čekání. Platí pro další připojení.",
+    "connectTimeoutHint": "Zadejte 0 pro neomezenou dobu nebo alespoň 5 sekund. Platí pro nová připojení.",
     "ftpActiveMode": "Aktivní režim FTP (namísto pasivního)",
-    "ftpActiveModeHint": "Pouze FTP/FTPS – na SFTP/WebDAV nemá vliv. Potřeba jen zřídka, v sítích nebo na serverech, kde pasivní režim neprojde přes NAT. Platí pro další připojení.",
-    "ftpActiveModeDisabledByProxy": "Není k dispozici, pokud je zapnutý proxy server – proxy tunel podporuje pouze odchozí připojení, proto musí FTP zůstat v pasivním režimu.",
+    "ftpActiveModeHint": "Pouze pro FTP a FTPS, v sítích, kde pasivní režim neprojde přes NAT. Platí pro nová připojení.",
+    "ftpActiveModeDisabledByProxy": "Vypnuto při zapnutém proxy serveru, protože FTP musí zůstat v pasivním režimu.",
     "proxy": {
       "enable": "Připojovat přes proxy server",
-      "enableHint": "SOCKS4, SOCKS5 nebo HTTP CONNECT – platí pro protokoly FTP, FTPS, SFTP a WebDAV. Platí pro další připojení.",
+      "enableHint": "Používá se pro nová připojení FTP, FTPS, SFTP a WebDAV.",
       "typeLabel": "Typ proxy",
       "hostLabel": "Adresa proxy",
       "hostPlaceholder": "proxy.example.com",
@@ -561,25 +563,24 @@
       "testFailed": "Test proxy selhal."
     },
     "concurrencyLabel": "Souběžné přenosy",
-    "concurrencyHint": "Kolik souborů nahrávat a stahovat současně ve všech kartách (0 nebo prázdné pole – bez omezení). Platí okamžitě; probíhající přenosy doběhnou normálně.",
+    "concurrencyHint": "Celkem napříč všemi kartami. 0 znamená bez omezení.",
     "speedLimitLabel": "Omezení rychlosti, KB/s",
-    "speedLimitHint": "Platí pro součet všech souběžných přenosů (0 nebo prázdné pole – bez omezení). Platí okamžitě, bez čekání na další připojení.",
+    "speedLimitHint": "Celkem pro všechny aktivní přenosy. 0 znamená bez omezení.",
     "notifyOnComplete": "Upozornit na dokončení přenosů",
-    "notifyOnCompleteHint": "Systémová upozornění na chyby přenosů a dokončení fronty – pouze pokud okno nemá fokus.",
+    "notifyOnCompleteHint": "Systémová upozornění na chyby přenosů a dokončení fronty – pouze pokud okno není aktivní.",
     "overwriteActionLabel": "Při konfliktu názvů",
     "overwriteAsk": "Zeptat se",
     "overwriteOverwrite": "Přepsat",
     "overwriteSkip": "Přeskočit",
-    "overwriteHint": "Co dělat, když soubor, který se kopíruje, již v cílové složce existuje.",
     "preventSleep": "Zabránit přechodu systému do režimu spánku během přenosů",
-    "preventSleepHint": "Platí okamžitě, bez čekání na další připojení. Funguje, dokud probíhá alespoň jeden přenos – jinak spánek neblokuje.",
     "themeLabel": "Motiv",
     "themeDark": "Tmavý",
     "themeLight": "Světlý",
     "themeSystem": "Systémový",
     "languageLabel": "Jazyk rozhraní",
     "interfaceScaleLabel": "Měřítko rozhraní",
-    "interfaceScaleHint": "Mění velikost textu a ovládacích prvků v celé aplikaci.",
+    "fileListScaleLabel": "Velikost seznamu souborů",
+    "terminalFontSizeLabel": "Velikost písma terminálu",
     "dateFormatLabel": "Formát data a času",
     "dateFormatOnlyLabel": "Formát data",
     "timeFormatLabel": "Formát času",
@@ -588,7 +589,7 @@
     "dateFormatLocale": "Regionální",
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "Výchozí složka panelu „Počítač“",
-    "defaultLocalPathHint": "Složka, kterou panel „Počítač“ otevře při spuštění a při přepnutí ze serveru. Ponechte prázdné, chcete-li použít svou domovskou složku.",
+    "defaultLocalPathHint": "Otevře se při spuštění a při přepnutí ze serveru. Ponechte prázdné, chcete-li použít domovskou složku.",
     "chooseDefaultLocalPath": "Vybrat výchozí složku",
     "showHiddenFiles": "Zobrazovat skryté soubory a složky",
     "showHiddenFilesHint": "Platí pro místní panely i panely serveru.",
@@ -597,7 +598,7 @@
     "autoCheckUpdates": "Aktualizovat automaticky",
     "autoCheckUpdatesHint": "Kontroluje aktualizace při spuštění a jednou denně a stahuje je na pozadí. Stažená aktualizace se tiše nainstaluje při příštím spuštění FTPeach nebo hned ze stavového řádku.",
     "autoReconnectTabs": "Při spuštění znovu připojit obnovené karty",
-    "autoReconnectTabsHint": "Ve výchozím nastavení vypnuto. Je-li zapnuto, obnovené karty ze záložek se připojí automaticky.",
+    "autoReconnectTabsHint": "Znovu připojí pouze karty ze záložek.",
     "saveSessionOnExit": "Ukládat relaci při ukončení",
     "saveSessionOnExitHint": "Při příštím spuštění obnoví otevřené karty, typy panelů a cesty. Vypnutím této funkce dojde k vymazání uložené relace.",
     "checkNow": "Zkontrolovat nyní",
@@ -607,7 +608,7 @@
       "error": "Nepodařilo se zkontrolovat dostupnost aktualizací.",
       "notPackaged": "V této verzi není k dispozici (npm run dev/start)."
     },
-    "logEnable": "Zobrazit panel protokolu",
+    "logEnable": "Zobrazovat panel protokolu",
     "logShowTimestamps": "Zobrazovat časová razítka",
     "logToFile": "Zapisovat protokol do souboru",
     "logToFileHint": "Přidává protokol do denního souboru ve složce protokolů, i když je panel protokolu zavřený. Soubory se uchovávají 14 dní, celkem nejvýše 50 MB.",
@@ -698,7 +699,7 @@
     "notifyDeliveryFailed": "Systémové upozornění se nepodařilo zobrazit.",
     "notifySucceeded_few": "Přeneseny {{count}} soubory",
     "notifySucceeded_many": "Přeneseno {{count}} souboru",
-    "batchFailed": "{{failed}} z {{total}} položek nebylo přeneseno.",
+    "batchFailed": "Nepřeneseno položek: {{failed}} z {{total}}.",
     "sourcesKept": "Originály zůstaly na svém místě.",
     "moveSourceNotRemoved": "Vše bylo zkopírováno, ale originál „{{name}}“ se nepodařilo odstranit. {{reason}} Ten i dosud neodstraněné originály zůstávají na místě."
   },
@@ -760,12 +761,12 @@
     "listFailed": "Výpis složky se nezdařil: {{error}}",
     "tlsInit": "Inicializace TLS...",
     "tlsEstablished": "Bylo navázáno TLS připojení.",
-    "davResumeUnsupportedLocal": "WebDAV nepodporuje obnovení nahrávání – soubor bude odeslán znovu od začátku.",
-    "davResumeUnsupportedServer": "Server nepodporuje obnovení stahování (očekávaný stav {{expected}}, obdržen {{status}}) – soubor se stáhne znovu.",
-    "uploadResumed": "Pokračování v odesílání {{path}} od {{offset}} bajtů.",
-    "uploadRestartedSourceChanged": "Místní soubor už neodpovídá pozastavenému odesílání {{path}} – bude odeslán znovu od začátku.",
+    "davResumeUnsupportedLocal": "WebDAV nepodporuje pokračování v nahrávání – soubor bude odeslán znovu od začátku.",
+    "davResumeUnsupportedServer": "Server nepodporuje pokračování ve stahování (očekávaný stav {{expected}}, obdržen {{status}}) – soubor se stáhne znovu.",
+    "uploadResumed": "Pokračování v nahrávání {{path}} od bajtu {{offset}}.",
+    "uploadRestartedSourceChanged": "Místní soubor už neodpovídá pozastavenému nahrávání {{path}} – bude odeslán znovu od začátku.",
     "uploadRestartedMismatch": "Data, která už jsou na serveru, neodpovídají místnímu souboru – {{path}} bude odeslán znovu od začátku.",
-    "uploadRestartedUnverified": "Pozastavené odesílání {{path}} se nepodařilo ověřit ({{error}}) – soubor bude odeslán znovu od začátku.",
+    "uploadRestartedUnverified": "Pozastavené nahrávání {{path}} se nepodařilo ověřit ({{error}}) – soubor bude odeslán znovu od začátku.",
     "stagingLeft": "Dočasný soubor {{path}} se nepodařilo odstranit ze serveru: {{error}}",
     "receivedEntries_few": "Přijaty {{count}} záznamy",
     "receivedEntries_many": "Přijato {{count}} záznamu",
@@ -945,12 +946,12 @@
       "label": "Ověřovat certifikát"
     },
     "cleartextToggle": {
-      "tooltip": "Adresa http:// posílá heslo nešifrovaně. FTPeach nejprve zkusí https:// a bez tohoto zaškrtnutí se nepřihlásí.",
+      "tooltip": "Adresa http:// posílá heslo nešifrovaně. FTPeach nejprve zkusí https:// a bez této volby se nepřihlásí.",
       "label": "Povolit nešifrované přihlášení"
     },
     "authToggle": {
       "tooltip": "Přihlašovat se souborem soukromého klíče SSH místo hesla",
-      "label": "Přihlášení pomocí klíče SSH"
+      "label": "Přihlašovat se klíčem SSH"
     },
     "rsaKeyWarning": "Soukromé klíče RSA mají známé riziko útoku postranním kanálem založeného na měření času. Pro nové klíče SSH upřednostněte Ed25519.",
     "connectTooltip": {

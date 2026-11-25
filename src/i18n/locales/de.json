@@ -43,7 +43,7 @@
         "approve": "Tresor löschen"
       },
       "vaultStartOver": {
-        "message": "Die im beschädigten Tresor gespeicherten Passwörter lassen sich nicht öffnen. Die verbliebene Datei wird beiseitegelegt, nicht gelöscht. Passwörter in Lesezeichen müssen erneut eingegeben werden.",
+        "message": "Die im beschädigten Tresor gespeicherten Passwörter lassen sich nicht entschlüsseln. Die verbliebene Datei wird beiseitegelegt, nicht gelöscht. Passwörter in Lesezeichen müssen erneut eingegeben werden.",
         "approve": "Neu beginnen"
       },
       "executeLocalFile": {
@@ -71,7 +71,7 @@
         "approve": "Passwort behalten"
       },
       "trustHostKeyFirst": {
-        "message": "Dies ist die erste Verbindung zu diesem Server. Vergleichen Sie den Fingerabdruck unten mit dem, den Ihnen der Administrator des Servers genannt hat, bevor Sie ihm vertrauen.",
+        "message": "Dies ist die erste Verbindung zu diesem Server. Vergleichen Sie den Fingerabdruck unten mit dem, den Ihnen der Administrator des Servers genannt hat, bevor Sie diesem Server vertrauen.",
         "approve": "Diesem Server vertrauen"
       },
       "trustHostKeyChanged": {
@@ -156,8 +156,8 @@
     "rename": "Umbenennen",
     "resetColumnWidths": "Spaltenbreiten wiederherstellen",
     "updatedAtTooltip": "Aktualisiert: {{date}}",
-    "searchTooltip": "Suche ({{shortcut}})",
-    "searchPlaceholder": "Suche… ({{shortcut}})",
+    "searchTooltip": "Suchen ({{shortcut}})",
+    "searchPlaceholder": "Suchen… ({{shortcut}})",
     "editPathAriaLabel": "Pfad bearbeiten",
     "changeDriveTooltip": "Laufwerk wechseln",
     "chooseColumnsTooltip": "Rechtsklick, um Spalten auszuwählen",
@@ -179,15 +179,15 @@
     "installTooltip": "Jetzt neu starten und installieren. Andernfalls wird das Update beim nächsten Start von FTPeach installiert."
   },
   "legacyPasswordNotice": {
-    "message": "Die Passwörter einiger gespeicherter Server konnten nicht gelesen werden – bitte geben Sie sie in der Lesezeichenverwaltung erneut ein."
+    "message": "Die Passwörter einiger gespeicherter Server konnten nicht gelesen werden – bitte geben Sie sie unter „Lesezeichen verwalten“ erneut ein."
   },
   "plaintextSecretNotice": {
-    "message": "Das Passwort oder die Passphrase eines Lesezeichens konnte nicht verschlüsselt werden, weil der Windows-Datenschutz nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert.",
+    "message": "Das Passwort oder die Passphrase eines Lesezeichens konnte nicht verschlüsselt werden, weil die Windows-Datenverschlüsselung nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert.",
     "message_macos": "Das Passwort oder die Passphrase eines Lesezeichens konnte nicht verschlüsselt werden, weil der macOS-Schlüsselbund nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert.",
     "message_linux": "Das Passwort oder die Passphrase eines Lesezeichens konnte nicht verschlüsselt werden, weil Secret Service nicht verfügbar ist, und wurde stattdessen im Klartext gespeichert."
   },
   "secretNotPersistedNotice": {
-    "message": "Das Passwort oder die Schlüssel-Passphrase konnte nicht verschlüsselt werden und wurde nicht gespeichert. Eine bestehende Verbindung bleibt bis zum Trennen bestehen; geben Sie es sonst beim nächsten Mal erneut ein. Um Passwörter zu speichern, richten Sie unter Einstellungen > Sicherheit ein Master-Passwort ein."
+    "message": "Das Passwort oder die Schlüssel-Passphrase konnte nicht verschlüsselt werden und wurde nicht gespeichert. Eine bestehende Verbindung läuft bis zum Trennen weiter; ansonsten geben Sie das Passwort bzw. die Passphrase beim nächsten Mal erneut ein. Um Passwörter zu speichern, richten Sie unter Einstellungen > Sicherheit ein Master-Passwort ein."
   },
   "resize": {
     "paneSize": "Ziehen, um die Größe der Bereiche zu ändern (Doppelklick zum Zurücksetzen)",
@@ -205,7 +205,7 @@
   },
   "openWithChanged": {
     "title": "Datei geändert",
-    "message": "„{{name}}“ wurde in der externen Anwendung geändert. Soll die aktualisierte Datei auf den Server hochgeladen werden? Wenn Sie „Später“ wählen, werden Sie beim nächsten Speichern erneut gefragt."
+    "message": "„{{name}}“ wurde in der externen Anwendung geändert. Die aktualisierte Datei auf den Server hochladen? Wenn Sie „Später“ wählen, werden Sie beim nächsten Speichern erneut gefragt."
   },
   "recoveredEdits": {
     "title": "Nicht hochgeladene Änderungen",
@@ -248,7 +248,7 @@
     "createCopyLabel": "Kopie erstellen",
     "skipLabel": "Überspringen",
     "applyToAllRemaining": "Auf alle verbleibenden Konflikte anwenden",
-    "replaceConnection": "Dieser Bereich ist bereits mit „{{current}}“ verbunden. Möchten Sie die Verbindung durch „{{next}}“ ersetzen?",
+    "replaceConnection": "Dieser Bereich ist bereits mit „{{current}}“ verbunden. Die Verbindung durch „{{next}}“ ersetzen?",
     "replaceConnectionLabel": "Ersetzen",
     "newConnectionReplaces": "Dieser Bereich ist mit „{{current}}“ verbunden. Trennen und eine neue Verbindung beginnen?",
     "deleteSelected": "Die ausgewählten Elemente ({{count}}) löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -311,6 +311,9 @@
       "transferQueue": "Übertragungswarteschlange",
       "log": "Protokoll",
       "stackedPanes": "Bereiche übereinander",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "resetZoom": "Zoom zurücksetzen",
       "refreshBothPanes": "Beide Bereiche aktualisieren"
     },
     "transfer": {
@@ -334,10 +337,10 @@
   },
   "errors": {
     "connectionRefused": "Der Server hat die Verbindung abgelehnt. Überprüfen Sie die Adresse und den Port.",
-    "serverNotFound": "Server nicht gefunden. Bitte überprüfen Sie, ob die Adresse korrekt ist.",
+    "serverNotFound": "Server nicht gefunden. Überprüfen Sie, ob die Adresse korrekt ist.",
     "timeout": "Der Server reagiert nicht. Überprüfen Sie Adresse, Port und Netzwerk.",
     "connectionReset": "Die Verbindung zum Server wurde unerwartet unterbrochen.",
-    "networkUnreachable": "Der Server ist nicht erreichbar – bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "networkUnreachable": "Der Server ist nicht erreichbar – überprüfen Sie Ihre Netzwerkverbindung.",
     "loginIncorrect": "Falscher Benutzername oder falsches Passwort.",
     "invalidCertificate": "Das Zertifikat des Servers ist ungültig.",
     "tlsNegotiationFailed": "Die Verschlüsselung (TLS) mit dem Server konnte nicht eingerichtet werden.",
@@ -346,7 +349,7 @@
     "keyReadFailed": "Der Schlüssel konnte nicht gelesen werden – entweder ist die Datei beschädigt oder die Passphrase ist falsch.",
     "credentialFileMissing": "Die Schlüssel- oder Zertifikatsdatei wurde nicht gefunden: {{path}}",
     "webdavUrlNotAbsolute": "Geben Sie die vollständige WebDAV-Adresse ein, beginnend mit http:// oder https://.",
-    "webdavUrlCredentials": "Entfernen Sie Benutzername und Passwort aus der Adresse und geben Sie sie in die Felder „Benutzername“ und „Passwort“ ein.",
+    "webdavUrlCredentials": "Entfernen Sie Benutzernamen und Passwort aus der Adresse und geben Sie sie in die Felder „Benutzername“ und „Passwort“ ein.",
     "webdavUrlQuery": "Eine WebDAV-Adresse darf weder ? noch # enthalten: Geben Sie nur den Server und den Ordnerpfad ein.",
     "networkPathNotChosen": "FTPeach öffnet einen Netzwerkpfad erst, nachdem Sie ihn in einem Dialog ausgewählt haben, etwa mit „Ordner auswählen…“.",
     "accessDenied": "Sie haben keine Berechtigung für diesen Vorgang.",
@@ -396,7 +399,7 @@
   "settings": {
     "openWithAssociations": {
       "title": "Zuordnungen",
-      "hint": "Wählen Sie eine Anwendung für eine Dateiendung. Dateien ohne Regel werden mit der Standardanwendung des Systems geöffnet.",
+      "hint": "Dateien ohne Zuordnung werden mit der Standardanwendung des Systems geöffnet.",
       "extension": "Dateiendung",
       "extensionPlaceholder": "txt",
       "application": "Anwendung",
@@ -406,11 +409,9 @@
       "add": "Zuordnung hinzufügen"
     },
     "minimizeToTray": "In den Infobereich minimieren",
-    "minimizeToTrayHint": "Die Schaltfläche „Minimieren“ verschiebt das Fenster in den Infobereich statt in die Taskleiste.",
     "closeToTray": "Beim Schließen in den Infobereich minimieren",
-    "closeToTrayHint": "Die Schaltfläche „Schließen“ verschiebt das Fenster in den Infobereich, statt die App zu beenden. Beenden können Sie sie über das Menü des Infobereich-Symbols.",
     "showMenuBarIcon": "Symbol in der Menüleiste anzeigen",
-    "showMenuBarIconHint": "Das FTPeach-Symbol für schnellen Zugriff auf Übertragungen und letzte Verbindungen in der Menüleiste belassen.",
+    "showMenuBarIconHint": "Übertragungen steuern und letzte Verbindungen über die Menüleiste öffnen.",
     "title": "Einstellungen",
     "unsavedChangesTitle": "Nicht gespeicherte Änderungen",
     "unsavedChangesMessage": "Änderungen an den Einstellungen speichern?",
@@ -436,8 +437,8 @@
       "unassign": "Zuweisung aufheben",
       "conflict": "Wird auch verwendet für: {{action}}",
       "actions": {
-        "search": "Suche ({{side}})",
-        "toggleHiddenFiles": "Versteckte Dateien ein- bzw. ausblenden",
+        "search": "Suchen ({{side}})",
+        "toggleHiddenFiles": "Versteckte Dateien ein-/ausblenden",
         "newConnection": "Neue Verbindung",
         "save": "Speichern ({{side}})",
         "openSettings": "Einstellungen öffnen",
@@ -447,6 +448,9 @@
         "nextTab": "Nächster Tab",
         "prevTab": "Vorheriger Tab",
         "refresh": "Aktualisieren",
+        "zoomIn": "Vergrößern",
+        "zoomOut": "Verkleinern",
+        "zoomReset": "Zoom zurücksetzen",
         "selectAll": "Alles auswählen",
         "delete": "Löschen",
         "deletePermanent": "Endgültig löschen",
@@ -475,8 +479,6 @@
       "strongholdMode": "Erweiterter Schutz",
       "strongholdModeHint": "Erfordert ein Master-Passwort. Um ein gespeichertes Passwort anzuzeigen, müssen Sie das Master-Passwort erneut eingeben.",
       "loading": "Tresor wird überprüft…",
-      "configuredLocked": "Der Tresor ist mit einem Master-Passwort gesichert und gesperrt.",
-      "configuredUnlocked": "Der Tresor ist mit einem Master-Passwort gesichert und entsperrt.",
       "masterPassword": "Master-Passwort",
       "confirmPassword": "Master-Passwort bestätigen",
       "oldPassword": "Aktuelles Master-Passwort",
@@ -494,14 +496,14 @@
       "autoLockHint": "Sperrt den Tresor nach einer Zeit der Inaktivität und außerdem, wenn Windows gesperrt oder das FTPeach-Fenster ausgeblendet wird. 0 deaktiviert den Timer. Offene Verbindungen bleiben bestehen.",
       "autoLockHint_macos": "Sperrt den Tresor nach einer Zeit der Inaktivität und außerdem, wenn Ihr Mac gesperrt oder das FTPeach-Fenster ausgeblendet wird. 0 deaktiviert den Timer. Offene Verbindungen bleiben bestehen.",
       "autoLockHint_linux": "Sperrt den Tresor nach einer Zeit der Inaktivität und außerdem, wenn Ihre Sitzung gesperrt oder das FTPeach-Fenster ausgeblendet wird. 0 deaktiviert den Timer. Offene Verbindungen bleiben bestehen.",
-      "lockScope": "Das Sperren trennt keine offenen Verbindungen, auch keine neuen Übertragungen, die darüber starten. Zum Speichern oder Anzeigen eines Passworts müssen Sie erneut entsperren.",
+      "lockScope": "Beim Sperren laufen offene Verbindungen weiter, einschließlich neuer Übertragungen, die darüber starten. Zum Speichern oder Anzeigen eines Passworts müssen Sie den Tresor erneut entsperren.",
       "strictHostKey": "Neuen SSH-Serverschlüssel bestätigen",
-      "strictHostKeyHint": "Fragt nach, bevor dem Schlüssel eines SSH-Servers zum ersten Mal vertraut wird, und zeigt seinen Fingerabdruck. Ohne diese Option wird der erste Schlüssel eines Servers stillschweigend akzeptiert.",
+      "strictHostKeyHint": "Zeigt beim ersten Verbinden den Fingerabdruck des Schlüssels an. Ist diese Option aus, vertraut FTPeach dem ersten Schlüssel ohne Nachfrage.",
       "changePassword": "Master-Passwort ändern",
       "change": "Passwort ändern",
       "systemUnlock": "Systementsperrung zulassen",
       "systemUnlockLockedHint": "Entsperren Sie den Tresor, um die Systementsperrung einzuschalten.",
-      "systemUnlockEnabling": "Windows erstellt einen Windows Hello-Schlüssel für FTPeach. Das kann bis zu einer Minute dauern.",
+      "systemUnlockEnabling": "Windows erstellt einen Windows-Hello-Schlüssel für FTPeach. Das kann bis zu einer Minute dauern.",
       "systemUnlockEnabling_macos": "Die Entsperrung mit Touch ID oder Ihrem Mac-Passwort wird für FTPeach eingerichtet.",
       "systemUnlockEnabling_linux": "Die Systementsperrung ist unter Linux nicht verfügbar.",
       "systemUnlockHint": "Verwendet Windows Hello (PIN, Gesicht oder Fingerabdruck, je nach Windows-Einrichtung). Ihr Master-Passwort bleibt die Wiederherstellungsmethode.",
@@ -513,14 +515,14 @@
       "passwordMismatch": "Die Passwörter stimmen nicht überein.",
       "passwordTooShort": "Das Master-Passwort muss aus mindestens 12 Zeichen bestehen.",
       "strength": {
-        "tooShort": "Zu kurz – bitte mindestens 12 Zeichen verwenden.",
+        "tooShort": "Zu kurz – mindestens 12 Zeichen verwenden.",
         "acceptable": "In Ordnung. Eine längere Passphrase ist sicherer.",
         "strong": "Starkes Master-Passwort."
       },
       "reset": "Tresor zurücksetzen",
-      "damaged": "Der Tresor ist beschädigt: Eine seiner beiden Dateien fehlt, daher lassen sich die darin gespeicherten Passwörter nicht öffnen. Mit „Neu beginnen“ lässt sich der Schutz erneut einrichten.",
+      "damaged": "Der Tresor ist beschädigt: Eine seiner beiden Dateien fehlt, daher lassen sich die darin gespeicherten Passwörter nicht entschlüsseln. Mit „Neu beginnen“ lässt sich der Schutz erneut einrichten.",
       "startOver": "Neu beginnen",
-      "resetHint": "Löscht den Tresor sowie alle darin gespeicherten Passwörter und Passphrasen für SSH-Schlüssel. Der erweiterte Schutz muss erneut eingerichtet werden.",
+      "resetHint": "Löscht den Tresor samt allen gespeicherten Passwörtern und Passphrasen für SSH-Schlüssel.",
       "resetWarning": "Dadurch werden alle gespeicherten Passwörter und Schlüssel-Passphrasen endgültig gelöscht. Geben Sie das aktuelle Master-Passwort ein, um fortzufahren.",
       "confirmReset": "Gespeicherte Passwörter löschen",
       "showConfirmations": "Sicherheitsbestätigungen anzeigen",
@@ -531,13 +533,13 @@
     },
     "unlimitedPlaceholder": "Keine Begrenzung",
     "connectTimeoutLabel": "Verbindungs-Timeout, s",
-    "connectTimeoutHint": "Wie lange beim Verbinden auf eine Antwort des Servers gewartet wird, bevor er als nicht erreichbar gilt (0 oder leer – keine Begrenzung, sonst mindestens 5). Ein ausgeschalteter Server lehnt sofort ab, ohne Wartezeit. Gilt ab der nächsten Verbindung.",
+    "connectTimeoutHint": "0 für keine Begrenzung oder mindestens 5 Sekunden. Gilt für neue Verbindungen.",
     "ftpActiveMode": "Aktiver FTP-Modus (anstelle des passiven)",
-    "ftpActiveModeHint": "Nur FTP/FTPS – keine Auswirkung auf SFTP/WebDAV. Selten nötig, nur in Netzwerken oder bei Servern, bei denen der passive Modus nicht durch NAT kommt. Gilt ab der nächsten Verbindung.",
-    "ftpActiveModeDisabledByProxy": "Nicht verfügbar, solange ein Proxy aktiviert ist – ein Proxy-Tunnel unterstützt nur ausgehende Verbindungen, daher muss FTP im passiven Modus bleiben.",
+    "ftpActiveModeHint": "Nur für FTP und FTPS, in Netzwerken, in denen der passive Modus nicht durch NAT kommt. Gilt für neue Verbindungen.",
+    "ftpActiveModeDisabledByProxy": "Deaktiviert, solange ein Proxy aktiv ist, da FTP im passiven Modus bleiben muss.",
     "proxy": {
       "enable": "Proxy für Verbindungen verwenden",
-      "enableHint": "SOCKS4, SOCKS5 oder HTTP CONNECT – gilt für FTP, FTPS, SFTP und WebDAV. Gilt ab der nächsten Verbindung.",
+      "enableHint": "Wird für neue FTP-, FTPS-, SFTP- und WebDAV-Verbindungen verwendet.",
       "typeLabel": "Proxy-Typ",
       "hostLabel": "Proxy-Host",
       "hostPlaceholder": "proxy.example.com",
@@ -555,25 +557,24 @@
       "testFailed": "Der Proxy-Test ist fehlgeschlagen."
     },
     "concurrencyLabel": "Gleichzeitige Übertragungen",
-    "concurrencyHint": "Wie viele Dateien über alle Tabs hinweg gleichzeitig hoch- und heruntergeladen werden (0 oder leer – keine Begrenzung). Gilt sofort; laufende Übertragungen werden normal beendet.",
+    "concurrencyHint": "Gesamtzahl über alle Tabs. 0 für keine Begrenzung.",
     "speedLimitLabel": "Geschwindigkeitsbegrenzung, KB/s",
-    "speedLimitHint": "Gilt für die Summe aller gleichzeitigen Übertragungen (0 oder leer – keine Begrenzung). Gilt sofort, ohne auf die nächste Verbindung zu warten.",
+    "speedLimitHint": "Gesamtwert für alle aktiven Übertragungen. 0 für keine Begrenzung.",
     "notifyOnComplete": "Benachrichtigen, wenn Übertragungen abgeschlossen sind",
     "notifyOnCompleteHint": "Systembenachrichtigungen bei Übertragungsfehlern und Abschluss der Warteschlange – nur wenn das Fenster nicht fokussiert ist.",
     "overwriteActionLabel": "Bei Namenskonflikt",
     "overwriteAsk": "Fragen",
     "overwriteOverwrite": "Überschreiben",
     "overwriteSkip": "Überspringen",
-    "overwriteHint": "Was geschehen soll, wenn die zu kopierende Datei im Zielordner bereits existiert.",
     "preventSleep": "Ruhezustand während Übertragungen verhindern",
-    "preventSleepHint": "Gilt sofort, ohne auf die nächste Verbindung zu warten. Aktiv, solange mindestens eine Übertragung läuft – verhindert den Ruhezustand sonst nicht.",
     "themeLabel": "Design",
     "themeDark": "Dunkel",
     "themeLight": "Hell",
     "themeSystem": "System",
     "languageLabel": "Sprache der Benutzeroberfläche",
     "interfaceScaleLabel": "Skalierung der Oberfläche",
-    "interfaceScaleHint": "Ändert die Größe von Text und Bedienelementen in der gesamten Anwendung.",
+    "fileListScaleLabel": "Dateilistengröße",
+    "terminalFontSizeLabel": "Schriftgröße im Terminal",
     "dateFormatLabel": "Datums- und Zeitformat",
     "dateFormatOnlyLabel": "Datumsformat",
     "timeFormatLabel": "Zeitformat",
@@ -582,7 +583,7 @@
     "dateFormatLocale": "Regional",
     "dateFormatIso": "ISO 8601",
     "defaultLocalPathLabel": "Standardordner für „Computer“",
-    "defaultLocalPathHint": "Der Ordner, den der Bereich „Computer“ beim Start und beim Wechsel von einem Server öffnet. Leer lassen, um Ihren Benutzerordner zu verwenden.",
+    "defaultLocalPathHint": "Wird beim Start und beim Wechsel von einem Server geöffnet. Leer lassen für Ihren Benutzerordner.",
     "chooseDefaultLocalPath": "Standardordner auswählen",
     "showHiddenFiles": "Versteckte Dateien und Ordner anzeigen",
     "showHiddenFilesHint": "Gilt für lokale Dateibereiche und Serverbereiche.",
@@ -591,7 +592,7 @@
     "autoCheckUpdates": "Automatisch aktualisieren",
     "autoCheckUpdatesHint": "Sucht beim Start und einmal täglich nach Updates und lädt sie im Hintergrund herunter. Ein heruntergeladenes Update wird beim nächsten Start von FTPeach unbemerkt installiert – oder sofort über die Statusleiste.",
     "autoReconnectTabs": "Wiederhergestellte Tabs beim Start verbinden",
-    "autoReconnectTabsHint": "Standardmäßig aus. Wenn aktiviert, werden wiederhergestellte Tabs aus Lesezeichen automatisch verbunden.",
+    "autoReconnectTabsHint": "Stellt die Verbindung nur für Tabs aus Lesezeichen wieder her.",
     "saveSessionOnExit": "Sitzung beim Beenden speichern",
     "saveSessionOnExitHint": "Stellt beim nächsten Start die geöffneten Tabs, Bereichstypen und Pfade wieder her. Wenn Sie die Option deaktivieren, wird die gespeicherte Sitzung gelöscht.",
     "checkNow": "Jetzt prüfen",
@@ -601,10 +602,10 @@
       "error": "Die Suche nach Updates ist fehlgeschlagen.",
       "notPackaged": "In diesem Build nicht verfügbar (npm run dev/start)."
     },
-    "logEnable": "Protokollfenster anzeigen",
+    "logEnable": "Protokollbereich anzeigen",
     "logShowTimestamps": "Zeitstempel anzeigen",
     "logToFile": "Protokoll in Datei schreiben",
-    "logToFileHint": "Hängt das Protokoll an eine Datei pro Tag im Protokollordner an, auch wenn das Protokollfenster geschlossen ist. Die Dateien werden 14 Tage lang aufbewahrt, insgesamt bis zu 50 MB.",
+    "logToFileHint": "Hängt das Protokoll an eine Datei pro Tag im Protokollordner an, auch wenn der Protokollbereich geschlossen ist. Die Dateien werden 14 Tage lang aufbewahrt, insgesamt bis zu 50 MB.",
     "extendedLogging": "Erweitertes Diagnoseprotokoll schreiben",
     "extendedLoggingHint": "Zeichnet den Anwendungsstart, Fensteraktionen und die Schritte beim Beenden im Anwendungsprotokoll auf. Aktivieren Sie diese Option, bevor Sie versuchen, ein Problem nachzustellen.",
     "logFolderLabel": "Protokollordner",
@@ -649,7 +650,7 @@
     "includeSettings": "Anwendungseinstellungen",
     "includeBookmarks": "Lesezeichen",
     "includeLocalPaths": "Lokale Pfade",
-    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Export nicht enthalten – Sie müssen diese nach dem Import auf einem anderen Rechner erneut eingeben.",
+    "passwordHint": "Passwörter und Passphrasen für SSH-Schlüssel sind im Export nicht enthalten – Sie müssen diese nach dem Import auf einem anderen Computer erneut eingeben.",
     "includePasswords": "Gespeicherte Passwörter einschließen",
     "passwordsCount": "Passwörter und Passphrasen für Schlüssel: {{count}}",
     "passwordsWarning": "Die Passwörter werden mit dem Passwort unten verschlüsselt. Adressen, Benutzernamen und die übrigen Einstellungen in der Datei bleiben lesbar. Ein vergessenes Dateipasswort lässt sich nicht wiederherstellen.",
@@ -657,8 +658,8 @@
     "confirmExportPassword": "Passwort bestätigen",
     "passwordTooShort": "Mindestens 12 Zeichen; am besten eine lange Phrase, die Sie nirgendwo sonst verwenden.",
     "passwordMismatch": "Die Passwörter stimmen nicht überein.",
-    "keysHint": "Dateien mit privaten Schlüsseln sind nicht enthalten. Kopieren Sie sie separat; auf dem anderen Rechner müssen ihre Pfade eventuell angepasst werden.",
-    "unreadable": "Die gespeicherten Passwörter dieser Lesezeichen lassen sich auf diesem Rechner nicht öffnen:",
+    "keysHint": "Dateien mit privaten Schlüsseln sind nicht enthalten. Kopieren Sie sie separat; auf dem anderen Computer müssen ihre Pfade eventuell angepasst werden.",
+    "unreadable": "Die gespeicherten Passwörter dieser Lesezeichen lassen sich auf diesem Computer nicht entschlüsseln:",
     "exportWithoutThem": "Ohne deren Passwörter exportieren"
   },
   "importSettingsDialog": {
@@ -668,10 +669,10 @@
     "includeBookmarks": "Lesezeichen",
     "includeLocalPaths": "Lokale Pfade",
     "passwordHint": "Enthält die Datei gespeicherte Passwörter, werden Sie nach dem Passwort gefragt, mit dem sie exportiert wurde.",
-    "filePasswordHint": "Diese Datei enthält gespeicherte Passwörter. Geben Sie das Passwort ein, mit dem die Datei exportiert wurde, um auch sie zu importieren.",
+    "filePasswordHint": "Diese Datei enthält gespeicherte Passwörter. Geben Sie das Passwort ein, mit dem die Datei exportiert wurde, um auch diese zu importieren.",
     "includePasswords": "Gespeicherte Passwörter importieren",
     "filePassword": "Dateipasswort",
-    "wrongPassword": "Dieses Passwort öffnet die Passwörter in der Datei nicht.",
+    "wrongPassword": "Mit diesem Passwort lassen sich die Passwörter in der Datei nicht entschlüsseln.",
     "importAction": "Importieren",
     "scopeMismatch": "Die Verbindungseinstellungen dieser Lesezeichen wurden nach dem Export geändert, daher wurden ihre Passwörter nicht importiert:",
     "unmatched": "Diese Lesezeichen sind mehrfach für denselben Server gespeichert, daher wurden ihre Passwörter nicht importiert:"
@@ -695,7 +696,7 @@
     "moveSourceNotRemoved": "Alles wurde kopiert, aber das Original „{{name}}“ konnte nicht entfernt werden. {{reason}} Es und die noch nicht entfernten Originale sind weiterhin vorhanden."
   },
   "transferQueue": {
-    "capacity": "Die Warteschlange ist voll (bis zu {{limit}} aktive oder wartende Aufgaben). Warten Sie auf den Abschluss.",
+    "capacity": "Die Warteschlange ist voll (bis zu {{limit}} aktive oder wartende Aufgaben). Warten Sie, bis Aufgaben abgeschlossen sind.",
     "title": "Übertragungen",
     "columns": {
       "file": "Datei",
@@ -761,7 +762,7 @@
   },
   "storageWarnings": {
     "recovered": "Die Datei „{{file}}“ war beschädigt oder fehlte, daher hat FTPeach sie aus der Sicherungskopie wiederhergestellt.",
-    "replaced": "Die Datei „{{file}}“ konnte nicht gelesen werden. FTPeach hat eine Kopie davon behalten und ohne ihren Inhalt gestartet; Ihre nächste Änderung speichert eine neue Datei.",
+    "replaced": "Die Datei „{{file}}“ konnte nicht gelesen werden. FTPeach hat eine Kopie davon behalten und ist ohne ihren Inhalt gestartet; Ihre nächste Änderung speichert eine neue Datei.",
     "unreadable": "Die Datei „{{file}}“ konnte nicht gelesen werden, daher können Änderungen daran nicht gespeichert werden.",
     "newer": "Die Datei „{{file}}“ wurde von einer neueren FTPeach-Version gespeichert, daher können Änderungen daran nicht gespeichert werden.",
     "backupNotUpdated": "Die Sicherungskopie der Datei „{{file}}“ konnte nicht aktualisiert werden."
@@ -778,7 +779,7 @@
     "searchPlaceholder": "Protokoll durchsuchen",
     "copyToClipboard": "Protokoll in die Zwischenablage kopieren",
     "saveToFile": "Angezeigte Zeilen in einer .txt-Datei speichern",
-    "clearLog": "Protokoll löschen",
+    "clearLog": "Protokoll leeren",
     "copiedTooltip": "Kopiert",
     "copyFailedTooltip": "Kopieren fehlgeschlagen",
     "saveFailedTooltip": "Die Datei konnte nicht gespeichert werden",
@@ -868,7 +869,7 @@
     "sortManual": "Manuell",
     "sortName": "Nach Namen",
     "sortProtocol": "Nach Protokoll",
-    "duplicateWarning": "Es gibt bereits ein Lesezeichen für dieses Ziel: „{{name}}“. Möchten Sie ein weiteres speichern?",
+    "duplicateWarning": "Es gibt bereits ein Lesezeichen für dieses Ziel: „{{name}}“. Ein weiteres speichern?",
     "saveAnyway": "Trotzdem speichern",
     "unsavedChangesMessage": "Änderungen an diesem Lesezeichen speichern?",
     "newFolder": "Neuer Ordner",
@@ -882,7 +883,7 @@
     "expandFolder": "„{{name}}“ aufklappen",
     "collapseFolder": "„{{name}}“ zuklappen",
     "noFolder": "Kein Ordner",
-    "maxConnectionsHint": "Mindestens 2: Eine Verbindung durchsucht Ordner, die übrigen übertragen Dateien. Jeder Bereich hat sein eigenes Limit.",
+    "maxConnectionsHint": "Mindestens 2: Eine Verbindung navigiert durch Ordner, die übrigen übertragen Dateien. Jeder Bereich hat sein eigenes Limit.",
     "encodingHint": "Nur ändern, wenn Dateinamen auf diesem Server verstümmelt angezeigt werden.",
     "encodings": {
       "utf8": "UTF-8 (Standard)",
@@ -995,7 +996,7 @@
       "paused": "Pausiert",
       "connected": "Verbunden",
       "connecting": "Wird verbunden",
-      "connectFailed": "Verbindung konnte nicht hergestellt werden",
+      "connectFailed": "Verbindung fehlgeschlagen",
       "disconnected": "Nicht verbunden"
     },
     "exported": "Exportiert: {{parts}}",

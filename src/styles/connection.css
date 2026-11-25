@@ -7,14 +7,12 @@
 
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 
   line-height: 1;
-
-  row-gap: 6px;
   /* The bottom padding ends the form level with the other pane's column
      header: 6 + 26 + 6 + 28 + 28 + 1 = 39 titlebar + 28 path + 28 header. */
-  padding: 6px 14px 28px;
+  padding: 6px 12px 28px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-soft);
 }
@@ -32,7 +30,7 @@
 .connection-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 .connection-row > * {
   flex: 0 0 auto;
@@ -186,8 +184,8 @@
 
 
 /* Cancel the label's 8px hit-area padding on both sides so the visible gap
-   is the bar's own 8px gap between neighbours (checkbox after checkbox too)
-   and its 14px padding at the edge, not gap + padding. */
+   is the bar's own 6px gap between neighbours (checkbox after checkbox too)
+   and its 12px padding at the edge, not gap + padding. */
 .connection-bar .secure-toggle {
   margin-inline: -8px;
 }

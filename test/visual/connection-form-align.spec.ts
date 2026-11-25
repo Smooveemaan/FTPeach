@@ -6,9 +6,26 @@ test("a disconnected pane's sign-in form ends level with the other pane's column
   await page.goto('/test/visual/visual.html');
   await page.evaluate(() => document.fonts.ready);
   const right = page.locator('.pane[data-side=b]');
-  await right.getByRole('button', { name: 'Disconnect' }).click();
+  const disconnect = right.getByRole('button', { name: 'Disconnect' });
+  await expect(disconnect).toBeVisible();
+  const gapsOf = (container: ReturnType<typeof right.locator>) =>
+    container.evaluate((el) => {
+      const items = [...el.children].slice(0, 5).map((child) => child.getBoundingClientRect());
+      return items.slice(1).map((rect, index) => Math.round(rect.left - items[index]!.right));
+    });
+  const sourceLeft = () =>
+    right.locator('.pane-source-anchor').evaluate((el) => el.getBoundingClientRect().left);
+  const connectedLeft = await sourceLeft();
+  const connectedGaps = await gapsOf(right.locator('.pane-source-wrap'));
+  expect(connectedGaps).toEqual([6, 6, 6, 6]);
+
+  await disconnect.click();
   const form = right.locator('.connection-bar');
   await expect(form).toBeVisible();
+  expect(await sourceLeft()).toBeCloseTo(connectedLeft, 1);
+  expect(await gapsOf(form.locator('.connection-row:not(.connection-row-credentials)'))).toEqual(
+    connectedGaps,
+  );
   const header = page.locator('.pane[data-side=a] .row-header');
   const bottom = async (box: typeof form) => {
     const rect = (await box.boundingBox())!;

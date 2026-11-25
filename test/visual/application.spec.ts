@@ -421,7 +421,7 @@ test('a narrowed disconnected pane keeps its port field whole', async ({ page })
   const cut = () =>
     pane.locator('.field-port, .field-webdav-url').evaluate((field) => {
       const bar = field.closest('.connection-bar')!.getBoundingClientRect();
-      return field.getBoundingClientRect().right - (bar.right - 14);
+      return field.getBoundingClientRect().right - (bar.right - 12);
     });
   const options = page.locator('.protocol-select-dropdown [role="option"]');
   await pane.locator('.protocol-select-trigger').click();

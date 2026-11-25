@@ -61,3 +61,23 @@ test('the daily check runs only with automatic updates on and nothing transferri
   unmount();
   vi.useRealTimers();
 });
+
+test('store-managed builds never schedule periodic update checks', async () => {
+  vi.useFakeTimers();
+  vi.mocked(api.updater.onStatus).mockImplementation(() =>
+    Object.assign(() => {}, { ready: Promise.resolve(true) }),
+  );
+  vi.mocked(api.updater.status).mockResolvedValue({ state: 'store-managed' });
+  vi.mocked(api.updater.check).mockReset();
+  const day = 24 * 60 * 60 * 1000;
+  const { result, unmount } = renderHook(() => useUpdater(true, false));
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(result.current.status).toEqual({ state: 'store-managed' });
+  await act(async () => vi.advanceTimersByTimeAsync(day * 2));
+  expect(api.updater.check).not.toHaveBeenCalled();
+  unmount();
+  vi.useRealTimers();
+});

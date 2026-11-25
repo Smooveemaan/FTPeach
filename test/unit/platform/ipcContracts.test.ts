@@ -95,6 +95,7 @@ test('validates event contracts before state receives them', () => {
   assert.equal(isUpdaterStatus({ state: 'available' }), false);
   assert.equal(isUpdaterStatus({ state: 'downloading', version: '1.2.3', percent: 50 }), true);
   assert.equal(isUpdaterStatus({ state: 'error', message: 'network failed' }), true);
+  assert.equal(isUpdaterStatus({ state: 'store-managed' }), true);
   assert.equal(isUpdaterStatus({ state: 'downloading', progress: 50 }), false);
   assert.equal(isUpdaterStatus({ state: 'surprise' }), false);
 });

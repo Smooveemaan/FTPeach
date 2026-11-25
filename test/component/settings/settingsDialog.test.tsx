@@ -845,4 +845,13 @@ describe('SettingsDialog unsaved-changes gate', () => {
       uaSpy.mockRestore();
     }
   });
+
+  test('hides the Updates category in store-managed builds', () => {
+    const standard = renderDialog({ updateStatus: null });
+    expect(screen.getByRole('button', { name: 'settings.categories.updates' })).toBeTruthy();
+    standard.unmount();
+
+    renderDialog({ updateStatus: { state: 'store-managed' } });
+    expect(screen.queryByRole('button', { name: 'settings.categories.updates' })).toBeNull();
+  });
 });

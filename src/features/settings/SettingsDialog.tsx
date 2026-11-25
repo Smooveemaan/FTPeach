@@ -48,8 +48,12 @@ export default function SettingsDialog({
   ...draftValues
 }: SettingsDialogProps) {
   const { t } = useTranslation();
-  const CATEGORIES = useMemo(() => buildSettingsCategories(t), [t]);
-  const [category, setCategory] = useState(CATEGORIES[0].key);
+  const hideUpdates = updateStatus?.state === 'store-managed';
+  const CATEGORIES = useMemo(
+    () => buildSettingsCategories(t).filter((item) => !hideUpdates || item.key !== 'updates'),
+    [t, hideUpdates],
+  );
+  const [category, setCategory] = useState(CATEGORIES[0]!.key);
   const panelRef = useRef<HTMLDivElement>(null);
   const focusPanel = () => {
     const panel = panelRef.current;
@@ -214,7 +218,7 @@ export default function SettingsDialog({
               />
             )}
 
-            {category === 'updates' && (
+            {!hideUpdates && category === 'updates' && (
               <UpdatesSettings
                 autoCheckUpdatesValue={draft.autoCheckUpdatesValue}
                 setAutoCheckUpdatesValue={draft.setAutoCheckUpdatesValue}

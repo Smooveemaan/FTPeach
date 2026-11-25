@@ -22,7 +22,6 @@ const DOWNLOAD_DEADLINE: std::time::Duration = std::time::Duration::from_secs(30
 #[path = "updater_unix.rs"]
 mod unix;
 
-#[derive(Default)]
 pub struct UpdaterState {
     /// A check or download is running. A second request does not start
     /// another; its caller learns the outcome from the status events.
@@ -32,6 +31,17 @@ pub struct UpdaterState {
     available: AsyncMutex<Option<Update>>,
     /// The version this session downloaded and staged.
     downloaded: Mutex<Option<String>>,
+}
+
+impl Default for UpdaterState {
+    fn default() -> Self {
+        Self {
+            busy: AtomicBool::new(false),
+            status: Mutex::new(is_store_managed().then_some(UpdaterStatus::StoreManaged)),
+            available: AsyncMutex::new(None),
+            downloaded: Mutex::new(None),
+        }
+    }
 }
 
 impl UpdaterState {
@@ -74,13 +84,21 @@ pub enum UpdaterStatus {
     Error { message: String },
     #[serde(rename = "not-packaged")]
     NotPackaged,
+    #[serde(rename = "store-managed")]
+    StoreManaged,
+}
+
+/// Microsoft Store updates the package itself, so built-in update UI and
+/// checks stay disabled.
+pub fn is_store_managed() -> bool {
+    cfg!(feature = "ms-store")
 }
 
 /// Updates need a packaged build: a development build has no installer to
 /// replace, and a smoke-test instance must not install over the real one.
 pub fn updates_enabled() -> bool {
     !cfg!(debug_assertions)
-        && !cfg!(feature = "ms-store")
+        && !is_store_managed()
         && std::env::var_os("FTPEACH_SMOKE_TEST").is_none()
         && supported_package()
 }
@@ -346,6 +364,9 @@ async fn find_update(app: &AppHandle, state: &UpdaterState) -> anyhow::Result<Op
 }
 
 pub async fn download(app: &AppHandle) -> anyhow::Result<()> {
+    if is_store_managed() {
+        return Ok(());
+    }
     let state = app.state::<UpdaterState>();
     let Some(_busy) = Busy::acquire(&state.busy) else {
         return Ok(());
@@ -425,6 +446,9 @@ async fn download_and_stage(app: &AppHandle, update: &Update) -> anyhow::Result<
 
 /// Installs the downloaded update after the orderly shutdown closing the window does.
 pub async fn install_now(app: &AppHandle) -> anyhow::Result<()> {
+    if is_store_managed() {
+        return Ok(());
+    }
     #[cfg(unix)]
     return unix::install_now(app).await;
     #[cfg(not(unix))]
@@ -534,5 +558,16 @@ mod serde_field_casing {
             value.get("state").and_then(|v| v.as_str()),
             Some("downloading")
         );
+    }
+
+    #[test]
+    fn store_managed_status_serializes_and_matches_feature_default() {
+        let value = serde_json::to_value(UpdaterStatus::StoreManaged).unwrap();
+        assert_eq!(
+            value.get("state").and_then(|v| v.as_str()),
+            Some("store-managed")
+        );
+        let initial = UpdaterState::default().status();
+        assert_eq!(initial.is_some(), is_store_managed());
     }
 }

@@ -11,6 +11,9 @@ pub fn updater_status(state: State<'_, UpdaterState>) -> Option<UpdaterStatus> {
 
 #[tauri::command]
 pub async fn updater_check(app: AppHandle) -> CommandResult<()> {
+    if updater::is_store_managed() {
+        return Ok(());
+    }
     if !updater::updates_enabled() {
         updater::report_unavailable(&app);
         return Err(CommandError::new(
@@ -23,6 +26,9 @@ pub async fn updater_check(app: AppHandle) -> CommandResult<()> {
 
 #[tauri::command]
 pub async fn updater_download(app: AppHandle) -> CommandResult<()> {
+    if updater::is_store_managed() {
+        return Ok(());
+    }
     Ok(updater::download(&app).await?)
 }
 
@@ -30,5 +36,8 @@ pub async fn updater_download(app: AppHandle) -> CommandResult<()> {
 /// there is no verified download to install.
 #[tauri::command]
 pub async fn updater_install(app: AppHandle) -> CommandResult<()> {
+    if updater::is_store_managed() {
+        return Ok(());
+    }
     Ok(updater::install_now(&app).await?)
 }

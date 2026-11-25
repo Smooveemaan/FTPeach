@@ -88,7 +88,8 @@ export interface ApplicationCommandContext {
   /** Quits the application, asking first while transfers run; never hides to the tray. */
   quit: Pick<QuitWhenIdleModel, 'request'>;
   resetLayout: () => unknown;
-  checkForUpdates: () => unknown;
+  /** Omitted in store-managed builds where the platform store handles updates. */
+  checkForUpdates?: (() => unknown) | undefined;
 }
 
 /** The commands a menu entry and a global shortcut both run. */
@@ -464,7 +465,15 @@ export function buildMenus(ctx: ApplicationCommandContext): MenuBarEntry[] {
           onClick: handler(() => api.app.openExternal('https://ftpeach.com/#support')),
         },
         { separator: true },
-        { id: 'check-updates', label: t('menu.help.checkUpdates'), onClick: ctx.checkForUpdates },
+        ...(ctx.checkForUpdates
+          ? [
+              {
+                id: 'check-updates',
+                label: t('menu.help.checkUpdates'),
+                onClick: ctx.checkForUpdates,
+              },
+            ]
+          : []),
         { id: 'about', label: t('menu.help.about'), onClick: () => dialogs.setShowAbout(true) },
       ],
     },

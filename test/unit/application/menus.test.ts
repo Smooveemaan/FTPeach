@@ -288,3 +288,14 @@ test('on macOS, Close Window shares ⌘W contextually with Close Tab and is abse
     else Reflect.deleteProperty(globalThis, 'navigator');
   }
 });
+
+test('Help omits Check for Updates when updates are managed by the store', () => {
+  const h = harness();
+  const help = () =>
+    buildMenus(h.ctx)
+      .at(-1)!
+      .items.find((entry) => entry.id === 'check-updates');
+  assert.ok(help());
+  h.ctx.checkForUpdates = undefined;
+  assert.equal(help(), undefined);
+});

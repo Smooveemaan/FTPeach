@@ -52,13 +52,20 @@ export function useUpdater(
     hasActiveTransfersRef.current = hasActiveTransfers;
   }, [hasActiveTransfers]);
 
+  const storeManagedRef = useRef(status?.state === 'store-managed');
+  useEffect(() => {
+    storeManagedRef.current = status?.state === 'store-managed';
+  }, [status]);
+
   useEffect(() => {
     const periodicTimer = setInterval(() => {
       // Deliberately unhandled: this is a background check the user never
       // asked for, and the updater reports its own outcome through the
       // 'error' status event that drives the update UI. Raising the app's
       // error banner for it would interrupt work over nothing.
-      if (autoCheckRef.current && !hasActiveTransfersRef.current) void checkForUpdates();
+      if (autoCheckRef.current && !hasActiveTransfersRef.current && !storeManagedRef.current) {
+        void checkForUpdates();
+      }
     }, PERIODIC_CHECK_INTERVAL_MS);
     return () => clearInterval(periodicTimer);
   }, [checkForUpdates]);

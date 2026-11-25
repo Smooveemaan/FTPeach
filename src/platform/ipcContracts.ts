@@ -140,7 +140,7 @@ export interface OpenWithProgress {
   total: number;
 }
 export type UpdaterStatus =
-  | { state: 'checking' | 'not-available' | 'not-packaged' }
+  | { state: 'checking' | 'not-available' | 'not-packaged' | 'store-managed' }
   | { state: 'downloading'; version: string; percent?: number }
   | { state: 'available' | 'downloaded'; version: string }
   | { state: 'error'; message: string };
@@ -443,7 +443,8 @@ export function isOpenWithProgress(value: unknown): value is OpenWithProgress {
 
 export function isUpdaterStatus(value: unknown): value is UpdaterStatus {
   if (!isRecord(value) || typeof value.state !== 'string') return false;
-  if (['checking', 'not-available', 'not-packaged'].includes(value.state)) return true;
+  if (['checking', 'not-available', 'not-packaged', 'store-managed'].includes(value.state))
+    return true;
   if (value.state === 'available' || value.state === 'downloaded')
     return typeof value.version === 'string';
   if (value.state === 'downloading') {

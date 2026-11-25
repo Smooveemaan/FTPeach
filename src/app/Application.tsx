@@ -370,7 +370,7 @@ export default function Application() {
     saveSite: handleSaveSite,
     quit: quitWhenIdle,
     resetLayout,
-    checkForUpdates,
+    checkForUpdates: updateStatus?.state === 'store-managed' ? undefined : checkForUpdates,
   });
 
   // What a pane cannot do inside the file browser: the dialogs, transfers and

@@ -414,9 +414,10 @@ assert.ok(
   'MSIX build must not pass the nonexistent custom-protocol feature',
 );
 assert.ok(
-  buildWindowsSection.includes('--features ms-store') &&
-    !buildWindowsSection.includes('--target-dir src-tauri/target/ms-store'),
-  'MSIX build must reuse src-tauri/target with --features ms-store',
+  buildWindowsSection.includes(
+    'npm run tauri -- build --no-bundle --features ms-store -- --locked',
+  ) && !buildWindowsSection.includes('--target-dir src-tauri/target/ms-store'),
+  'MSIX build must use `tauri build --no-bundle --features ms-store` (so tauri/custom-protocol embeds dist/) and reuse src-tauri/target',
 );
 assert.ok(
   packageSection.includes('needs: [build-windows, build-macos, build-linux]'),

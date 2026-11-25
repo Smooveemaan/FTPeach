@@ -20,7 +20,13 @@ import {
   type Candidate,
   type Readiness,
 } from '../../../scripts/release/candidate.ts';
-import { appxManifest, build as buildMsix, msixName } from '../../../scripts/release/msix.ts';
+import {
+  appxManifest,
+  build as buildMsix,
+  WINDOWS_MASTER_ICON,
+  MSIX_ASSETS,
+  msixName,
+} from '../../../scripts/release/msix.ts';
 import {
   findInstalledBinary,
   findInstalledDesktopFile,
@@ -88,29 +94,63 @@ test('version gating separates 0.6.x Windows releases from 0.7.0+ multi-platform
   assert.ok(MULTIPLATFORM_PACKAGES.length > WINDOWS_PACKAGES.length);
 });
 
-test('MSIX builder writes a 4-part full-trust AppxManifest and invokes makeappx pack', async (t) => {
+test('MSIX builder writes a 4-part full-trust AppxManifest, generates assets/PRI, and packs with validation', async (t) => {
   assert.equal(msixName('0.7.0'), 'FTPeach_0.7.0_x64.msix');
   const manifest = appxManifest('0.7.0', 'Smooveemaan.FTPeach', 'CN=Test', 'Test Publisher');
   assert.match(manifest, /Version="0\.7\.0\.0"/);
+  assert.match(manifest, /WebDAV/);
   assert.match(manifest, /EntryPoint="Windows\.FullTrustApplication"/);
   assert.match(manifest, /<rescap:Capability Name="runFullTrust" \/>/);
+
+  assert.equal(WINDOWS_MASTER_ICON, 'src-tauri/icons/128x128@2x.png');
+  const masterPng = readFileSync(WINDOWS_MASTER_ICON);
+  assert.equal(masterPng.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(masterPng.readUInt32BE(16), 256);
+  assert.equal(masterPng.readUInt32BE(20), 256);
+  assert.ok(
+    MSIX_ASSETS.some((asset) => asset.name === 'StoreLogo.scale-100.png' && asset.size === 50),
+  );
+  assert.ok(
+    MSIX_ASSETS.some(
+      (asset) =>
+        asset.name === 'Square44x44Logo.altform-unplated_targetsize-256.png' && asset.size === 256,
+    ),
+  );
 
   const tempDir = await mkdtemp(path.join(tmpdir(), 'msix-test-'));
   t.after(() => rm(tempDir, { recursive: true, force: true }));
   const binPath = path.join(tempDir, 'FTPeach.exe');
   await writeFile(binPath, 'binary');
-  await writeFile(path.join(tempDir, 'NOTICE'), 'notice');
-  let packedArgs: string[] = [];
-  const out = buildMsix(tempDir, '0.7.0', binPath, ((_cmd: string, args: string[]) => {
-    packedArgs = args;
-    const layoutIndex = args.indexOf('/d') + 1;
-    const outIndex = args.indexOf('/p') + 1;
-    const content = readFileSync(path.join(args[layoutIndex]!, 'AppxManifest.xml'));
-    writeFileSync(args[outIndex]!, content);
+  const calls: { cmd: string; args: string[] }[] = [];
+  let hasNotice = false;
+  let hasLicenses = false;
+  let hasUpdateVersion = false;
+  const out = buildMsix(tempDir, '0.7.0', binPath, ((cmd: string, args: string[]) => {
+    calls.push({ cmd, args });
+    if (args[0] === 'pack') {
+      const layoutDir = args[args.indexOf('/d') + 1]!;
+      const outPath = args[args.indexOf('/p') + 1]!;
+      hasNotice = readFileSync(path.join(layoutDir, 'NOTICE'), 'utf8').length > 0;
+      hasLicenses =
+        readFileSync(path.join(layoutDir, 'licenses', 'THIRD_PARTY_NOTICES.txt'), 'utf8').length >
+        0;
+      try {
+        readFileSync(path.join(layoutDir, 'ftpeach-update-version'));
+        hasUpdateVersion = true;
+      } catch {
+        hasUpdateVersion = false;
+      }
+      writeFileSync(outPath, readFileSync(path.join(layoutDir, 'AppxManifest.xml')));
+    }
     return Buffer.from('');
   }) as typeof execFileSync);
   assert.ok(out.endsWith('FTPeach_0.7.0_x64.msix'));
-  assert.equal(packedArgs[0], 'pack');
+  assert.equal(calls.length, 3);
+  assert.equal(calls[0]!.cmd, 'powershell.exe');
+  assert.equal(calls[1]!.args[0], 'new');
+  assert.equal(calls[2]!.args[0], 'pack');
+  assert.ok(!calls[2]!.args.includes('/nv'), 'makeappx must validate the package without /nv');
+  assert.ok(hasNotice && hasLicenses && !hasUpdateVersion);
 });
 
 test('unix acceptance helpers validate universal lipo slices and process liveness', async (t) => {

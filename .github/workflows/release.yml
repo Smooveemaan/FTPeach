@@ -296,10 +296,14 @@ jobs:
       - name: Build Microsoft Store MSIX package
         if: steps.preflight.outputs.multiplatform == 'true'
         shell: bash
+        env:
+          MS_STORE_IDENTITY_NAME: ${{ vars.MS_STORE_IDENTITY_NAME }}
+          MS_STORE_PUBLISHER: ${{ vars.MS_STORE_PUBLISHER }}
+          MS_STORE_PUBLISHER_DISPLAY_NAME: ${{ vars.MS_STORE_PUBLISHER_DISPLAY_NAME }}
         run: |
           cp src-tauri/target/release/FTPeach.exe "$RUNNER_TEMP/FTPeach-standard.exe"
           trap 'mv -f "$RUNNER_TEMP/FTPeach-standard.exe" src-tauri/target/release/FTPeach.exe' EXIT
-          cargo build --release --locked --manifest-path src-tauri/Cargo.toml --features ms-store
+          npm run tauri -- build --no-bundle --features ms-store -- --locked
           node --experimental-strip-types scripts/release/msix.ts build src-tauri/target/release src-tauri/target/release/FTPeach.exe
       - name: Check MSIX package for signing key leaks
         if: steps.preflight.outputs.multiplatform == 'true'

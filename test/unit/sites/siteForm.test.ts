@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   canSubmitSiteForm,
+  createPaneSiteForm,
   createSiteForm,
   normalizeSiteForm,
 } from '../../../src/features/sites/siteForm.ts';
@@ -63,6 +64,41 @@ test('key authentication left over from SFTP does not drop another protocol’s 
   const sftp = normalizeSiteForm({ ...form, protocol: 'sftp' }, null, secrets);
   assert.equal(sftp.password, '');
   assert.equal(sftp.useKeyAuth, true);
+});
+
+test('openTerminalOnConnect round trips for SFTP and is cleared for other protocols', () => {
+  const form = createSiteForm({
+    id: 'sftp-1',
+    name: 'SFTP',
+    protocol: 'sftp',
+    host: 'example.test',
+    openTerminalOnConnect: true,
+  });
+  assert.equal(form.openTerminalOnConnect, true);
+  assert.equal(normalizeSiteForm(form).openTerminalOnConnect, true);
+  for (const protocol of ['ftp', 'ftps', 'webdav'] as const) {
+    assert.equal(normalizeSiteForm({ ...form, protocol }).openTerminalOnConnect, false);
+  }
+  const fromPane = createPaneSiteForm({
+    kind: 'remote',
+    path: '/srv',
+    openTerminalOnConnect: true,
+    form: {
+      protocol: 'sftp',
+      host: 'example.test',
+      port: '22',
+      webdavUrl: '',
+      user: 'alice',
+      password: '',
+      allowInvalidCert: false,
+      allowCleartextAuth: false,
+      caCertPath: '',
+      useKeyAuth: false,
+      keyPath: '',
+      keyPassphrase: '',
+    },
+  });
+  assert.equal(fromPane.openTerminalOnConnect, true);
 });
 
 test('a missing, null or empty host and user open the editor the same way', () => {

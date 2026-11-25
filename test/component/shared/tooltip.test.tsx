@@ -20,6 +20,7 @@ const visible = () => bubble().classList.contains('visible');
 beforeEach(() => {
   vi.useFakeTimers();
   document.documentElement.removeAttribute('data-keyboard-navigation');
+  document.body.classList.remove('resize-active');
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement,
   ) {
@@ -30,6 +31,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   document.documentElement.removeAttribute('data-keyboard-navigation');
+  document.body.classList.remove('resize-active');
 });
 
 test('hover waits, uses the latest pointer position and leaves without a delayed popup', () => {
@@ -117,6 +119,25 @@ test('pointer down dismisses active tooltip and allows redisplay on re-hover', (
   fireEvent.pointerDown(anchor);
   expect(visible()).toBe(false);
 
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(true);
+});
+
+test('drag and resize sessions suppress hover tooltips until finished', () => {
+  render(<Harness />);
+  const anchor = screen.getByRole('button', { name: 'anchor' });
+
+  fireEvent.mouseOver(anchor, { buttons: 1 });
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(false);
+
+  document.body.classList.add('resize-active');
+  fireEvent.mouseOver(anchor);
+  act(() => vi.advanceTimersByTime(500));
+  expect(visible()).toBe(false);
+
+  document.body.classList.remove('resize-active');
   fireEvent.mouseOver(anchor);
   act(() => vi.advanceTimersByTime(500));
   expect(visible()).toBe(true);

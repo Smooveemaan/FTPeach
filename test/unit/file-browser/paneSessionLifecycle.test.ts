@@ -76,6 +76,7 @@ test('a typed-in FTPS server is sent as it is, and becomes connected only after 
       caCertPath: '',
       useKeyAuth: false,
       keyPath: '',
+      openTerminalOnConnect: false,
       encoding: '',
       maxConnections: null,
     },

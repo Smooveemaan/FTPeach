@@ -52,5 +52,9 @@
   "/stores/*/list/sites/Ok/*/remotePath": "For the same reason such a start folder is listed with its leading slash (/pub).",
   "/stores/*/saves/*/filesAfter/sites/data/*/remotePath": "And a save writes it back that way. Every version reads /pub as the same folder.",
   "/direct/refused-long-host/*/refused/code": "A field over its size limit is refused as resourceLimit, the code the check raises, instead of having it replaced by invalidInput. The renderer shows the same message for both.",
-  "/stores/legacy-array-shapes/connect/undecryptable/outcome/*": "A saved password DPAPI cannot open refuses the connect (savedSecretUnreadable) instead of being sent as an empty password, which the server answered as a wrong one (a bug fix)."
+  "/stores/legacy-array-shapes/connect/undecryptable/outcome/*": "A saved password DPAPI cannot open refuses the connect (savedSecretUnreadable) instead of being sent as an empty password, which the server answered as a wrong one (a bug fix).",
+  "/stores/*/list/sites/Ok/*/openTerminalOnConnect": "0.7.0 added openTerminalOnConnect (default false) to SFTP bookmarks so a saved site can open the integrated SSH terminal automatically.",
+  "/stores/*/saves/*/filesAfter/sites/data/*/openTerminalOnConnect": "The same, when a bookmark is saved.",
+  "/stores/*/import/filesAfter/sites/data/*/openTerminalOnConnect": "The same, when a bookmark is imported.",
+  "/vault/list/*/openTerminalOnConnect": "The same, for vault-backed bookmarks."
 }

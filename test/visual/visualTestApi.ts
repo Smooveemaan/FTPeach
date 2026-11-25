@@ -1,5 +1,6 @@
 import { readyUnsubscribe } from '../../src/platform/ipcContracts.ts';
 import type { RecoveredEdit, UpdaterStatus } from '../../src/platform/ipcContracts.ts';
+import type { TerminalEvent } from '../../src/platform/api/terminal.ts';
 import type { LogEntry } from '../../src/shared/logEntry.ts';
 import defaults from '../../src/shared/settingsDefaults.json';
 import type { FileEntry } from '../../src/shared/paneContracts.ts';
@@ -10,6 +11,28 @@ const unsubscribe = readyUnsubscribe(() => {});
 const updateListeners = new Set<(_status: UpdaterStatus) => void>();
 const emitUpdate = (status: UpdaterStatus) =>
   updateListeners.forEach((listener) => listener(status));
+
+interface VisualTerminalSession {
+  cols: number;
+  rows: number;
+  line: string;
+  onEvent: (_event: TerminalEvent) => void;
+}
+
+const visualTerminals = new Map<string, VisualTerminalSession>();
+let visualTerminalSeq = 0;
+
+function encodeTerminalBase64(text: string): { data: string; bytes: number } {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return { data: btoa(binary), bytes: bytes.length };
+}
+
+function emitTerminalText(session: VisualTerminalSession, text: string) {
+  const { data, bytes } = encodeTerminalBase64(text);
+  session.onEvent({ event: 'output', data, bytes });
+}
 
 const localEntries: FileEntry[] = [
   { name: 'Projects', isDirectory: true, modifiedAt: '2026-08-30T12:00:00Z' },
@@ -196,6 +219,78 @@ export const visualTestApi = {
       }),
     set: () => resolved(ok),
     clear: () => resolved(ok),
+  },
+  terminal: {
+    open: (
+      _connectionId: string,
+      cols: number,
+      rows: number,
+      onEvent: (_event: TerminalEvent) => void,
+    ) => {
+      if (new URLSearchParams(window.location.search).get('terminal') === 'refused') {
+        return resolved({
+          ok: true as const,
+          outcome: 'shellRefused' as const,
+          message: 'SFTP-only account',
+        });
+      }
+      visualTerminalSeq += 1;
+      const terminalId = `visual-term-${visualTerminalSeq}`;
+      const session: VisualTerminalSession = { cols, rows, line: '', onEvent };
+      visualTerminals.set(terminalId, session);
+      window.setTimeout(() => {
+        if (visualTerminals.get(terminalId) === session) {
+          emitTerminalText(session, 'deploy@sftp:~$ ');
+        }
+      }, 0);
+      return resolved({ ok: true as const, outcome: 'opened' as const, terminalId });
+    },
+    write: (terminalId: string, data: string) => {
+      const session = visualTerminals.get(terminalId);
+      if (!session) return resolved(ok);
+      for (const ch of data) {
+        if (ch === '\r' || ch === '\n') {
+          const cmd = session.line.trim();
+          session.line = '';
+          emitTerminalText(session, '\r\n');
+          if (cmd === 'size') {
+            emitTerminalText(session, `SIZE:${session.cols}x${session.rows}\r\n`);
+          } else if (cmd === 'flood') {
+            let bulk = '';
+            for (let i = 1; i <= 60; i += 1) {
+              bulk += `LINE_${String(i).padStart(2, '0')}\r\n`;
+            }
+            emitTerminalText(session, bulk);
+          } else if (cmd.startsWith('exit')) {
+            const parsed = Number.parseInt(cmd.slice(4).trim(), 10);
+            const code = Number.isFinite(parsed) ? parsed : 0;
+            visualTerminals.delete(terminalId);
+            session.onEvent({ event: 'exit', code });
+            return resolved(ok);
+          } else if (cmd.length > 0) {
+            emitTerminalText(session, `OUT:${cmd}\r\n`);
+          }
+          emitTerminalText(session, 'deploy@sftp:~$ ');
+        } else {
+          session.line += ch;
+          emitTerminalText(session, ch);
+        }
+      }
+      return resolved(ok);
+    },
+    resize: (terminalId: string, cols: number, rows: number) => {
+      const session = visualTerminals.get(terminalId);
+      if (session) {
+        session.cols = cols;
+        session.rows = rows;
+      }
+      return resolved(ok);
+    },
+    ack: () => resolved(ok),
+    close: (terminalId: string) => {
+      visualTerminals.delete(terminalId);
+      return resolved(ok);
+    },
   },
   fsLocal: {
     watchDirectories: () => resolved(ok),

@@ -21,6 +21,41 @@ pub const APP_USER_MODEL_ID: &str = "com.smooveemaan.ftpeach";
 #[cfg_attr(not(windows), allow(dead_code))]
 pub const ICON_RESOURCE: &str = "icons/app-icon.ico";
 
+/// The package AUMID (`<PackageFamilyName>!FTPeach`) when running inside an
+/// MSIX package, or `None` for unpackaged installs and portable copies.
+/// Packaged apps get their notification name and icon from `AppxManifest.xml`
+/// and must post toasts under that package AUMID rather than an HKCU key.
+#[cfg(windows)]
+pub(crate) fn packaged_aumid() -> Option<&'static str> {
+    use std::sync::OnceLock;
+    use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS};
+    use windows::Win32::Storage::Packaging::Appx::GetCurrentApplicationUserModelId;
+    use windows::core::PWSTR;
+
+    static AUMID: OnceLock<Option<String>> = OnceLock::new();
+    AUMID
+        .get_or_init(|| {
+            let mut len = 0u32;
+            // SAFETY: null buffer with length 0 is the documented size query.
+            let first = unsafe { GetCurrentApplicationUserModelId(&mut len, None) };
+            if first != ERROR_INSUFFICIENT_BUFFER || len == 0 {
+                return None;
+            }
+            let mut buffer = vec![0u16; len as usize];
+            // SAFETY: `buffer` has space for `len` UTF-16 code units including NUL.
+            let second = unsafe {
+                GetCurrentApplicationUserModelId(&mut len, Some(PWSTR(buffer.as_mut_ptr())))
+            };
+            if second != ERROR_SUCCESS {
+                return None;
+            }
+            let end = buffer.iter().position(|&c| c == 0).unwrap_or(buffer.len());
+            let aumid = String::from_utf16_lossy(&buffer[..end]);
+            (!aumid.is_empty()).then_some(aumid)
+        })
+        .as_deref()
+}
+
 /// Teaches Windows who [`APP_USER_MODEL_ID`] is, so the toast carries
 /// FTPeach's name and icon instead of an anonymous or borrowed identity.
 ///
@@ -28,6 +63,9 @@ pub const ICON_RESOURCE: &str = "icons/app-icon.ico";
 /// notifications, just plainer ones, which is no reason to fail startup.
 #[cfg(windows)]
 pub fn register_identity(app: &AppHandle) {
+    if packaged_aumid().is_some() {
+        return;
+    }
     use tauri::Manager;
     use tauri::path::BaseDirectory;
 
@@ -84,6 +122,9 @@ pub fn hand_identity_over() {
 /// installed copy uses the same id; with one present the key stays.
 #[cfg(windows)]
 pub fn unregister_identity() {
+    if packaged_aumid().is_some() {
+        return;
+    }
     if !IDENTITY_HANDED_OVER.load(std::sync::atomic::Ordering::SeqCst) {
         remove_identity_unless_installed(APP_USER_MODEL_ID, INSTALLED_COPY_KEY);
     }
@@ -163,7 +204,8 @@ pub fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
     use tauri_winrt_notification::{Duration, Toast};
 
     let app = app.clone();
-    Toast::new(APP_USER_MODEL_ID)
+    let aumid = packaged_aumid().unwrap_or(APP_USER_MODEL_ID);
+    Toast::new(aumid)
         .title(title)
         .text1(body)
         .duration(Duration::Short)

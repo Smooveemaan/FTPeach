@@ -92,6 +92,12 @@ fn the_icon_uri_drops_the_verbatim_prefix() {
     );
 }
 
+#[cfg(windows)]
+#[test]
+fn unpackaged_process_has_no_packaged_aumid() {
+    assert!(super::packaged_aumid().is_none());
+}
+
 #[test]
 fn the_toast_icon_ships_as_a_bundle_resource() {
     let config = config();

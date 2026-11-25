@@ -19,6 +19,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex as StdMutex, RwLock as StdRwLock};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+#[cfg(test)]
 use tokio::sync::Mutex as AsyncMutex;
 mod connect;
 #[cfg(test)]
@@ -73,7 +74,7 @@ fn parse_longname(longname: &str) -> (Option<String>, Option<String>, Option<Str
 pub struct SftpBackend {
     known_hosts: Arc<dyn KnownHostsStore>,
     fingerprint: Arc<StdMutex<Option<String>>>,
-    session: Arc<AsyncMutex<Option<client::Handle<TofuHandler>>>>,
+    session: Arc<StdRwLock<Option<Arc<client::Handle<TofuHandler>>>>>,
     sftp: Arc<StdRwLock<Option<Arc<RawSftpSession>>>>,
     connected: Arc<AtomicBool>,
     keep_alive_handle: Option<tokio::task::JoinHandle<()>>,
@@ -102,7 +103,7 @@ impl SftpBackend {
         Self {
             known_hosts,
             fingerprint: Arc::new(StdMutex::new(None)),
-            session: Arc::new(AsyncMutex::new(None)),
+            session: Arc::new(StdRwLock::new(None)),
             sftp: Arc::new(StdRwLock::new(None)),
             connected: Arc::new(AtomicBool::new(false)),
             keep_alive_handle: None,
@@ -196,8 +197,8 @@ impl SftpBackend {
         let closed = timed_out
             && self
                 .session
-                .lock()
-                .await
+                .read()
+                .unwrap()
                 .as_ref()
                 .is_none_or(|session| session.is_closed());
         if closed {
@@ -395,9 +396,30 @@ impl SftpBackend {
 }
 
 #[async_trait]
+impl super::SshSessionHandle for client::Handle<TofuHandler> {
+    async fn open_session_channel(&self) -> BackendResult<russh::Channel<client::Msg>> {
+        self.channel_open_session()
+            .await
+            .context("opening SSH session channel failed")
+    }
+
+    fn is_closed(&self) -> bool {
+        client::Handle::is_closed(self)
+    }
+}
+
+#[async_trait]
 impl ProtocolBackend for SftpBackend {
     fn ssh_fingerprint(&self) -> Option<String> {
         self.fingerprint.lock().unwrap().clone()
+    }
+
+    fn ssh_handle(&self) -> Option<Arc<dyn super::SshSessionHandle>> {
+        self.session
+            .read()
+            .unwrap()
+            .as_ref()
+            .map(|handle| Arc::clone(handle) as Arc<dyn super::SshSessionHandle>)
     }
 
     async fn connect(
@@ -414,7 +436,8 @@ impl ProtocolBackend for SftpBackend {
         self.connected.store(false, Ordering::SeqCst);
         *self.sftp.write().unwrap() = None;
         self.posix_rename = false;
-        if let Some(session) = self.session.lock().await.take() {
+        let session = self.session.write().unwrap().take();
+        if let Some(session) = session {
             let _ = tokio::time::timeout(
                 GRACEFUL_IO_TIMEOUT,
                 session.disconnect(russh::Disconnect::ByApplication, "", "en"),

@@ -13,6 +13,7 @@ use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Session, Sessions, TEARDOWN_DEADLINE, teardown_session};
 use crate::store::Store;
+use crate::terminal::Terminals;
 use crate::transfer::transfer_pool::{BoxBackend, PoolSize, TransferPool};
 use std::sync::Arc;
 
@@ -137,6 +138,7 @@ const MAX_SESSIONS: usize = 64;
 pub(crate) async fn connect(
     sessions: &Sessions,
     connecting: &ConnectingClients,
+    terminals: &Terminals,
     log_emitter: &LogEmitter,
     store: &Store,
     vault: &Vault,
@@ -153,6 +155,7 @@ pub(crate) async fn connect(
     }
     let slot = sessions.get_or_create(connection_id);
     let mut guard = slot.lock().await;
+    terminals.close_for_connection(connection_id);
     teardown_session(&mut guard, connection_id, Some(TEARDOWN_DEADLINE)).await;
 
     let typed_config = connection_config(store, vault, server, credentials, window)
@@ -228,6 +231,9 @@ pub(crate) async fn connect(
             "Connection closed during setup",
         )));
     }
+    if let Some(ssh_handle) = browse_client.ssh_handle() {
+        sessions.register_ssh_handle(connection_id, &slot, ssh_handle);
+    }
     let fingerprint = browse_client.ssh_fingerprint();
     *guard = Some(Session {
         browse_client,
@@ -244,9 +250,11 @@ pub(crate) async fn connect(
 pub(crate) async fn disconnect(
     sessions: &Sessions,
     connecting: &ConnectingClients,
+    terminals: &Terminals,
     connection_id: &str,
 ) {
     connecting.cancel(connection_id);
+    terminals.close_for_connection(connection_id);
     crate::application::recursive_transfer::close_connection(connection_id);
     let Some(slot) = sessions.remove(connection_id) else {
         return;

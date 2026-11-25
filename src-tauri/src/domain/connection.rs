@@ -42,6 +42,8 @@ pub struct ServerSettings {
     pub ca_cert_path: String,
     pub use_key_auth: bool,
     pub key_path: String,
+    /// Whether connecting to this SFTP site also opens the integrated SSH terminal.
+    pub open_terminal_on_connect: bool,
     /// The FTP server's file name encoding; empty is UTF-8.
     pub encoding: String,
     /// How many connections the site may open at once; `Some(0)` is no limit.
@@ -88,6 +90,7 @@ impl ServerSettings {
             ca_cert_path: text("caCertPath"),
             use_key_auth: flag("useKeyAuth"),
             key_path: text("keyPath"),
+            open_terminal_on_connect: flag("openTerminalOnConnect"),
             encoding: text("encoding"),
             max_connections: number(record, "maxConnections")?,
         })
@@ -137,6 +140,10 @@ impl ServerSettings {
             ("caCertPath".to_owned(), text(&self.ca_cert_path)),
             ("useKeyAuth".to_owned(), Value::Bool(self.use_key_auth)),
             ("keyPath".to_owned(), text(&self.key_path)),
+            (
+                "openTerminalOnConnect".to_owned(),
+                Value::Bool(self.open_terminal_on_connect),
+            ),
             ("encoding".to_owned(), text(&self.encoding)),
             (
                 "maxConnections".to_owned(),
@@ -162,7 +169,7 @@ impl ServerSettings {
     }
 
     /// The keys [`Self::to_json`] writes.
-    pub const KEYS: [&str; 14] = [
+    pub const KEYS: [&str; 15] = [
         "protocol",
         "host",
         "port",
@@ -175,6 +182,7 @@ impl ServerSettings {
         "caCertPath",
         "useKeyAuth",
         "keyPath",
+        "openTerminalOnConnect",
         "encoding",
         "maxConnections",
     ];
@@ -357,6 +365,7 @@ mod tests {
                 ca_cert_path: String::new(),
                 use_key_auth: false,
                 key_path: String::new(),
+                open_terminal_on_connect: false,
                 encoding: String::new(),
                 max_connections: None,
             }

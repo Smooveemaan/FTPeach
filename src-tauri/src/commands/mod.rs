@@ -13,6 +13,7 @@ pub mod sites;
 #[cfg(feature = "smoke-test")]
 pub mod smoke;
 pub mod tabs;
+pub mod terminal;
 pub mod transfer;
 pub mod tray;
 pub mod updater;

@@ -458,6 +458,7 @@ impl Store {
             "splitRatio",
             "paneOrientation",
             "transferLogSplitRatio",
+            "terminalSplitRatio",
             "windowBounds",
             "windowMaximized",
         ] {

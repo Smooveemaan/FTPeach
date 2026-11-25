@@ -65,7 +65,7 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
             return Err(format!("settings.{key}: value is out of range"));
         }
     }
-    for key in ["splitRatio", "transferLogSplitRatio"] {
+    for key in ["splitRatio", "transferLogSplitRatio", "terminalSplitRatio"] {
         if patch
             .get(key)
             .is_some_and(|value| !value.as_f64().is_some_and(|n| (0.0..=1.0).contains(&n)))

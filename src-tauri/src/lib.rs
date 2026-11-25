@@ -26,6 +26,10 @@ pub mod session;
 mod store;
 #[cfg(feature = "test-utils")]
 pub mod store;
+#[cfg(not(feature = "test-utils"))]
+mod terminal;
+#[cfg(feature = "test-utils")]
+pub mod terminal;
 #[cfg(test)]
 mod test_inputs;
 mod transfer;
@@ -112,6 +116,7 @@ pub fn run() {
         .manage(vault_guard::VaultGuard::default())
         .manage(Sessions::default())
         .manage(ConnectingClients::default())
+        .manage(terminal::Terminals::default())
         .manage(shutdown::ShutdownCoordinator::default())
         .manage(ApprovedLocalPaths::default())
         .manage(UpdaterState::default())
@@ -163,6 +168,7 @@ pub fn run() {
             commands::vault::vault_note_activity,
             commands::app::app_version,
             commands::app::clipboard::app_write_clipboard_text,
+            commands::app::clipboard::app_read_clipboard_text,
             commands::app::app_quit,
             commands::app::app_state_flushed,
             commands::app::app_double_click_time,
@@ -189,6 +195,11 @@ pub fn run() {
             commands::session::browse::session_delete,
             commands::session::browse::session_rename,
             commands::session::browse::session_chmod,
+            commands::terminal::terminal_open,
+            commands::terminal::terminal_write,
+            commands::terminal::terminal_resize,
+            commands::terminal::terminal_ack,
+            commands::terminal::terminal_close,
             commands::transfer::transfer_upload,
             commands::transfer::transfer_recursive,
             commands::transfer::transfer_cancel_recursive,

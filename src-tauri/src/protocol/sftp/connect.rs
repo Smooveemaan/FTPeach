@@ -172,7 +172,7 @@ impl SftpBackend {
 
         self.logger
             .event("connected", serde_json::json!({}), LogKind::Response);
-        *self.session.lock().await = Some(session);
+        *self.session.write().unwrap() = Some(Arc::new(session));
         *self.sftp.write().unwrap() = Some(Arc::new(raw));
         self.posix_rename = posix_rename;
         self.connected.store(true, Ordering::SeqCst);

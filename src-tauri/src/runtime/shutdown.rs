@@ -226,6 +226,9 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
     log::debug!("shutdown: renderer state flushed; saved={state_saved}");
     let connecting = app.state::<ConnectingClients>().inner().clone();
     let sessions = app.state::<Sessions>().inner().clone();
+    let terminals = app
+        .try_state::<crate::terminal::Terminals>()
+        .map(|state| state.inner().clone());
     let watchers = app.state::<OpenWithWatchers>().inner().clone();
     let open_with_dir = app.state::<OpenWithSession>().dir.clone();
     let recovery_root = crate::local_fs::edit_recovery::root(&app);
@@ -236,6 +239,10 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
     // timeout waiting for locks or network disconnects.
     log::debug!("shutdown: canceling connections");
     connecting.cancel_all();
+    if let Some(terminals) = terminals {
+        log::debug!("shutdown: closing terminals");
+        terminals.close_all();
+    }
     log::debug!("shutdown: stopping file watchers");
     watchers.stop_all();
     log::debug!("shutdown: file watchers stopped");

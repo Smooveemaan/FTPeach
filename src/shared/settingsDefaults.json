@@ -69,6 +69,7 @@
   "splitRatio": 0.5,
   "paneOrientation": "horizontal",
   "transferLogSplitRatio": 0.5,
+  "terminalSplitRatio": 0.5,
   "windowBounds": null,
   "windowMaximized": false,
   "minimizeToTray": false,

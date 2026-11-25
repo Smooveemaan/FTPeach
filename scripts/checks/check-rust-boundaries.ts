@@ -54,11 +54,21 @@ export const ALLOWED: Record<string, readonly string[]> = {
     'security',
     'session',
     'store',
+    'terminal',
     'transfer',
   ],
   // Process and window lifecycle. `runtime::sensitive_plugin` registers the
   // commands that need a confirmed grant, so it names them.
-  runtime: ['commands', 'local_fs', 'protocol', 'security', 'session', 'store', 'transfer'],
+  runtime: [
+    'commands',
+    'local_fs',
+    'protocol',
+    'security',
+    'session',
+    'store',
+    'terminal',
+    'transfer',
+  ],
   application: [
     'domain',
     'ipc',
@@ -68,6 +78,7 @@ export const ALLOWED: Record<string, readonly string[]> = {
     'security',
     'session',
     'store',
+    'terminal',
     'transfer',
   ],
   session: ['protocol', 'transfer'],
@@ -85,6 +96,8 @@ export const ALLOWED: Record<string, readonly string[]> = {
   local_fs: ['app_config', 'ipc', 'protocol', 'session'],
   // Credentials hold their secrets in the wrapper that forgets them.
   domain: ['ipc', 'security::sensitive_string'],
+  // Interactive SSH PTY channels multiplexed over `protocol::SshSessionHandle`.
+  terminal: ['ipc', 'protocol'],
   // The wire types depend on nothing in the crate.
   ipc: [],
   // Inputs for the generated tests; only tests compile it.

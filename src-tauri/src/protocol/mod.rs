@@ -433,6 +433,15 @@ impl ProgressInfo {
 /// upload/download operation; backends call it once per transferred chunk.
 pub type ProgressSink = Arc<dyn Fn(ProgressInfo) + Send + Sync>;
 
+/// Multiplexing handle to an active SSH transport so interactive terminal
+/// channels can open without touching the SFTP browse lock or leaking the
+/// client handler type out of `protocol::sftp`.
+#[async_trait]
+pub trait SshSessionHandle: Send + Sync {
+    async fn open_session_channel(&self) -> BackendResult<russh::Channel<russh::client::Msg>>;
+    fn is_closed(&self) -> bool;
+}
+
 #[async_trait]
 pub trait ProtocolBackend: Send {
     async fn connect(&mut self, config: &config::ConnectionConfig) -> BackendResult<()>;
@@ -440,6 +449,10 @@ pub trait ProtocolBackend: Send {
     fn is_connected(&self) -> bool;
     /// The verified SSH host key of this connection, when the protocol has one.
     fn ssh_fingerprint(&self) -> Option<String> {
+        None
+    }
+    /// The live SSH session handle, when the protocol runs over SSH.
+    fn ssh_handle(&self) -> Option<Arc<dyn SshSessionHandle>> {
         None
     }
     fn set_log_sink(&mut self, sink: Option<Arc<dyn Fn(LogText, LogKind) + Send + Sync>>);

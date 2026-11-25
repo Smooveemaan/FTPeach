@@ -353,6 +353,9 @@ pub(super) fn site_record(
     }
     let mut server = ServerSettings::from_json(input)
         .map_err(|error| CommandError::new(ErrorCode::InvalidInput, format!("{error:#}")))?;
+    if server.protocol != Protocol::Sftp {
+        server.open_terminal_on_connect = false;
+    }
     // A save that leaves the connection limit out keeps the stored one.
     if !input.contains_key("maxConnections") {
         server.max_connections =

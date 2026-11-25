@@ -71,6 +71,7 @@ async fn disconnect_bounds_stalled_cleanup_and_releases_staging_registry() {
     crate::application::session_service::disconnect(
         &sessions,
         &crate::session::ConnectingClients::default(),
+        &crate::terminal::Terminals::default(),
         &connection_id,
     )
     .await;
@@ -93,6 +94,7 @@ async fn disconnect_bounds_stalled_backend_disconnect() {
     crate::application::session_service::disconnect(
         &sessions,
         &crate::session::ConnectingClients::default(),
+        &crate::terminal::Terminals::default(),
         &connection_id,
     )
     .await;
@@ -225,6 +227,7 @@ async fn disconnect_interrupts_stalled_resume_verification() {
         crate::application::session_service::disconnect(
             &sessions,
             &crate::session::ConnectingClients::default(),
+            &crate::terminal::Terminals::default(),
             &id,
         ),
     )

@@ -12,6 +12,7 @@ use crate::runtime::log_emitter::LogEmitter;
 use crate::security::vault::Vault;
 use crate::session::{ConnectingClients, Sessions};
 use crate::store::Store;
+use crate::terminal::Terminals;
 use serde::Serialize;
 use tauri::State;
 
@@ -62,6 +63,7 @@ impl ConnectOutcome {
 pub async fn session_connect(
     sessions: State<'_, Sessions>,
     connecting: State<'_, ConnectingClients>,
+    terminals: State<'_, Terminals>,
     log_emitter: State<'_, LogEmitter>,
     store: State<'_, Store>,
     vault: State<'_, Vault>,
@@ -84,6 +86,7 @@ pub async fn session_connect(
     let outcome = session_service::connect(
         &sessions,
         &connecting,
+        &terminals,
         &log_emitter,
         &store,
         &vault,
@@ -116,9 +119,10 @@ pub async fn session_cancel_connect(
 pub async fn session_disconnect(
     sessions: State<'_, Sessions>,
     connecting: State<'_, ConnectingClients>,
+    terminals: State<'_, Terminals>,
     connection_id: String,
 ) -> CommandResult<()> {
-    session_service::disconnect(&sessions, &connecting, &connection_id).await;
+    session_service::disconnect(&sessions, &connecting, &terminals, &connection_id).await;
     Ok(())
 }
 

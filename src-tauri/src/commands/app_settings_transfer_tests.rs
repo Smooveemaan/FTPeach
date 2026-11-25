@@ -723,3 +723,103 @@ fn every_secret_field_is_stripped_on_export_and_refused_on_import() {
         assert!(refused.contains("secret fields"), "{key}: {refused}");
     }
 }
+
+#[tokio::test]
+async fn import_handles_v061_without_terminal_fields_and_round_trips_v070() {
+    let dir = std::env::temp_dir().join(format!("ftpeach-import-term-{}", uuid::Uuid::new_v4()));
+    let store = Store::new_at(dir.clone());
+
+    // 0.6.1 export shape: neither openTerminalOnConnect nor terminalSplitRatio is present.
+    let legacy_doc: ImportDocument = serde_json::from_value(serde_json::json!({
+        "settings": { "theme": "dark", "splitRatio": 0.45 },
+        "sites": [{
+            "id": "old-sftp",
+            "kind": "site",
+            "name": "Legacy SFTP",
+            "protocol": "sftp",
+            "host": "legacy.example",
+            "port": 22
+        }]
+    }))
+    .unwrap();
+    let staged_legacy = stage(legacy_doc, &options(), "main").unwrap();
+    assert_eq!(staged_legacy.sites.len(), 1);
+    let outcome = import_sites(
+        &store,
+        staged_legacy
+            .sites
+            .into_iter()
+            .map(serde_json::Value::Object)
+            .collect(),
+    )
+    .await;
+    assert_eq!(outcome.added, 1);
+
+    // 0.7.0 export shape: both terminal fields validate and survive import.
+    let v070_doc: ImportDocument = serde_json::from_value(serde_json::json!({
+        "settings": { "terminalSplitRatio": 0.35 },
+        "sites": [
+            {
+                "id": "sftp-term",
+                "kind": "site",
+                "name": "SFTP Term",
+                "protocol": "sftp",
+                "host": "term.example",
+                "port": 22,
+                "openTerminalOnConnect": true
+            },
+            {
+                "id": "ftp-term",
+                "kind": "site",
+                "name": "FTP Normalized",
+                "protocol": "ftp",
+                "host": "ftp.example",
+                "port": 21,
+                "openTerminalOnConnect": true
+            }
+        ]
+    }))
+    .unwrap();
+    let staged_v070 = stage(v070_doc, &options(), "main").unwrap();
+    assert_eq!(
+        staged_v070
+            .settings
+            .as_ref()
+            .and_then(|s| s.get("terminalSplitRatio"))
+            .and_then(Value::as_f64),
+        Some(0.35)
+    );
+    let outcome = import_sites(
+        &store,
+        staged_v070
+            .sites
+            .into_iter()
+            .map(serde_json::Value::Object)
+            .collect(),
+    )
+    .await;
+    assert_eq!(outcome.added, 2);
+
+    let listed = store.list_sites().await.unwrap();
+    let legacy = listed.iter().find(|s| s["name"] == "Legacy SFTP").unwrap();
+    let sftp_term = listed.iter().find(|s| s["name"] == "SFTP Term").unwrap();
+    let ftp_term = listed
+        .iter()
+        .find(|s| s["name"] == "FTP Normalized")
+        .unwrap();
+    assert_eq!(legacy["openTerminalOnConnect"], Value::Bool(false));
+    assert_eq!(sftp_term["openTerminalOnConnect"], Value::Bool(true));
+    assert_eq!(ftp_term["openTerminalOnConnect"], Value::Bool(false));
+
+    // Invalid types/ranges are refused.
+    let bad_site = serde_json::json!({
+        "kind": "site", "name": "Bad", "protocol": "sftp", "host": "h",
+        "openTerminalOnConnect": "yes"
+    });
+    assert!(validate_import_site(bad_site.as_object().unwrap(), 0).is_err());
+
+    let bad_ratio = serde_json::json!({ "terminalSplitRatio": 2.0 });
+    assert!(crate::store::validate_settings(bad_ratio.as_object().unwrap(), false).is_err());
+
+    let _ = tokio::fs::remove_dir_all(dir).await;
+}

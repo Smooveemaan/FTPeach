@@ -1,4 +1,4 @@
-use crate::protocol::ProtocolBackend;
+use crate::protocol::{ProtocolBackend, SshSessionHandle};
 use crate::transfer::transfer_pool::TransferPool;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex as StdMutex};
@@ -47,6 +47,7 @@ impl Drop for SessionLookup {
 pub struct Sessions {
     inner: Arc<StdMutex<HashMap<String, SessionSlot>>>,
     pools: Arc<StdMutex<HashMap<String, TransferPool>>>,
+    ssh_handles: Arc<StdMutex<HashMap<String, Arc<dyn SshSessionHandle>>>>,
 }
 
 impl Sessions {
@@ -54,6 +55,7 @@ impl Sessions {
         let mut map = self.inner.lock().unwrap();
         let slot = map.remove(connection_id);
         let pool = self.pools.lock().unwrap().remove(connection_id);
+        self.ssh_handles.lock().unwrap().remove(connection_id);
         drop(map);
         if let Some(pool) = pool {
             pool.cancel_all();
@@ -80,6 +82,32 @@ impl Sessions {
             .unwrap()
             .insert(connection_id.to_owned(), pool);
         true
+    }
+
+    /// Keep the SSH session handle reachable for opening terminal channels
+    /// without waiting on a busy browse operation holding the slot lock.
+    pub fn register_ssh_handle(
+        &self,
+        connection_id: &str,
+        slot: &SessionSlot,
+        handle: Arc<dyn SshSessionHandle>,
+    ) -> bool {
+        let map = self.inner.lock().unwrap();
+        if !map
+            .get(connection_id)
+            .is_some_and(|current| Arc::ptr_eq(current, slot))
+        {
+            return false;
+        }
+        self.ssh_handles
+            .lock()
+            .unwrap()
+            .insert(connection_id.to_owned(), handle);
+        true
+    }
+
+    pub fn ssh_handle_for(&self, connection_id: &str) -> Option<Arc<dyn SshSessionHandle>> {
+        self.ssh_handles.lock().unwrap().get(connection_id).cloned()
     }
     pub fn get_existing(&self, connection_id: &str) -> Option<SessionSlot> {
         self.inner.lock().unwrap().get(connection_id).cloned()
@@ -184,6 +212,7 @@ impl Sessions {
         if can_remove {
             map.remove(connection_id);
             self.pools.lock().unwrap().remove(connection_id);
+            self.ssh_handles.lock().unwrap().remove(connection_id);
         }
         can_remove
     }

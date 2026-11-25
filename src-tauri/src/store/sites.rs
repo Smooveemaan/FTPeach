@@ -60,6 +60,7 @@ pub(crate) fn validate_site_input(input: &JsonMap) -> Result<()> {
         ("keyPassphrase", Value::is_string),
         ("removePassword", Value::is_boolean),
         ("removeKeyPassphrase", Value::is_boolean),
+        ("openTerminalOnConnect", Value::is_boolean),
     ] {
         if input
             .get(key)

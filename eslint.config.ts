@@ -19,6 +19,7 @@ export default [
   {
     ignores: [
       '.tools/**',
+      '.tmp/**',
       '.local/**',
       'dist/**',
       'release/**',

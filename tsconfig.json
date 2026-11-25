@@ -19,6 +19,8 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tmp/tsconfig.tsbuildinfo",
     "skipLibCheck": true,
     "types": ["node", "vite/client", "vitest/globals"]
   },

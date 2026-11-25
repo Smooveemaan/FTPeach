@@ -28,6 +28,8 @@ export function cleanTargets(root: string, localAppData = process.env.LOCALAPPDA
     at('.tools/installer-target', true),
     // Signed test installers of scripts/release/test-installers.ts.
     at('.tools/installer-test'),
+    // Incremental TypeScript build cache (tsconfig.json).
+    at('.tmp/tsconfig.tsbuildinfo'),
     // Vite output checked by scripts/checks/check-bundle-budget.ts.
     at('dist'),
     // The website of scripts/site/build.ts.

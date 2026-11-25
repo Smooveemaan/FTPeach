@@ -4,9 +4,15 @@
 // the capability files, and the quiet outcome is the worst one: the command
 // becomes reachable from every window, including the isolated confirmation
 // window. This check ties the three lists together so adding a command forces a
-// deliberate decision about which window class may call it.
+// deliberate decision about which window class may call it, and verifies that
+// frontend IPC invokes and event listeners match the Rust backend surface.
 import assert from 'node:assert/strict';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isAppPermission, loadCommandAcl, toPermission } from './command-acl-source.ts';
+import { collectWorkspaceIpcSurface, verifyIpcSurface } from './ipc-surface.ts';
+
+const repoRoot = path.resolve(fileURLToPath(import.meta.url), '../../..');
 
 const {
   appCommands,
@@ -83,6 +89,9 @@ reportSetDifference(
   'The confirmation window must keep only its prompt/ready/respond and window permissions',
 );
 
+const { frontend, rustEvents } = collectWorkspaceIpcSurface(repoRoot);
+verifyIpcSurface({ appCommands, sensitiveCommands, frontend, rustEvents });
+
 console.log(
-  `Command ACL OK: ${appCommands.length} app commands and ${sensitiveCommands.length} sensitive commands are permissioned; the confirmation window reaches ${confirmationPermissions.length} of them`,
+  `Command ACL & IPC surface OK: ${appCommands.length} app commands, ${sensitiveCommands.length} sensitive commands, ${rustEvents.size} events matched; the confirmation window reaches ${confirmationPermissions.length} permissions`,
 );

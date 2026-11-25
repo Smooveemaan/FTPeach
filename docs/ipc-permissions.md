@@ -43,6 +43,7 @@ that follow explain security behavior rather than repeat command groupings.
 | `app_menu_set_model` | app | Yes | No |
 | `app_open_external` | app | Yes | No |
 | `app_quit` | app | Yes | No |
+| `app_read_clipboard_text` | app | Yes | No |
 | `app_reset_layout` | app | Yes | No |
 | `app_set_drop_allowed` | app | Yes | No |
 | `app_set_interface_scale` | app | Yes | No |
@@ -123,6 +124,11 @@ that follow explain security behavior rather than repeat command groupings.
 | `tabs_clear` | app | Yes | No |
 | `tabs_get` | app | Yes | No |
 | `tabs_set` | app | Yes | No |
+| `terminal_ack` | app | Yes | No |
+| `terminal_close` | app | Yes | No |
+| `terminal_open` | app | Yes | No |
+| `terminal_resize` | app | Yes | No |
+| `terminal_write` | app | Yes | No |
 | `transfer_cancel` | app | Yes | No |
 | `transfer_cancel_recursive` | app | Yes | No |
 | `transfer_cancel_remote_copy` | app | Yes | No |

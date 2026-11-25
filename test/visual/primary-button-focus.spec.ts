@@ -6,11 +6,11 @@ for (const theme of ['dark', 'light']) {
     await page
       .locator('html')
       .evaluate((element, value) => element.setAttribute('data-theme', value), theme);
-    await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
-    await page.getByRole('menuitem', { name: 'Settings…' }).click();
+    await page.locator('.view-toolbar-settings').click();
+    await page.getByRole('checkbox', { name: 'Save the session on exit', exact: true }).click();
     const footer = page.locator('.settings-nav-footer');
     const save = footer.locator('.btn-primary');
-    await footer.locator('.btn').first().focus();
+    await footer.getByRole('button', { name: 'Cancel', exact: true }).focus();
     await page.keyboard.press('Tab');
     await expect(save).toBeFocused();
     await expect(save).toHaveCSS('outline-style', 'solid');

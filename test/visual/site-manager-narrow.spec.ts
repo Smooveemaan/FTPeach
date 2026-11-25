@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { readdirSync, readFileSync } from 'node:fs';
 
 const localesUrl = new URL('../../src/i18n/locales/', import.meta.url);
@@ -6,10 +7,24 @@ const languages = readdirSync(localesUrl)
   .filter((file) => file.endsWith('.json'))
   .map((file) => file.slice(0, -'.json'.length));
 
+async function openManageBookmarks(page: Page, bookmarksLabel: string, manageLabel: string) {
+  const bookmarksMenu = page.locator('.menu-bar-trigger[data-menu="bookmarks"]');
+  if (await bookmarksMenu.isVisible()) {
+    await page.getByRole('menuitem', { name: bookmarksLabel, exact: true }).click();
+    await page.getByRole('menuitem', { name: manageLabel }).click();
+  } else {
+    await page.evaluate(() =>
+      (
+        window as unknown as { triggerAppMenuAction: (_actionId: string) => void }
+      ).triggerAppMenuAction('manage-bookmarks'),
+    );
+  }
+}
+
 test('bookmark names retain descenders inside the clipping box', async ({ page }) => {
   await page.goto('/test/visual/visual.html?lang=en');
-  await page.getByRole('menuitem', { name: 'Bookmarks', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Manage Bookmarks…' }).click();
+  await expect(page.locator('.pane-list').first()).toBeVisible();
+  await openManageBookmarks(page, 'Bookmarks', 'Manage Bookmarks…');
   await page.evaluate(() => document.fonts.ready);
   const name = page.locator('.site-name').filter({ hasText: /^Staging$/ });
   const row = page.locator('.site-manage-row').filter({ has: name });
@@ -38,8 +53,8 @@ for (const language of languages) {
     const locale = JSON.parse(readFileSync(new URL(`${language}.json`, localesUrl), 'utf8'));
     await page.goto(`/test/visual/visual.html?lang=${language}`);
     await expect(page.locator('html')).toHaveAttribute('lang', language);
-    await page.getByRole('menuitem', { name: locale.menu.bookmarks.title }).click();
-    await page.getByRole('menuitem', { name: locale.menu.file.manageBookmarks }).click();
+    await expect(page.locator('.pane-list').first()).toBeVisible();
+    await openManageBookmarks(page, locale.menu.bookmarks.title, locale.menu.file.manageBookmarks);
     const toolbar = page.locator('.site-manage-toolbar');
     await expect(toolbar).toBeVisible();
     await page.setViewportSize({ width: 320, height: 347 });

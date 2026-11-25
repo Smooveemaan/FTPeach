@@ -24,6 +24,14 @@ function strings(language: string) {
   };
 }
 
+async function runAppMenuAction(page: Page, actionId: string) {
+  await page.evaluate((id) => {
+    (
+      window as unknown as { triggerAppMenuAction: (_actionId: string) => void }
+    ).triggerAppMenuAction(id);
+  }, actionId);
+}
+
 /** Everything the status bar can show at once: an update, the wait to quit and sync browsing. */
 async function crowd(page: Page, language: string) {
   const text = strings(language);
@@ -37,8 +45,13 @@ async function crowd(page: Page, language: string) {
   await page.keyboard.press('Enter');
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.status-quit')).toBeVisible();
-  await page.getByRole('menuitem', { name: text.view, exact: true }).click();
-  await page.getByRole('menuitemcheckbox', { name: text.syncBrowsing }).click();
+  const viewMenu = page.locator('.menu-bar-trigger[data-menu="view"]');
+  if (await viewMenu.isVisible()) {
+    await page.getByRole('menuitem', { name: text.view, exact: true }).click();
+    await page.getByRole('menuitemcheckbox', { name: text.syncBrowsing }).click();
+  } else {
+    await runAppMenuAction(page, 'sync-browsing');
+  }
   await expect(page.locator('.sync-indicator')).toHaveCount(1);
   return text;
 }
@@ -72,8 +85,13 @@ for (const language of languages) {
         expect(cut, `${width}px ${part}`).toBeLessThanOrEqual(allowed);
       }
 
-      await page.getByRole('menuitem', { name: text.file, exact: true }).click();
-      await page.getByRole('menuitem', { name: text.importSettings }).click();
+      const fileMenu = page.locator('.menu-bar-trigger[data-menu="file"]');
+      if (await fileMenu.isVisible()) {
+        await page.getByRole('menuitem', { name: text.file, exact: true }).click();
+        await page.getByRole('menuitem', { name: text.importSettings }).click();
+      } else {
+        await runAppMenuAction(page, 'import-settings');
+      }
       await page.getByRole('checkbox', { name: text.includeBookmarks }).check();
       await page.getByRole('checkbox', { name: text.includeLocalPaths }).check();
       await page.getByRole('button', { name: text.confirmImport }).click();
@@ -103,12 +121,17 @@ for (const language of languages) {
       await expect(page.locator('.status-transfers')).toBeVisible();
       // The language switch re-renders the menu bar; wait for its final label
       // and the open state so the item cannot be detached by that render.
-      const bookmarks = page.getByRole('menuitem', { name: text.bookmarks, exact: true });
-      const manage = page.getByRole('menuitem', { name: text.manageBookmarks });
+      const bookmarksMenu = page.locator('.menu-bar-trigger[data-menu="bookmarks"]');
       const footer = page.locator('.site-manager-footer');
-      await bookmarks.click();
-      await expect(bookmarks).toHaveAttribute('aria-expanded', 'true');
-      await manage.click({ timeout: 1000 });
+      if (await bookmarksMenu.isVisible()) {
+        const bookmarks = page.getByRole('menuitem', { name: text.bookmarks, exact: true });
+        const manage = page.getByRole('menuitem', { name: text.manageBookmarks });
+        await bookmarks.click();
+        await expect(bookmarks).toHaveAttribute('aria-expanded', 'true');
+        await manage.click({ timeout: 1000 });
+      } else {
+        await runAppMenuAction(page, 'manage-bookmarks');
+      }
       await expect(footer).toBeVisible({ timeout: 1000 });
       await page.getByRole('button', { name: text.importBookmarks, exact: true }).click();
       await page.getByRole('checkbox', { name: text.includeLocalPaths }).check();

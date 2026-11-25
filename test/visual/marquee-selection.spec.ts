@@ -63,11 +63,14 @@ test('Ctrl+drag adds to the selection and shrinking it gives the old selection b
   page,
 }) => {
   const { list, row, startX } = await openLongList(page);
+  const additiveMod = await page.evaluate(() =>
+    /Macintosh|Mac OS X/i.test(navigator.userAgent) ? 'Meta' : 'Control',
+  );
   await list.locator('.row[data-name="file-0006.txt"]').click();
   await expect(selectedCount(page)).toHaveText(/\(1 selected\)/);
 
   const top = row.y + 2;
-  await page.keyboard.down('Control');
+  await page.keyboard.down(additiveMod);
   await page.mouse.move(startX, top);
   await page.mouse.down();
   await page.mouse.move(row.x + 40, top + 2 * row.height, { steps: 5 });
@@ -75,7 +78,7 @@ test('Ctrl+drag adds to the selection and shrinking it gives the old selection b
   await page.mouse.move(row.x + 40, top + row.height / 2, { steps: 5 });
   await expect(selectedCount(page)).toHaveText(/\(2 selected\)/);
   await page.mouse.up();
-  await page.keyboard.up('Control');
+  await page.keyboard.up(additiveMod);
   await expect(list.locator('.row[data-name="file-0006.txt"]')).toHaveAttribute(
     'aria-selected',
     'true',

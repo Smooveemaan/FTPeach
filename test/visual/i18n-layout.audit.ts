@@ -84,7 +84,8 @@ const FIXTURE_DATA = [
     'USER deploy',
     '331 Password required',
   ].map(escape),
-  String.raw`^(?:(?:Ctrl|Shift|Alt|Meta)\+)*(?:F\d{1,2}|Backspace|Escape|Enter|Delete|Del|Tab|Space|Home|End|PageUp|PageDown|Insert|[A-Z0-9,.;/=←→↑↓-])$`,
+  String.raw`^(?:(?:Ctrl|Shift|Alt|Meta)\+)*(?:F\d{1,2}|Backspace|Escape|Enter|Delete|Del|Tab|Space|Home|End|PageUp|PageDown|Insert|[A-Z0-9,.;/=+←→↑↓-])$`,
+  String.raw`^\d+\s*px$`,
   String.raw`^v\d+\.\d+\.\d+`,
   String.raw`^(?:FTPeach|FTP|FTPS|SFTP|WebDAV|GitHub|Ko-fi|MIT|Apache-2\.0|UTC|each|v|[A-Z]:\\?|Users|var|www|developer|backups|deploy|editor|archivist|UTF-8|RESET)$`,
   // The language picker shows each language by its own name; the pseudo-locale
@@ -560,7 +561,6 @@ const SCREENS: Record<
         ['permissions', 'paneMenu.permissions'],
         ['move-to', 'paneMenu.moveTo'],
         ['delete', 'paneMenu.delete'],
-        ['open-with', 'paneMenu.openWith'],
       ] as const) {
         await contextMenu(page, remote.locator(ROW).nth(2));
         await item(key).click();
@@ -569,6 +569,13 @@ const SCREENS: Record<
         await page.keyboard.press('Escape');
         await expect(dialog(page)).toHaveCount(0);
       }
+      await contextMenu(page, remote.locator(ROW).nth(2));
+      await item('paneMenu.openWith').click();
+      await item('paneMenu.openWithSubmenu.other').click();
+      await expect(dialog(page)).toBeVisible();
+      await snap('prompt/open-with');
+      await page.keyboard.press('Escape');
+      await expect(dialog(page)).toHaveCount(0);
     },
   },
   log: {
@@ -604,6 +611,7 @@ const SCREENS: Record<
         const status = window.api.vault.status;
         window.api.vault.status = async () => ({
           ...(await status()),
+          locked: true,
           systemUnlockEnabled: false,
         });
       });

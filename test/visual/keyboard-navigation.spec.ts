@@ -36,6 +36,7 @@ test('search input keeps native select, copy, paste and cut shortcuts', async ({
 test('Escape restores Help focus without enabling keyboard outlines', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
   const help = page.getByRole('menuitem', { name: 'Help', exact: true });
+  test.skip(!(await help.isVisible()), 'in-window menu bar is hidden on macOS');
   await help.click();
   await page.getByRole('menuitem', { name: /About/ }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -48,7 +49,9 @@ test('Escape restores Help focus without enabling keyboard outlines', async ({ p
 
 test('only Tab starts focus cues, and pointer input ends them across dialogs', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
-  await page.getByRole('menuitem', { name: 'Help', exact: true }).click();
+  const help = page.getByRole('menuitem', { name: 'Help', exact: true });
+  test.skip(!(await help.isVisible()), 'in-window menu bar is hidden on macOS');
+  await help.click();
   await page.getByRole('menuitem', { name: /About/ }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
@@ -64,7 +67,6 @@ test('only Tab starts focus cues, and pointer input ends them across dialogs', a
   await page.keyboard.press('Tab');
   await expect(dialog.locator(':focus')).toHaveCSS('outline-style', 'solid');
   await page.keyboard.press('Escape');
-  const help = page.getByRole('menuitem', { name: 'Help', exact: true });
   await expect(help).toBeFocused();
   await expect(help).toHaveCSS('outline-style', 'solid');
 
@@ -88,8 +90,7 @@ test('a global shortcut waits while the recovered-edits prompt is open', async (
 for (const theme of ['dark', 'light'] as const) {
   test('menu keyboard focus is highlighted in ' + theme + ' mode', async ({ page }) => {
     await page.goto('/test/visual/visual.html');
-    await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
-    await page.getByRole('menuitem', { name: 'Settings…' }).click();
+    await page.locator('.view-toolbar-settings').click();
     await page.getByRole('button', { name: 'Interface', exact: true }).click();
     await page
       .getByRole('radio', { name: theme === 'dark' ? 'Dark' : 'Light', exact: true })
@@ -139,7 +140,9 @@ for (const theme of ['dark', 'light'] as const) {
 
 test('command menus highlight arrow focus after opening with the mouse', async ({ page }) => {
   await page.goto('/test/visual/visual.html');
-  await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
+  const edit = page.getByRole('menuitem', { name: 'Edit', exact: true });
+  test.skip(!(await edit.isVisible()), 'in-window menu bar is hidden on macOS');
+  await edit.click();
   await page.mouse.move(1, 1);
   const items = page.locator('.menu-dropdown').getByRole('menuitem').filter({ visible: true });
   await page.keyboard.press('ArrowDown');

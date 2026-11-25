@@ -11,6 +11,9 @@ const unsubscribe = readyUnsubscribe(() => {});
 const updateListeners = new Set<(_status: UpdaterStatus) => void>();
 const emitUpdate = (status: UpdaterStatus) =>
   updateListeners.forEach((listener) => listener(status));
+const appMenuListeners = new Set<(_actionId: string) => void>();
+export const triggerAppMenuAction = (actionId: string) =>
+  appMenuListeners.forEach((listener) => listener(actionId));
 
 interface VisualTerminalSession {
   cols: number;
@@ -470,6 +473,11 @@ export const visualTestApi = {
   },
   appMenu: {
     setModel: () => resolved(ok),
-    onAction: () => unsubscribe,
+    onAction: (callback: (_actionId: string) => void) => {
+      appMenuListeners.add(callback);
+      return readyUnsubscribe(() => {
+        appMenuListeners.delete(callback);
+      });
+    },
   },
 } satisfies Window['api'];

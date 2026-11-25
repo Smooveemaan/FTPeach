@@ -6,7 +6,7 @@ import ErrorBoundary from '../../src/components/ErrorBoundary.tsx';
 import * as transferStore from '../../src/features/transfers/transferStore.ts';
 import i18n from '../../src/i18n/index.ts';
 import '../../src/styles/theme.css';
-import { visualTestApi } from './visualTestApi.ts';
+import { triggerAppMenuAction, visualTestApi } from './visualTestApi.ts';
 import { pseudoLocalize } from './pseudoLocale.ts';
 import en from '../../src/i18n/locales/en.json';
 import { installKeyboardNavigation } from '../../src/platform/keyboardNavigation.ts';
@@ -19,6 +19,8 @@ if (import.meta.hot) import.meta.hot.dispose(disposeKeyboardNavigation);
 window.api = visualTestApi;
 // Specs fill the queue through the same store the app reads, built or served.
 (window as unknown as { transferStore: typeof transferStore }).transferStore = transferStore;
+(window as unknown as { triggerAppMenuAction: typeof triggerAppMenuAction }).triggerAppMenuAction =
+  triggerAppMenuAction;
 const params = new URLSearchParams(window.location.search);
 // `?lang=pseudo` falls back to English, so English becomes the pseudo-locale.
 if (params.get('lang') === 'pseudo') {

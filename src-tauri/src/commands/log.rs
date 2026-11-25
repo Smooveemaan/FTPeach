@@ -28,7 +28,10 @@ pub async fn log_open_folder(
         return Ok(());
     }
     app.opener()
-        .open_path(dir.to_string_lossy().into_owned(), None::<String>)
+        .open_path(
+            crate::local_fs::local_open::external_path(&dir),
+            None::<String>,
+        )
         .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))
 }
 

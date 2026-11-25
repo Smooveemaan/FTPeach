@@ -404,7 +404,10 @@ pub fn open_with_reveal_recovered_edits(app: AppHandle) -> CommandResult<()> {
         return Ok(());
     }
     app.opener()
-        .open_path(root.to_string_lossy().into_owned(), None::<String>)
+        .open_path(
+            crate::local_fs::local_open::external_path(&root),
+            None::<String>,
+        )
         .map_err(|error| CommandError::from_anyhow(&anyhow::anyhow!(error.to_string())))
 }
 

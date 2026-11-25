@@ -92,6 +92,17 @@ pub fn shell_path(path: &Path) -> String {
     }
 }
 
+/// Resolves `path` for external programs (such as Explorer or an editor) and
+/// strips the `\\?\` prefix. Under MSIX, canonicalizing a virtualized
+/// `%APPDATA%` or `%LOCALAPPDATA%` path returns the physical `LocalCache` path
+/// that processes outside the package container can open.
+pub fn external_path(path: &Path) -> String {
+    match std::fs::canonicalize(path) {
+        Ok(canonical) => shell_path(&canonical),
+        Err(_) => shell_path(path),
+    }
+}
+
 /// Classifies a local target; unavailable Unix metadata requires execution authorization.
 pub fn is_executable(path: &Path) -> bool {
     if is_executable_name(path) {

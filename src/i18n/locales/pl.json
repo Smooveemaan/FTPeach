@@ -925,7 +925,8 @@
     "maxConnectionsChanged": "Zostanie zastosowane po ponownym połączeniu.",
     "footerFolders": "Foldery: {{count}}",
     "footerSites": "Zakładki: {{count}}",
-    "footerPaths": "Ścieżki: {{count}}"
+    "footerPaths": "Ścieżki: {{count}}",
+    "openTerminalOnConnect": "Otwieraj terminal SSH automatycznie po połączeniu"
   },
   "connectionBar": {
     "fields": {
@@ -1080,5 +1081,31 @@
     "quitWhenDone": "Wyjdź po zakończeniu transferów",
     "message_few": "Trwają jeszcze {{count}} transfery. Wyjść i je przerwać?",
     "message_many": "Trwa jeszcze {{count}} transferów. Wyjść i je przerwać?"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Otwórz terminal SSH",
+    "close": "Zamknij terminal",
+    "sftpOnlyTooltip": "Terminal SSH jest dostępny tylko dla połączeń SFTP",
+    "collapse": "Zwiń terminal",
+    "expand": "Rozwiń terminal",
+    "maximize": "Maksymalizuj terminal",
+    "restore": "Przywróć rozmiar terminala",
+    "resize": "Przeciągnij, aby zmienić rozmiar terminala (dwuklik przywraca domyślne)",
+    "reconnect": "Połącz ponownie",
+    "shellRefused": "Ten serwer nie zezwala na interaktywną powłokę SSH (tylko SFTP). Przesyłanie plików nadal działa.",
+    "processExited": "Sesja powłoki została zakończona.",
+    "processExitedWithCode": "Sesja powłoki została zakończona (kod wyjścia: {{code}}).",
+    "openFailed": "Nie udało się otworzyć terminala SSH.",
+    "status": {
+      "connecting": "Łączenie…",
+      "shellRefusedShort": "Powłoka niedostępna"
+    },
+    "contextMenu": {
+      "copy": "Kopiuj",
+      "paste": "Wklej",
+      "selectAll": "Zaznacz wszystko",
+      "clear": "Wyczyść terminal"
+    }
   }
 }

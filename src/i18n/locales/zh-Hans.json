@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "重新连接后生效。",
     "footerFolders": "文件夹：{{count}}",
     "footerSites": "书签：{{count}}",
-    "footerPaths": "路径：{{count}}"
+    "footerPaths": "路径：{{count}}",
+    "openTerminalOnConnect": "连接时自动打开 SSH 终端"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "仍有 {{count}} 个传输正在进行。要退出并停止传输吗？",
     "quitNow": "立即退出",
     "quitWhenDone": "传输完成后退出"
+  },
+  "terminal": {
+    "title": "终端",
+    "open": "打开 SSH 终端",
+    "close": "关闭终端",
+    "sftpOnlyTooltip": "SSH 终端仅适用于 SFTP 连接",
+    "collapse": "折叠终端",
+    "expand": "展开终端",
+    "maximize": "最大化终端",
+    "restore": "还原终端大小",
+    "resize": "拖动以调整终端大小（双击可重置）",
+    "reconnect": "重新连接",
+    "shellRefused": "此服务器不允许交互式 SSH Shell（仅支持 SFTP）。文件传输仍可正常使用。",
+    "processExited": "Shell 会话已结束。",
+    "processExitedWithCode": "Shell 会话已结束（退出代码 {{code}}）。",
+    "openFailed": "无法打开 SSH 终端。",
+    "status": {
+      "connecting": "正在连接…",
+      "shellRefusedShort": "Shell 不可用"
+    },
+    "contextMenu": {
+      "copy": "复制",
+      "paste": "粘贴",
+      "selectAll": "全选",
+      "clear": "清空终端"
+    }
   }
 }

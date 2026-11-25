@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Wordt toegepast na opnieuw verbinden.",
     "footerFolders": "Mappen: {{count}}",
     "footerSites": "Bladwijzers: {{count}}",
-    "footerPaths": "Paden: {{count}}"
+    "footerPaths": "Paden: {{count}}",
+    "openTerminalOnConnect": "SSH-terminal automatisch openen bij verbinden"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "Er lopen nog {{count}} overdrachten. Afsluiten en deze stoppen?",
     "quitNow": "Nu afsluiten",
     "quitWhenDone": "Afsluiten zodra de overdrachten klaar zijn"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "SSH-terminal openen",
+    "close": "Terminal sluiten",
+    "sftpOnlyTooltip": "SSH-terminal is alleen beschikbaar voor SFTP-verbindingen",
+    "collapse": "Terminal samenvouwen",
+    "expand": "Terminal uitvouwen",
+    "maximize": "Terminal maximaliseren",
+    "restore": "Terminalgrootte herstellen",
+    "resize": "Sleep om de terminalgrootte aan te passen (dubbelklik om terug te zetten)",
+    "reconnect": "Opnieuw verbinden",
+    "shellRefused": "Deze server staat geen interactieve SSH-shell toe (alleen SFTP). Bestandsoverdrachten blijven werken.",
+    "processExited": "Shellsessie beëindigd.",
+    "processExitedWithCode": "Shellsessie beëindigd (afsluitcode {{code}}).",
+    "openFailed": "Kan de SSH-terminal niet openen.",
+    "status": {
+      "connecting": "Verbinden…",
+      "shellRefusedShort": "Shell niet beschikbaar"
+    },
+    "contextMenu": {
+      "copy": "Kopiëren",
+      "paste": "Plakken",
+      "selectAll": "Alles selecteren",
+      "clear": "Terminal wissen"
+    }
   }
 }

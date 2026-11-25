@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Gäller efter återanslutning.",
     "footerFolders": "Mappar: {{count}}",
     "footerSites": "Bokmärken: {{count}}",
-    "footerPaths": "Sökvägar: {{count}}"
+    "footerPaths": "Sökvägar: {{count}}",
+    "openTerminalOnConnect": "Öppna SSH-terminal automatiskt vid anslutning"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} överföringar pågår fortfarande. Vill du avsluta och stoppa dem?",
     "quitNow": "Avsluta nu",
     "quitWhenDone": "Avsluta när överföringarna är klara"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Öppna SSH-terminal",
+    "close": "Stäng terminal",
+    "sftpOnlyTooltip": "SSH-terminal är endast tillgänglig för SFTP-anslutningar",
+    "collapse": "Fäll ihop terminal",
+    "expand": "Expandera terminal",
+    "maximize": "Maximera terminal",
+    "restore": "Återställ terminalstorlek",
+    "resize": "Dra för att ändra terminalstorleken (dubbelklicka för att återställa)",
+    "reconnect": "Återanslut",
+    "shellRefused": "Den här servern tillåter inte interaktiva SSH-skal (endast SFTP). Filöverföringar fortsätter att fungera.",
+    "processExited": "Skalsessionen avslutades.",
+    "processExitedWithCode": "Skalsessionen avslutades (slutkod {{code}}).",
+    "openFailed": "Kunde inte öppna SSH-terminalen.",
+    "status": {
+      "connecting": "Ansluter…",
+      "shellRefusedShort": "Skal inte tillgängligt"
+    },
+    "contextMenu": {
+      "copy": "Kopiera",
+      "paste": "Klistra in",
+      "selectAll": "Markera allt",
+      "clear": "Rensa terminal"
+    }
   }
 }

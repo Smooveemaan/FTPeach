@@ -937,7 +937,8 @@
     "maxConnectionsChanged": "يُطبَّق بعد إعادة الاتصال.",
     "footerFolders": "المجلدات: {{count}}",
     "footerSites": "الإشارات المرجعية: {{count}}",
-    "footerPaths": "المسارات: {{count}}"
+    "footerPaths": "المسارات: {{count}}",
+    "openTerminalOnConnect": "فتح طرفية SSH تلقائيًا عند الاتصال"
   },
   "connectionBar": {
     "fields": {
@@ -1094,5 +1095,31 @@
     "message_two": "لا تزال {{count}} عمليتا نقل جاريتين. هل تريد الخروج وإيقافهما؟",
     "message_few": "لا تزال {{count}} عمليات نقل جارية. هل تريد الخروج وإيقافها؟",
     "message_many": "لا تزال {{count}} عملية نقل جارية. هل تريد الخروج وإيقافها؟"
+  },
+  "terminal": {
+    "title": "الطرفية",
+    "open": "فتح طرفية SSH",
+    "close": "إغلاق الطرفية",
+    "sftpOnlyTooltip": "طرفية SSH متاحة فقط لاتصالات SFTP",
+    "collapse": "طيّ الطرفية",
+    "expand": "توسيع الطرفية",
+    "maximize": "تكبير الطرفية",
+    "restore": "استعادة حجم الطرفية",
+    "resize": "اسحب لتغيير حجم الطرفية (انقر نقرًا مزدوجًا لإعادة التعيين)",
+    "reconnect": "إعادة الاتصال",
+    "shellRefused": "لا يسمح هذا الخادم بصدفة SSH تفاعلية (SFTP فقط). يستمر نقل الملفات في العمل.",
+    "processExited": "انتهت جلسة الصدفة.",
+    "processExitedWithCode": "انتهت جلسة الصدفة (رمز الخروج {{code}}).",
+    "openFailed": "تعذّر فتح طرفية SSH.",
+    "status": {
+      "connecting": "جارٍ الاتصال…",
+      "shellRefusedShort": "الصدفة غير متاحة"
+    },
+    "contextMenu": {
+      "copy": "نسخ",
+      "paste": "لصق",
+      "selectAll": "تحديد الكل",
+      "clear": "مسح الطرفية"
+    }
   }
 }

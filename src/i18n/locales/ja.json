@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "再接続後に適用されます。",
     "footerFolders": "フォルダー: {{count}}",
     "footerSites": "ブックマーク: {{count}}",
-    "footerPaths": "パス: {{count}}"
+    "footerPaths": "パス: {{count}}",
+    "openTerminalOnConnect": "接続時に SSH ターミナルを自動で開く"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} 件の転送が実行中です。終了して転送を中止しますか？",
     "quitNow": "今すぐ終了",
     "quitWhenDone": "転送の完了後に終了"
+  },
+  "terminal": {
+    "title": "ターミナル",
+    "open": "SSH ターミナルを開く",
+    "close": "ターミナルを閉じる",
+    "sftpOnlyTooltip": "SSH ターミナルは SFTP 接続でのみ利用できます",
+    "collapse": "ターミナルを折りたたむ",
+    "expand": "ターミナルを展開",
+    "maximize": "ターミナルを最大化",
+    "restore": "ターミナルのサイズを元に戻す",
+    "resize": "ドラッグしてターミナルのサイズを変更（ダブルクリックでリセット）",
+    "reconnect": "再接続",
+    "shellRefused": "このサーバーでは対話型 SSH シェルが許可されていません（SFTP 専用）。ファイル転送は引き続き利用できます。",
+    "processExited": "シェルセッションが終了しました。",
+    "processExitedWithCode": "シェルセッションが終了しました（終了コード {{code}}）。",
+    "openFailed": "SSH ターミナルを開けませんでした。",
+    "status": {
+      "connecting": "接続中…",
+      "shellRefusedShort": "シェル利用不可"
+    },
+    "contextMenu": {
+      "copy": "コピー",
+      "paste": "貼り付け",
+      "selectAll": "すべて選択",
+      "clear": "ターミナルをクリア"
+    }
   }
 }

@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Applies after reconnecting.",
     "footerFolders": "Folders: {{count}}",
     "footerSites": "Bookmarks: {{count}}",
-    "footerPaths": "Paths: {{count}}"
+    "footerPaths": "Paths: {{count}}",
+    "openTerminalOnConnect": "Open SSH terminal automatically on connect"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} transfers are still running. Quit and stop them?",
     "quitNow": "Quit now",
     "quitWhenDone": "Quit when transfers finish"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Open SSH terminal",
+    "close": "Close terminal",
+    "sftpOnlyTooltip": "SSH terminal is available only for SFTP connections",
+    "collapse": "Collapse terminal",
+    "expand": "Expand terminal",
+    "maximize": "Maximize terminal",
+    "restore": "Restore terminal size",
+    "resize": "Drag to resize the terminal (double-click to reset)",
+    "reconnect": "Reconnect",
+    "shellRefused": "This server does not allow interactive SSH shells (SFTP-only). File transfers continue to work.",
+    "processExited": "Shell session ended.",
+    "processExitedWithCode": "Shell session ended (exit code {{code}}).",
+    "openFailed": "Failed to open SSH terminal.",
+    "status": {
+      "connecting": "Connecting…",
+      "shellRefusedShort": "Shell unavailable"
+    },
+    "contextMenu": {
+      "copy": "Copy",
+      "paste": "Paste",
+      "selectAll": "Select all",
+      "clear": "Clear terminal"
+    }
   }
 }

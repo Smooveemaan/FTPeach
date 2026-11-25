@@ -919,7 +919,8 @@
     "maxConnectionsChanged": "Si applica dopo la riconnessione.",
     "footerFolders": "Cartelle: {{count}}",
     "footerSites": "Segnalibri: {{count}}",
-    "footerPaths": "Percorsi: {{count}}"
+    "footerPaths": "Percorsi: {{count}}",
+    "openTerminalOnConnect": "Apri automaticamente il terminale SSH alla connessione"
   },
   "connectionBar": {
     "fields": {
@@ -1073,5 +1074,31 @@
     "quitNow": "Esci ora",
     "quitWhenDone": "Esci al termine dei trasferimenti",
     "message_many": "Ci sono ancora {{count}} trasferimenti in corso. Uscire e interromperli?"
+  },
+  "terminal": {
+    "title": "Terminale",
+    "open": "Apri terminale SSH",
+    "close": "Chiudi terminale",
+    "sftpOnlyTooltip": "Il terminale SSH è disponibile solo per le connessioni SFTP",
+    "collapse": "Comprimi terminale",
+    "expand": "Espandi terminale",
+    "maximize": "Ingrandisci terminale",
+    "restore": "Ripristina dimensioni del terminale",
+    "resize": "Trascina per ridimensionare il terminale (doppio clic per ripristinare)",
+    "reconnect": "Riconnetti",
+    "shellRefused": "Questo server non consente shell SSH interattive (solo SFTP). I trasferimenti di file continuano a funzionare.",
+    "processExited": "Sessione shell terminata.",
+    "processExitedWithCode": "Sessione shell terminata (codice di uscita: {{code}}).",
+    "openFailed": "Impossibile aprire il terminale SSH.",
+    "status": {
+      "connecting": "Connessione…",
+      "shellRefusedShort": "Shell non disponibile"
+    },
+    "contextMenu": {
+      "copy": "Copia",
+      "paste": "Incolla",
+      "selectAll": "Seleziona tutto",
+      "clear": "Pulisci terminale"
+    }
   }
 }

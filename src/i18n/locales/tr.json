@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Yeniden bağlandıktan sonra uygulanır.",
     "footerFolders": "Klasörler: {{count}}",
     "footerSites": "Yer imleri: {{count}}",
-    "footerPaths": "Yollar: {{count}}"
+    "footerPaths": "Yollar: {{count}}",
+    "openTerminalOnConnect": "Bağlanırken SSH terminalini otomatik aç"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} aktarım hâlâ sürüyor. Çıkılsın ve durdurulsun mu?",
     "quitNow": "Şimdi çık",
     "quitWhenDone": "Aktarımlar bitince çık"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "SSH terminalini aç",
+    "close": "Terminali kapat",
+    "sftpOnlyTooltip": "SSH terminali yalnızca SFTP bağlantıları için kullanılabilir",
+    "collapse": "Terminali daralt",
+    "expand": "Terminali genişlet",
+    "maximize": "Terminali büyüt",
+    "restore": "Terminal boyutunu geri yükle",
+    "resize": "Terminal boyutunu değiştirmek için sürükleyin (sıfırlamak için çift tıklayın)",
+    "reconnect": "Yeniden bağlan",
+    "shellRefused": "Bu sunucu etkileşimli SSH kabuğuna izin vermiyor (yalnızca SFTP). Dosya aktarımları çalışmaya devam eder.",
+    "processExited": "Kabuk oturumu sona erdi.",
+    "processExitedWithCode": "Kabuk oturumu sona erdi (çıkış kodu: {{code}}).",
+    "openFailed": "SSH terminali açılamadı.",
+    "status": {
+      "connecting": "Bağlanıyor…",
+      "shellRefusedShort": "Kabuk kullanılamıyor"
+    },
+    "contextMenu": {
+      "copy": "Kopyala",
+      "paste": "Yapıştır",
+      "selectAll": "Tümünü seç",
+      "clear": "Terminali temizle"
+    }
   }
 }

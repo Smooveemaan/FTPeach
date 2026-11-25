@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Áp dụng sau khi kết nối lại.",
     "footerFolders": "Thư mục: {{count}}",
     "footerSites": "Dấu trang: {{count}}",
-    "footerPaths": "Đường dẫn: {{count}}"
+    "footerPaths": "Đường dẫn: {{count}}",
+    "openTerminalOnConnect": "Tự động mở terminal SSH khi kết nối"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "Vẫn còn {{count}} lượt truyền đang chạy. Thoát và dừng chúng?",
     "quitNow": "Thoát ngay",
     "quitWhenDone": "Thoát khi truyền xong"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Mở terminal SSH",
+    "close": "Đóng terminal",
+    "sftpOnlyTooltip": "Terminal SSH chỉ khả dụng cho kết nối SFTP",
+    "collapse": "Thu gọn terminal",
+    "expand": "Mở rộng terminal",
+    "maximize": "Phóng to terminal",
+    "restore": "Khôi phục kích thước terminal",
+    "resize": "Kéo để thay đổi kích thước terminal (nhấp đúp để đặt lại)",
+    "reconnect": "Kết nối lại",
+    "shellRefused": "Máy chủ này không cho phép shell SSH tương tác (chỉ hỗ trợ SFTP). Việc truyền tệp vẫn hoạt động bình thường.",
+    "processExited": "Phiên shell đã kết thúc.",
+    "processExitedWithCode": "Phiên shell đã kết thúc (mã thoát {{code}}).",
+    "openFailed": "Không thể mở terminal SSH.",
+    "status": {
+      "connecting": "Đang kết nối…",
+      "shellRefusedShort": "Shell không khả dụng"
+    },
+    "contextMenu": {
+      "copy": "Sao chép",
+      "paste": "Dán",
+      "selectAll": "Chọn tất cả",
+      "clear": "Xóa màn hình terminal"
+    }
   }
 }

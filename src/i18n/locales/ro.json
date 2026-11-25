@@ -919,7 +919,8 @@
     "maxConnectionsChanged": "Se aplică după reconectare.",
     "footerFolders": "Foldere: {{count}}",
     "footerSites": "Marcaje: {{count}}",
-    "footerPaths": "Căi: {{count}}"
+    "footerPaths": "Căi: {{count}}",
+    "openTerminalOnConnect": "Deschide automat terminalul SSH la conectare"
   },
   "connectionBar": {
     "fields": {
@@ -1073,5 +1074,31 @@
     "quitNow": "Ieși acum",
     "quitWhenDone": "Ieși după finalizarea transferurilor",
     "message_few": "{{count}} transferuri sunt încă în curs. Ieșiți și le opriți?"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Deschide terminalul SSH",
+    "close": "Închide terminalul",
+    "sftpOnlyTooltip": "Terminalul SSH este disponibil doar pentru conexiuni SFTP",
+    "collapse": "Restrânge terminalul",
+    "expand": "Extinde terminalul",
+    "maximize": "Maximizează terminalul",
+    "restore": "Restabilește dimensiunea terminalului",
+    "resize": "Trageți pentru a redimensiona terminalul (dublu clic pentru resetare)",
+    "reconnect": "Reconectează",
+    "shellRefused": "Acest server nu permite shell-uri SSH interactive (doar SFTP). Transferurile de fișiere funcționează în continuare.",
+    "processExited": "Sesiunea shell s-a încheiat.",
+    "processExitedWithCode": "Sesiunea shell s-a încheiat (cod de ieșire: {{code}}).",
+    "openFailed": "Nu s-a putut deschide terminalul SSH.",
+    "status": {
+      "connecting": "Se conectează…",
+      "shellRefusedShort": "Shell indisponibil"
+    },
+    "contextMenu": {
+      "copy": "Copiază",
+      "paste": "Lipește",
+      "selectAll": "Selectează tot",
+      "clear": "Curăță terminalul"
+    }
   }
 }

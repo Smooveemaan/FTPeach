@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Gilt nach erneutem Verbinden.",
     "footerFolders": "Ordner: {{count}}",
     "footerSites": "Lesezeichen: {{count}}",
-    "footerPaths": "Pfade: {{count}}"
+    "footerPaths": "Pfade: {{count}}",
+    "openTerminalOnConnect": "SSH-Terminal beim Verbinden automatisch öffnen"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} Übertragungen laufen noch. Beenden und abbrechen?",
     "quitNow": "Jetzt beenden",
     "quitWhenDone": "Nach Abschluss der Übertragungen beenden"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "SSH-Terminal öffnen",
+    "close": "Terminal schließen",
+    "sftpOnlyTooltip": "Das SSH-Terminal ist nur für SFTP-Verbindungen verfügbar",
+    "collapse": "Terminal einklappen",
+    "expand": "Terminal ausklappen",
+    "maximize": "Terminal maximieren",
+    "restore": "Terminalgröße wiederherstellen",
+    "resize": "Ziehen, um die Terminalgröße zu ändern (Doppelklick zum Zurücksetzen)",
+    "reconnect": "Neu verbinden",
+    "shellRefused": "Dieser Server erlaubt keine interaktive SSH-Shell (nur SFTP). Dateiübertragungen funktionieren weiterhin.",
+    "processExited": "Shell-Sitzung beendet.",
+    "processExitedWithCode": "Shell-Sitzung beendet (Exit-Code {{code}}).",
+    "openFailed": "SSH-Terminal konnte nicht geöffnet werden.",
+    "status": {
+      "connecting": "Wird verbunden…",
+      "shellRefusedShort": "Shell nicht verfügbar"
+    },
+    "contextMenu": {
+      "copy": "Kopieren",
+      "paste": "Einfügen",
+      "selectAll": "Alles auswählen",
+      "clear": "Terminal leeren"
+    }
   }
 }

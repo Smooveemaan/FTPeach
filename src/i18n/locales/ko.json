@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "다시 연결한 후 적용됩니다.",
     "footerFolders": "폴더: {{count}}",
     "footerSites": "북마크: {{count}}",
-    "footerPaths": "경로: {{count}}"
+    "footerPaths": "경로: {{count}}",
+    "openTerminalOnConnect": "연결 시 SSH 터미널 자동 열기"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "전송 {{count}}개가 아직 진행 중입니다. 종료하고 전송을 중지하시겠습니까?",
     "quitNow": "지금 종료",
     "quitWhenDone": "전송 완료 후 종료"
+  },
+  "terminal": {
+    "title": "터미널",
+    "open": "SSH 터미널 열기",
+    "close": "터미널 닫기",
+    "sftpOnlyTooltip": "SSH 터미널은 SFTP 연결에서만 사용할 수 있습니다",
+    "collapse": "터미널 접기",
+    "expand": "터미널 펼치기",
+    "maximize": "터미널 최대화",
+    "restore": "터미널 크기 복원",
+    "resize": "드래그하여 터미널 크기 조정(두 번 클릭하면 초기화)",
+    "reconnect": "다시 연결",
+    "shellRefused": "이 서버는 대화형 SSH 셸을 허용하지 않습니다(SFTP 전용). 파일 전송은 계속 사용할 수 있습니다.",
+    "processExited": "셸 세션이 종료되었습니다.",
+    "processExitedWithCode": "셸 세션이 종료되었습니다(종료 코드 {{code}}).",
+    "openFailed": "SSH 터미널을 열지 못했습니다.",
+    "status": {
+      "connecting": "연결 중…",
+      "shellRefusedShort": "셸 사용 불가"
+    },
+    "contextMenu": {
+      "copy": "복사",
+      "paste": "붙여넣기",
+      "selectAll": "모두 선택",
+      "clear": "터미널 지우기"
+    }
   }
 }

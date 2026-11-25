@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "फिर से कनेक्ट करने के बाद लागू होगा।",
     "footerFolders": "फ़ोल्डर: {{count}}",
     "footerSites": "बुकमार्क: {{count}}",
-    "footerPaths": "पथ: {{count}}"
+    "footerPaths": "पथ: {{count}}",
+    "openTerminalOnConnect": "कनेक्ट होने पर SSH टर्मिनल अपने आप खोलें"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} स्थानांतरण अभी भी चल रहे हैं। बाहर निकलें और उन्हें रोकें?",
     "quitNow": "अभी बाहर निकलें",
     "quitWhenDone": "स्थानांतरण समाप्त होने पर बाहर निकलें"
+  },
+  "terminal": {
+    "title": "टर्मिनल",
+    "open": "SSH टर्मिनल खोलें",
+    "close": "टर्मिनल बंद करें",
+    "sftpOnlyTooltip": "SSH टर्मिनल केवल SFTP कनेक्शन के लिए उपलब्ध है",
+    "collapse": "टर्मिनल समेटें",
+    "expand": "टर्मिनल फैलाएँ",
+    "maximize": "टर्मिनल बड़ा करें",
+    "restore": "टर्मिनल का आकार बहाल करें",
+    "resize": "टर्मिनल का आकार बदलने के लिए खींचें (रीसेट करने के लिए डबल-क्लिक करें)",
+    "reconnect": "फिर से कनेक्ट करें",
+    "shellRefused": "यह सर्वर इंटरैक्टिव SSH शेल की अनुमति नहीं देता (केवल SFTP)। फ़ाइल स्थानांतरण काम करते रहेंगे।",
+    "processExited": "शेल सत्र समाप्त हो गया।",
+    "processExitedWithCode": "शेल सत्र समाप्त हो गया (एग्ज़िट कोड {{code}})।",
+    "openFailed": "SSH टर्मिनल नहीं खोला जा सका।",
+    "status": {
+      "connecting": "कनेक्ट हो रहा है…",
+      "shellRefusedShort": "शेल उपलब्ध नहीं"
+    },
+    "contextMenu": {
+      "copy": "कॉपी करें",
+      "paste": "पेस्ट करें",
+      "selectAll": "सभी चुनें",
+      "clear": "टर्मिनल साफ़ करें"
+    }
   }
 }

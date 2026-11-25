@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "重新連線後生效。",
     "footerFolders": "資料夾：{{count}}",
     "footerSites": "書籤：{{count}}",
-    "footerPaths": "路徑：{{count}}"
+    "footerPaths": "路徑：{{count}}",
+    "openTerminalOnConnect": "連線時自動開啟 SSH 終端機"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "仍有 {{count}} 個傳輸正在進行。要結束並停止傳輸嗎？",
     "quitNow": "立即結束",
     "quitWhenDone": "傳輸完成後結束"
+  },
+  "terminal": {
+    "title": "終端機",
+    "open": "開啟 SSH 終端機",
+    "close": "關閉終端機",
+    "sftpOnlyTooltip": "SSH 終端機僅適用於 SFTP 連線",
+    "collapse": "摺疊終端機",
+    "expand": "展開終端機",
+    "maximize": "最大化終端機",
+    "restore": "還原終端機大小",
+    "resize": "拖曳以調整終端機大小（按兩下以重設）",
+    "reconnect": "重新連線",
+    "shellRefused": "此伺服器不允許互動式 SSH Shell（僅支援 SFTP）。檔案傳輸仍可正常運作。",
+    "processExited": "Shell 工作階段已結束。",
+    "processExitedWithCode": "Shell 工作階段已結束（結束代碼 {{code}}）。",
+    "openFailed": "無法開啟 SSH 終端機。",
+    "status": {
+      "connecting": "連線中…",
+      "shellRefusedShort": "Shell 無法使用"
+    },
+    "contextMenu": {
+      "copy": "複製",
+      "paste": "貼上",
+      "selectAll": "全選",
+      "clear": "清除終端機"
+    }
   }
 }

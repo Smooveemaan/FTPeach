@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Újracsatlakozás után lép érvénybe.",
     "footerFolders": "Mappák: {{count}}",
     "footerSites": "Könyvjelzők: {{count}}",
-    "footerPaths": "Útvonalak: {{count}}"
+    "footerPaths": "Útvonalak: {{count}}",
+    "openTerminalOnConnect": "SSH-terminál automatikus megnyitása csatlakozáskor"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "Még {{count}} átvitel van folyamatban. Kilép, és leállítja őket?",
     "quitNow": "Kilépés most",
     "quitWhenDone": "Kilépés az átvitelek befejezése után"
+  },
+  "terminal": {
+    "title": "Terminál",
+    "open": "SSH-terminál megnyitása",
+    "close": "Terminál bezárása",
+    "sftpOnlyTooltip": "Az SSH-terminál csak SFTP-kapcsolatokhoz érhető el",
+    "collapse": "Terminál összecsukása",
+    "expand": "Terminál kibontása",
+    "maximize": "Terminál teljes méretre állítása",
+    "restore": "Terminál méretének visszaállítása",
+    "resize": "Húzza a terminál átméretezéséhez (dupla kattintás: alapérték)",
+    "reconnect": "Újracsatlakozás",
+    "shellRefused": "Ez a szerver nem engedélyezi az interaktív SSH-parancsértelmezőt (csak SFTP). A fájlátvitelek továbbra is működnek.",
+    "processExited": "A parancsértelmező munkamenete véget ért.",
+    "processExitedWithCode": "A parancsértelmező munkamenete véget ért (kilépési kód: {{code}}).",
+    "openFailed": "Nem sikerült megnyitni az SSH-terminált.",
+    "status": {
+      "connecting": "Csatlakozás…",
+      "shellRefusedShort": "Shell nem elérhető"
+    },
+    "contextMenu": {
+      "copy": "Másolás",
+      "paste": "Beillesztés",
+      "selectAll": "Összes kijelölése",
+      "clear": "Terminál törlése"
+    }
   }
 }

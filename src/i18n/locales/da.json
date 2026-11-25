@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Træder i kraft efter genforbindelse.",
     "footerFolders": "Mapper: {{count}}",
     "footerSites": "Bogmærker: {{count}}",
-    "footerPaths": "Stier: {{count}}"
+    "footerPaths": "Stier: {{count}}",
+    "openTerminalOnConnect": "Åbn SSH-terminal automatisk ved forbindelse"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} overførsler er stadig i gang. Vil du afslutte og stoppe dem?",
     "quitNow": "Afslut nu",
     "quitWhenDone": "Afslut, når overførslerne er færdige"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Åbn SSH-terminal",
+    "close": "Luk terminal",
+    "sftpOnlyTooltip": "SSH-terminal er kun tilgængelig for SFTP-forbindelser",
+    "collapse": "Fold terminal sammen",
+    "expand": "Udvid terminal",
+    "maximize": "Maksimér terminal",
+    "restore": "Gendan terminalstørrelse",
+    "resize": "Træk for at ændre terminalstørrelsen (dobbeltklik for at nulstille)",
+    "reconnect": "Opret forbindelse igen",
+    "shellRefused": "Denne server tillader ikke interaktive SSH-shells (kun SFTP). Filoverførsler fortsætter med at virke.",
+    "processExited": "Shell-session afsluttet.",
+    "processExitedWithCode": "Shell-session afsluttet (afslutningskode {{code}}).",
+    "openFailed": "Kunne ikke åbne SSH-terminal.",
+    "status": {
+      "connecting": "Opretter forbindelse…",
+      "shellRefusedShort": "Shell ikke tilgængelig"
+    },
+    "contextMenu": {
+      "copy": "Kopiér",
+      "paste": "Indsæt",
+      "selectAll": "Markér alt",
+      "clear": "Ryd terminal"
+    }
   }
 }

@@ -925,7 +925,8 @@
     "maxConnectionsChanged": "Projeví se po opětovném připojení.",
     "footerFolders": "Složky: {{count}}",
     "footerSites": "Záložky: {{count}}",
-    "footerPaths": "Cesty: {{count}}"
+    "footerPaths": "Cesty: {{count}}",
+    "openTerminalOnConnect": "Automaticky otevřít terminál SSH při připojení"
   },
   "connectionBar": {
     "fields": {
@@ -1080,5 +1081,31 @@
     "quitWhenDone": "Ukončit po dokončení přenosů",
     "message_few": "Stále probíhají {{count}} přenosy. Ukončit aplikaci a přenosy zastavit?",
     "message_many": "Stále probíhá {{count}} přenosu. Ukončit aplikaci a přenosy zastavit?"
+  },
+  "terminal": {
+    "title": "Terminál",
+    "open": "Otevřít terminál SSH",
+    "close": "Zavřít terminál",
+    "sftpOnlyTooltip": "Terminál SSH je dostupný pouze pro připojení SFTP",
+    "collapse": "Sbalit terminál",
+    "expand": "Rozbalit terminál",
+    "maximize": "Maximalizovat terminál",
+    "restore": "Obnovit velikost terminálu",
+    "resize": "Přetažením změníte velikost terminálu (dvojklik obnoví výchozí)",
+    "reconnect": "Znovu připojit",
+    "shellRefused": "Tento server nepovoluje interaktivní shell SSH (pouze SFTP). Přenosy souborů fungují dál.",
+    "processExited": "Relace shellu skončila.",
+    "processExitedWithCode": "Relace shellu skončila (návratový kód {{code}}).",
+    "openFailed": "Terminál SSH se nepodařilo otevřít.",
+    "status": {
+      "connecting": "Připojování…",
+      "shellRefusedShort": "Shell nedostupný"
+    },
+    "contextMenu": {
+      "copy": "Kopírovat",
+      "paste": "Vložit",
+      "selectAll": "Vybrat vše",
+      "clear": "Vymazat terminál"
+    }
   }
 }

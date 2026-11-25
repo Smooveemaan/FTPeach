@@ -913,7 +913,8 @@
     "maxConnectionsChanged": "Berlaku setelah terhubung ulang.",
     "footerFolders": "Folder: {{count}}",
     "footerSites": "Bookmark: {{count}}",
-    "footerPaths": "Jalur: {{count}}"
+    "footerPaths": "Jalur: {{count}}",
+    "openTerminalOnConnect": "Buka terminal SSH secara otomatis saat terhubung"
   },
   "connectionBar": {
     "fields": {
@@ -1066,5 +1067,31 @@
     "message_other": "{{count}} transfer masih berjalan. Keluar dan hentikan?",
     "quitNow": "Keluar sekarang",
     "quitWhenDone": "Keluar setelah transfer selesai"
+  },
+  "terminal": {
+    "title": "Terminal",
+    "open": "Buka terminal SSH",
+    "close": "Tutup terminal",
+    "sftpOnlyTooltip": "Terminal SSH hanya tersedia untuk koneksi SFTP",
+    "collapse": "Ciutkan terminal",
+    "expand": "Luaskan terminal",
+    "maximize": "Maksimalkan terminal",
+    "restore": "Pulihkan ukuran terminal",
+    "resize": "Seret untuk mengubah ukuran terminal (klik dua kali untuk mengatur ulang)",
+    "reconnect": "Hubungkan kembali",
+    "shellRefused": "Server ini tidak mengizinkan shell SSH interaktif (khusus SFTP). Transfer file tetap berfungsi.",
+    "processExited": "Sesi shell berakhir.",
+    "processExitedWithCode": "Sesi shell berakhir (kode keluar {{code}}).",
+    "openFailed": "Gagal membuka terminal SSH.",
+    "status": {
+      "connecting": "Menghubungkan…",
+      "shellRefusedShort": "Shell tidak tersedia"
+    },
+    "contextMenu": {
+      "copy": "Salin",
+      "paste": "Tempel",
+      "selectAll": "Pilih semua",
+      "clear": "Bersihkan terminal"
+    }
   }
 }

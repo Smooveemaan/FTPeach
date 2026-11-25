@@ -919,7 +919,8 @@
     "maxConnectionsChanged": "ייכנס לתוקף לאחר התחברות מחדש.",
     "footerFolders": "תיקיות: {{count}}",
     "footerSites": "סימניות: {{count}}",
-    "footerPaths": "נתיבים: {{count}}"
+    "footerPaths": "נתיבים: {{count}}",
+    "openTerminalOnConnect": "פתח מסוף SSH אוטומטית בעת ההתחברות"
   },
   "connectionBar": {
     "fields": {
@@ -1073,5 +1074,31 @@
     "quitNow": "צא עכשיו",
     "quitWhenDone": "צא בסיום ההעברות",
     "message_two": "{{count}} העברות עדיין פועלות. לצאת ולעצור אותן?"
+  },
+  "terminal": {
+    "title": "מסוף",
+    "open": "פתח מסוף SSH",
+    "close": "סגור מסוף",
+    "sftpOnlyTooltip": "מסוף SSH זמין רק עבור חיבורי SFTP",
+    "collapse": "כווץ מסוף",
+    "expand": "הרחב מסוף",
+    "maximize": "הגדל מסוף",
+    "restore": "שחזר את גודל המסוף",
+    "resize": "גרור כדי לשנות את גודל המסוף (לחץ פעמיים כדי לאפס)",
+    "reconnect": "התחבר מחדש",
+    "shellRefused": "שרת זה אינו מאפשר מעטפת SSH אינטראקטיבית (SFTP בלבד). העברות קבצים ממשיכות לפעול.",
+    "processExited": "סשן המעטפת הסתיים.",
+    "processExitedWithCode": "סשן המעטפת הסתיים (קוד יציאה {{code}}).",
+    "openFailed": "פתיחת מסוף ה-SSH נכשלה.",
+    "status": {
+      "connecting": "מתחבר…",
+      "shellRefusedShort": "מעטפת לא זמינה"
+    },
+    "contextMenu": {
+      "copy": "העתק",
+      "paste": "הדבק",
+      "selectAll": "בחר הכול",
+      "clear": "נקה מסוף"
+    }
   }
 }

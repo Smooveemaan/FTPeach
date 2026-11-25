@@ -1,5 +1,6 @@
-use crate::local_fs::portable;
+use crate::local_fs::{portable, roots};
 use crate::runtime::file_dialog::picked;
+use std::path::{Path, PathBuf};
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 
@@ -58,7 +59,11 @@ pub async fn dialog_select_key_file(
     approved: tauri::State<'_, crate::local_fs::local_open::ApprovedLocalPaths>,
 ) -> Result<Option<SelectedSshKey>, crate::ipc::CommandError> {
     let selected = picked(|tx| {
-        in_portable_folder(app.dialog().file(), PORTABLE_KEYS)
+        let mut builder = app.dialog().file();
+        if let Some(dir) = key_file_start_dir(portable::root(), roots::home().as_deref()) {
+            builder = builder.set_directory(dir);
+        }
+        builder
             .add_filter("All files", &["*"])
             .add_filter("SSH keys", &["pem", "ppk", "key"])
             .pick_file(move |path| {
@@ -79,6 +84,17 @@ pub async fn dialog_select_key_file(
 /// with it and are stored as paths relative to it.
 const PORTABLE_KEYS: &str = "keys";
 const PORTABLE_CERTIFICATES: &str = "certificates";
+
+/// Prefers a portable copy's `keys/` folder when it exists, otherwise falls
+/// back to the user's `~/.ssh` folder so standard SSH keys are one click away.
+fn key_file_start_dir(portable_root: Option<&Path>, home: Option<&Path>) -> Option<PathBuf> {
+    if let Some(dir) = portable_root.map(|root| root.join(PORTABLE_KEYS))
+        && dir.is_dir()
+    {
+        return Some(dir);
+    }
+    home.map(|dir| dir.join(".ssh")).filter(|dir| dir.is_dir())
+}
 
 /// Opens the picker in that folder of a portable copy, when it is there.
 fn in_portable_folder<R: tauri::Runtime>(
@@ -158,7 +174,7 @@ pub async fn dialog_select_application(
 
 #[cfg(test)]
 mod tests {
-    use super::prefix_identifies_rsa_private_key;
+    use super::{key_file_start_dir, prefix_identifies_rsa_private_key};
 
     #[test]
     fn recognizes_legacy_pem_and_putty_rsa_keys() {
@@ -178,5 +194,27 @@ mod tests {
         assert!(!prefix_identifies_rsa_private_key(
             "-----BEGIN OPENSSH PRIVATE KEY-----\n..."
         ));
+    }
+
+    #[test]
+    fn key_picker_prefers_portable_keys_then_home_ssh() {
+        let root = std::env::temp_dir().join(format!("ftpeach-key-dir-{}", uuid::Uuid::new_v4()));
+        let portable = root.join("portable");
+        let home = root.join("home");
+        std::fs::create_dir_all(home.join(".ssh")).unwrap();
+
+        assert_eq!(
+            key_file_start_dir(Some(&portable), Some(&home)),
+            Some(home.join(".ssh"))
+        );
+
+        std::fs::create_dir_all(portable.join("keys")).unwrap();
+        assert_eq!(
+            key_file_start_dir(Some(&portable), Some(&home)),
+            Some(portable.join("keys"))
+        );
+        assert_eq!(key_file_start_dir(None, Some(&root)), None);
+
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

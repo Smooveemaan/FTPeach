@@ -33,6 +33,7 @@ export function useDragSession({
     const previousUserSelect = document.body.style.userSelect;
     document.body.style.cursor = cursor;
     document.body.style.userSelect = 'none';
+    document.body.classList.add('resize-active');
 
     const onMove = (event: MouseEvent) => {
       const scale = getInterfaceScale();
@@ -49,6 +50,7 @@ export function useDragSession({
     return () => {
       document.body.style.cursor = previousCursor;
       document.body.style.userSelect = previousUserSelect;
+      document.body.classList.remove('resize-active');
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onEnd);
     };

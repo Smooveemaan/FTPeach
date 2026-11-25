@@ -1,4 +1,4 @@
-import { invoke as rawInvoke } from '@tauri-apps/api/core';
+import { Channel, invoke as rawInvoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
@@ -11,6 +11,7 @@ import { createSessionApi } from './api/session.ts';
 import { createSettingsApi, securityAuthorizationTarget } from './api/settings.ts';
 import { createSitesApi } from './api/sites.ts';
 import { createTabsApi } from './api/tabs.ts';
+import { createTerminalApi, type TerminalEvent } from './api/terminal.ts';
 import { createTransferApi } from './api/transfers.ts';
 import { createTrayApi } from './api/tray.ts';
 import { createAppMenuApi } from './api/appMenu.ts';
@@ -289,6 +290,7 @@ export const tauriApi: Window['api'] = {
   fsLocal: createFilesystemApi(invoke, onEvent),
   sites: createSitesApi(invoke),
   tabs: createTabsApi(invoke),
+  terminal: createTerminalApi(invoke, () => new Channel<TerminalEvent>()),
   settings: createSettingsApi(invoke, authorizeSensitive),
   proxy: createProxyApi(invoke),
   updater: createUpdaterApi(invoke, onEvent),

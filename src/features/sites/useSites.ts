@@ -27,6 +27,7 @@ interface RefreshOptions {
 
 export interface PaneSiteSource {
   kind?: 'local' | 'remote';
+  connectionId?: string | null;
   form: ConnectionForm;
   path: string;
 }

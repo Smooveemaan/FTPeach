@@ -47,6 +47,10 @@ export interface SectionResizeModel {
   resizing: boolean;
   startResize: (e: ReactMouseEvent) => void;
   resetSplitRatio: () => void;
+  terminalSplitRatio: number;
+  setTerminalSplitRatio: (ratio: number) => void;
+  commitTerminalSplitRatio: (ratio: number) => void;
+  resetTerminalSplitRatio: () => void;
   transferQueueHeight: number;
   logPanelHeight: number;
   transferManuallyResized: boolean;
@@ -63,6 +67,19 @@ export function useSectionResize({
   windowNarrow,
 }: SectionResizeOptions): SectionResizeModel {
   const transferLogSplit = useTransferLogSplit();
+  // Terminal dock split inside Server pane
+  const [terminalSplitRatio, setTerminalSplitRatio] = useState(
+    SETTINGS_DEFAULTS.terminalSplitRatio,
+  );
+  const commitTerminalSplitRatio = (ratio: number) => {
+    setTerminalSplitRatio(ratio);
+    persistSetting({ terminalSplitRatio: ratio });
+  };
+  const resetTerminalSplitRatio = () => {
+    setTerminalSplitRatio(SETTINGS_DEFAULTS.terminalSplitRatio);
+    persistSetting({ terminalSplitRatio: SETTINGS_DEFAULTS.terminalSplitRatio });
+  };
+
   // Pane split
   const [splitRatio, setSplitRatio] = useState(SETTINGS_DEFAULTS.splitRatio);
   const panesRef = useRef<HTMLDivElement | null>(null);
@@ -576,6 +593,11 @@ export function useSectionResize({
     setLogPanelHeight(
       windowNarrowRef.current ? Math.min(savedLogHeight, NARROW_LOG_PANEL_MAX) : savedLogHeight,
     );
+    const savedTerminalRatio =
+      typeof s.terminalSplitRatio === 'number'
+        ? Math.min(0.99, Math.max(0.01, s.terminalSplitRatio))
+        : SETTINGS_DEFAULTS.terminalSplitRatio;
+    setTerminalSplitRatio(savedTerminalRatio);
     transferLogSplit.hydrateTransferLogSplit(s);
   };
 
@@ -585,6 +607,10 @@ export function useSectionResize({
     resizing,
     startResize,
     resetSplitRatio,
+    terminalSplitRatio,
+    setTerminalSplitRatio,
+    commitTerminalSplitRatio,
+    resetTerminalSplitRatio,
     transferQueueHeight,
     logPanelHeight,
     transferManuallyResized,

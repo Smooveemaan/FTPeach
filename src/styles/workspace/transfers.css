@@ -361,7 +361,7 @@ body.column-resize-active .transfer-col-header .transfer-resizable-header[data-r
 
 
 .transfer-queue.narrow .transfer-queue-header {
-  height: 26px;
+  height: 28px;
   padding: 0 10px;
   font-size: 10px;
 }

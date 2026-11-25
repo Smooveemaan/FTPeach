@@ -62,7 +62,12 @@ export default function useFilePaneKeyboard({
 }: UseFilePaneKeyboardOptions): (event: ReactKeyboardEvent<HTMLDivElement>) => void {
   return useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
-      if (event.defaultPrevented || isTextInput(event.target)) return;
+      if (
+        event.defaultPrevented ||
+        isTextInput(event.target) ||
+        (event.target instanceof Element && event.target.closest('[data-terminal-input="true"]'))
+      )
+        return;
       if (
         event.code === 'KeyV' &&
         event.metaKey &&

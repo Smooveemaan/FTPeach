@@ -5,6 +5,7 @@ import type { createSessionApi } from './api/session.ts';
 import type { createSettingsApi } from './api/settings.ts';
 import type { createSitesApi } from './api/sites.ts';
 import type { createTabsApi } from './api/tabs.ts';
+import type { createTerminalApi } from './api/terminal.ts';
 import type { createTransferApi } from './api/transfers.ts';
 import type { createTrayApi } from './api/tray.ts';
 import type { createUpdaterApi } from './api/updater.ts';
@@ -40,6 +41,7 @@ declare global {
       settings: ReturnType<typeof createSettingsApi>;
       sites: ReturnType<typeof createSitesApi>;
       tabs: ReturnType<typeof createTabsApi>;
+      terminal: ReturnType<typeof createTerminalApi>;
       transfer: ReturnType<typeof createTransferApi>;
       updater: ReturnType<typeof createUpdaterApi>;
       vault: {

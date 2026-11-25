@@ -34,6 +34,7 @@ export function createSiteForm(site?: ManagedSite | null): SiteForm {
     keyPassphrase: '',
     hasKeyPassphrase: !!site?.hasKeyPassphrase,
     removeKeyPassphrase: false,
+    openTerminalOnConnect: !!site?.openTerminalOnConnect,
     parentId: site?.parentId ?? null,
     icon: site?.icon || 'bookmark',
     color: site?.color || '',
@@ -48,6 +49,7 @@ export function createPaneSiteForm(pane: {
   kind?: 'local' | 'remote';
   form: ConnectionForm;
   path: string;
+  openTerminalOnConnect?: boolean;
 }): SiteForm {
   if (pane.kind === 'local') {
     return {
@@ -62,6 +64,7 @@ export function createPaneSiteForm(pane: {
     ...pane.form,
     name: pane.form.protocol === 'webdav' ? pane.form.webdavUrl : pane.form.host,
     remotePath: pane.path === '/' ? '' : pane.path,
+    openTerminalOnConnect: pane.form.protocol === 'sftp' && !!pane.openTerminalOnConnect,
   };
 }
 
@@ -103,6 +106,7 @@ export function normalizeSiteForm(
   const defaultPort = DEFAULT_PORTS[form.protocol] || '21';
   // The form keeps the flag when the protocol changes; only SFTP signs in with a key.
   const useKeyAuth = form.protocol === 'sftp' && form.useKeyAuth;
+  const openTerminalOnConnect = form.protocol === 'sftp' && form.openTerminalOnConnect;
   const server: ServerSettings = {
     protocol: form.protocol,
     host: form.host.trim(),
@@ -116,6 +120,7 @@ export function normalizeSiteForm(
     caCertPath: form.caCertPath,
     useKeyAuth,
     keyPath: form.keyPath,
+    openTerminalOnConnect,
     // Only FTP names files in a server-chosen encoding.
     encoding: form.protocol === 'ftp' || form.protocol === 'ftps' ? form.encoding : '',
     maxConnections: Number(form.maxConnections.trim() || 0),
@@ -182,6 +187,7 @@ export interface SiteForm {
   keyPassphrase: string;
   hasKeyPassphrase: boolean;
   removeKeyPassphrase: boolean;
+  openTerminalOnConnect: boolean;
   parentId: string | null;
   icon: string;
   color: string;

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { SettingsState } from '../features/settings/index.ts';
 import { setDateFormatPreference } from '../features/settings/index.ts';
 import { setDoubleClickMs } from '../features/file-browser/index.ts';
+import { terminalStore } from '../features/terminal/index.ts';
 import { changeLanguage } from '../i18n/index.ts';
 import { reportAsyncFailure } from '../shared/asyncFailure.ts';
 import { api } from '../platform/api/index.ts';
@@ -26,6 +27,7 @@ export function useAppEffects({
     const applyResolvedTheme = (resolved: string) => {
       applyAppearance(resolved, colorScheme);
       applyWindowTheme(theme);
+      terminalStore.updateTheme();
     };
     if (theme === 'system') return observeSystemTheme(applyResolvedTheme);
     applyResolvedTheme(theme);

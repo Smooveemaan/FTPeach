@@ -1,13 +1,11 @@
-import type { MouseEvent, MutableRefObject } from 'react';
 import { useEffect, useState } from 'react';
 import type {
   PaneOrientation,
   SettingsState,
   SettingsUpdaters,
 } from '../features/settings/index.ts';
-import type { ResizableSection } from './layout/sectionResizeReducer.ts';
 import { useSectionResize } from './layout/useSectionResize.ts';
-import type { AppSettings } from '../platform/api/settings.ts';
+import type { SectionResizeModel } from './layout/useSectionResize.ts';
 import { persistSetting } from '../platform/persistSetting.ts';
 
 const PANE_STACK_BREAKPOINT = 750;
@@ -23,32 +21,13 @@ interface WorkspaceLayoutOptions {
   update: Pick<SettingsUpdaters, 'layout' | 'logging'>;
 }
 
-export interface WorkspaceLayoutModel {
+export interface WorkspaceLayoutModel extends SectionResizeModel {
   toggleLocalPane: () => void;
   toggleRemotePane: () => void;
   toggleTransferQueue: () => void;
   toggleHiddenFiles: () => void;
   toggleLog: () => void;
   togglePaneOrientation: () => void;
-  hydrateFromSettings: (s: AppSettings) => void;
-  transferLogRef: MutableRefObject<HTMLDivElement | null>;
-  transferLogSplitRatio: number;
-  resizingTransferLog: boolean;
-  startTransferLogResize: (event: MouseEvent) => void;
-  resetTransferLogSplitRatio: () => void;
-  hydrateTransferLogSplit: (settings: AppSettings) => void;
-  panesRef: MutableRefObject<HTMLDivElement | null>;
-  splitRatio: number;
-  resizing: boolean;
-  startResize: (e: MouseEvent) => void;
-  resetSplitRatio: () => void;
-  transferQueueHeight: number;
-  logPanelHeight: number;
-  transferManuallyResized: boolean;
-  logManuallyResized: boolean;
-  resizingSection: ResizableSection | null;
-  startSectionResize: (section: ResizableSection) => (e: MouseEvent) => void;
-  resetSectionHeight: (section: ResizableSection) => () => void;
   windowNarrow: boolean;
   effectivePaneOrientation: PaneOrientation;
 }

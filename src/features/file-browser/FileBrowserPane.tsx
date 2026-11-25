@@ -18,6 +18,8 @@ import type { FileClipboardModel } from './useFileClipboard.ts';
 import type { FileBrowserShell } from './usePaneActions.ts';
 import { usePaneActions } from './usePaneActions.ts';
 import type { PanesModel } from './usePanes.ts';
+import { terminalStore, useTerminalSession } from '../terminal/index.ts';
+import { TerminalPanel } from '../terminal/ui.ts';
 
 // Typed as ColumnKey rather than string so a name that COLUMN_DEFS does not
 // define fails to compile here instead of rendering `undefined.render(...)`.
@@ -64,6 +66,12 @@ export interface FileBrowserPaneProps {
   columns: PaneColumnChanges;
   paneOrientation: 'horizontal' | 'vertical';
   shell: FileBrowserShell;
+  terminalLayout?: {
+    splitRatio: number;
+    onChange: (ratio: number) => void;
+    onCommit: (ratio: number) => void;
+    onReset: () => void;
+  };
 }
 
 function FileBrowserPane({
@@ -77,6 +85,7 @@ function FileBrowserPane({
   columns,
   paneOrientation,
   shell,
+  terminalLayout,
 }: FileBrowserPaneProps) {
   const { t } = useTranslation();
   const { layout } = settings;
@@ -104,6 +113,9 @@ function FileBrowserPane({
     pane.kind === 'local' ? layout.localColumnWidths : layout.remoteColumnWidths
   )[id];
   const disconnected = pane.kind === 'remote' && pane.status !== 'connected';
+  const terminalSession = useTerminalSession(
+    pane.kind === 'remote' && pane.status === 'connected' ? pane.connectionId : null,
+  );
   const showHiddenFiles = layout.showHiddenFiles;
   const entries = useMemo(
     () =>
@@ -147,6 +159,11 @@ function FileBrowserPane({
           onSiteConnect={(site) => browser.siteConnectPane(id, site)}
           onLocalPathOpen={(site) => browser.switchPaneToLocal(id, activeTabId, site.localPath)}
           onSaveSite={shell.saveSite(id)}
+          terminalActive={Boolean(terminalSession)}
+          onToggleTerminal={() => {
+            if (pane.connectionId) terminalStore.toggle(pane.connectionId);
+          }}
+          onConnectWithTerminal={actions.connect(id, { openTerminal: true })}
           onOpenSiteManager={() => shell.dialogs.setShowSiteManagerDialog(id)}
           onOpenLocalPathManager={() => shell.dialogs.setShowLocalPathManagerDialog(id)}
         />
@@ -224,6 +241,19 @@ function FileBrowserPane({
       onColumnWidthsChange={(pane.kind === 'local'
         ? columns.changeLocalColumnWidths
         : columns.changeRemoteColumnWidths)(id)}
+      terminalSlot={terminalSession ? <TerminalPanel session={terminalSession} /> : null}
+      terminalMode={terminalSession?.mode ?? 'closed'}
+      terminalSplitRatio={terminalLayout?.splitRatio ?? 0.5}
+      onTerminalSplitChange={terminalLayout?.onChange}
+      onTerminalSplitCommit={terminalLayout?.onCommit}
+      onTerminalSplitReset={terminalLayout?.onReset}
+      onTerminalModeChange={
+        pane.connectionId
+          ? (mode) => {
+              if (pane.connectionId) terminalStore.setMode(pane.connectionId, mode);
+            }
+          : undefined
+      }
       loading={pane.loading}
       emptyMessage={
         pane.kind === 'remote' ? (

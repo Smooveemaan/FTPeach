@@ -12,6 +12,7 @@ import type { ConnectionForm, ManagedSite } from '../../../shared/siteContracts.
 import type { PaneId, PaneState, TabState } from './paneModel.ts';
 import { api } from '../../../platform/api/index.ts';
 import { adoptClosedConnections } from '../../transfers/index.ts';
+import { terminalStore } from '../../terminal/index.ts';
 
 type PanePatch = Partial<PaneState> | ((pane: PaneState) => Partial<PaneState>);
 type RequestIds = Record<string, Record<PaneId, number>>;
@@ -57,6 +58,7 @@ export function createPaneSessionLifecycle({
   clearErrorMessage,
 }: PaneSessionLifecycleOptions) {
   const closeConnection = async (connectionId: string) => {
+    terminalStore.close(connectionId);
     // Cancellation is signalled synchronously; backend teardown can now cancel
     // a busy browse request instead of waiting behind its cleanup.
     const stopping = stopTransfersForConnection(connectionId);
@@ -83,6 +85,7 @@ export function createPaneSessionLifecycle({
             caCertPath: f.caCertPath,
             useKeyAuth: f.protocol === 'sftp' && !!f.useKeyAuth,
             keyPath: f.keyPath,
+            openTerminalOnConnect: false,
             // The connection bar has no fields for these.
             encoding: '',
             maxConnections: null,
@@ -165,6 +168,7 @@ export function createPaneSessionLifecycle({
       paneOverride?: PaneState,
       tabId = activeTabId,
       startPath = '/',
+      options?: { openTerminal?: boolean },
     ) =>
     async () => {
       const pane = paneOverride || panes[id];
@@ -244,6 +248,9 @@ export function createPaneSessionLifecycle({
         if (listRes.ok) {
           updatePane(id, { status: 'connected', errorMessage: '' }, tabId);
           clearErrorMessage?.();
+          if (f.protocol === 'sftp' && options?.openTerminal) {
+            reportRejection(terminalStore.open(connectionId));
+          }
         } else {
           // The listing failure below is the message worth showing; a
           // failure to close the half-open session would only overwrite it.
@@ -267,7 +274,7 @@ export function createPaneSessionLifecycle({
       updatePane(id, { status: 'error' }, tabId);
       if (res.errorCode === 'vaultLocked') {
         updatePane(id, { status: 'idle', errorMessage: '' }, tabId);
-        onVaultUnlockRequired(() => connectPane(id, f, pane, tabId, startPath)());
+        onVaultUnlockRequired(() => connectPane(id, f, pane, tabId, startPath, options)());
         return;
       }
       if (res.hostKeyMismatch) {
@@ -291,7 +298,7 @@ export function createPaneSessionLifecycle({
           }
           return;
         }
-        reportRejection(connectPane(id, f, pane, tabId, startPath)());
+        reportRejection(connectPane(id, f, pane, tabId, startPath, options)());
         return;
       }
       updatePane(
@@ -336,7 +343,12 @@ export function createPaneSessionLifecycle({
     updatePane(id, { status: 'idle', errorMessage: '' }, tabId);
   };
 
-  const siteConnectPane = (id: PaneId, site: ManagedSite, tabId = activeTabId) => {
+  const siteConnectPane = (
+    id: PaneId,
+    site: ManagedSite,
+    tabId = activeTabId,
+    options?: { openTerminal?: boolean },
+  ) => {
     const f = buildFormFromSite(site);
     const nextPane: PaneState = {
       ...panes[id],
@@ -346,8 +358,12 @@ export function createPaneSessionLifecycle({
       siteId: site.id,
       sshFingerprint: undefined,
     };
+    const openTerminal =
+      options?.openTerminal ?? (site.protocol === 'sftp' && Boolean(site.openTerminalOnConnect));
     updatePane(id, nextPane, tabId);
-    reportRejection(connectPane(id, f, nextPane, tabId, site.remotePath || '/')());
+    reportRejection(
+      connectPane(id, f, nextPane, tabId, site.remotePath || '/', { openTerminal })(),
+    );
   };
 
   return {

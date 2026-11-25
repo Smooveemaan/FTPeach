@@ -142,7 +142,15 @@ export function useTooltip(): void {
       hideNow();
     };
 
+    const isDragging = () => document.body.classList.contains('resize-active');
+
     const show = (event: MouseEvent | FocusEvent) => {
+      if (event.type === 'mouseover') {
+        if ((event instanceof MouseEvent && event.buttons !== 0) || isDragging()) {
+          hide();
+          return;
+        }
+      }
       const anchor =
         event.target instanceof Element
           ? event.target.closest<HTMLElement>('[data-tooltip]')
@@ -165,6 +173,7 @@ export function useTooltip(): void {
       current = anchor;
       hoverX = event instanceof MouseEvent && event.type === 'mouseover' ? event.clientX : null;
       showTimer = setTimeout(() => {
+        if (isDragging()) return;
         const text = anchor.getAttribute('data-tooltip');
         if (!text || anchor.closest('[inert]')) return;
         if (hideTimer != null) clearTimeout(hideTimer); // don't let a pending flashTooltip() hide us right after we show

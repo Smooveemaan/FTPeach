@@ -40,6 +40,9 @@ interface PaneSourceSwitcherProps {
   onSiteConnect: (site: ManagedSite) => unknown;
   onLocalPathOpen: (site: ManagedSite) => unknown;
   onSaveSite: () => unknown;
+  terminalActive?: boolean;
+  onToggleTerminal?: () => unknown;
+  onConnectWithTerminal?: () => unknown;
   onOpenSiteManager: () => unknown;
   onOpenLocalPathManager: () => unknown;
 }
@@ -62,6 +65,9 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
       onSiteConnect,
       onLocalPathOpen,
       onSaveSite,
+      terminalActive,
+      onToggleTerminal,
+      onConnectWithTerminal,
       onOpenSiteManager,
       onOpenLocalPathManager,
     },
@@ -244,6 +250,8 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
             onDisconnect={onDisconnect}
             onCancelConnect={onCancelConnect}
             onSaveSite={onSaveSite}
+            onOpenTerminal={onConnectWithTerminal}
+            terminalActive={terminalActive}
             narrow
             connectionVisualState={pane.status === 'connecting' ? 'connecting' : 'idle'}
             onOpenSiteManager={onOpenSiteManager}
@@ -307,6 +315,34 @@ const PaneSourceSwitcher = forwardRef<HTMLDivElement, PaneSourceSwitcherProps>(
                 >
                   <Icon name="star" size={14} />
                 </button>
+                {onToggleTerminal && (
+                  <button
+                    type="button"
+                    className={`btn btn-ghost btn-icon terminal-toggle-btn ${terminalActive ? 'active' : ''}`}
+                    data-action="toggle-terminal"
+                    data-tooltip={
+                      pane.form.protocol !== 'sftp'
+                        ? t('terminal.sftpOnlyTooltip')
+                        : terminalActive
+                          ? t('terminal.close')
+                          : t('terminal.open')
+                    }
+                    aria-label={
+                      pane.form.protocol !== 'sftp'
+                        ? t('terminal.sftpOnlyTooltip')
+                        : terminalActive
+                          ? t('terminal.close')
+                          : t('terminal.open')
+                    }
+                    aria-pressed={
+                      pane.form.protocol === 'sftp' ? Boolean(terminalActive) : undefined
+                    }
+                    disabled={pane.form.protocol !== 'sftp'}
+                    onClick={onToggleTerminal}
+                  >
+                    <Icon name="terminal" size={14} />
+                  </button>
+                )}
               </>
             )}
           </>

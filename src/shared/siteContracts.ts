@@ -66,6 +66,8 @@ export interface ServerSettings {
   caCertPath: string;
   useKeyAuth: boolean;
   keyPath: string;
+  /** Whether connecting to this SFTP site also opens the integrated SSH terminal. */
+  openTerminalOnConnect: boolean;
   /** FTP file name encoding; empty means UTF-8. */
   encoding: string;
   /** `0` or `null` is no limit. */

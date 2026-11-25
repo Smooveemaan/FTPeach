@@ -113,6 +113,10 @@ export default function Application() {
     resizing,
     startResize,
     resetSplitRatio,
+    terminalSplitRatio,
+    setTerminalSplitRatio,
+    commitTerminalSplitRatio,
+    resetTerminalSplitRatio,
     transferQueueHeight,
     logPanelHeight,
     transferManuallyResized,
@@ -395,6 +399,12 @@ export default function Application() {
       columns={applicationSettings}
       paneOrientation={effectivePaneOrientation}
       shell={paneShell}
+      terminalLayout={{
+        splitRatio: terminalSplitRatio,
+        onChange: setTerminalSplitRatio,
+        onCommit: commitTerminalSplitRatio,
+        onReset: resetTerminalSplitRatio,
+      }}
     />
   );
 

@@ -51,7 +51,21 @@ export function useAppCommands(
   useEffect(
     () =>
       shortcutsApi.onKeyDown((event) => {
-        if (event.defaultPrevented || isTextEditingShortcut(event)) return;
+        if (event.defaultPrevented) return;
+        // Let the embedded SSH terminal claim Ctrl+C/R/W/F/N/T/F5 etc.; only
+        // DevTools and tab switching escape out to the application.
+        if (
+          event.target instanceof Element &&
+          event.target.closest('[data-terminal-input="true"]')
+        ) {
+          const action = resolveGlobalAction(event, keyboardShortcutsRef.current);
+          if (action === 'open-devtools' || action === 'next-tab' || action === 'prev-tab') {
+            const handled = dispatchAppCommand(action, commandsRef.current);
+            if (handled) event.preventDefault();
+          }
+          return;
+        }
+        if (isTextEditingShortcut(event)) return;
         // This listener captures, so it runs before a recorder can claim the keys.
         if (event.target instanceof Element && event.target.closest('.shortcut-recorder.recording'))
           return;

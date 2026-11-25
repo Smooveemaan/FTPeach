@@ -113,7 +113,7 @@ export function permissionStringToOctal(value?: string | null, fallback = '644')
 export interface PaneActionsModel {
   buildPaneMenu: (id: PaneId) => (entry: FileEntry | null, options?: PaneMenuOptions) => MenuItem[];
   /** Reconnects a pane, through its bookmark while the bookmark still exists. */
-  connect: (id: PaneId) => () => unknown;
+  connect: (id: PaneId, options?: { openTerminal?: boolean }) => () => unknown;
   /** Opens a local file with its program; the backend asks before running one. */
   openLocalFile: (path: string) => Promise<void>;
   dropFiles: (id: PaneId, files: DroppedFile[], targetFolder: string | null) => Promise<void>;
@@ -356,9 +356,16 @@ export function usePaneActions({
   // last built. Reconnecting through the plain form would silently drop the
   // bookmark's current remotePath (and any other edits) back to '/' — route
   // through siteConnectPane so a still-known bookmark stays authoritative.
-  const connect = (id: PaneId) => {
+  const connect = (id: PaneId, options?: { openTerminal?: boolean }) => {
     const site = bookmarkOf(panes[id]);
-    return site ? () => browser.siteConnectPane(id, site) : browser.connectPane(id);
+    if (site) {
+      return options
+        ? () => browser.siteConnectPane(id, site, undefined, options)
+        : () => browser.siteConnectPane(id, site);
+    }
+    return options
+      ? () => browser.connectPane(id, undefined, undefined, undefined, undefined, options)()
+      : browser.connectPane(id);
   };
 
   const openLocalFile = (path: string) => {

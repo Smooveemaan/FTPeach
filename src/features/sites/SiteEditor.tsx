@@ -555,6 +555,11 @@ export default function SiteEditor({
           {t('connectionBar.rsaKeyWarning')}
         </p>
       )}
+      {form.kind !== 'local' &&
+        form.protocol === 'sftp' &&
+        toggle('siteManagerDialog.openTerminalOnConnect', !!form.openTerminalOnConnect, (checked) =>
+          setForm((current) => ({ ...current, openTerminalOnConnect: checked })),
+        )}
       {form.kind !== 'local' && (
         <details className="site-advanced" open={advancedOpen}>
           <summary>

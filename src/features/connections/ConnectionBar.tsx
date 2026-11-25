@@ -28,6 +28,8 @@ interface ConnectionBarProps {
   onDisconnect: () => unknown;
   onCancelConnect: () => unknown;
   onSaveSite: () => unknown;
+  onOpenTerminal?: (() => unknown) | undefined;
+  terminalActive?: boolean | undefined;
   narrow?: boolean;
   connectionVisualState: ConnectionVisualState;
   onOpenSiteManager: () => unknown;
@@ -44,6 +46,8 @@ export default function ConnectionBar({
   onDisconnect,
   onCancelConnect,
   onSaveSite,
+  onOpenTerminal,
+  terminalActive,
   narrow,
   connectionVisualState,
   onOpenSiteManager,
@@ -95,6 +99,28 @@ export default function ConnectionBar({
       <Icon name="star" size={14} />
     </button>
   );
+
+  const isSftp = form.protocol === 'sftp';
+  const terminalTooltip = !isSftp
+    ? t('terminal.sftpOnlyTooltip')
+    : terminalActive
+      ? t('terminal.close')
+      : t('terminal.open');
+  const terminalButton = onOpenTerminal ? (
+    <button
+      key="toggle-terminal"
+      type="button"
+      className={`btn btn-ghost btn-icon terminal-toggle-btn ${terminalActive ? 'active' : ''}`}
+      data-action="toggle-terminal"
+      data-tooltip={terminalTooltip}
+      aria-label={terminalTooltip}
+      aria-pressed={isSftp && isConnected ? Boolean(terminalActive) : undefined}
+      disabled={!isSftp || isBusy || (!isConnected && !form.host)}
+      onClick={onOpenTerminal}
+    >
+      <Icon name="terminal" size={14} />
+    </button>
+  ) : null;
 
   const protocolSelect = (
     <ProtocolSelect
@@ -369,6 +395,7 @@ export default function ConnectionBar({
             {connectButton}
             {manageBookmarksButton}
             {saveConnectionButton}
+            {terminalButton}
             {protocolSelect}
             {protocolWarning}
             {isWebdav ? (
@@ -400,6 +427,7 @@ export default function ConnectionBar({
           {connectButton}
           {manageBookmarksButton}
           {saveConnectionButton}
+          {terminalButton}
           {protocolSelect}
           {protocolWarning}
           {isWebdav ? (

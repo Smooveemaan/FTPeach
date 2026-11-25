@@ -8,6 +8,7 @@ import type { FriendlyErrorInput } from '../../shared/errorMessages.ts';
 import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { ManagedSite } from '../../shared/siteContracts.ts';
 import { getTransfersSnapshot, transferTouchesConnection } from '../transfers/index.ts';
+import { terminalStore } from '../terminal/index.ts';
 import type { PathCrumb } from './components/PathBar.tsx';
 import type { ClosedTab } from './panes/closedTabs.ts';
 import {
@@ -95,10 +96,16 @@ export interface PanesModel {
     paneOverride?: PaneState,
     tabId?: string,
     startPath?: string,
+    options?: { openTerminal?: boolean },
   ) => () => Promise<void>;
   disconnectPane: (id: PaneId, tabId?: string) => Promise<void>;
   cancelConnectPane: (id: PaneId, tabId?: string) => void;
-  siteConnectPane: (id: PaneId, site: ManagedSite, tabId?: string) => void;
+  siteConnectPane: (
+    id: PaneId,
+    site: ManagedSite,
+    tabId?: string,
+    options?: { openTerminal?: boolean },
+  ) => void;
   connectSavedSite: (site: ManagedSite, paneId?: PaneId) => void;
   recentSiteIds: string[];
   openNewTab: () => void;
@@ -267,9 +274,10 @@ export function usePanes({
       // disconnect does before tearing the sessions down: cancelled on purpose
       // rather than racing the teardown into a spurious connection-lost error,
       // and with the connection marked gone so nothing offers a dead Retry.
-      connectionIds.forEach((cid) =>
-        reportRejection(stopTransfersForConnection(cid).then(() => api.session.disconnect(cid))),
-      );
+      connectionIds.forEach((cid) => {
+        terminalStore.close(cid);
+        reportRejection(stopTransfersForConnection(cid).then(() => api.session.disconnect(cid)));
+      });
     };
     if (hasActive) {
       requestConfirm(t('confirm.closeTabWithActiveTransfers'), proceed, {

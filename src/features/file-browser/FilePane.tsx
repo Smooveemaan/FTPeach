@@ -1,5 +1,6 @@
 import { hostPlatform } from '../../platform/os.ts';
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { getInterfaceScale } from '../../platform/interfaceScale.ts';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type {
   CSSProperties,
   MouseEvent as ReactMouseEvent,
@@ -37,6 +38,13 @@ import type { FileEntry } from '../../shared/paneContracts.ts';
 import type { PaneId, PaneKind } from './panes/paneModel.ts';
 import { getDoubleClickMs } from './doubleClick.ts';
 import { preloadExtensions } from '../open-with/index.ts';
+import { useDragSession } from '../../hooks/resize/useDragSession.ts';
+
+/** Matches `.section-resizer` (6px) and `.section-panel-header` (28px) in CSS. */
+const TERMINAL_RESIZER_HEIGHT = 6;
+const TERMINAL_HEADER_HEIGHT = 28;
+/** Small click-deadzone before dragging out of collapsed or maximized edges. */
+const TERMINAL_DRAG_DEADZONE_PX = 4;
 
 export interface FilePaneProps {
   side: PaneId;
@@ -98,6 +106,13 @@ export interface FilePaneProps {
   onColumnWidthsChange?: ((widths: Record<string, number>) => void) | undefined;
   searchInputRef?: MutableRefObject<FileSearchHandle | null> | null | undefined;
   keyboardShortcuts?: ShortcutOverrides | null | undefined;
+  terminalSlot?: ReactNode | undefined;
+  terminalMode?: 'closed' | 'split' | 'collapsed' | 'maximized' | undefined;
+  terminalSplitRatio?: number | undefined;
+  onTerminalSplitChange?: ((ratio: number) => void) | undefined;
+  onTerminalSplitCommit?: ((ratio: number) => void) | undefined;
+  onTerminalSplitReset?: (() => void) | undefined;
+  onTerminalModeChange?: ((mode: 'split' | 'collapsed' | 'maximized') => void) | undefined;
 }
 
 function FilePane({
@@ -146,7 +161,90 @@ function FilePane({
   onColumnWidthsChange,
   searchInputRef,
   keyboardShortcuts,
+  terminalSlot,
+  terminalMode = 'closed',
+  terminalSplitRatio = 0.5,
+  onTerminalSplitChange,
+  onTerminalSplitCommit,
+  onTerminalSplitReset,
+  onTerminalModeChange,
 }: FilePaneProps) {
+  const splitAreaRef = useRef<HTMLDivElement | null>(null);
+  const [resizingTerminal, setResizingTerminal] = useState(false);
+  const latestTerminalRatioRef = useRef(terminalSplitRatio);
+  latestTerminalRatioRef.current = terminalSplitRatio;
+  const preDragRatioRef = useRef(terminalSplitRatio);
+  const dragModeRef = useRef<'split' | 'collapsed' | 'maximized'>('split');
+  const dragStartYRef = useRef(0);
+  const dragMovedRef = useRef(false);
+  const onTerminalSplitChangeRef = useRef(onTerminalSplitChange);
+  onTerminalSplitChangeRef.current = onTerminalSplitChange;
+  const onTerminalSplitCommitRef = useRef(onTerminalSplitCommit);
+  onTerminalSplitCommitRef.current = onTerminalSplitCommit;
+  const onTerminalModeChangeRef = useRef(onTerminalModeChange);
+  onTerminalModeChangeRef.current = onTerminalModeChange;
+
+  useDragSession({
+    active: resizingTerminal,
+    cursor: 'row-resize',
+    createHandlers: () => ({
+      onMove: ({ clientY, scale }) => {
+        if (!splitAreaRef.current) return;
+        const domRect = splitAreaRef.current.getBoundingClientRect();
+        const top = domRect.top / scale;
+        const height = domRect.height / scale;
+        const usable = height - TERMINAL_RESIZER_HEIGHT;
+        if (usable <= 0) return;
+
+        const filesPx = clientY - top - TERMINAL_RESIZER_HEIGHT / 2;
+        const terminalPx = top + height - clientY - TERMINAL_RESIZER_HEIGHT / 2;
+        const pastDeadzone =
+          dragMovedRef.current ||
+          Math.abs(clientY - dragStartYRef.current) >= TERMINAL_DRAG_DEADZONE_PX;
+
+        if (dragModeRef.current === 'collapsed') {
+          if (!pastDeadzone || terminalPx <= TERMINAL_HEADER_HEIGHT) return;
+          dragMovedRef.current = true;
+          dragModeRef.current = 'split';
+          onTerminalModeChangeRef.current?.('split');
+        } else if (dragModeRef.current === 'maximized') {
+          if (!pastDeadzone || filesPx <= 0) return;
+          dragMovedRef.current = true;
+          dragModeRef.current = 'split';
+          onTerminalModeChangeRef.current?.('split');
+        } else {
+          dragMovedRef.current = true;
+        }
+
+        if (filesPx <= 0) {
+          dragModeRef.current = 'maximized';
+          onTerminalModeChangeRef.current?.('maximized');
+          return;
+        }
+        if (terminalPx <= TERMINAL_HEADER_HEIGHT) {
+          dragModeRef.current = 'collapsed';
+          onTerminalModeChangeRef.current?.('collapsed');
+          return;
+        }
+
+        const nextTerminalRatio = Math.min(0.99, Math.max(0.01, terminalPx / usable));
+        latestTerminalRatioRef.current = nextTerminalRatio;
+        onTerminalSplitChangeRef.current?.(nextTerminalRatio);
+      },
+      onEnd: () => {
+        setResizingTerminal(false);
+        if (dragModeRef.current === 'split') {
+          if (dragMovedRef.current) {
+            onTerminalSplitCommitRef.current?.(latestTerminalRatioRef.current);
+          }
+        } else if (latestTerminalRatioRef.current !== preDragRatioRef.current) {
+          latestTerminalRatioRef.current = preDragRatioRef.current;
+          onTerminalSplitChangeRef.current?.(preDragRatioRef.current);
+        }
+      },
+    }),
+    dependencies: [],
+  });
   const { t } = useTranslation();
   const columnLabels = useMemo<Record<ColumnKey, string>>(
     () => ({
@@ -172,6 +270,28 @@ function FilePane({
     [],
   );
   const paneRef = useRef<HTMLDivElement>(null);
+  const prevTerminalModeRef = useRef(terminalMode);
+  // Collapsing or closing the terminal hides/unmounts xterm's focused textarea;
+  // keep focus inside the pane so `.pane:focus-within` stays active.
+  useLayoutEffect(() => {
+    const prevMode = prevTerminalModeRef.current;
+    prevTerminalModeRef.current = terminalMode;
+    const lostTerminalSurface =
+      (prevMode !== 'closed' && terminalMode === 'closed') ||
+      ((prevMode === 'split' || prevMode === 'maximized') && terminalMode === 'collapsed');
+    if (!lostTerminalSurface) return;
+    const active = document.activeElement;
+    const focusedHiddenBody =
+      terminalMode === 'collapsed' &&
+      active instanceof Element &&
+      paneRef.current?.contains(active) &&
+      active.closest('.terminal-panel-body') !== null;
+    const lostFocusToDocument =
+      !active || active === document.body || active === document.documentElement;
+    if (focusedHiddenBody || lostFocusToDocument) {
+      paneRef.current?.focus({ preventScroll: true });
+    }
+  }, [terminalMode]);
   const wasRenamingRef = useRef(false);
   const renameScrollRef = useRef<{ top: number; left: number } | null>(null);
   const snapshotRenameScroll = useCallback(() => {
@@ -411,7 +531,7 @@ function FilePane({
   return (
     <div
       ref={paneRef}
-      className="pane"
+      className={`pane ${terminalMode === 'maximized' ? 'has-maximized-terminal-pane' : ''}`}
       data-side={side}
       data-disconnected={disconnected || undefined}
       onDragOver={dragDrop.handleDragOver}
@@ -467,103 +587,146 @@ function FilePane({
           body (header row included) clips away instead of the header
           insisting on its own always-visible slot. */}
       <div
-        className="pane-body"
-        // Scroll does not bubble; capturing it here serves the plain and the
-        // virtualized list alike, and the header follows the rows sideways.
-        onScrollCapture={(event) => {
-          const list = event.target as HTMLElement;
-          if (!list.classList.contains('pane-list')) return;
-          const header = event.currentTarget.querySelector<HTMLElement>('.row-header');
-          if (header) header.scrollLeft = list.scrollLeft;
-        }}
+        ref={splitAreaRef}
+        className={`pane-split-area ${terminalSlot ? `has-terminal terminal-${terminalMode}` : ''}`}
       >
-        {!disconnected && (
-          <FileColumnHeader
-            activeColumns={activeColumns}
-            autoFitColumn={autoFitColumn}
-            registerHeaderRef={registerHeaderRef}
-            getDragHandleProps={getDragHandleProps}
-            columnLabels={columnLabels}
-            draggedColumn={draggedColumn}
-            gridTemplateColumns={gridTemplateColumns}
-            nameAscExplicit={nameAscExplicit}
-            nameHeaderRef={nameHeaderRef}
-            reorderable={Boolean(onVisibleColumnsChange)}
-            resizable={Boolean(onColumnWidthsChange)}
-            sortDir={sortDir}
-            sortKey={sortKey}
-            startColumnResize={startColumnResize}
-            suppressColumnClickRef={suppressColumnClickRef}
-            t={t}
-            toggleSort={toggleSort}
-            onContextMenu={contextMenu.openColumns}
-          />
-        )}
+        <div
+          className="pane-body"
+          style={
+            terminalSlot && terminalMode === 'split'
+              ? { flex: `${1 - terminalSplitRatio} 1 0%` }
+              : undefined
+          }
+          // Scroll does not bubble; capturing it here serves the plain and the
+          // virtualized list alike, and the header follows the rows sideways.
+          onScrollCapture={(event) => {
+            const list = event.target as HTMLElement;
+            if (!list.classList.contains('pane-list')) return;
+            const header = event.currentTarget.querySelector<HTMLElement>('.row-header');
+            if (header) header.scrollLeft = list.scrollLeft;
+          }}
+        >
+          {!disconnected && (
+            <FileColumnHeader
+              activeColumns={activeColumns}
+              autoFitColumn={autoFitColumn}
+              registerHeaderRef={registerHeaderRef}
+              getDragHandleProps={getDragHandleProps}
+              columnLabels={columnLabels}
+              draggedColumn={draggedColumn}
+              gridTemplateColumns={gridTemplateColumns}
+              nameAscExplicit={nameAscExplicit}
+              nameHeaderRef={nameHeaderRef}
+              reorderable={Boolean(onVisibleColumnsChange)}
+              resizable={Boolean(onColumnWidthsChange)}
+              sortDir={sortDir}
+              sortKey={sortKey}
+              startColumnResize={startColumnResize}
+              suppressColumnClickRef={suppressColumnClickRef}
+              t={t}
+              toggleSort={toggleSort}
+              onContextMenu={contextMenu.openColumns}
+            />
+          )}
 
-        {/* Hidden always-mounted probe, never the empty/loading placeholder
+          {/* Hidden always-mounted probe, never the empty/loading placeholder
             or a real entry — .row's height comes entirely from padding/font
             (single line, no wrapping), so one throwaway row is exactly as
             tall as any real one, and measuring it directly means the fixed
             itemSize below never has to hardcode a number that'd silently
             drift out of sync with a future CSS tweak. */}
-        <div
-          ref={rowProbeRef}
-          aria-hidden="true"
-          className="row"
-          style={{
-            position: 'absolute',
-            visibility: 'hidden',
-            pointerEvents: 'none',
-            top: -9999,
-            left: -9999,
-            width: 300,
-            gridTemplateColumns: '20px 1fr',
-          }}
-        >
-          <span className="icon">
-            <Icon name="file" size={13} />
-          </span>
-          <span className="name">{t('filePane.rowProbeSample')}</span>
-        </div>
+          <div
+            ref={rowProbeRef}
+            aria-hidden="true"
+            className="row"
+            style={{
+              position: 'absolute',
+              visibility: 'hidden',
+              pointerEvents: 'none',
+              top: -9999,
+              left: -9999,
+              width: 300,
+              gridTemplateColumns: '20px 1fr',
+            }}
+          >
+            <span className="icon">
+              <Icon name="file" size={13} />
+            </span>
+            <span className="name">{t('filePane.rowProbeSample')}</span>
+          </div>
 
-        <FileList
-          virtualized={isVirtualized}
-          listRef={listRef}
-          viewportRef={viewportRef}
-          viewportSize={viewportSize}
-          rowHeight={rowHeight}
-          entries={sorted}
-          renderRow={renderRow}
-          className={paneListClassName}
-          listProps={{
-            'data-side': side,
-            role: 'listbox',
-            'aria-multiselectable': 'true',
-            'aria-label': t('filePane.filesAriaLabel'),
-            onPointerDown: startMarquee,
-            onClick: (e) => {
-              if (hostPlatform() === 'macos' && e.ctrlKey && !e.metaKey && e.button === 0) {
-                contextMenu.openFiles(e, null);
-              }
-            },
-            onContextMenu: (e) => contextMenu.openFiles(e, null),
-          }}
-          loading={loading}
-          disconnected={disconnected}
-          filterText={filterText}
-          emptyMessage={emptyMessage}
-          gridTemplateColumns={rowGridTemplateColumns}
-          t={t}
-        />
+          <FileList
+            virtualized={isVirtualized}
+            listRef={listRef}
+            viewportRef={viewportRef}
+            viewportSize={viewportSize}
+            rowHeight={rowHeight}
+            entries={sorted}
+            renderRow={renderRow}
+            className={paneListClassName}
+            listProps={{
+              'data-side': side,
+              role: 'listbox',
+              'aria-multiselectable': 'true',
+              'aria-label': t('filePane.filesAriaLabel'),
+              onPointerDown: startMarquee,
+              onClick: (e) => {
+                if (hostPlatform() === 'macos' && e.ctrlKey && !e.metaKey && e.button === 0) {
+                  contextMenu.openFiles(e, null);
+                }
+              },
+              onContextMenu: (e) => contextMenu.openFiles(e, null),
+            }}
+            loading={loading}
+            disconnected={disconnected}
+            filterText={filterText}
+            emptyMessage={emptyMessage}
+            gridTemplateColumns={rowGridTemplateColumns}
+            t={t}
+          />
 
-        {/* Named over the blurred list while a drag hovers a pane that cannot
+          {/* Named over the blurred list while a drag hovers a pane that cannot
             take it — a Server pane with no session. Always mounted and shown
             by CSS off the same class that blurs the list, so a drag from
             Explorer and one between panes answer alike without either path
             knowing this element is here. */}
-        <div className="pane-drop-refusal" aria-hidden="true">
-          <span>{t('filePane.connectFirst')}</span>
+          <div className="pane-drop-refusal" aria-hidden="true">
+            <span>{t('filePane.connectFirst')}</span>
+          </div>
         </div>
+
+        {terminalSlot && (
+          <>
+            <div
+              className={`section-resizer terminal-resizer ${resizingTerminal ? 'dragging' : ''}`}
+              onMouseDown={(event) => {
+                event.preventDefault();
+                paneRef.current?.focus({ preventScroll: true });
+                preDragRatioRef.current = terminalSplitRatio;
+                dragModeRef.current =
+                  terminalMode === 'collapsed' || terminalMode === 'maximized'
+                    ? terminalMode
+                    : 'split';
+                dragStartYRef.current = event.clientY / getInterfaceScale();
+                dragMovedRef.current = false;
+                setResizingTerminal(true);
+              }}
+              onDoubleClick={
+                terminalMode === 'collapsed' || terminalMode === 'maximized'
+                  ? () => onTerminalModeChange?.('split')
+                  : onTerminalSplitReset
+              }
+              data-tooltip={t('terminal.resize')}
+            />
+            <div
+              key="terminal-slot"
+              className={`pane-terminal-slot is-${terminalMode}`}
+              style={terminalMode === 'split' ? { flex: `${terminalSplitRatio} 1 0%` } : undefined}
+            >
+              {terminalSlot}
+            </div>
+          </>
+        )}
       </div>
 
       {contextMenu.menu && (

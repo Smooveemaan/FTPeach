@@ -39,6 +39,9 @@ export const api: Window['api'] = {
   get tabs() {
     return window.api.tabs;
   },
+  get terminal() {
+    return window.api.terminal;
+  },
   get transfer() {
     return window.api.transfer;
   },

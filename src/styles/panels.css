@@ -104,7 +104,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 26px;
+  height: 28px;
   padding: 0 10px;
   font-size: 11px;
   font-weight: 700;
@@ -120,24 +120,28 @@
    (.log-panel-actions), so the line reads as one evenly spaced row. The pill
    shrinks first, then the search field; too narrow for all of them, the
    header clips rather than spilling over. */
-.log-panel-header {
+.log-panel-header,
+.terminal-panel-header {
   justify-content: flex-start;
   gap: 6px;
   min-width: 0;
   overflow: hidden;
 }
-.log-panel-title {
+.log-panel-title,
+.terminal-panel-title {
   flex: 0 0 auto;
 }
 /* The gap above is the whole spacing here — the divider's own inline margin
    would put it further from the title and the filter than the buttons at the
    header's end are from each other. */
-.log-panel-header .toolbar-divider {
+.log-panel-header .toolbar-divider,
+.terminal-panel-header .toolbar-divider {
   margin-inline: 0;
 }
 /* As close together as the pane toolbar's buttons, where the transfer
    queue's single button gets 10px. */
-.log-panel-actions {
+.log-panel-actions,
+.terminal-panel-actions {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -316,7 +320,7 @@
 
 
 .log-panel.narrow .log-panel-header {
-  height: 26px;
+  height: 28px;
   padding: 0 10px;
   font-size: 10px;
   gap: 6px;
@@ -374,4 +378,150 @@
 }
 .floating-tooltip.visible {
   opacity: 1;
+}
+
+/* While any split/section resizer is dragged, underlying controls must not
+   receive hover highlights or tooltips; the body carries the resize cursor. */
+body.resize-active .app-shell {
+  pointer-events: none;
+}
+
+/* Pane titlebar toggle buttons (Search, Terminal) match .connect-toggle-btn's
+   subtle tinted fill + muted accent border + full accent icon. */
+.pane-search-toggle.active,
+.terminal-toggle-btn.active {
+  background: var(--accent-primary-dim);
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, var(--bg-base));
+  color: var(--accent-primary);
+  box-shadow: none;
+}
+.pane-search-toggle.active:hover:not(:disabled),
+.terminal-toggle-btn.active:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-primary) 22%, var(--bg-base));
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, var(--bg-base));
+  color: var(--accent-primary);
+}
+.pane-search-toggle.active:focus-visible:where(html[data-keyboard-navigation] *),
+.terminal-toggle-btn.active:focus-visible:where(html[data-keyboard-navigation] *) {
+  outline-color: var(--accent-primary);
+}
+
+/* ---------- Embedded SSH terminal ---------- */
+
+.pane-split-area {
+  position: relative;
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pane-terminal-slot {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.pane-terminal-slot.is-collapsed {
+  flex: 0 0 auto;
+}
+.pane-terminal-slot.is-maximized {
+  flex: 1 1 0%;
+}
+
+.pane.has-maximized-terminal-pane .pane-body {
+  display: none;
+}
+/* In maximized mode the resizer stays interactive as a zero-flow drag edge
+   along the top 1px border of `.terminal-panel-header`, keeping the header
+   aligned with `.row-header` in the opposite pane while letting the user drag
+   the terminal back down into split mode. */
+.pane.has-maximized-terminal-pane .terminal-resizer {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 5px;
+  z-index: 2;
+  background: transparent;
+}
+.pane.has-maximized-terminal-pane .terminal-resizer::after {
+  top: 0;
+  height: 2px;
+  background: transparent;
+}
+.pane.has-maximized-terminal-pane .terminal-resizer:hover::after,
+.pane.has-maximized-terminal-pane .terminal-resizer.dragging::after {
+  background: var(--accent-primary);
+}
+
+.terminal-panel {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+/* In split and collapsed modes `.terminal-resizer` above provides the divider
+   (matching Transfers and Log); when maximized the resizer is an overlay so
+   the header's 1px top border aligns with `.row-header` in the opposite pane. */
+.terminal-panel.is-maximized .terminal-panel-header {
+  border-top: 1px solid var(--border-soft);
+}
+.terminal-panel.is-collapsed {
+  flex: 0 0 auto;
+}
+.terminal-panel.is-collapsed .terminal-panel-header {
+  border-bottom: none;
+}
+.terminal-panel.is-collapsed .terminal-panel-body {
+  display: none;
+}
+
+.terminal-panel-status {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.terminal-panel-status.is-exited.is-nonzero {
+  color: var(--status-warning);
+}
+.terminal-panel-status.is-refused,
+.terminal-panel-status.is-error {
+  color: var(--accent-red);
+}
+
+.terminal-panel-body {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-base);
+}
+.terminal-panel-viewport {
+  flex: 1 1 0%;
+  min-height: 0;
+  padding: 6px 8px;
+  overflow: hidden;
+}
+.terminal-host,
+.terminal-host .xterm {
+  width: 100%;
+  height: 100%;
+}
+.terminal-host .xterm .xterm-viewport {
+  background-color: transparent !important;
+}
+.terminal-host .xterm .xterm-viewport::-webkit-scrollbar-thumb {
+  border-color: var(--bg-base);
 }

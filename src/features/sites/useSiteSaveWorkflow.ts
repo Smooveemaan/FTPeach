@@ -6,6 +6,7 @@ import type { SiteForm } from './siteForm.ts';
 import type { PaneSiteSource } from './useSites.ts';
 import { createPaneSiteForm, normalizeSiteForm } from './siteForm.ts';
 import { connectionIdentity } from './siteManagerModel.ts';
+import { terminalStore } from '../terminal/index.ts';
 
 interface SavedSiteLink {
   siteId: string;
@@ -52,8 +53,16 @@ export function useSiteSaveWorkflow<Pane extends PaneSiteSource>({
   const sourceRef = useRef<{ paneId: PaneId; tabId: string; pane: Pane } | null>(null);
 
   const handleSaveSite = (id: PaneId) => () => {
-    sourceRef.current = { paneId: id, tabId: activeTabId, pane: panes[id] };
-    setShowSaveSite(createPaneSiteForm(panes[id]));
+    const pane = panes[id];
+    sourceRef.current = { paneId: id, tabId: activeTabId, pane };
+    const form = createPaneSiteForm(pane);
+    const hasOpenTerminal = Boolean(
+      pane.kind !== 'local' &&
+      pane.form.protocol === 'sftp' &&
+      pane.connectionId &&
+      terminalStore.getSession(pane.connectionId),
+    );
+    setShowSaveSite(hasOpenTerminal ? { ...form, openTerminalOnConnect: true } : form);
   };
 
   const saveFromPane = async (payload: SavedSite) => {

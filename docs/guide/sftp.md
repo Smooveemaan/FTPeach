@@ -62,10 +62,13 @@ account. Selecting a file in FTPeach does not grant that account access.
 
 [![SFTP key authentication enabled, showing the Key file button and Passphrase field.](../../site/images/guide/sftp-key.png)](../../site/images/guide/sftp-key.png)
 
-The key button opens a file picker. The passphrase belongs to that file, not to
-your server account or the FTPeach password vault.
+The key button opens a file picker. On an installed copy it starts in your
+`.ssh` folder when that folder exists; on a portable copy it prefers the
+portable `keys` folder first. The passphrase belongs to that file, not to your
+server account or the FTPeach password vault.
 
 <!-- verified-by: pr test/component/file-browser/connectionBar.test.tsx::key authentication clears the password and warns for a selected RSA key -->
+<!-- verified-by: pr src-tauri/src/commands/dialog.rs::key_picker_prefers_portable_keys_then_home_ssh -->
 
 ### Choosing a key file
 
@@ -105,6 +108,33 @@ fingerprint independently before choosing **Trust the new key**.
 <!-- verified-by: pr src-tauri/src/protocol/sftp_tests.rs::local_server_pins_reuses_and_rejects_changed_host_key -->
 <!-- verified-by: pr test/component/platform/securityConfirmation.test.tsx::host-key confirmation shows the actual and pinned fingerprints -->
 <!-- verified-by: pr test/unit/file-browser/paneSessionLifecycle.test.ts::a refused host key is answered by the backend window, then the connect is retried -->
+
+## Use the SSH terminal
+
+SFTP panes include a terminal button beside **Save Connection**. It is available
+only for SFTP connections; FTP, FTPS and WebDAV panes leave it disabled.
+
+- On a connected SFTP pane, select the terminal button to open or hide the
+  **TERMINAL** dock in the lower half of the pane. It opens a shell over the
+  same SSH session as your file listing.
+- On a disconnected SFTP form, selecting the terminal button connects to the
+  server and opens the terminal as soon as SFTP signs in.
+- Drag the divider above **TERMINAL** to resize the split (double-click it to
+  return to an equal split), or use the terminal header buttons to collapse,
+  maximize or close the shell. Switching tabs keeps the shell running until you
+  close it or disconnect the pane.
+- In an SFTP bookmark, turn on **Open SSH terminal automatically on connect** so
+  opening that bookmark starts SFTP and the SSH terminal together.
+- If the server is configured for SFTP only and refuses interactive shells, the
+  terminal shows a notice while SFTP file browsing and transfers continue
+  normally.
+
+<!-- verified-by: pr test/component/terminal/terminalIntegration.test.tsx::ConnectionBar enables terminal button only for SFTP and invokes connect-with-terminal -->
+<!-- verified-by: pr test/component/terminal/terminalIntegration.test.tsx::PaneSourceSwitcher shows active terminal toggle when connected via SFTP and disables it for WebDAV -->
+<!-- verified-by: pr test/component/terminal/terminalIntegration.test.tsx::TerminalPanel supports split -> collapsed -> maximized -> closed and survives tab unmount/remount -->
+<!-- verified-by: pr test/component/terminal/terminalIntegration.test.tsx::siteConnectPane auto-opens terminal for SFTP bookmarks with openTerminalOnConnect and disconnect closes it -->
+<!-- verified-by: pr src-tauri/src/terminal/tests.rs::sftp_and_pty_multiplex_on_one_ssh_session_with_resize_and_exit -->
+<!-- verified-by: pr src-tauri/src/terminal/tests.rs::shell_refusal_reports_structured_outcome_without_breaking_sftp -->
 
 ## When SFTP does not connect
 

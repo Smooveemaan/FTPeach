@@ -16,12 +16,15 @@ a transfer limitation. For connection steps, see [FTP](ftp.md), [FTPS](ftps.md),
 | Resume an upload | Conditional | Conditional | Conditional | No |
 | Copy between connections | Yes | Yes | Yes | Yes |
 | Move within one connection | Yes | Yes | Yes | Yes |
+| Built-in SSH terminal | No | No | Yes (when server allows shell) | No |
 
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::local_server_supports_connect_list_disconnect_and_reconnect -->
 <!-- verified-by: pr src-tauri/src/protocol/ftp_tests.rs::local_ftps_server_rejects_bad_certificate_unless_explicitly_allowed -->
 <!-- verified-by: pr src-tauri/src/protocol/sftp_tests.rs::local_server_pins_reuses_and_rejects_changed_host_key -->
 <!-- verified-by: pr src-tauri/src/protocol/webdav_tests.rs::local_server_round_trips_file_operations_and_resumed_download -->
 <!-- verified-by: pr test/component/transfers/useTransfers.test.tsx::folder upload, download and relay submit endpoint intent without per-file IPC -->
+<!-- verified-by: pr src-tauri/src/terminal/tests.rs::sftp_and_pty_multiplex_on_one_ssh_session_with_resize_and_exit -->
+<!-- verified-by: pr src-tauri/src/terminal/tests.rs::shell_refusal_reports_structured_outcome_without_breaking_sftp -->
 
 “Conditional” means the saved partial and the source must pass the checks below.
 Server permissions, storage quotas and supported operations can restrict what

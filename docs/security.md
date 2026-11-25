@@ -40,6 +40,8 @@ permissions remain as described above.
 
 `sites_list` does not return saved passwords. The renderer sees only `hasPassword` and `hasKeyPassphrase` and supplies a `siteId` when connecting. The backend loads the associated configuration, preventing the renderer from redirecting one site's password to an arbitrary host.
 
+The embedded SSH terminal commands (`terminal_open`, `terminal_write`, `terminal_resize`, `terminal_ack`, `terminal_close`) are granted only to the `main` window in `default.json` and excluded from `security-confirmation.json`. A terminal multiplexes a PTY/shell channel over an already authenticated SFTP session after host-key verification and backend credential resolution; terminal input and output never enter `LogEmitter`, protocol logs, application logs, or diagnostic bundles. In the renderer, `@xterm/xterm` runs with `allowProposedApi: false` and no OSC 52 clipboard-write handler, so remote escape sequences cannot overwrite the local clipboard.
+
 Normal listing and editing IPC returns only presence flags. An explicit reveal uses a short-lived one-use token; the vault additionally requires reauthentication before that token is issued: the master password, or Windows Hello where it is enabled on this computer, whose returned key must match the open vault's. The renderer clears a revealed value on blur, hide, vault lock, dialog close, and unmount.
 
 ### Rust and the local filesystem
@@ -268,7 +270,7 @@ Limits apply both per operation and to shared resources. Admission checks bound
 concurrency before work starts; streaming and listing checks enforce their budgets
 as data arrives. Protocol logs drop excess records with an aggregate notice, and
 paused-journal exhaustion returns `cleanupIncomplete`; other resource-budget refusals
-normally use `resourceLimit`. These are not interchangeable outcomes. The protocol log's writer queue holds 512 records and its in-memory tail 5,000 records or 4 MiB, with a counter reporting what was dropped and no secret-bearing payload. At most 32 unused authorization grants and 4 open confirmation windows exist at once, 64 connection slots, one proxy test at a time under a 20-second deadline covering the whole connect and handshake rather than the operating system's own timeouts, 4 bridged SOCKS connections, 4 concurrent local listings and 4 probes of a network path. Editor copies are admitted against a disk budget and an age limit before a new one is written.
+normally use `resourceLimit`. These are not interchangeable outcomes. The protocol log's writer queue holds 512 records and its in-memory tail 5,000 records or 4 MiB, with a counter reporting what was dropped and no secret-bearing payload. At most 32 unused authorization grants and 4 open confirmation windows exist at once, 64 connection slots, 16 concurrent SSH terminal sessions (with PTY dimensions bounded to 2..=500 columns and 1..=200 rows, 64 KiB per write, and a 128 KiB per-session output window gated by renderer `terminal_ack`), one proxy test at a time under a 20-second deadline covering the whole connect and handshake rather than the operating system's own timeouts, 4 bridged SOCKS connections, 4 concurrent local listings and 4 probes of a network path. Editor copies are admitted against a disk budget and an age limit before a new one is written.
 
 The SOCKS bridge's connections belong to its accept loop through a `JoinSet`, so closing the bridge stops them.
 

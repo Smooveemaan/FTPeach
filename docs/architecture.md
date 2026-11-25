@@ -52,6 +52,7 @@ composition root. Code is grouped by what the user would name:
 | `features/transfers/` | The transfer queue: rows, lifecycle, overwrite approval, routing of copies, moves and OS drops. |
 | `features/sites/` | Saved sites and local paths, the site manager, its tree and drag and drop. |
 | `features/settings/` | Settings state and the settings dialog, including vault settings. |
+| `features/terminal/` | Embedded SSH terminal dock for SFTP panes, lazy-loaded `@xterm/xterm` runtime, and detachable `terminalStore.ts` preserving live shells across tab switches. |
 | `features/logs/`, `open-with/`, `connections/`, `updater/` | Their own workflows. |
 | `platform/` | The only code that talks to Tauri: `tauriApi.ts` (invoke and events) and typed wrappers in `platform/api/`. |
 | `components/`, `hooks/`, `shared/`, `shortcuts/`, `i18n/` | Reusable UI, UI mechanics and plain functions. They never import a feature. |
@@ -107,6 +108,7 @@ needs native acceptance on each platform before release.
 | `application/` | Use cases that span zones: opening and closing sessions (`session_service`), single transfers (`transfer_service`), resumable uploads, and recursive copy/move (`recursive_transfer/`). |
 | `session.rs` | `Sessions`: one slot per renderer-chosen `connectionId`, holding the browse connection and that connection's transfer pool. |
 | `protocol/` | The `ProtocolBackend` trait, its FTP, SFTP and WebDAV drivers, listing parsers, the TCP/proxy transport, and the typed per-protocol connection config. |
+| `terminal/` | `Terminals`: multiplexed SSH PTY/shell channels over an active SFTP session, 128 KiB credit-window backpressure, session caps, and teardown on disconnect or shutdown. |
 | `transfer/` | Worker pools, server-to-server relay, progress events, rate and concurrency limits, upload staging. |
 | `local_fs/` | Every operation on the user's own disk: listing, create, rename, delete, recycle bin, staged copy, verified move, reservations, open-with copies. |
 | `store/` | JSON persistence in the installed or portable data folder and secret-field placement. |
@@ -245,7 +247,7 @@ connection (list, mkdir, rename, delete, disconnect); different connections
 run in parallel. Transfer bytes use pool workers, while admission, resume checks
 and cleanup may briefly need session lookup or the browse connection. A connect has its own
 cancellation token, so a disconnect can abandon a stalled connect without
-waiting for the lock. Teardown stops the pool, waits for its tasks, removes
+waiting for the lock. An SFTP session also exposes a cloned SSH client handle so `terminal_open` can multiplex a PTY/shell channel without locking the browse slot. Teardown closes terminals bound to that connection, stops the pool, waits for its tasks, removes
 staging files that can no longer be resumed, then closes the browse
 connection, all under a deadline.
 

@@ -7,15 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - FTPeach now runs on macOS 13.3+ (signed and notarized universal `.dmg` for Apple Silicon and
-  Intel) with the native menu bar, `⌘` shortcuts, "Show menu bar icon", and automatic updates.
+  Intel).
 - On macOS, saved passwords use macOS Keychain, the vault unlocks with Touch ID or your Mac
   password and locks with the screen, and files support Finder drag-out, "Show in Finder", and
   Trash.
-- FTPeach now runs on 64-bit Linux (`.deb` and `.AppImage`) with system light and dark
-  appearance, system tray, desktop notifications, sleep prevention, and automatic updates.
+- FTPeach now runs on 64-bit Linux (`.deb` and `.AppImage`).
 - On Linux, saved passwords use Secret Service, the vault locks with the desktop session, and local
   files support drag-out, "Open containing folder", Trash, and automatic refresh after external
   moves.
+- SFTP panes offer a built-in SSH terminal dock (resize, collapse, maximize) with an "Open SSH
+  terminal automatically on connect" option for SFTP bookmarks (thanks @endlessnights).
 - Right-clicking the pane connection button offers Connect or Disconnect, copies the server
   address, and copies the SSH fingerprint when available.
 - The toolbar has a Settings button to open Settings directly.
@@ -27,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The SFTP Key file picker starts in `~/.ssh` when it exists on installed copies.
 - Import Settings asks whether to import saved passwords on the first step and uses a single-row
   Cancel and Import footer on the file password step.
 

@@ -130,13 +130,15 @@ try {
   Stop-Process -Id $notepad.Id -Force
   $notepad = $null
 
+  $hideExt = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideFileExt -ErrorAction SilentlyContinue).HideFileExt
+  $shownItem = if ($hideExt -eq 0) { 'shown.txt' } else { 'shown' }
   Invoke-Native @('click', $app.Id, 'ListItem', 'shown.txt, File', 'right') | Out-Null
   Invoke-Native @('click', $app.Id, 'MenuItem', 'Show in File Explorer') | Out-Null
   $explorer = Invoke-Native @('explorer-find', $local)
-  Invoke-Native @('explorer-selection', $explorer.handle, 'shown') | Out-Null
+  Invoke-Native @('explorer-selection', $explorer.handle, $shownItem) | Out-Null
   $explorerFileSelected = $true
   Invoke-Native @('explorer-add', $explorer.handle, 'shown-folder') | Out-Null
-  Invoke-Native @('explorer-selection', $explorer.handle, 'shown', 'shown-folder') | Out-Null
+  Invoke-Native @('explorer-selection', $explorer.handle, $shownItem, 'shown-folder') | Out-Null
   $explorerMultipleSelection = $true
   Invoke-Native @('explorer-close', $local) | Out-Null
   Invoke-Native @('click', $app.Id, 'ListItem', 'shown-folder, File folder', 'right') | Out-Null
@@ -244,6 +246,6 @@ try {
   $remote = Join-Path $remoteRoot $remoteFile
   if (Test-Path $remote) { Remove-Item $remote -Force -ErrorAction SilentlyContinue }
   if ($share) { Remove-SmbShare -Name $share -Force -ErrorAction SilentlyContinue }
-  if (Test-Path $vhd) { Dismount-DiskImage -ImagePath $vhd -ErrorAction SilentlyContinue }
+  if (Test-Path $vhd) { Dismount-DiskImage -ImagePath $vhd -ErrorAction SilentlyContinue | Out-Null }
   if (Test-Path $work) { Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue }
 }

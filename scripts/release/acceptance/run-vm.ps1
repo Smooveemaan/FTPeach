@@ -80,7 +80,8 @@ try {
   if ($Scenario -ne 'candidate-smoke') {
     if ($Guest) {
       $output = "C:\ftpeach-acceptance\$Scenario-$RunId.json"
-      & powershell.exe -NoProfile -WindowStyle Hidden -File "C:\ftpeach-acceptance\$Scenario-vm.ps1" -RunId $RunId
+      # Discard child stdout so only the final JSON payload reaches orchestrator.ts.
+      & powershell.exe -NoProfile -WindowStyle Hidden -File "C:\ftpeach-acceptance\$Scenario-vm.ps1" -RunId $RunId | Out-Null
       if (-not (Test-Path $output)) { throw "The interactive $Scenario scenario left no result" }
       $content = Get-Content $output -Raw
       if ($LASTEXITCODE -ne 0) { throw "The interactive $Scenario scenario exited with ${LASTEXITCODE}: $content" }

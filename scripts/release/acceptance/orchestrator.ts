@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { pathToFileURL } from 'node:url';
@@ -144,6 +145,15 @@ export async function runAcceptance(options: {
       result.error = error instanceof Error ? error.message : String(error);
       result.endedAt ||= new Date().toISOString();
       failure = error;
+      // Preserve VM failure diagnostics alongside result.json so workflow artifact uploads include them.
+      for (const name of [`${scenario}-${runId}.png`, 'acceptance-vm.log']) {
+        const source = path.join(options.candidateDirectory, name);
+        if (existsSync(source)) {
+          const target = path.join(runDirectory, name);
+          await copyFile(source, target);
+          if (!result.logs.includes(target)) result.logs.push(target);
+        }
+      }
     }
     const report = {
       schema: 1,

@@ -28,6 +28,7 @@ import {
   msixName,
 } from '../../../scripts/release/msix.ts';
 import {
+  attachDmg,
   findInstalledBinary,
   findInstalledDesktopFile,
   isolatedEnv,
@@ -153,9 +154,32 @@ test('MSIX builder writes a 4-part full-trust AppxManifest, generates assets/PRI
   assert.ok(hasNotice && hasLicenses && !hasUpdateVersion);
 });
 
-test('unix acceptance helpers validate universal lipo slices and process liveness', async (t) => {
+test('unix acceptance helpers validate universal lipo slices, DMG attach, and process liveness', async (t) => {
   assert.deepEqual(parseUniversalArchs('x86_64 arm64\n'), ['x86_64', 'arm64']);
   assert.throws(() => parseUniversalArchs('arm64\n'), /Expected universal binary/);
+
+  const calls: { cmd: string; args: string[]; opts: Record<string, unknown> }[] = [];
+  attachDmg('/tmp/FTPeach.dmg', '/tmp/mnt', ((
+    cmd: string,
+    args: string[],
+    opts: Record<string, unknown>,
+  ) => {
+    calls.push({ cmd, args, opts });
+    return Buffer.from('');
+  }) as typeof execFileSync);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0]!.cmd, 'hdiutil');
+  assert.deepEqual(calls[0]!.args, [
+    'attach',
+    '/tmp/FTPeach.dmg',
+    '-nobrowse',
+    '-readonly',
+    '-mountpoint',
+    '/tmp/mnt',
+  ]);
+  assert.equal(calls[0]!.opts.input, 'Y\n');
+  assert.equal((calls[0]!.opts.env as Record<string, string> | undefined)?.PAGER, 'cat');
+
   await launchAndStayAlive(
     process.execPath,
     ['-e', 'setInterval(() => {}, 1000)'],

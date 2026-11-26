@@ -18,6 +18,19 @@ export function parseUniversalArchs(lipoOutput: string): string[] {
   return archs;
 }
 
+export function attachDmg(
+  dmgPath: string,
+  mountPoint: string,
+  run: typeof execFileSync = execFileSync,
+): void {
+  // Accept the DMG's embedded license prompt non-interactively.
+  run('hdiutil', ['attach', dmgPath, '-nobrowse', '-readonly', '-mountpoint', mountPoint], {
+    stdio: 'pipe',
+    input: 'Y\n',
+    env: { ...process.env, PAGER: 'cat' },
+  });
+}
+
 export function parseDebMetadata(
   debInfo: string,
   expectedVersion: string,
@@ -277,11 +290,7 @@ export async function verifyMacosCandidate(directory: string) {
 
     const mountPoint = path.join(workDir, 'mnt');
     await mkdir(mountPoint, { recursive: true });
-    execFileSync(
-      'hdiutil',
-      ['attach', dmgPath, '-nobrowse', '-readonly', '-mountpoint', mountPoint],
-      { stdio: 'pipe' },
-    );
+    attachDmg(dmgPath, mountPoint);
     try {
       const mountedApp = path.join(mountPoint, 'FTPeach.app');
       execFileSync('codesign', ['--verify', '--deep', '--strict', '--verbose=2', mountedApp], {

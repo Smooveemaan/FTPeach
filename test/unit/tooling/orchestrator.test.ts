@@ -53,6 +53,59 @@ test(
   },
 );
 
+test(
+  'acceptance PowerShell scripts silence child scenario and Dismount-DiskImage stdout',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const dir = path
+      .resolve(import.meta.dirname, '../../../scripts/release/acceptance')
+      .replaceAll("'", "''");
+    const output = execFileSync(
+      'powershell.exe',
+      [
+        '-NoProfile',
+        '-Command',
+        `
+    function Parse-Script([string]$file) {
+      $tokens=$null; $errors=$null
+      $ast=[System.Management.Automation.Language.Parser]::ParseFile($file, [ref]$tokens, [ref]$errors)
+      if ($errors) { throw "Invalid PowerShell in $file" }
+      return $ast
+    }
+    $runVm = Parse-Script '${dir}\\run-vm.ps1'
+    $childPipes = $runVm.FindAll({
+      param($n)
+      $n -is [System.Management.Automation.Language.PipelineAst] -and
+        $n.PipelineElements[0] -is [System.Management.Automation.Language.CommandAst] -and
+        $n.PipelineElements[0].GetCommandName() -eq 'powershell.exe' -and
+        $n.Extent.Text -match 'Scenario-vm\\.ps1'
+    }, $true)
+    if ($childPipes.Count -ne 1 -or $childPipes[0].PipelineElements[-1].GetCommandName() -ne 'Out-Null') {
+      throw 'run-vm.ps1 must pipe guest scenario stdout to Out-Null'
+    }
+    foreach ($name in @('portable-vm.ps1', 'shell-vm.ps1')) {
+      $ast = Parse-Script "${dir}\\$name"
+      $dismounts = $ast.FindAll({
+        param($n)
+        $n -is [System.Management.Automation.Language.PipelineAst] -and
+          ($n.PipelineElements | Where-Object { $_ -is [System.Management.Automation.Language.CommandAst] -and $_.GetCommandName() -eq 'Dismount-DiskImage' })
+      }, $true)
+      if ($dismounts.Count -eq 0) { throw "Expected Dismount-DiskImage in $name" }
+      foreach ($p in $dismounts) {
+        if ($p.PipelineElements[-1].GetCommandName() -ne 'Out-Null') {
+          throw "Dismount-DiskImage in $name must pipe to Out-Null"
+        }
+      }
+    }
+    'ok'
+  `,
+      ],
+      { encoding: 'utf8' },
+    );
+    assert.equal(output.trim(), 'ok');
+  },
+);
+
 const metadata: VmMetadata = {
   vmName: 'test-vm',
   checkpoint: 'clean',
@@ -177,6 +230,27 @@ for (const [name, run] of [
     assert.equal(result.results[0].status, 'failed');
   });
 }
+
+test('failure copies VM screenshot and log into the results directory', async () => {
+  const { directory } = await fixture();
+  const controller = adapter(async (candidateDir, _hash, scenario, runId) => {
+    await writeFile(path.join(candidateDir, `${scenario}-${runId}.png`), 'png-bytes');
+    await writeFile(path.join(candidateDir, 'acceptance-vm.log'), 'Stage: explorer-selection');
+    throw new Error('shell failed');
+  });
+  const { report, failed } = await runAcceptance({
+    ...options(directory, controller.adapter),
+    scenario: 'shell',
+  });
+  assert.equal(failed, true);
+  const runDir = path.dirname(report);
+  const result = JSON.parse(await readFile(report, 'utf8'));
+  const screenshot = path.join(runDir, `shell-${result.runId}.png`);
+  const vmLog = path.join(runDir, 'acceptance-vm.log');
+  assert.equal(await readFile(screenshot, 'utf8'), 'png-bytes');
+  assert.equal(await readFile(vmLog, 'utf8'), 'Stage: explorer-selection');
+  assert.deepEqual(result.results[0].logs, [screenshot, vmLog]);
+});
 
 test('cleanup failure cannot leave a passed result', async () => {
   const { directory } = await fixture();

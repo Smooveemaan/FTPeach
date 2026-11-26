@@ -135,7 +135,7 @@ try {
 } finally {
   if ($app -and -not $app.HasExited) { & taskkill.exe /PID $app.Id /T /F | Out-Null }
   if ($data -and (Test-Path $data)) { icacls $data /remove:d "*$sid" /Q | Out-Null }
-  if (Test-Path $vhd) { Dismount-DiskImage -ImagePath $vhd -ErrorAction Stop }
+  if (Test-Path $vhd) { Dismount-DiskImage -ImagePath $vhd -ErrorAction Stop | Out-Null }
   if ($ownsRemote -and (Test-Path $remote)) { Remove-Item -LiteralPath $remote -Force }
   if (-not [IO.Path]::GetFullPath($work).StartsWith("$root\", [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected portable work path' }
   if (Test-Path $work) { Remove-Item -LiteralPath $work -Recurse -Force }

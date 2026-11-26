@@ -135,6 +135,7 @@ try {
   Invoke-Native @('click', $app.Id, 'ListItem', 'shown.txt, File', 'right') | Out-Null
   Invoke-Native @('click', $app.Id, 'MenuItem', 'Show in File Explorer') | Out-Null
   $explorer = Invoke-Native @('explorer-find', $local)
+  Invoke-Native @('place', $explorer.handle, ($area.x + [int]($area.width / 2)), $area.y, ([int]($area.width / 2)), $area.height) | Out-Null
   Invoke-Native @('explorer-selection', $explorer.handle, $shownItem) | Out-Null
   $explorerFileSelected = $true
   Invoke-Native @('explorer-add', $explorer.handle, 'shown-folder') | Out-Null

@@ -818,29 +818,93 @@ static class Native
         throw new TimeoutException("Explorer did not show " + folder);
     }
 
+    static List<string> ShellSelectedNames(IntPtr hwnd)
+    {
+        var names = new List<string>();
+        try
+        {
+            dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("Shell.Application"));
+            foreach (dynamic window in shell.Windows())
+            {
+                try
+                {
+                    if ((long)window.HWND == (long)hwnd)
+                    {
+                        foreach (dynamic item in window.Document.SelectedItems())
+                            names.Add((string)item.Name);
+                        break;
+                    }
+                }
+                catch (Exception) { }
+            }
+        }
+        catch (Exception) { }
+        return names;
+    }
+
     static int ExplorerSelection(IntPtr hwnd, string[] expected)
     {
-        var items = AutomationElement.FromHandle(hwnd).FindAll(TreeScope.Descendants,
-            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem));
-        var selected = new List<string>();
-        foreach (AutomationElement item in items)
-        {
-            var pattern = item.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
-            if (pattern != null && pattern.Current.IsSelected) selected.Add(item.Current.Name);
-        }
-        selected.Sort(StringComparer.OrdinalIgnoreCase);
         var wanted = expected.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToArray();
-        if (!selected.SequenceEqual(wanted, StringComparer.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Explorer selection is [" + string.Join(", ", selected) + "], expected [" + string.Join(", ", wanted) + "]");
-        Console.WriteLine("{\"selected\":[" + string.Join(",", selected.Select(Quote)) + "]}");
-        return 0;
+        var deadline = DateTime.UtcNow.AddSeconds(15);
+        var selected = new List<string>();
+        var allItems = new List<string>();
+        while (true)
+        {
+            selected = new List<string>();
+            allItems = new List<string>();
+            try
+            {
+                var items = AutomationElement.FromHandle(hwnd).FindAll(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem));
+                foreach (AutomationElement item in items)
+                {
+                    allItems.Add(item.Current.Name);
+                    object patternObject;
+                    if (item.TryGetCurrentPattern(SelectionItemPattern.Pattern, out patternObject))
+                    {
+                        var pattern = (SelectionItemPattern)patternObject;
+                        if (pattern.Current.IsSelected) selected.Add(item.Current.Name);
+                    }
+                }
+                selected.Sort(StringComparer.OrdinalIgnoreCase);
+                if (selected.SequenceEqual(wanted, StringComparer.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("{\"selected\":[" + string.Join(",", selected.Select(Quote)) + "]}");
+                    return 0;
+                }
+            }
+            catch (ElementNotAvailableException) { }
+            if (DateTime.UtcNow > deadline)
+            {
+                var shellSelected = ShellSelectedNames(hwnd);
+                throw new InvalidOperationException(
+                    "Explorer selection is [" + string.Join(", ", selected) + "], expected [" + string.Join(", ", wanted) +
+                    "]; items: [" + string.Join(", ", allItems) + "]; shell: [" + string.Join(", ", shellSelected) + "]");
+            }
+            Thread.Sleep(250);
+        }
     }
 
     static int ExplorerAdd(IntPtr hwnd, string name)
     {
-        var item = AutomationElement.FromHandle(hwnd).FindFirst(TreeScope.Descendants, new AndCondition(
-            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
-            new PropertyCondition(AutomationElement.NameProperty, name)));
+        ShowWindow(hwnd, 9);
+        SetForegroundWindow(hwnd);
+        Thread.Sleep(150);
+        AutomationElement item = null;
+        var deadline = DateTime.UtcNow.AddSeconds(15);
+        while (item == null)
+        {
+            try
+            {
+                item = AutomationElement.FromHandle(hwnd).FindFirst(TreeScope.Descendants, new AndCondition(
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
+                    new PropertyCondition(AutomationElement.NameProperty, name)));
+            }
+            catch (ElementNotAvailableException) { }
+            if (item == null && DateTime.UtcNow > deadline)
+                throw new InvalidOperationException("Explorer shows no entry " + Quote(name));
+            if (item == null) Thread.Sleep(250);
+        }
         var rect = item.Current.BoundingRectangle;
         int x = (int)(rect.Left + rect.Width / 2), y = (int)(rect.Top + rect.Height / 2);
         Send(Key(0x11, false));

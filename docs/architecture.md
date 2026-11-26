@@ -213,10 +213,13 @@ A rejection that is not a `CommandError` (a call Tauri refused before the
 command ran) is `internal`. `shared/errorMessages.ts` chooses the text by
 code alone.
 
-Only an `internal` failure is logged: `invoke` writes it to the console
-with its details, and the console is forwarded to `ftpeach-app.log`, which
-redacts what it writes. Every other code is an answer the caller shows where
-it happened, and would only fill the log.
+On the renderer side, only an `internal` failure is logged: `invoke` writes
+it to the console with its details, and the console forwarder deduplicates and
+rate-limits entries before sending them to `ftpeach-app.log`, which redacts
+what it writes. On the Rust side, the IPC diagnostic wrapper records failed
+commands (command name, `ErrorCode`, duration) and slow commands (`> 500 ms`)
+without command arguments or user paths. Every other caller-handled code is
+answered where it happened rather than echoed by the renderer.
 
 ## Connection lifecycle
 
@@ -362,8 +365,8 @@ has the details.
   deletion and other main-window commands remain governed by their ACL and
   backend validation; a grant does not imply an interactive confirmation.
 - **Text written to disk or exported is redacted**: `security::redaction`
-  cleans the protocol log, the application log, saved logs and the
-  diagnostic bundle.
+  cleans the protocol log, the application log, the in-memory flight recorder,
+  saved logs and the diagnostic bundle.
 
 [Security design](security.md) and [IPC permissions](ipc-permissions.md)
 cover the threat model and the capability files.

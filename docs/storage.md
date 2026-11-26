@@ -137,6 +137,31 @@ live batches waiting for a history response also have 5,000-entry/4 MiB limits.
 Quit and immediate update installation drain admitted log records with a two-second
 deadline. Daily rotation, age and directory-size policies still apply (HF-15).
 
+## Application log and diagnostic bundle
+
+The application log (`ftpeach-app.log`) lives in the platform log directory
+under a fixed disk budget of three 1 MiB rotated files (`KeepSome(3)`).
+Always-on `Info` entries record lifecycle milestones, slow or failed IPC
+commands (without arguments or user paths), and main-thread stall probes.
+Repeated lines are rate-limited (5 per 10-second window per normalized message
+key, at most 32 active buckets) and summarized on recovery; renderer console
+forwarding collapses consecutive repeats and caps bursts at 20 messages per
+second.
+
+An in-memory flight recorder retains the last 200 redacted events (up to 256
+bytes per line) and dumps them into `ftpeach-app.log` automatically on a panic,
+main-thread stall, or internal error (with a 60-second cooldown for non-panic
+anomalies). Enabling **Extended diagnostic logging** (`extendedLogging`) adds
+`Debug` output for `app_lib::*` only, shows a status-bar indicator, and turns
+itself off automatically after 24 hours (`extendedLoggingUntil`), keeping the
+same 3 × 1 MiB disk cap.
+
+Exporting diagnostics writes `ftpeach-diagnostics-*.json` containing a redacted
+environment snapshot (OS, architecture, app version, monitor and main-window
+geometry, runtime counts, and an explicit allowlist of non-secret settings),
+the flight recorder ring, the protocol log tail, and up to the last 256 KiB of
+`ftpeach-app.log`.
+
 ## Updates
 
 A downloaded update waits in `%LOCALAPPDATA%\com.smooveemaan.ftpeach\updates`:

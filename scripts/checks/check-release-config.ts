@@ -274,10 +274,25 @@ assert.ok(
 const csp = config?.app?.security?.csp;
 assert.equal(typeof csp, 'string', 'Production CSP must be configured by Tauri');
 assert.ok(csp.includes("script-src 'self'"), 'Production scripts must be restricted to self');
+assert.ok(
+  !/script-src[^;]*'unsafe-inline'/i.test(csp),
+  'Production CSP must not allow unsafe-inline scripts',
+);
 assert.ok(!csp.includes("'unsafe-eval'"), 'Production CSP must not allow unsafe-eval');
 assert.ok(
   !/script-src[^;]*https?:/i.test(csp),
   'Production CSP must not allow external script sources',
+);
+// @xterm/xterm's DOM renderer injects runtime <style> sheets and cell style attributes
+// for selection highlights, ANSI/RGB colors, and cursor rules; style-src 'self' alone
+// silently drops them in production builds (dev builds do not enforce app.security.csp).
+assert.ok(
+  /style-src[^;]*'self'/.test(csp) && /style-src[^;]*'unsafe-inline'/.test(csp),
+  "Production CSP must allow 'self' and 'unsafe-inline' styles for @xterm/xterm DOM rendering",
+);
+assert.ok(
+  !/style-src[^;]*https?:/i.test(csp),
+  'Production CSP must not allow external style sources',
 );
 assert.ok(
   !/http-equiv=["']Content-Security-Policy["']/i.test(indexHtml),

@@ -2,7 +2,12 @@ import { useEffect, useRef } from 'react';
 import type { MenuBarEntry } from '../components/MenuBar.tsx';
 import { api } from '../platform/api/index.ts';
 import { hostPlatform } from '../platform/os.ts';
-import { stepFileListScale, stepTerminalFontSize } from '../shared/contentZoom.ts';
+import {
+  consumeWheelZoomEvent,
+  createWheelZoomState,
+  stepFileListScale,
+  stepTerminalFontSize,
+} from '../shared/contentZoom.ts';
 import type { ApplicationCommandContext, ZoomTarget } from './menus.ts';
 import { applicationShortcuts, buildMenus, resolveZoomTarget } from './menus.ts';
 import { useAppCommands } from './useAppCommands.ts';
@@ -36,24 +41,33 @@ export function useApplicationMenuCommands(context: ApplicationCommandContext): 
   }, []);
 
   useEffect(() => {
+    const wheelZoom = createWheelZoomState();
     const onWheel = (event: WheelEvent) => {
-      const zoomModifier =
-        hostPlatform() === 'macos'
-          ? event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
-          : event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
-      if (!zoomModifier) return;
-      event.preventDefault();
-      if (modalOpenRef.current || event.deltaY === 0) return;
+      const isMac = hostPlatform() === 'macos';
+      const zoomModifier = isMac
+        ? event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
+        : event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
+      const { zoomGesture, direction } = consumeWheelZoomEvent(wheelZoom, {
+        timeStamp: event.timeStamp,
+        zoomModifier,
+        deltaY: event.deltaY,
+        deltaMode: event.deltaMode,
+      });
+      if (zoomGesture || (zoomModifier && !isMac)) {
+        event.preventDefault();
+      }
+      if (!zoomGesture || !direction || modalOpenRef.current) return;
       if (!(event.target instanceof Element)) return;
-      const direction: 1 | -1 = event.deltaY < 0 ? 1 : -1;
       if (event.target.closest('.terminal-panel:not(.is-collapsed)')) {
         setTerminalFontSizeRef.current((current) => stepTerminalFontSize(current, direction));
       } else if (event.target.closest('.pane-list')) {
         setFileListScaleRef.current((current) => stepFileListScale(current, direction));
       }
     };
-    window.addEventListener('wheel', onWheel, { passive: false });
-    return () => window.removeEventListener('wheel', onWheel);
+    // Capture phase observes unmodified wheel events even when xterm stops propagation,
+    // and cancels intentional zoom gestures before xterm scrolls the terminal.
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+    return () => window.removeEventListener('wheel', onWheel, true);
   }, []);
 
   const contextWithZoom: ApplicationCommandContext = {

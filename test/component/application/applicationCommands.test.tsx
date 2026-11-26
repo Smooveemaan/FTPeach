@@ -9,6 +9,11 @@ import { makePane, makeTab } from '../../../src/features/file-browser/panes/pane
 import type { PaneId, PaneState } from '../../../src/features/file-browser/panes/paneModel.ts';
 import type { FileSearchHandle } from '../../../src/features/file-browser/index.ts';
 import i18n from '../../../src/i18n/index.ts';
+import {
+  WHEEL_GESTURE_IDLE_MS,
+  consumeWheelZoomEvent,
+  createWheelZoomState,
+} from '../../../src/shared/contentZoom.ts';
 
 interface HarnessOptions {
   tabs?: number;
@@ -295,4 +300,107 @@ test('zoom shortcuts and Ctrl+Wheel target file list or terminal based on focus 
     paneList.remove();
     terminalPanel.remove();
   }
+});
+
+test('momentum scroll followed by pressing the zoom modifier does not zoom, even when a child stops propagation', () => {
+  const h = harness();
+  const paneList = document.createElement('div');
+  paneList.className = 'pane-list';
+  const terminalPanel = document.createElement('div');
+  terminalPanel.className = 'terminal-panel';
+  const terminalBody = document.createElement('div');
+  // Mimic @xterm/xterm stopping wheel propagation while scrolling the terminal.
+  terminalBody.addEventListener('wheel', (event) => {
+    event.stopPropagation();
+  });
+  terminalPanel.appendChild(terminalBody);
+  document.body.append(paneList, terminalPanel);
+
+  try {
+    // Plain scroll inside terminal (child calls stopPropagation), followed immediately by
+    // momentum wheel events after pressing the zoom modifier.
+    terminalBody.dispatchEvent(
+      new WheelEvent('wheel', { deltaY: 20, bubbles: true, cancelable: true }),
+    );
+    const momentumInTerminal = new WheelEvent('wheel', {
+      ctrlKey: true,
+      deltaY: 60,
+      bubbles: true,
+      cancelable: true,
+    });
+    terminalBody.dispatchEvent(momentumInTerminal);
+    expect(h.setTerminalFontSize).not.toHaveBeenCalled();
+
+    // Same inside a file pane: momentum events arriving after modifier press do not scale rows.
+    paneList.dispatchEvent(
+      new WheelEvent('wheel', { deltaY: 16, bubbles: true, cancelable: true }),
+    );
+    const momentumInPane = new WheelEvent('wheel', {
+      ctrlKey: true,
+      deltaY: 60,
+      bubbles: true,
+      cancelable: true,
+    });
+    paneList.dispatchEvent(momentumInPane);
+    expect(h.setFileListScale).not.toHaveBeenCalled();
+  } finally {
+    paneList.remove();
+    terminalPanel.remove();
+  }
+});
+
+test('consumeWheelZoomEvent ignores modifier changes during momentum and accumulates small trackpad deltas', () => {
+  const state = createWheelZoomState();
+
+  // Active scroll stream lasting >1s with macOS-like momentum ticks every ~50ms.
+  for (let t = 0; t <= 1000; t += 50) {
+    expect(
+      consumeWheelZoomEvent(state, { timeStamp: t, zoomModifier: false, deltaY: 12, deltaMode: 0 }),
+    ).toEqual({ zoomGesture: false, direction: null });
+  }
+
+  // Pressing Cmd at 1050ms while momentum keeps firing stays locked to scroll mode.
+  for (let t = 1050; t <= 1500; t += 100) {
+    expect(
+      consumeWheelZoomEvent(state, { timeStamp: t, zoomModifier: true, deltaY: 50, deltaMode: 0 }),
+    ).toEqual({ zoomGesture: false, direction: null });
+  }
+
+  // Once the wheel stream has been idle longer than WHEEL_GESTURE_IDLE_MS, deliberate
+  // modifier + small trackpad ticks accumulate until the threshold instead of stepping on 1px.
+  const resumeAt = 1500 + WHEEL_GESTURE_IDLE_MS + 1;
+  expect(
+    consumeWheelZoomEvent(state, {
+      timeStamp: resumeAt,
+      zoomModifier: true,
+      deltaY: -15,
+      deltaMode: 0,
+    }),
+  ).toEqual({ zoomGesture: true, direction: null });
+  expect(
+    consumeWheelZoomEvent(state, {
+      timeStamp: resumeAt + 20,
+      zoomModifier: true,
+      deltaY: -15,
+      deltaMode: 0,
+    }),
+  ).toEqual({ zoomGesture: true, direction: null });
+  expect(
+    consumeWheelZoomEvent(state, {
+      timeStamp: resumeAt + 40,
+      zoomModifier: true,
+      deltaY: -15,
+      deltaMode: 0,
+    }),
+  ).toEqual({ zoomGesture: true, direction: 1 });
+
+  // Discrete line-mode mouse wheels still trigger on a single small delta.
+  expect(
+    consumeWheelZoomEvent(state, {
+      timeStamp: resumeAt + 60,
+      zoomModifier: true,
+      deltaY: 1,
+      deltaMode: 1,
+    }),
+  ).toEqual({ zoomGesture: true, direction: -1 });
 });

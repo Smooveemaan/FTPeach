@@ -28,7 +28,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' data:; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' http://ipc.localhost https://ipc.localhost;"
+      "csp": "default-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http://ipc.localhost https://ipc.localhost;"
     }
   },
   "plugins": {

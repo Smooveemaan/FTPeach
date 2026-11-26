@@ -65,7 +65,18 @@ function main(): number {
         run('npm', ['run', 'build']) ||
         run(
           'npm',
-          ['run', 'tauri', '--', 'build', '--debug', '--no-bundle', '--features', 'smoke-test'],
+          [
+            'run',
+            'tauri',
+            '--',
+            'build',
+            '--debug',
+            '--no-bundle',
+            '--config',
+            'src-tauri/tauri.nobuild.conf.json',
+            '--features',
+            'smoke-test',
+          ],
           env,
         )
       );

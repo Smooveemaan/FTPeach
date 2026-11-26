@@ -88,9 +88,6 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
@@ -100,7 +97,10 @@ jobs:
             key_dir="$RUNNER_TEMP/apple_api_keys"
             mkdir -p "$key_dir"
             key_path="$key_dir/AuthKey_${APPLE_API_KEY}.p8"
-            printf '%s\n' "$APPLE_API_KEY_P8" > "$key_path"
+            case "$APPLE_API_KEY_P8" in
+              *"-----BEGIN "*) printf '%s\n' "$APPLE_API_KEY_P8" > "$key_path" ;;
+              *) printf '%s' "$APPLE_API_KEY_P8" | tr -d '[:space:]' | base64 --decode > "$key_path" ;;
+            esac
             chmod 600 "$key_path"
             export APPLE_API_KEY_PATH="$key_path"
           fi
@@ -114,10 +114,13 @@ jobs:
           npm run tauri -- build --target universal-apple-darwin --config src-tauri/tauri.macos.conf.json --bundles app,dmg "${extra_args[@]}"
           mkdir -p release-macos
           bundle_root="src-tauri/target/universal-apple-darwin/release/bundle"
-          cp "$bundle_root"/dmg/*.dmg "release-macos/FTPeach_${VERSION}_universal.dmg"
+          dmg_path="release-macos/FTPeach_${VERSION}_universal.dmg"
+          cp "$bundle_root"/dmg/*.dmg "$dmg_path"
           cp "$bundle_root"/macos/*.app.tar.gz "release-macos/FTPeach_${VERSION}_universal.app.tar.gz"
           cp "$bundle_root"/macos/*.app.tar.gz.sig "release-macos/FTPeach_${VERSION}_universal.app.tar.gz.sig"
-          xcrun stapler validate "release-macos/FTPeach_${VERSION}_universal.dmg"
+          xcrun notarytool submit "$dmg_path" --key "$APPLE_API_KEY_PATH" --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
+          xcrun stapler staple "$dmg_path"
+          xcrun stapler validate "$dmg_path"
       - name: Check macOS packages for signing key leaks
         if: steps.preflight.outputs.multiplatform == 'true'
         env:

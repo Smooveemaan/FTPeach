@@ -269,6 +269,11 @@ export async function verifyMacosCandidate(directory: string) {
 
     const dmgPath = path.join(directory, `FTPeach_${version}_universal.dmg`);
     execFileSync('xcrun', ['stapler', 'validate', dmgPath], { stdio: 'pipe' });
+    execFileSync(
+      'spctl',
+      ['-a', '-t', 'open', '--context', 'context:primary-signature', '-v', dmgPath],
+      { stdio: 'pipe' },
+    );
 
     const mountPoint = path.join(workDir, 'mnt');
     await mkdir(mountPoint, { recursive: true });
@@ -282,11 +287,7 @@ export async function verifyMacosCandidate(directory: string) {
       execFileSync('codesign', ['--verify', '--deep', '--strict', '--verbose=2', mountedApp], {
         stdio: 'pipe',
       });
-      execFileSync(
-        'spctl',
-        ['-a', '-t', 'open', '--context', 'context:primary-signature', '-v', mountedApp],
-        { stdio: 'pipe' },
-      );
+      execFileSync('spctl', ['-a', '-t', 'exec', '-v', mountedApp], { stdio: 'pipe' });
       execFileSync('xcrun', ['stapler', 'validate', mountedApp], { stdio: 'pipe' });
 
       const installedApp = path.join(workDir, 'Applications', 'FTPeach.app');

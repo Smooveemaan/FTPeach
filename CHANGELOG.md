@@ -4,33 +4,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-26
+
 ### Added
 
-- FTPeach now runs on macOS 13.3+ (signed and notarized universal `.dmg` for Apple Silicon and
-  Intel).
-- On macOS, saved passwords use macOS Keychain, the vault unlocks with Touch ID or your Mac
-  password and locks with the screen, and files support Finder drag-out, "Show in Finder", and
-  Trash.
-- FTPeach now runs on 64-bit Linux (`.deb` and `.AppImage`).
-- On Linux, saved passwords use Secret Service, the vault locks with the desktop session, and local
-  files support drag-out, "Open containing folder", Trash, and automatic refresh after external
-  moves.
-- SFTP panes offer a built-in SSH terminal dock (resize, collapse, maximize) with an "Open SSH
-  terminal automatically on connect" option for SFTP bookmarks (thanks @endlessnights).
-- Right-clicking the pane connection button offers Connect or Disconnect, copies the server
-  address, and copies the SSH fingerprint when available.
-- The toolbar has a Settings button to open Settings directly.
-- The Help menu includes a direct link to the User Guide.
-- "Open with…" offers the same application submenu for local and remote files on Windows, macOS,
-  and Linux.
-- Logging settings offer an extended diagnostic log for investigating startup, window, and
-  shutdown problems.
+- macOS 13.3+ support (signed and notarized universal `.dmg` for Apple Silicon and Intel).
+- 64-bit Linux support (`.deb` and `.AppImage`).
+- Built-in SSH terminal for SFTP panes: resize, collapse, maximize, or move it to the other pane
+  without reconnecting, and optionally open it automatically on connect in bookmark settings
+  (thanks @endlessnights).
+- Right-clicking a pane's connection button offers Connect, Disconnect, Copy connection address,
+  and Copy SSH fingerprint.
+- Separate "File list size" and "Terminal font size" sliders in Settings → Interface, plus keyboard
+  shortcuts and `Ctrl`/`Cmd` + mouse wheel zoom.
+- Settings button on the toolbar and a "User Guide" link in the Help menu.
+- "Open with…" shows the same application submenu for local and remote files.
+- "Write extended diagnostic log" in Settings → Logging records detailed window, protocol, and
+  transfer diagnostics, turns off automatically after 24 hours, and shows a clickable status-bar
+  icon while active.
 
 ### Changed
 
-- The SFTP Key file picker starts in `~/.ssh` when it exists on installed copies.
-- Import Settings asks whether to import saved passwords on the first step and uses a single-row
-  Cancel and Import footer on the file password step.
+- Settings stays open after Save; Close dismisses the dialog and asks before discarding unsaved
+  changes.
+- The SFTP key file picker starts in `~/.ssh` when it exists on installed copies.
+- Import Settings asks whether to import saved passwords on the first step and shows Cancel and
+  Import in one footer row on the file password step.
+- Export diagnostic bundle includes an environment summary and recent redacted application events
+  alongside the logs.
+- Translations updated.
 
 ### Fixed
 
@@ -38,20 +40,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Stopped transfers keep their last progress percentage, or show 0% when the total size is
   unknown.
 - Retrying a stopped folder transfer checks for conflicts with files already at the destination.
-- FTP uploads that run out of space on the server report a full disk instead of a lost connection.
-- Files dragged out of FTPeach can be brought back into its panes during the same drag.
-- Switching an unlocked vault to system protection keeps the confirmation without asking for the
+- FTP uploads that run out of server space report a full disk instead of a lost connection.
+- Files dragged out of FTPeach can be dropped back into its panes during the same drag.
+- Switching an unlocked vault to system protection asks for confirmation without requesting the
   master password again.
-- Viewing a saved bookmark password no longer shows a message saying a new password will be saved.
+- Viewing a saved bookmark password no longer warns that a new password will be saved.
 - Editing or deleting a local-path bookmark no longer asks to unlock the password vault.
-- Unlock Vault opens in front of Import Settings when triggered during import and skips prompting
-  if the vault is already unlocked.
-- The unsaved-password notice banner displays its text in the error color.
-- Scrolling log messages no longer overlap the log toolbar.
-- Dragging files across the log no longer selects its text.
-- Clicking any button or control dismisses open tooltips immediately.
-- Right-clicking in FTPeach shows only the application's own context menus.
-- Resetting the window layout while fullscreen restores the window to its centered size.
+- Unlock Vault opens in front of Import Settings when needed and skips prompting if the vault is
+  already unlocked.
+- The notice shown when a password cannot be saved uses the error text color.
+- Scrolling log messages no longer overlap the log toolbar, and dragging files across the log no
+  longer selects its text.
+- Clicking any control dismisses open tooltips immediately, and right-clicking shows only FTPeach's
+  own context menus.
+- Changing the interface scale no longer unmaximizes a maximized window.
 - Restarting a portable copy on Windows waits briefly if the previous instance is still closing.
 
 ## [0.6.1] - 2026-11-05

@@ -346,6 +346,17 @@ mod tests {
         }));
     }
 
+    #[cfg(windows)]
+    #[test]
+    fn reveal_in_explorer_shell_rejects_missing_path_without_opening_explorer() {
+        let missing =
+            std::env::temp_dir().join(format!("ftpeach-missing-reveal-{}", uuid::Uuid::new_v4()));
+        let err = std::thread::spawn(move || reveal_in_explorer_shell(&missing.to_string_lossy()))
+            .join()
+            .unwrap()
+            .unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+    }
     #[test]
     fn explorer_and_programs_get_the_path_without_the_verbatim_prefix() {
         assert_eq!(
@@ -607,6 +618,71 @@ pub async fn fs_is_dir(
         .unwrap_or(Ok(false))
 }
 
+/// Reveals a canonical shell path in Windows File Explorer via the Shell API
+/// so cold Explorer windows reliably select the target item.
+#[cfg(windows)]
+fn reveal_in_explorer_shell(shell: &str) -> std::io::Result<()> {
+    use windows::{
+        Win32::{
+            System::Com::{COINIT_APARTMENTTHREADED, CoInitializeEx, CoUninitialize},
+            UI::Shell::{
+                Common::ITEMIDLIST, ILCreateFromPathW, ILFree, SHOpenFolderAndSelectItems,
+            },
+        },
+        core::HSTRING,
+    };
+
+    struct ComGuard;
+    impl Drop for ComGuard {
+        fn drop(&mut self) {
+            unsafe { CoUninitialize() };
+        }
+    }
+
+    struct PidlGuard(*mut ITEMIDLIST);
+    impl Drop for PidlGuard {
+        fn drop(&mut self) {
+            if !self.0.is_null() {
+                unsafe { ILFree(Some(self.0)) };
+            }
+        }
+    }
+
+    let path = HSTRING::from(shell);
+    unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }
+        .ok()
+        .map_err(|error| std::io::Error::other(error.to_string()))?;
+    let _com = ComGuard;
+
+    let pidl = PidlGuard(unsafe { ILCreateFromPathW(&path) });
+    if pidl.0.is_null() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "could not create shell item ID list for path",
+        ));
+    }
+
+    unsafe { SHOpenFolderAndSelectItems(pidl.0, None, 0) }
+        .map_err(|error| std::io::Error::other(error.to_string()))
+}
+
+#[cfg(windows)]
+async fn reveal_in_explorer(shell: String, select: String) -> std::io::Result<()> {
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    std::thread::Builder::new()
+        .name("ftpeach-reveal-explorer".into())
+        .spawn(move || {
+            let result = reveal_in_explorer_shell(&shell).or_else(|_| {
+                std::process::Command::new("explorer.exe")
+                    .arg(&select)
+                    .spawn()
+                    .map(|_| ())
+            });
+            let _ = tx.send(result);
+        })?;
+    rx.await
+        .map_err(|_| std::io::Error::other("Explorer reveal thread terminated unexpectedly"))?
+}
 /// The path to open, and Explorer's argument to select it. Explorer and the
 /// programs it starts do not all take a verbatim path.
 fn shell_targets(canonical: &Path) -> (String, String) {
@@ -642,10 +718,7 @@ async fn open_validated_path<R: tauri::Runtime>(
     }
     if kind == crate::local_fs::local_open::OpenKind::Reveal {
         #[cfg(windows)]
-        let result = std::process::Command::new("explorer.exe")
-            .arg(select)
-            .spawn()
-            .map(|_| ());
+        let result = reveal_in_explorer(shell, select).await;
         #[cfg(not(windows))]
         let result = {
             use tauri_plugin_opener::OpenerExt;

@@ -2,7 +2,7 @@ use super::BackendResult;
 use crate::ipc::ErrorCode;
 use crate::protocol::fail;
 use anyhow::{Context, bail};
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use quick_xml::events::Event;
 use quick_xml::reader::Reader;
 use reqwest::StatusCode;
@@ -327,8 +327,8 @@ pub(super) fn href_basename(decoded: &str) -> String {
         .to_string()
 }
 
-pub(super) fn parse_http_date(value: &str) -> Option<DateTime<Utc>> {
-    DateTime::parse_from_rfc2822(value.trim())
+pub(super) fn parse_http_date(value: &str) -> Option<Timestamp> {
+    jiff::fmt::rfc2822::DateTimeParser::new()
+        .parse_timestamp(value.trim())
         .ok()
-        .map(|date| date.with_timezone(&Utc))
 }

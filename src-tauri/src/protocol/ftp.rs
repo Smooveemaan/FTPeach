@@ -9,7 +9,7 @@ use crate::security::connection_guard::{
 };
 use anyhow::{Context, Result as AnyhowResult, anyhow};
 use async_trait::async_trait;
-use chrono::Utc;
+use jiff::Timestamp;
 use rustls::ClientConfig;
 use rustls_pki_types::ServerName;
 use rustls_pki_types::pem::PemObject;

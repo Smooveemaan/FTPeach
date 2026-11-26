@@ -173,7 +173,14 @@ mod transfer_tests {
         let total = start + (READ_WINDOW * CHUNK_SIZE) as u64;
         let count = tokio::time::timeout(
             Duration::from_secs(5),
-            read_pipelined(&raw, "file", &mut bytes, start, Some(total), &progress),
+            read_pipelined(
+                &raw,
+                &SftpHandle::from("file"),
+                &mut bytes,
+                start,
+                Some(total),
+                &progress,
+            ),
         )
         .await
         .unwrap()
@@ -284,7 +291,7 @@ mod transfer_tests {
             Duration::from_secs(5),
             write_pipelined(
                 &raw,
-                "file",
+                &SftpHandle::from("file"),
                 &mut expected.as_slice(),
                 0,
                 expected.len() as u64,
@@ -365,9 +372,12 @@ mod transfer_tests {
             })
         }
         async fn opendir(&mut self, id: u32, path: String) -> Result<Handle, StatusCode> {
-            Ok(Handle { id, handle: path })
+            Ok(Handle {
+                id,
+                handle: path.into(),
+            })
         }
-        async fn readdir(&mut self, id: u32, _: String) -> Result<Name, StatusCode> {
+        async fn readdir(&mut self, id: u32, _: SftpHandle) -> Result<Name, StatusCode> {
             let mut disk = self.0.lock().unwrap();
             disk.readdirs += 1;
             if disk.readdirs > 1 {
@@ -406,13 +416,13 @@ mod transfer_tests {
             }
             Ok(Handle {
                 id,
-                handle: filename,
+                handle: filename.into(),
             })
         }
         async fn write(
             &mut self,
             id: u32,
-            _: String,
+            _: SftpHandle,
             offset: u64,
             data: Vec<u8>,
         ) -> Result<Status, StatusCode> {
@@ -429,7 +439,7 @@ mod transfer_tests {
         async fn read(
             &mut self,
             id: u32,
-            _: String,
+            _: SftpHandle,
             offset: u64,
             len: u32,
         ) -> Result<Data, StatusCode> {
@@ -470,7 +480,7 @@ mod transfer_tests {
                 },
             })
         }
-        async fn close(&mut self, id: u32, _: String) -> Result<Status, StatusCode> {
+        async fn close(&mut self, id: u32, _: SftpHandle) -> Result<Status, StatusCode> {
             let mut disk = self.0.lock().unwrap();
             disk.closes += 1;
             disk.saved |= disk.save_on_close;
@@ -1049,11 +1059,14 @@ mod local_integration_tests {
 
         async fn opendir(&mut self, id: u32, path: String) -> Result<Handle, Self::Error> {
             self.listed = false;
-            Ok(Handle { id, handle: path })
+            Ok(Handle {
+                id,
+                handle: path.into(),
+            })
         }
 
-        async fn readdir(&mut self, id: u32, handle: String) -> Result<Name, Self::Error> {
-            if handle == "/" && !self.listed {
+        async fn readdir(&mut self, id: u32, handle: SftpHandle) -> Result<Name, Self::Error> {
+            if handle.as_bytes() == b"/" && !self.listed {
                 self.listed = true;
                 let attrs = FileAttributes {
                     size: Some(5),
@@ -1067,7 +1080,7 @@ mod local_integration_tests {
             Err(StatusCode::Eof)
         }
 
-        async fn close(&mut self, id: u32, _handle: String) -> Result<Status, Self::Error> {
+        async fn close(&mut self, id: u32, _handle: SftpHandle) -> Result<Status, Self::Error> {
             Ok(Status {
                 id,
                 status_code: StatusCode::Ok,

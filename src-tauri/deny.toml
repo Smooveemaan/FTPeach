@@ -9,7 +9,6 @@ ignore = [
   { id = "RUSTSEC-2026-0370", reason = "zvariant is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
   { id = "RUSTSEC-2026-0371", reason = "zbus_names is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
   { id = "RUSTSEC-2026-0372", reason = "zvariant_derive is unmaintained after its merge into zbus 6; Tauri plugins, keepawake and KSNI still require zbus 5. No compatible fixed release. Review by 2027-02-11; see docs/rust-advisories.md." },
-  { id = "RUSTSEC-2026-0543", reason = "chrono is unmaintained; russh-sftp 3.0.1 is the latest published release and still requires chrono alongside FTPeach and trash 5.2.9. Reassess once a jiff-based russh-sftp release is published. Review by 2027-02-19; see docs/rust-advisories.md." },
 ]
 
 [licenses]

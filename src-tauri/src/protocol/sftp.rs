@@ -7,12 +7,12 @@ use crate::security::connection_guard::{
 };
 use anyhow::{Context, anyhow};
 use async_trait::async_trait;
-use chrono::{TimeZone, Utc};
+use jiff::Timestamp;
 use russh::client;
 use russh::keys::{PrivateKeyWithHashAlg, PublicKeyOrCertificate, load_secret_key};
 use russh_sftp::client::error::Error as SftpClientError;
 use russh_sftp::client::rawsession::RawSftpSession;
-use russh_sftp::protocol::{FileAttributes, OpenFlags, Packet, StatusCode};
+use russh_sftp::protocol::{FileAttributes, OpenFlags, Packet, SftpHandle, StatusCode};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -169,7 +169,7 @@ impl SftpBackend {
 
             let read_result =
                 read_pipelined(&raw, &handle, &mut file, start_at, remote_size, progress).await;
-            let closed = raw.close(handle.as_str()).await;
+            let closed = raw.close(handle).await;
             let offset = read_result?;
             closed.context("closing remote file after download")?;
             file.flush().await.context("flushing local file")?;
@@ -278,10 +278,10 @@ impl SftpBackend {
         let mut raw_files = Vec::new();
         let mut text_bytes = 0usize;
         loop {
-            match raw.readdir(handle.as_str()).await {
+            match raw.readdir(&handle).await {
                 Ok(name) => {
                     if name.files.is_empty() {
-                        let _ = raw.close(handle.as_str()).await;
+                        let _ = raw.close(handle).await;
                         anyhow::bail!("SFTP READDIR returned no entries without EOF");
                     }
                     for file in &name.files {
@@ -293,7 +293,7 @@ impl SftpBackend {
                     if raw_files.len() > super::MAX_RAW_DIRECTORY_ENTRIES
                         || text_bytes > super::MAX_DIRECTORY_TEXT_BYTES
                     {
-                        let _ = raw.close(handle.as_str()).await;
+                        let _ = raw.close(handle).await;
                         anyhow::bail!(crate::ipc::CommandError::new(
                             crate::ipc::ErrorCode::ResourceLimit,
                             "Remote directory contains too many entries",
@@ -304,7 +304,7 @@ impl SftpBackend {
                     break;
                 }
                 Err(err) => {
-                    let _ = raw.close(handle.as_str()).await;
+                    let _ = raw.close(handle).await;
                     self.logger.event(
                         "listFailed",
                         serde_json::json!({ "error": format!("{err:#}") }),
@@ -314,7 +314,7 @@ impl SftpBackend {
                 }
             }
         }
-        let _ = raw.close(handle.as_str()).await;
+        let _ = raw.close(handle).await;
 
         let mut entries = Vec::with_capacity(raw_files.len());
         for file in raw_files {
@@ -351,8 +351,8 @@ impl SftpBackend {
                 modified_at: file
                     .attrs
                     .mtime
-                    .and_then(|t| Utc.timestamp_opt(t as i64, 0).single())
-                    .map(|d| d.to_rfc3339()),
+                    .and_then(|t| Timestamp::from_second(t as i64).ok())
+                    .map(|d| d.to_string()),
                 permissions,
                 owner,
                 group,
@@ -596,7 +596,7 @@ impl ProtocolBackend for SftpBackend {
                 let want = (len - buf.len()).min(CHUNK_SIZE) as u32;
                 match raw
                     .read(
-                        handle.as_str(),
+                        &handle,
                         offset
                             .checked_add(buf.len() as u64)
                             .context("SFTP range offset overflow")?,
@@ -629,7 +629,7 @@ impl ProtocolBackend for SftpBackend {
             Ok(buf)
         }
         .await;
-        let _ = raw.close(handle.as_str()).await;
+        let _ = raw.close(handle).await;
         self.lost_if_closed(read).await
     }
 
@@ -672,7 +672,7 @@ impl ProtocolBackend for SftpBackend {
 
             let write_result =
                 write_pipelined(&raw, &handle, &mut file, remote_size, local_size, &progress).await;
-            let closed = raw.close(handle.as_str()).await;
+            let closed = raw.close(handle).await;
             let written = write_result?;
             closed.context("closing remote file after upload")?;
             super::transfer_file::validate_length(written, Some(local_size))?;
@@ -717,7 +717,7 @@ impl ProtocolBackend for SftpBackend {
 
         let progress: ProgressSink = Arc::new(|_| {});
         let result = read_pipelined(&raw, &handle, writer, 0, None, &progress).await;
-        let closed = raw.close(handle.as_str()).await;
+        let closed = raw.close(handle).await;
         self.lost_if_closed(result).await?;
         closed.context("closing remote file")?;
         Ok(())
@@ -741,7 +741,7 @@ impl ProtocolBackend for SftpBackend {
 
         let progress: ProgressSink = Arc::new(|_| {});
         let result = write_pipelined(&raw, &handle, reader, 0, 0, &progress).await;
-        let closed = raw.close(handle.as_str()).await;
+        let closed = raw.close(handle).await;
         self.lost_if_closed(result).await?;
         closed.context("closing remote file after upload")?;
         Ok(())

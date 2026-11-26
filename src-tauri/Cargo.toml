@@ -69,7 +69,7 @@ keepawake = "0.6.1"
 base64 = "0.23.1"
 tokio = { version = "1.54.1", features = ["fs", "sync", "rt", "rt-multi-thread", "macros", "net", "io-util", "time"] }
 uuid = { version = "1.26.0", features = ["v4"] }
-chrono = "0.4.45"
+jiff = "1.0.3"
 anyhow = "1.0.104"
 suppaftp = { version = "13.0.0", default-features = false, features = ["tokio-rustls-ring"] }
 rustls = { version = "0.23.43", default-features = false, features = ["logging", "ring", "std", "tls12"] }
@@ -80,7 +80,7 @@ async-trait = "0.1"
 tokio-util = "0.7"
 regex = "1"
 russh = { version = "0.65.2", default-features = false, features = ["ring", "rsa", "flate2"] }
-russh-sftp = "3.0.1"
+russh-sftp = "4.0.0"
 sha2 = "0.11"
 reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "http2", "stream", "socks"] }
 quick-xml = "0.42.0"
@@ -130,7 +130,7 @@ keyring = { version = "3.6.3", default-features = false, features = ["apple-nati
 dirs = "7.0.0"
 # "To the Trash" on macOS and Linux (local_fs/recycle_bin.rs); Windows keeps
 # its own SHFileOperationW path, which refuses drives with no Recycle Bin.
-trash = "5.2.9"
+trash = "5.4.0"
 
 # Descriptor-relative verified deletion and the volume's Trash folder.
 [target.'cfg(unix)'.dependencies]

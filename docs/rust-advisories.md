@@ -23,11 +23,15 @@ dated review section below.
 | RUSTSEC-2026-0370 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zvariant` 5.15.0 through `zbus` 5.19.0; its replacement is part of zbus 6 | Keep vulnerability advisories enabled; review Tauri plugins, keepawake and KSNI for compatible zbus 6 releases. |
 | RUSTSEC-2026-0371 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zbus_names` 4.3.4 through `zbus` 5.19.0; its replacement is part of zbus 6 | Keep vulnerability advisories enabled; review Tauri plugins, keepawake and KSNI for compatible zbus 6 releases. |
 | RUSTSEC-2026-0372 | unmaintained | @Smooveemaan | 2026-11-13 | 2027-02-11 | `zvariant_derive` 5.15.0 through `zvariant` 5.15.0; its replacement is part of zbus 6 | Derive macros run only during compilation; review the same zbus consumers before removing this exception. |
-| RUSTSEC-2026-0543 | unmaintained | @Smooveemaan | 2026-11-21 | 2027-02-19 | `chrono` 0.4.45 through FTPeach, `russh-sftp` 3.0.1 and `trash` 5.2.9; `russh-sftp` 3.0.1 is the latest published release | Keep vulnerability advisories enabled; migrate FTPeach and update `trash` off `chrono` once a `jiff`-based `russh-sftp` release is published. |
 
 The reviews below found no compatible direct upgrade that removes the accepted
 transitive advisories at their recorded dates. Remove an ignore as soon as a compatible
 fix is available; extending a deadline requires a fresh security review.
+
+The `chrono` exception (RUSTSEC-2026-0543) was removed on 2026-11-26: FTPeach
+migrated its date and time code to `jiff` 1.0, `russh-sftp` was updated from 3.0.1
+to 4.0.0 and `trash` from 5.2.9 to 5.4.0, removing `chrono` from all audited
+targets.
 
 The `rsa` exception (RUSTSEC-2023-0071) was removed on 2026-11-21: `russh` 0.65.2
 and `ssh-key` 0.7.0-rc.12 accept `rsa ^0.10`, updating the lockfile to `rsa` 0.10.0,
@@ -46,6 +50,21 @@ The three `zip` exceptions (RUSTSEC-2026-0367, -0368 and -0369, all in `extract`
 removed on 2026-10-23. `tauri-plugin-updater` needed `zip` 4 only for its `install`, which
 FTPeach never calls: it is built without its `zip` feature, and FTPeach's own unpacking of
 the portable update (`runtime/update_staging.rs`) uses `zip` 9.
+
+## Dependency advisory review, 2026-11-26
+
+`russh-sftp` 4.0.0 was published on 2026-11-21 with `jiff ^1.0.0` in place of `chrono`.
+FTPeach replaced its direct `chrono` usage with `jiff` 1.0, updated `russh-sftp` from
+3.0.1 to 4.0.0, and updated `trash` from 5.2.9 to 5.4.0. `chrono` no longer appears in
+any of the four audited targets, so
+[RUSTSEC-2026-0543](https://rustsec.org/advisories/RUSTSEC-2026-0543.html) was removed
+from `src-tauri/deny.toml`.
+
+The four remaining unmaintained exceptions (`proc-macro-error` through GTK 0.18 and
+`zvariant`/`zbus_names`/`zvariant_derive` through zbus 5) were also checked without
+extending their 2027-02-11 deadline: Tauri 2.12.7 still requires `gtk ^0.18`, and the
+Tauri notification, opener and single-instance plugins, `keepawake`, and `ksni` still
+require `zbus ^5`.
 
 ## Dependency advisory review, 2026-11-21
 

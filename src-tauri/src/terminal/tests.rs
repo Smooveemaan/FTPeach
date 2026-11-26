@@ -189,11 +189,18 @@ impl russh_sftp::server::Handler for StubSftp {
         handle: String,
     ) -> Result<sftp_proto::Handle, Self::Error> {
         self.0 = false;
-        Ok(sftp_proto::Handle { id, handle })
+        Ok(sftp_proto::Handle {
+            id,
+            handle: handle.into(),
+        })
     }
 
-    async fn readdir(&mut self, id: u32, handle: String) -> Result<sftp_proto::Name, Self::Error> {
-        if handle == "/" && !self.0 {
+    async fn readdir(
+        &mut self,
+        id: u32,
+        handle: sftp_proto::SftpHandle,
+    ) -> Result<sftp_proto::Name, Self::Error> {
+        if handle.as_bytes() == b"/" && !self.0 {
             self.0 = true;
             let file = sftp_proto::File::new("hello.txt", sftp_proto::FileAttributes::default());
             return Ok(sftp_proto::Name {
@@ -204,7 +211,11 @@ impl russh_sftp::server::Handler for StubSftp {
         Err(sftp_proto::StatusCode::Eof)
     }
 
-    async fn close(&mut self, id: u32, _handle: String) -> Result<sftp_proto::Status, Self::Error> {
+    async fn close(
+        &mut self,
+        id: u32,
+        _handle: sftp_proto::SftpHandle,
+    ) -> Result<sftp_proto::Status, Self::Error> {
         Ok(sftp_proto::Status {
             id,
             status_code: sftp_proto::StatusCode::Ok,

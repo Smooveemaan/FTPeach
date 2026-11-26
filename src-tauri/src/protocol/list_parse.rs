@@ -1,4 +1,6 @@
-use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, Utc};
+use jiff::Timestamp;
+use jiff::civil::{Date, DateTime};
+use jiff::tz::Offset;
 use std::sync::OnceLock;
 
 pub struct RawEntry {
@@ -7,7 +9,7 @@ pub struct RawEntry {
     /// A symbolic link, whose target LIST and MLSD do not say the kind of.
     pub is_symlink: bool,
     pub size: u64,
-    pub modified_at: Option<DateTime<Utc>>,
+    pub modified_at: Option<Timestamp>,
     pub permissions: Option<String>,
     pub owner: Option<String>,
     pub group: Option<String>,
@@ -52,31 +54,29 @@ fn permissions_string(raw9: &str) -> Option<String> {
     Some(permissions)
 }
 
-fn resolve_ambiguous_date(token: &str, now: DateTime<Utc>) -> Option<DateTime<Utc>> {
-    if let Ok(date) = NaiveDate::parse_from_str(token, "%b %d %Y") {
-        return date
-            .and_hms_opt(0, 0, 0)
-            .map(|dt| DateTime::from_naive_utc_and_offset(dt, Utc));
+fn resolve_ambiguous_date(token: &str, now: Timestamp) -> Option<Timestamp> {
+    if let Ok(date) = Date::strptime("%b %d %Y", token) {
+        return Offset::UTC.to_timestamp(date.at(0, 0, 0, 0)).ok();
     }
-    let this_year = now.year();
+    let this_year = Offset::UTC.to_datetime(now).year();
     let with_year = format!("{token} {this_year}");
-    let mut parsed = NaiveDateTime::parse_from_str(&with_year, "%b %d %H:%M %Y").ok()?;
-    let as_utc = DateTime::<Utc>::from_naive_utc_and_offset(parsed, Utc);
-    if (as_utc - now).num_seconds() > 180 * 24 * 3600 {
+    let mut parsed = DateTime::strptime("%b %d %H:%M %Y", &with_year).ok()?;
+    let as_utc = Offset::UTC.to_timestamp(parsed).ok()?;
+    if as_utc.as_second() - now.as_second() > 180 * 24 * 3600 {
         let with_prev_year = format!("{token} {}", this_year - 1);
-        parsed = NaiveDateTime::parse_from_str(&with_prev_year, "%b %d %H:%M %Y").ok()?;
+        parsed = DateTime::strptime("%b %d %H:%M %Y", &with_prev_year).ok()?;
     }
-    Some(DateTime::from_naive_utc_and_offset(parsed, Utc))
+    Offset::UTC.to_timestamp(parsed).ok()
 }
 
-fn parse_dos_datetime(token: &str) -> Option<DateTime<Utc>> {
-    let parsed = NaiveDateTime::parse_from_str(token, "%m-%d-%y %I:%M%p")
-        .or_else(|_| NaiveDateTime::parse_from_str(token, "%m-%d-%y %I:%M %p"))
+fn parse_dos_datetime(token: &str) -> Option<Timestamp> {
+    let parsed = DateTime::strptime("%m-%d-%y %I:%M%p", token)
+        .or_else(|_| DateTime::strptime("%m-%d-%y %I:%M %p", token))
         .ok()?;
-    Some(DateTime::from_naive_utc_and_offset(parsed, Utc))
+    Offset::UTC.to_timestamp(parsed).ok()
 }
 
-pub fn parse_line(line: &str, now: DateTime<Utc>) -> Option<RawEntry> {
+pub fn parse_line(line: &str, now: Timestamp) -> Option<RawEntry> {
     if let Some(caps) = posix_re().captures(line) {
         let file_type = caps.get(1)?.as_str();
         let name_field = caps.get(8)?.as_str();
@@ -171,9 +171,9 @@ pub fn parse_mlsd_line(line: &str) -> Option<RawEntry> {
 }
 
 /// `YYYYMMDDHHMMSS`, in UTC, with optional fractional seconds.
-fn parse_mlsd_time(value: &str) -> Option<DateTime<Utc>> {
-    let parsed = NaiveDateTime::parse_from_str(value.get(..14)?, "%Y%m%d%H%M%S").ok()?;
-    Some(DateTime::from_naive_utc_and_offset(parsed, Utc))
+fn parse_mlsd_time(value: &str) -> Option<Timestamp> {
+    let parsed = DateTime::strptime("%Y%m%d%H%M%S", value.get(..14)?).ok()?;
+    Offset::UTC.to_timestamp(parsed).ok()
 }
 
 fn mode_string(mode: u32) -> String {
@@ -189,13 +189,19 @@ fn mode_string(mode: u32) -> String {
 }
 
 #[cfg(test)]
+fn utc(year: i16, month: i8, day: i8, hour: i8, minute: i8, second: i8) -> Timestamp {
+    Offset::UTC
+        .to_timestamp(jiff::civil::date(year, month, day).at(hour, minute, second, 0))
+        .unwrap()
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::TimeZone;
 
     #[test]
     fn parses_posix_line_with_year() {
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let entry = parse_line("-rw-r--r-- 1 user group 1234 Nov 5 2018 example.txt", now).unwrap();
         assert_eq!(entry.name, "example.txt");
         assert_eq!(entry.size, 1234);
@@ -203,7 +209,7 @@ mod tests {
         assert_eq!(entry.owner.as_deref(), Some("user"));
         assert_eq!(entry.group.as_deref(), Some("group"));
         assert_eq!(entry.permissions.as_deref(), Some("rw-r--r--"));
-        let modified = entry.modified_at.unwrap();
+        let modified = Offset::UTC.to_datetime(entry.modified_at.unwrap());
         assert_eq!(modified.year(), 2018);
         assert_eq!(modified.month(), 11);
         assert_eq!(modified.day(), 5);
@@ -211,10 +217,10 @@ mod tests {
 
     #[test]
     fn resolves_ambiguous_recent_date_to_current_year() {
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let entry = parse_line("drwxr-xr-x 2 user group 4096 Jun 1 09:00 recent", now).unwrap();
         assert!(entry.is_directory);
-        let modified = entry.modified_at.unwrap();
+        let modified = Offset::UTC.to_datetime(entry.modified_at.unwrap());
         assert_eq!(modified.year(), 2026);
         assert_eq!(modified.month(), 6);
         assert_eq!(modified.day(), 1);
@@ -224,25 +230,31 @@ mod tests {
     fn rolls_back_a_year_when_guess_is_far_in_the_future() {
         // "now" is mid-June; "Dec 15" with the current year would be ~6
         // months out — past the window, so it must resolve to last December.
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let entry = parse_line("-rw-r--r-- 1 user group 10 Dec 15 08:00 file.txt", now).unwrap();
-        let modified = entry.modified_at.unwrap();
+        let modified = Offset::UTC.to_datetime(entry.modified_at.unwrap());
         assert_eq!(modified.year(), 2025);
     }
 
     #[test]
     fn parses_dos_line() {
-        let now = Utc::now();
+        let now = Timestamp::now();
         let entry = parse_line("04-08-14  03:09PM  8192 omar.txt", now).unwrap();
         assert_eq!(entry.name, "omar.txt");
         assert_eq!(entry.size, 8192);
         assert!(!entry.is_directory);
         assert!(entry.permissions.is_none());
+        let modified = Offset::UTC.to_datetime(entry.modified_at.unwrap());
+        assert_eq!(modified.year(), 2014);
+        assert_eq!(modified.month(), 4);
+        assert_eq!(modified.day(), 8);
+        assert_eq!(modified.hour(), 15);
+        assert_eq!(modified.minute(), 9);
     }
 
     #[test]
     fn parses_dos_directory() {
-        let now = Utc::now();
+        let now = Timestamp::now();
         let entry = parse_line("04-08-14  03:09PM <DIR> docs", now).unwrap();
         assert!(entry.is_directory);
         assert_eq!(entry.size, 0);
@@ -250,7 +262,7 @@ mod tests {
 
     #[test]
     fn strips_symlink_target_from_name() {
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let entry = parse_line(
             "lrwxrwxrwx 1 root root 9 Nov 5 2018 link -> /tmp/target",
             now,
@@ -262,9 +274,10 @@ mod tests {
 
     #[test]
     fn keeps_the_spaces_a_name_starts_with() {
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let entry = parse_line("-rw-r--r-- 1 ftp ftp 3 Nov  5  2018   spaced.txt", now).unwrap();
         assert_eq!(entry.name, "  spaced.txt");
+        assert_eq!(entry.modified_at, Some(utc(2018, 11, 5, 0, 0, 0)));
         let entry = parse_line("-rw-r--r-- 1 ftp ftp 3 Jun 14 09:30  lead", now).unwrap();
         assert_eq!(entry.name, " lead");
         // IIS, as it lists them.
@@ -282,12 +295,12 @@ mod tests {
 
     #[test]
     fn unparseable_line_returns_none() {
-        assert!(parse_line("total 42", Utc::now()).is_none());
+        assert!(parse_line("total 42", Timestamp::now()).is_none());
     }
 
     #[test]
     fn generated_valid_list_lines_round_trip_names_sizes_and_kinds() {
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let alphabet = ["a", "Z", "0", "-", "_", " ", "é", "文件", "🙂"];
         let mut state = 0x5eed_u64;
         for case in 0..500_u64 {
@@ -312,7 +325,7 @@ mod tests {
 
     #[test]
     fn arbitrary_generated_list_input_never_panics() {
-        let now = Utc.with_ymd_and_hms(2026, 6, 15, 12, 0, 0).unwrap();
+        let now = utc(2026, 6, 15, 12, 0, 0);
         let mut state = 0xc0ffee_u64;
         for case in 0..2_000_u64 {
             let mut input = String::new();
@@ -359,7 +372,6 @@ mod permission_tests {
 #[cfg(test)]
 mod mlsd_tests {
     use super::*;
-    use chrono::TimeZone;
 
     #[test]
     fn reads_a_hidden_file_as_pure_ftpd_lists_it() {
@@ -373,10 +385,7 @@ mod mlsd_tests {
         );
         assert!(!entry.is_directory);
         assert_eq!(entry.size, 33792);
-        assert_eq!(
-            entry.modified_at,
-            Some(Utc.with_ymd_and_hms(2026, 9, 10, 19, 58, 12).unwrap())
-        );
+        assert_eq!(entry.modified_at, Some(utc(2026, 9, 10, 19, 58, 12)));
         assert_eq!(entry.permissions.as_deref(), Some("rw-r--r--"));
         assert_eq!(entry.owner.as_deref(), Some("1000"));
         assert_eq!(entry.group.as_deref(), Some("1000"));
@@ -403,10 +412,7 @@ mod mlsd_tests {
         assert!(entry.is_directory);
         assert_eq!(entry.size, 0);
         assert_eq!(entry.owner.as_deref(), Some("anna"));
-        assert_eq!(
-            entry.modified_at,
-            Some(Utc.with_ymd_and_hms(2018, 11, 5, 0, 0, 0).unwrap())
-        );
+        assert_eq!(entry.modified_at, Some(utc(2018, 11, 5, 0, 0, 0)));
     }
 
     #[test]

@@ -50,7 +50,7 @@ mod path_guard_tests {
 
     #[test]
     fn parsed_ftp_list_names_cannot_cross_a_path_boundary() {
-        let now = Utc::now();
+        let now = Timestamp::now();
         for name in ["..", ".", "../escape", r"..\escape", "folder/file"] {
             let line = format!("-rw-r--r-- 1 owner group 1 Nov 5 2018 {name}");
             let raw = list_parse::parse_line(&line, now).unwrap();

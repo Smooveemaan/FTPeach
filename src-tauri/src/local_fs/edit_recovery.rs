@@ -164,7 +164,7 @@ fn preserve(file: &Path, remote_path: Option<String>, root: &Path) -> std::io::R
     let description = RecoveredEdit {
         name: name.to_string_lossy().into_owned(),
         remote_path,
-        saved_at: chrono::Utc::now().to_rfc3339(),
+        saved_at: jiff::Timestamp::now().to_string(),
     };
     // A live editor may keep writing. Never copy it and then forget its
     // original: that would lose saves made after the snapshot. If rename is
@@ -359,7 +359,9 @@ fn read_folder(folder: PathBuf) -> Option<Recovered> {
         .min_by_key(|path| is_description(path))?;
     let saved_at = std::fs::metadata(&file)
         .and_then(|metadata| metadata.modified())
-        .map(|time| chrono::DateTime::<chrono::Utc>::from(time).to_rfc3339())
+        .ok()
+        .and_then(|time| jiff::Timestamp::try_from(time).ok())
+        .map(|time| time.to_string())
         .unwrap_or_default();
     let edit = RecoveredEdit {
         name: file.file_name()?.to_string_lossy().into_owned(),

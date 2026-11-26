@@ -13,7 +13,7 @@
 use crate::protocol::{LogKind, LogText};
 use crate::runtime::log_messages;
 use crate::security::redaction::redact;
-use chrono::{DateTime, Local, NaiveDate};
+use jiff::{Timestamp, ZonedDateTime, civil::Date, tz::TimeZone};
 use serde::Serialize;
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
@@ -126,7 +126,7 @@ impl Recent {
         }
         let record = LogRecord {
             seq: self.next_seq,
-            ts: chrono::Utc::now().timestamp_millis(),
+            ts: Timestamp::now().as_millisecond(),
             kind: LogKind::Error,
             connection_id: String::new(),
             server: String::new(),
@@ -235,7 +235,7 @@ impl LogEmitter {
         recent.report_dropped();
         let record = LogRecord {
             seq: recent.next_seq,
-            ts: chrono::Utc::now().timestamp_millis(),
+            ts: Timestamp::now().as_millisecond(),
             kind,
             connection_id: bounded_text(connection_id.to_string(), 512),
             server: bounded_text(server.to_string(), 512),
@@ -292,7 +292,7 @@ impl LogEmitter {
             .map(|record| {
                 serde_json::json!({
                     "time": local_time(record.ts)
-                        .map(|time| time.format("%Y-%m-%dT%H:%M:%S%.3f%:z").to_string()),
+                        .map(|time| time.strftime("%Y-%m-%dT%H:%M:%S%.3f%:z").to_string()),
                     "kind": record.kind,
                     "server": record.server,
                     "connection": record.origin(),
@@ -360,7 +360,7 @@ async fn run_writer(
 }
 
 struct OpenLog {
-    date: NaiveDate,
+    date: Date,
     part: u32,
     path: PathBuf,
     file: tokio::fs::File,
@@ -386,12 +386,12 @@ impl LogFiles {
 
     async fn append(&mut self, batch: &[LogRecord], preference: &str) {
         // Consecutive records of the same day go out in one write.
-        let mut pending: Option<(NaiveDate, String)> = None;
+        let mut pending: Option<(Date, String)> = None;
         for record in batch {
             let Some(time) = local_time(record.ts) else {
                 continue;
             };
-            let date = time.date_naive();
+            let date = time.date();
             if let Some((pending_date, text)) = pending.take_if(|(day, _)| *day != date) {
                 self.write(pending_date, &text).await;
             }
@@ -405,7 +405,7 @@ impl LogFiles {
         }
     }
 
-    async fn write(&mut self, date: NaiveDate, text: &str) {
+    async fn write(&mut self, date: Date, text: &str) {
         let length = text.len() as u64;
         let next_part = match &self.open {
             Some(open) if open.date == date => {
@@ -441,7 +441,7 @@ impl LogFiles {
     /// Opens the file for `date`, at `part` or at the newest part already on
     /// disk if that is later — a restart during the day carries on where the
     /// last session stopped — skipping parts that are already full.
-    async fn open_file(&mut self, date: NaiveDate, part: u32) -> std::io::Result<()> {
+    async fn open_file(&mut self, date: Date, part: u32) -> std::io::Result<()> {
         self.open = None;
         tokio::fs::create_dir_all(&self.dir).await?;
         let mut part = part;
@@ -543,14 +543,15 @@ fn is_protocol_log_name(name: &str) -> bool {
         && name.ends_with(LOG_FILE_SUFFIX)
 }
 
-fn local_time(timestamp_millis: i64) -> Option<DateTime<Local>> {
-    DateTime::from_timestamp_millis(timestamp_millis).map(|time| time.with_timezone(&Local))
+fn local_time(timestamp_millis: i64) -> Option<ZonedDateTime> {
+    Timestamp::from_millisecond(timestamp_millis)
+        .ok()
+        .map(|time| time.to_zoned_datetime(TimeZone::system()))
 }
 
 /// Always ISO, whatever the date-format setting: the files sort by date, and
 /// changing the setting during the day does not split the day in two.
-fn log_file_name(date: NaiveDate, part: u32) -> String {
-    let date = date.format("%Y-%m-%d");
+fn log_file_name(date: Date, part: u32) -> String {
     if part <= 1 {
         format!("{LOG_FILE_PREFIX}{date}{LOG_FILE_SUFFIX}")
     } else {
@@ -573,7 +574,7 @@ fn selected_date_pattern(preference: &str) -> &'static str {
     }
 }
 
-fn format_log_line(record: &LogRecord, local_time: &DateTime<Local>, preference: &str) -> String {
+fn format_log_line(record: &LogRecord, local_time: &ZonedDateTime, preference: &str) -> String {
     let time_pattern = if preference.ends_with("hh:mm a") {
         "%I:%M:%S%.3f %p"
     } else {
@@ -581,8 +582,8 @@ fn format_log_line(record: &LogRecord, local_time: &DateTime<Local>, preference:
     };
     format!(
         "{} {} [{}] {:?}: {}\n",
-        local_time.format(selected_date_pattern(preference)),
-        local_time.format(time_pattern),
+        local_time.strftime(selected_date_pattern(preference)),
+        local_time.strftime(time_pattern),
         record.origin(),
         record.kind,
         record.text()
@@ -616,7 +617,7 @@ mod tests {
 
     #[test]
     fn file_names_are_iso_dates_whatever_the_date_format() {
-        let date = NaiveDate::from_ymd_opt(2026, 9, 11).unwrap();
+        let date = jiff::civil::date(2026, 9, 11);
         assert_eq!(log_file_name(date, 1), "ftpeach-2026-09-11.log");
         assert_eq!(log_file_name(date, 3), "ftpeach-2026-09-11_3.log");
         assert!(is_protocol_log_name("ftpeach-2026-09-11_3.log"));
@@ -639,7 +640,7 @@ mod tests {
             &time,
             "dd.MM.yyyy hh:mm a",
         );
-        assert!(line.starts_with(&time.format("%d.%m.%Y %I:%M:%S%.3f %p").to_string()));
+        assert!(line.starts_with(&time.strftime("%d.%m.%Y %I:%M:%S%.3f %p").to_string()));
         assert!(line.contains("[ftp://example.test:21 3f2a9c1e] Status: "));
         assert!(line.ends_with("Connecting to example.test:21...\n"));
     }
@@ -677,7 +678,7 @@ mod tests {
     #[tokio::test]
     async fn a_full_file_continues_in_the_next_part() {
         let dir = temp_dir();
-        let date = NaiveDate::from_ymd_opt(2026, 9, 11).unwrap();
+        let date = jiff::civil::date(2026, 9, 11);
         let mut files = LogFiles::new(dir.clone());
         files.write(date, "first\n").await;
         files.open.as_mut().unwrap().size = MAX_LOG_FILE_BYTES;

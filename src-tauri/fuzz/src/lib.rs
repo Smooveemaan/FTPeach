@@ -28,7 +28,7 @@ type BackendResult<T> = anyhow::Result<T>;
 pub fn list(data: &[u8]) {
     if let Ok(text) = std::str::from_utf8(data) {
         // Fixed clock makes a saved input reproducible across calendar years.
-        let now = chrono::DateTime::from_timestamp(1_781_524_800, 0).unwrap();
+        let now = jiff::Timestamp::from_second(1_781_524_800).unwrap();
         for line in text.lines() {
             let _ = list_parse::parse_line(line, now);
             let _ = list_parse::parse_mlsd_line(line);

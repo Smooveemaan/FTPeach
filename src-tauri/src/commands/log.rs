@@ -86,7 +86,9 @@ pub enum LogSaveResult {
 #[tauri::command]
 pub async fn log_save(app: AppHandle, content: String) -> CommandResult<LogSaveResult> {
     validate_log_size(&content)?;
-    let stamp = chrono::Local::now().format("%Y-%m-%d-%H-%M-%S").to_string();
+    let stamp = jiff::ZonedDateTime::now()
+        .strftime("%Y-%m-%d-%H-%M-%S")
+        .to_string();
     let Some(path_str) = crate::runtime::file_dialog::save_path(
         &app,
         "Save log",
@@ -119,7 +121,9 @@ pub async fn log_export_diagnostics(
     emitter: State<'_, LogEmitter>,
     store: State<'_, Store>,
 ) -> CommandResult<LogSaveResult> {
-    let stamp = chrono::Local::now().format("%Y-%m-%d-%H-%M-%S").to_string();
+    let stamp = jiff::ZonedDateTime::now()
+        .strftime("%Y-%m-%d-%H-%M-%S")
+        .to_string();
     let all_settings = store.get_settings().await;
     let runtime = collect_runtime_snapshot(&app).await;
     let (monitors, main_window) = collect_window_snapshot(&app);
@@ -190,7 +194,7 @@ fn build_diagnostics_bundle(
             "architecture": std::env::consts::ARCH,
             "supportedProtocols": ["ftp", "ftps", "sftp", "webdav"],
             "portable": portable,
-            "generatedAt": chrono::Utc::now().to_rfc3339(),
+            "generatedAt": jiff::Timestamp::now().to_string(),
             "telemetrySent": false
         },
         "environment": {

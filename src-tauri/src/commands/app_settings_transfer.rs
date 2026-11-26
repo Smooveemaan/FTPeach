@@ -180,7 +180,7 @@ pub async fn app_export_settings(
     let mut payload = JsonMap::new();
     payload.insert(
         "exportedAt".into(),
-        serde_json::Value::String(chrono::Utc::now().to_rfc3339()),
+        serde_json::Value::String(jiff::Timestamp::now().to_string()),
     );
     payload.insert(
         "appVersion".into(),

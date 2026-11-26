@@ -189,7 +189,7 @@ impl FtpBackend {
                 "FTP directory listing exceeds the configured limit",
             ));
         }
-        let now = Utc::now();
+        let now = Timestamp::now();
         let mut entries = Vec::with_capacity(raw_lines.len());
         let mut links = Vec::new();
         for line in raw_lines {
@@ -216,7 +216,7 @@ impl FtpBackend {
                 name: raw.name,
                 is_directory: raw.is_directory,
                 size: raw.size,
-                modified_at: raw.modified_at.map(|d| d.to_rfc3339()),
+                modified_at: raw.modified_at.map(|d| d.to_string()),
                 permissions: raw.permissions,
                 owner: raw.owner,
                 group: raw.group,

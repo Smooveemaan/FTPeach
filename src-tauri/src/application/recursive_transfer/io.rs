@@ -56,7 +56,8 @@ pub(super) async fn listing(
                     modified_at: metadata
                         .modified()
                         .ok()
-                        .map(|time| chrono::DateTime::<chrono::Utc>::from(time).to_rfc3339()),
+                        .and_then(|time| jiff::Timestamp::try_from(time).ok())
+                        .map(|time| time.to_string()),
                     permissions: None,
                     owner: None,
                     group: None,

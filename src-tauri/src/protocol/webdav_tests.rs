@@ -1229,8 +1229,8 @@ mod tests {
                 .last_modified
                 .as_deref()
                 .and_then(parse_http_date)
-                .map(|d| d.to_rfc3339()),
-            Some("2026-08-15T08:30:00+00:00".to_string())
+                .map(|d| d.to_string()),
+            Some("2026-08-15T08:30:00Z".to_string())
         );
     }
 

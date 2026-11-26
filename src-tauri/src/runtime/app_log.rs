@@ -103,7 +103,7 @@ enum ExtendedResolution {
 }
 
 fn now_epoch_ms() -> i64 {
-    chrono::Utc::now().timestamp_millis()
+    jiff::Timestamp::now().as_millisecond()
 }
 
 fn resolve_extended_logging(settings: &crate::store::JsonMap, now_ms: i64) -> ExtendedResolution {
@@ -316,7 +316,7 @@ pub fn init<R: Runtime>(
         .format(|out, message, record| {
             out.finish(format_args!(
                 "{} {:<5} {}: {}",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                jiff::ZonedDateTime::now().strftime("%Y-%m-%d %H:%M:%S%.3f"),
                 record.level(),
                 record.target(),
                 message
@@ -738,7 +738,7 @@ impl FlightRecorder {
         let single_line = sanitize_and_truncate(&redacted, FLIGHT_MAX_MSG_BYTES);
         let entry = format!(
             "{} [{category}] {single_line}",
-            chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f")
+            jiff::ZonedDateTime::now().strftime("%Y-%m-%d %H:%M:%S%.3f")
         );
         if self.events.len() >= FLIGHT_CAPACITY {
             self.events.pop_front();

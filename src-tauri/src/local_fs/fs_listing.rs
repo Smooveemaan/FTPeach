@@ -78,7 +78,7 @@ pub(crate) fn is_safe_path_segment(name: &str) -> bool {
 
 fn iso(t: std::io::Result<SystemTime>) -> Option<String> {
     let t = t.ok()?;
-    Some(chrono::DateTime::<chrono::Utc>::from(t).to_rfc3339())
+    Some(jiff::Timestamp::try_from(t).ok()?.to_string())
 }
 
 #[derive(Serialize)]

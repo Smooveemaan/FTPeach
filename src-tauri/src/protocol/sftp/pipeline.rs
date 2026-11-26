@@ -6,7 +6,7 @@ use super::*;
 /// Each request fills its own interval: a short DATA packet is not EOF.
 pub(super) async fn read_pipelined(
     raw: &Arc<RawSftpSession>,
-    handle: &str,
+    handle: &SftpHandle,
     writer: &mut (dyn tokio::io::AsyncWrite + Unpin + Send),
     start: u64,
     total: Option<u64>,
@@ -27,7 +27,7 @@ pub(super) async fn read_pipelined(
                 .checked_add((index * capacity) as u64)
                 .context("SFTP read offset overflow")?;
             let session = raw.clone();
-            let handle = handle.to_owned();
+            let handle = handle.clone();
             pending.spawn(async move {
                 let mut bytes = Vec::with_capacity(capacity);
                 while bytes.len() < capacity {
@@ -35,7 +35,7 @@ pub(super) async fn read_pipelined(
                         .checked_add(bytes.len() as u64)
                         .context("SFTP read offset overflow")?;
                     let want = (capacity - bytes.len()) as u32;
-                    match session.read(handle.as_str(), at, want).await {
+                    match session.read(&handle, at, want).await {
                         Ok(data) if data.data.is_empty() => break,
                         Ok(data) => {
                             anyhow::ensure!(
@@ -113,7 +113,7 @@ pub(super) async fn read_pipelined(
 /// must not be used with concurrent writes, whose replies can arrive in any order.
 pub(super) async fn write_pipelined(
     raw: &Arc<RawSftpSession>,
-    handle: &str,
+    handle: &SftpHandle,
     reader: &mut (dyn tokio::io::AsyncRead + Unpin + Send),
     start: u64,
     total: u64,
@@ -143,7 +143,7 @@ pub(super) async fn write_pipelined(
                         .acquire(n as u64)
                         .await;
                     let session = raw.clone();
-                    let handle = handle.to_owned();
+                    let handle = handle.clone();
                     let data = buf[..n].to_vec();
                     let position = offset;
                     pending.spawn(async move {

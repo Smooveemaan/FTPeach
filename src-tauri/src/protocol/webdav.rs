@@ -467,7 +467,7 @@ impl ProtocolBackend for WebDavBackend {
                     .last_modified
                     .as_deref()
                     .and_then(parse_http_date)
-                    .map(|d| d.to_rfc3339()),
+                    .map(|d| d.to_string()),
                 // WebDAV has no Unix rwx/owner/group concept.
                 permissions: None,
                 owner: None,

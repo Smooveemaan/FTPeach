@@ -9,8 +9,13 @@ use crate::store::{JsonMap, Store};
 
 /// Brings the process in line with `settings`. Every setter is cheap and
 /// idempotent, so all of them run whatever changed.
-pub fn apply(settings: &JsonMap, store: &Store, log_emitter: &LogEmitter) {
-    super::app_log::apply_settings(settings);
+pub fn apply(
+    settings: &JsonMap,
+    store: &Store,
+    log_emitter: &LogEmitter,
+    app: Option<&tauri::AppHandle>,
+) {
+    super::app_log::apply_settings(settings, Some(store), app);
     apply_transfer_limits(settings);
     apply_prevent_sleep(settings);
     apply_log_date_format(settings, log_emitter);
@@ -115,6 +120,7 @@ mod tests {
             })),
             &store,
             &emitter,
+            None,
         );
         assert_eq!(
             emitter.settings_in_use(),
@@ -124,6 +130,7 @@ mod tests {
             &settings(serde_json::json!({"logToFile": false})),
             &store,
             &emitter,
+            None,
         );
         assert_eq!(
             emitter.settings_in_use(),

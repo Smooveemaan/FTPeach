@@ -607,7 +607,9 @@
     "logToFile": "Logboek naar bestand schrijven",
     "logToFileHint": "Voegt het logboek toe aan een bestand per dag in de logboekmap, ook als het logboekpaneel gesloten is. Bestanden worden 14 dagen bewaard, tot 50 MB in totaal.",
     "extendedLogging": "Uitgebreid diagnoselogboek schrijven",
-    "extendedLoggingHint": "Legt het starten van de toepassing, vensteracties en afsluitstappen vast in het logboek van de toepassing. Schakel dit in voordat je een probleem probeert te reproduceren.",
+    "extendedLoggingHint": "Legt gedetailleerde venster-, protocol- en overdrachtsdiagnostiek vast in het logboek van de toepassing. Schakelt na 24 uur automatisch uit en blijft binnen 3 MB op schijf.",
+    "extendedLoggingRemainingHours": "Schakelt automatisch uit over ~{{hours}} uur.",
+    "extendedLoggingRemainingUnderHour": "Schakelt automatisch uit over < 1 uur.",
     "logFolderLabel": "Logboekmap",
     "logFolderDefault": "Standaard",
     "chooseLogFolder": "Logboekmap kiezen…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Afsluiten…",
     "upToDate": "Up-to-date",
     "cancelQuitLong": "Afsluiten annuleren",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Uitgebreid diagnoselogboek is actief (klik om de instellingen voor Logboek te openen)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Linkerpaneel weergeven/verbergen",

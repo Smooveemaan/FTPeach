@@ -610,7 +610,9 @@
     "logToFile": "Gravar o log em um arquivo",
     "logToFileHint": "Acrescenta o log a um arquivo diário na pasta de logs, mesmo com o painel de log fechado. Os arquivos são mantidos por 14 dias, até 50 MB no total.",
     "extendedLogging": "Gravar log de diagnóstico detalhado",
-    "extendedLoggingHint": "Registra a inicialização do aplicativo, as ações da janela e as etapas de encerramento no log do aplicativo. Ative esta opção antes de tentar reproduzir um problema.",
+    "extendedLoggingHint": "Registra diagnósticos detalhados de janela, protocolos e transferências no log do aplicativo. Desativa automaticamente após 24 horas e mantém o limite de 3 MB em disco.",
+    "extendedLoggingRemainingHours": "Desativa automaticamente em ~{{hours}} h.",
+    "extendedLoggingRemainingUnderHour": "Desativa automaticamente em < 1 h.",
     "logFolderLabel": "Pasta de logs",
     "logFolderDefault": "Padrão",
     "chooseLogFolder": "Escolher pasta de logs…",
@@ -1018,7 +1020,8 @@
     "quitPendingShort": "Saindo…",
     "upToDate": "Atualizado",
     "cancelQuitLong": "Cancelar saída",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "O log de diagnóstico detalhado está ativo (clique para abrir as configurações de Log)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Mostrar/ocultar o painel esquerdo",

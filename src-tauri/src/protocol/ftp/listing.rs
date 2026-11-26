@@ -165,6 +165,7 @@ impl FtpBackend {
         let mut listing = self.fetch_listing(&target).await;
         // A server may announce MLST and still turn MLSD away; LIST answers.
         if self.mlsd && listing.as_ref().is_err_and(command_refused) {
+            log::debug!("ftp: MLSD refused by server, falling back to LIST");
             self.mlsd = false;
             listing = self.fetch_listing(&target).await;
         }

@@ -607,7 +607,9 @@
     "logToFile": "Günlüğü dosyaya yaz",
     "logToFileHint": "Günlük paneli kapalıyken bile günlüğü günlük klasöründe her gün için ayrı bir dosyaya ekler. Dosyalar 14 gün boyunca, toplamda en fazla 50 MB olarak saklanır.",
     "extendedLogging": "Ayrıntılı tanılama günlüğü yaz",
-    "extendedLoggingHint": "Uygulamanın başlatılmasını, pencere işlemlerini ve kapanış aşamalarını uygulama günlüğüne kaydeder. Bir sorunu yeniden oluşturmaya çalışmadan önce bu seçeneği etkinleştirin.",
+    "extendedLoggingHint": "Pencere, protokol ve aktarım için ayrıntılı tanılama bilgilerini uygulama günlüğüne kaydeder. 24 saat sonra otomatik olarak kapanır ve diskte en fazla 3 MB yer kaplar.",
+    "extendedLoggingRemainingHours": "~{{hours}} sa. içinde otomatik olarak kapanır.",
+    "extendedLoggingRemainingUnderHour": "< 1 sa. içinde otomatik olarak kapanır.",
     "logFolderLabel": "Günlük klasörü",
     "logFolderDefault": "Varsayılan",
     "chooseLogFolder": "Günlük klasörü seç…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Çıkılıyor…",
     "upToDate": "Güncel",
     "cancelQuitLong": "Çıkışı iptal et",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Ayrıntılı tanılama günlüğü etkin (Günlük ayarlarını açmak için tıklayın)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Sol bölmeyi göster/gizle",

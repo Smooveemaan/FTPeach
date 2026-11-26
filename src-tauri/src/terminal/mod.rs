@@ -280,7 +280,6 @@ impl Terminals {
         }
     }
 
-    #[cfg(test)]
     pub(crate) fn active_count(&self) -> usize {
         self.entries.lock().unwrap().len()
     }

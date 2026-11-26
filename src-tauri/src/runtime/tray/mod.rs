@@ -1,6 +1,7 @@
 mod menu;
 pub(crate) mod model;
 
+use crate::runtime::{app_log, window_bounds};
 use menu::{LiveMenu, MenuCommand};
 use model::{TrayAction, TrayModel};
 use std::sync::{Mutex, MutexGuard, PoisonError};
@@ -56,6 +57,11 @@ impl TrayState {
     fn lock(&self) -> MutexGuard<'_, TrayInner> {
         self.inner.lock().unwrap_or_else(PoisonError::into_inner)
     }
+}
+
+/// Whether the main window is currently marked hidden to the tray.
+pub fn is_hidden(app: &AppHandle) -> bool {
+    app.state::<TrayState>().lock().hidden
 }
 
 /// Stores the renderer's model for an icon created later and applies it to
@@ -142,7 +148,9 @@ pub fn ask_to_quit(app: &AppHandle, unsynced_edits: usize) {
 fn show_and_focus(app: &AppHandle) {
     log::debug!("window: restore started");
     if let Some(window) = app.get_webview_window("main") {
+        let mut api_failed = false;
         if let Err(error) = window.unminimize() {
+            api_failed = true;
             log::warn!("could not unminimize main window: {error}");
         }
         #[cfg(feature = "smoke-test")]
@@ -150,14 +158,28 @@ fn show_and_focus(app: &AppHandle) {
             return crate::runtime::e2e_browser::show_without_focus(&window);
         }
         if let Err(error) = window.show() {
+            api_failed = true;
             log::warn!("could not show main window: {error}");
         }
         if let Err(error) = window.set_focus() {
+            api_failed = true;
             log::warn!("could not focus main window: {error}");
         }
-        log::debug!("window: restore commands completed");
+        let still_hidden = !window.is_visible().unwrap_or(true);
+        let still_minimized = window.is_minimized().unwrap_or(false);
+        if api_failed || still_hidden || still_minimized {
+            let state = window_bounds::describe_window_state(&window);
+            let msg = format!("window: restore anomaly; api_failed={api_failed}; {state}");
+            log::warn!("{msg}");
+            app_log::record_event("window", &msg);
+            app_log::dump_flight_recorder("window-restore-failed");
+        } else {
+            log::debug!("window: restore commands completed");
+        }
     } else {
         log::warn!("could not restore main window: window unavailable");
+        app_log::record_event("window", "restore failed: main window unavailable");
+        app_log::dump_flight_recorder("window-restore-unavailable");
     }
 }
 
@@ -241,8 +263,10 @@ pub fn hide_to_tray(window: WebviewWindow) {
         inner.hidden = true;
         if let Err(error) = window.hide() {
             log::warn!("could not hide main window: {error}");
+        } else {
+            log::info!("window: hidden to tray");
+            app_log::record_event("tray", "window: hidden to tray");
         }
-        log::debug!("window: hide to tray command completed");
         crate::runtime::confirmation_window::close_all(&handle);
         crate::runtime::vault_auto_lock::enforce_now(&handle);
     });
@@ -333,6 +357,8 @@ pub fn restore(app: &AppHandle) {
         inner.persistent_icon
     };
     show_and_focus(app);
+    log::info!("window: restored from tray");
+    app_log::record_event("tray", "window: restored from tray");
     if persistent {
         return;
     }

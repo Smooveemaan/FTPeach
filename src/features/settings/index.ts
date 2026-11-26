@@ -11,3 +11,4 @@ export type {
   SettingsState,
   SettingsUpdaters,
 } from './useSettings.ts';
+export type { CategoryKey as SettingsCategoryId } from './components/SettingsNav.tsx';

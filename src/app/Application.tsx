@@ -168,8 +168,13 @@ export default function Application() {
     setSecretNotPersistedNotice,
   } = useAppBootstrap({ applySettings });
 
+  const handleExtendedLoggingExpired = useCallback(() => {
+    updateSettings.logging({ extendedLogging: false, extendedLoggingUntil: null });
+  }, [updateSettings]);
+
   useAppEffects({
     interface: settings.interface,
+    onExtendedLoggingExpired: handleExtendedLoggingExpired,
   });
 
   // Panes and tabs
@@ -481,6 +486,8 @@ export default function Application() {
       status: browser.aggregateStatus,
       paneOrientation: effectivePaneOrientation,
       syncBrowsing: browser.syncBrowsing,
+      extendedLogging: logging.extendedLogging,
+      onOpenLoggingSettings: () => dialogs.setShowSettings('logging'),
       connectionVisualState: connectionVisualState(
         browser.aggregateStatus,
         hasActiveTransfers,

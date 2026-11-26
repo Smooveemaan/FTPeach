@@ -140,12 +140,18 @@ const requestedLanguage = new URLSearchParams(window.location.search).get('lang'
 /** `?theme=light`: the light appearance, for the guide's light screenshots. */
 const requestedTheme = new URLSearchParams(window.location.search).get('theme');
 
+const requestedExtendedLogging =
+  new URLSearchParams(window.location.search).get('extendedLogging') === '1';
+
 const settings = {
   ...defaults,
   autoCheckUpdates: false,
   autoReconnectTabs: true,
   legacyPasswordNoticeShown: true,
   plaintextSecretNoticeShown: true,
+  ...(requestedExtendedLogging
+    ? { extendedLogging: true, extendedLoggingUntil: Date.now() + 23 * 60 * 60 * 1000 }
+    : {}),
   ...(requestedLanguage ? { language: requestedLanguage } : {}),
   ...(requestedTheme ? { theme: requestedTheme } : {}),
 };
@@ -185,6 +191,7 @@ export const visualTestApi = {
     confirmSecurityChange: () => resolved(ok),
     releaseSecurityChange: () => {},
     revealProxyPassword: () => resolved(null),
+    onExtendedLoggingExpired: () => unsubscribe,
   },
   sites: {
     list: () => resolved(sites),

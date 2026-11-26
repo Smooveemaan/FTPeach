@@ -610,7 +610,9 @@
     "logToFile": "Scrivi il registro su file",
     "logToFileHint": "Aggiunge il registro a un file giornaliero nella cartella dei registri, anche quando il pannello del registro è chiuso. I file vengono conservati per 14 giorni, fino a 50 MB in totale.",
     "extendedLogging": "Scrivi un registro diagnostico dettagliato",
-    "extendedLoggingHint": "Registra l'avvio dell'applicazione, le azioni sulla finestra e le fasi di chiusura nel registro dell'applicazione. Attiva questa opzione prima di provare a riprodurre un problema.",
+    "extendedLoggingHint": "Registra dati diagnostici dettagliati su finestra, protocolli e trasferimenti nel registro dell'applicazione. Si disattiva automaticamente dopo 24 ore e rimane entro 3 MB su disco.",
+    "extendedLoggingRemainingHours": "Si disattiva automaticamente tra ~{{hours}} h.",
+    "extendedLoggingRemainingUnderHour": "Si disattiva automaticamente tra < 1 h.",
     "logFolderLabel": "Cartella dei registri",
     "logFolderDefault": "Predefinita",
     "chooseLogFolder": "Scegli la cartella dei registri…",
@@ -1018,7 +1020,8 @@
     "quitPendingShort": "Uscita…",
     "upToDate": "Aggiornato",
     "cancelQuitLong": "Annulla l'uscita",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Il registro diagnostico dettagliato è attivo (fai clic per aprire le impostazioni di Registro)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Mostra/nascondi il riquadro sinistro",

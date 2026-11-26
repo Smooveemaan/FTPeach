@@ -610,7 +610,9 @@
     "logToFile": "Scrie jurnalul într-un fișier",
     "logToFileHint": "Adaugă jurnalul într-un fișier zilnic din folderul de jurnale, chiar și când panoul de jurnal este închis. Fișierele sunt păstrate 14 zile, până la 50 MB în total.",
     "extendedLogging": "Scrie un jurnal de diagnostic extins",
-    "extendedLoggingHint": "Înregistrează pornirea aplicației, acțiunile ferestrei și etapele de închidere în jurnalul aplicației. Activați această opțiune înainte de a încerca să reproduceți o problemă.",
+    "extendedLoggingHint": "Înregistrează detalii de diagnostic pentru fereastră, protocoale și transferuri în jurnalul aplicației. Se dezactivează automat după 24 de ore și rămâne în limita a 3 MB pe disc.",
+    "extendedLoggingRemainingHours": "Se dezactivează automat în ~{{hours}} h.",
+    "extendedLoggingRemainingUnderHour": "Se dezactivează automat în < 1 h.",
     "logFolderLabel": "Folder de jurnale",
     "logFolderDefault": "Implicit",
     "chooseLogFolder": "Alege folderul de jurnale…",
@@ -1018,7 +1020,8 @@
     "quitPendingShort": "Se închide…",
     "upToDate": "La zi",
     "cancelQuitLong": "Anulează ieșirea",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Jurnalul de diagnostic extins este activ (faceți clic pentru a deschide setările de Jurnalizare)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Afișează/ascunde panoul din stânga",

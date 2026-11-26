@@ -613,7 +613,9 @@
     "logToFile": "Zapisovat protokol do souboru",
     "logToFileHint": "Přidává protokol do denního souboru ve složce protokolů, i když je panel protokolu zavřený. Soubory se uchovávají 14 dní, celkem nejvýše 50 MB.",
     "extendedLogging": "Zapisovat rozšířený diagnostický protokol",
-    "extendedLoggingHint": "Zaznamenává spuštění aplikace, akce okna a fáze ukončování do protokolu aplikace. Zapněte tuto možnost před pokusem o zopakování problému.",
+    "extendedLoggingHint": "Zaznamenává podrobnou diagnostiku okna, protokolů a přenosů do protokolu aplikace. Po 24 hodinách se automaticky vypne a na disku nepřesáhne 3 MB.",
+    "extendedLoggingRemainingHours": "Automaticky se vypne za ~{{hours}} h.",
+    "extendedLoggingRemainingUnderHour": "Automaticky se vypne za < 1 h.",
     "logFolderLabel": "Složka protokolů",
     "logFolderDefault": "Výchozí",
     "chooseLogFolder": "Vybrat složku protokolů…",
@@ -1024,7 +1026,8 @@
     "quitPendingShort": "Ukončování…",
     "upToDate": "Aktuální verze",
     "cancelQuitLong": "Zrušit ukončení",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Rozšířený diagnostický protokol je aktivní (kliknutím otevřete nastavení Protokolování)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Zobrazit/skrýt levý panel",

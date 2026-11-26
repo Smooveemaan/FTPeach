@@ -11,6 +11,7 @@ use crate::local_fs::{self, open_with::OpenWithSession};
 use crate::security::auto_lock::AutoLock;
 use crate::store::Store;
 use crate::transfer::progress::ProgressEmitter;
+use std::sync::Mutex;
 use tauri::{Emitter, Manager};
 
 pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -21,7 +22,7 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let logs_dir = app.state::<Store>().logs_dir();
     // First, so everything after it — window creation and the staged-update
     // install included — can leave a record in ftpeach-app.log.
-    app.handle().plugin(app_log::plugin(logs_dir.clone()))?;
+    app_log::init(app.handle(), logs_dir.clone())?;
     app_log::record_panics();
     app_log::start(app.handle());
     // Declared in tauri.conf.json with `create: false` and built here, so a
@@ -78,6 +79,10 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     tray::install(app.handle(), shutdown::quit);
 
     let store = app.state::<Store>().inner().clone();
+    let monitor_count = app
+        .get_webview_window("main")
+        .and_then(|window| window.available_monitors().ok())
+        .map_or(0, |monitors| monitors.len());
     if let Some(main_window) = app.get_webview_window("main") {
         #[cfg(target_os = "linux")]
         {
@@ -93,20 +98,24 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
         super::window_scale::refresh(&main_window);
         let persister = window_bounds::BoundsPersister::new(store.clone());
         let window_for_events = main_window.clone();
+        let last_scale = Mutex::new(main_window.scale_factor().unwrap_or(1.0));
         main_window.on_window_event(move |event| match event {
-            tauri::WindowEvent::ScaleFactorChanged { .. } => {
+            tauri::WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+                let previous = {
+                    let mut guard = last_scale.lock().unwrap_or_else(|e| e.into_inner());
+                    std::mem::replace(&mut *guard, *scale_factor)
+                };
+                let msg = format!("scale factor changed {previous:.2} -> {scale_factor:.2}");
+                log::debug!("window: {msg}");
+                app_log::record_event("window", &msg);
                 super::window_scale::refresh(&window_for_events);
             }
-            tauri::WindowEvent::Resized(size) => {
-                log::debug!(
-                    "window: resized to {}x{} physical pixels",
-                    size.width,
-                    size.height
-                );
+            tauri::WindowEvent::Resized(_) => {
                 super::window_scale::sync_min_size_if_pending(&window_for_events);
                 persister.schedule(window_for_events.clone());
                 if window_for_events.is_minimized().unwrap_or(false) {
                     log::debug!("window: minimized");
+                    app_log::record_event("window", "minimized");
                     super::vault_auto_lock::enforce_now(window_for_events.app_handle());
                     #[cfg(not(target_os = "macos"))]
                     {
@@ -129,31 +138,25 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                     }
                 }
             }
-            tauri::WindowEvent::Moved(position) => {
-                log::debug!(
-                    "window: moved to {},{} physical pixels",
-                    position.x,
-                    position.y
-                );
+            tauri::WindowEvent::Moved(_) => {
                 persister.schedule(window_for_events.clone());
             }
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 log::debug!("window: close requested");
+                app_log::record_event("window", "close requested");
                 api.prevent_close();
                 let app = window_for_events.app_handle().clone();
                 let window = window_for_events.clone();
                 let store = app.state::<Store>().inner().clone();
                 tauri::async_runtime::spawn(shutdown::on_close_requested(app, window, store));
             }
-            tauri::WindowEvent::Focused(focused) => {
-                log::debug!("window: focused={focused}");
-                #[cfg(target_os = "linux")]
-                if *focused {
-                    notification::clear_delivered(window_for_events.app_handle());
-                }
+            #[cfg(target_os = "linux")]
+            tauri::WindowEvent::Focused(true) => {
+                notification::clear_delivered(window_for_events.app_handle());
             }
             tauri::WindowEvent::Destroyed => {
                 log::debug!("window: destroyed");
+                app_log::record_event("window", "destroyed");
             }
             _ => {}
         });
@@ -168,7 +171,23 @@ pub(crate) fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let app_for_apply = app.handle().clone();
     tauri::async_runtime::spawn(async move {
         let loaded_settings = store.get_settings().await;
-        settings_apply::apply(&loaded_settings, &store, &log_emitter_for_apply);
+        settings_apply::apply(
+            &loaded_settings,
+            &store,
+            &log_emitter_for_apply,
+            Some(&app_for_apply),
+        );
+        let ready = format!(
+            "startup: ready; version={}; os={}; arch={}; portable={}; pid={}; monitors={monitor_count}; extendedLogging={}",
+            env!("CARGO_PKG_VERSION"),
+            std::env::consts::OS,
+            std::env::consts::ARCH,
+            local_fs::portable::root().is_some(),
+            std::process::id(),
+            app_log::is_extended_enabled()
+        );
+        log::info!("{ready}");
+        app_log::record_event("lifecycle", &ready);
         tray::apply_menu_bar_setting(&app_for_apply, &loaded_settings);
         vault_auto_lock::apply_at_startup(&store, app_for_apply.state::<AutoLock>().inner()).await;
         store.scrub_secret_backups().await;

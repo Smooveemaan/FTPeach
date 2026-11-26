@@ -1,6 +1,7 @@
 //! Deleting the staging file an upload or a copy between servers abandoned.
 
 use crate::ipc::{CommandError, ErrorCode};
+use crate::runtime::app_log;
 use crate::session::Sessions;
 use crate::transfer::upload_staging::{
     REMOVE_ATTEMPTS as STAGING_REMOVE_ATTEMPTS, REMOVE_PAUSE as STAGING_REMOVE_PAUSE,
@@ -50,6 +51,10 @@ pub(crate) async fn cleanup_remote_partial(
             log::warn!(
                 "Still cleaning transfer staging file {partial}; the transfer settles meanwhile"
             );
+            app_log::record_event(
+                "transfer",
+                "remote .part cleanup: backgrounded after budget",
+            );
             Cleanup::Done
         }
     }
@@ -84,15 +89,26 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
                 )
                 .await
                 {
-                    Ok(Ok(())) => return Ok(Cleanup::Done),
+                    Ok(Ok(())) => {
+                        log::debug!("staging_cleanup: removed remote .part on attempt {attempt}");
+                        return Ok(Cleanup::Done);
+                    }
                     Ok(Err(error)) => error,
                     Err(_) => return Err(()),
                 };
-                if CommandError::from_anyhow(&refused).code == ErrorCode::NotFound {
+                let code = CommandError::from_anyhow(&refused).code;
+                if code == ErrorCode::NotFound {
                     return Ok(Cleanup::Done);
                 }
+                log::debug!(
+                    "staging_cleanup: attempt {attempt}/{STAGING_REMOVE_ATTEMPTS} failed; code={code:?}"
+                );
                 if attempt == STAGING_REMOVE_ATTEMPTS {
                     log::warn!("Could not clean transfer staging file {partial}: {refused}");
+                    app_log::record_event(
+                        "transfer",
+                        &format!("remote .part cleanup left: code={code:?}"),
+                    );
                     log_staging_left(
                         session.browse_client.as_ref(),
                         partial,
@@ -117,6 +133,10 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
     // connection is free to try, now that this upload has let go of its own.
     log::warn!(
         "Timed out cleaning transfer staging file {partial}; retrying on a transfer connection"
+    );
+    app_log::record_event(
+        "transfer",
+        "remote .part cleanup: retrying on transfer connection",
     );
     let retry = async {
         let pool = sessions.pool_for(connection_id).await?;
@@ -151,16 +171,27 @@ async fn clean_staging(sessions: &Sessions, connection_id: &str, partial: &str) 
     match tokio::time::timeout(std::time::Duration::from_secs(30), retry).await {
         Ok(Some(Err(error))) => {
             log::warn!("Could not clean transfer staging file {partial}: {error}");
+            app_log::record_event(
+                "transfer",
+                &format!(
+                    "remote .part cleanup fallback failed: code={:?}",
+                    CommandError::from_anyhow(&error).code
+                ),
+            );
             Cleanup::Left
         }
         Err(_) => {
             log::warn!("Timed out cleaning transfer staging file {partial}");
+            app_log::record_event("transfer", "remote .part cleanup fallback timed out");
             Cleanup::Left
         }
         Ok(None) => {
             log::warn!("No session to clean transfer staging file {partial}");
             Cleanup::NoSession
         }
-        Ok(Some(Ok(()))) => Cleanup::Done,
+        Ok(Some(Ok(()))) => {
+            log::debug!("staging_cleanup: removed remote .part via transfer connection");
+            Cleanup::Done
+        }
     }
 }

@@ -71,6 +71,7 @@ export interface SettingsValues {
   logShowTimestamps: boolean;
   logToFile: boolean;
   extendedLogging: boolean;
+  extendedLoggingUntil: number | null;
   /** Where the log files go; empty is FTPeach's own logs folder. */
   logFolder: string;
   keyboardShortcuts: ShortcutOverrides;
@@ -140,7 +141,14 @@ export const SETTING_GROUPS = {
   ],
   updates: ['autoCheckUpdates'],
   security: ['vaultAutoLockMinutes', 'showSecurityConfirmations', 'strictHostKeyCheck'],
-  logging: ['logEnabled', 'logShowTimestamps', 'logToFile', 'extendedLogging', 'logFolder'],
+  logging: [
+    'logEnabled',
+    'logShowTimestamps',
+    'logToFile',
+    'extendedLogging',
+    'extendedLoggingUntil',
+    'logFolder',
+  ],
   shortcuts: ['keyboardShortcuts'],
 } as const satisfies Record<string, readonly (keyof SettingsValues)[]>;
 
@@ -365,6 +373,10 @@ function normalizeValues(settings: AppSettings): SettingsValues {
     logShowTimestamps: s.logShowTimestamps !== false,
     logToFile: !!s.logToFile,
     extendedLogging: !!s.extendedLogging,
+    extendedLoggingUntil:
+      typeof s.extendedLoggingUntil === 'number' && Number.isFinite(s.extendedLoggingUntil)
+        ? s.extendedLoggingUntil
+        : null,
     logFolder: typeof s.logFolder === 'string' ? s.logFolder : '',
     keyboardShortcuts: normalizeKeyboardShortcuts(s.keyboardShortcuts),
   };
@@ -475,7 +487,13 @@ export function useSettings({
             next.errorCode ?? 'internal',
           );
         }
-        dispatch({ type: 'patch', patch: { proxyPasswordSet: !!next.proxyPasswordSet } });
+        const synced: SettingsPatch = { proxyPasswordSet: !!next.proxyPasswordSet };
+        if ('extendedLogging' in patch) synced.extendedLogging = !!patch.extendedLogging;
+        if ('extendedLoggingUntil' in patch) {
+          synced.extendedLoggingUntil =
+            typeof patch.extendedLoggingUntil === 'number' ? patch.extendedLoggingUntil : null;
+        }
+        dispatch({ type: 'patch', patch: synced });
       }),
     [settingsApi],
   );

@@ -19,18 +19,22 @@ pub(crate) fn validate_settings(patch: &JsonMap, allow_secrets: bool) -> Result<
         let Some(expected) = schema.get(key) else {
             return Err(format!("settings.{key}: unknown field"));
         };
-        let same_type = matches!(
-            (expected, value),
-            (serde_json::Value::String(_), serde_json::Value::String(_))
-                | (serde_json::Value::Bool(_), serde_json::Value::Bool(_))
-                | (serde_json::Value::Number(_), serde_json::Value::Number(_))
-                | (serde_json::Value::Object(_), serde_json::Value::Object(_))
-                | (serde_json::Value::Array(_), serde_json::Value::Array(_))
-                | (
-                    serde_json::Value::Null,
-                    serde_json::Value::Null | serde_json::Value::Object(_)
-                )
-        );
+        let same_type = if key == "extendedLoggingUntil" {
+            value.is_null() || value.as_i64().is_some_and(|n| n >= 0)
+        } else {
+            matches!(
+                (expected, value),
+                (serde_json::Value::String(_), serde_json::Value::String(_))
+                    | (serde_json::Value::Bool(_), serde_json::Value::Bool(_))
+                    | (serde_json::Value::Number(_), serde_json::Value::Number(_))
+                    | (serde_json::Value::Object(_), serde_json::Value::Object(_))
+                    | (serde_json::Value::Array(_), serde_json::Value::Array(_))
+                    | (
+                        serde_json::Value::Null,
+                        serde_json::Value::Null | serde_json::Value::Object(_)
+                    )
+            )
+        };
         if !same_type {
             return Err(format!("settings.{key}: invalid type"));
         }
@@ -299,6 +303,33 @@ mod tests {
                 serde_json::json!({"fileListScale":161}),
                 serde_json::json!({"terminalFontSize":8}),
                 serde_json::json!({"terminalFontSize":25}),
+            ] {
+                assert!(
+                    validate_settings(invalid.as_object().unwrap(), allow_secrets).is_err(),
+                    "{invalid}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn extended_logging_until_accepts_null_or_non_negative_epoch_ms() {
+        for allow_secrets in [false, true] {
+            for valid in [
+                serde_json::json!({"extendedLoggingUntil": null}),
+                serde_json::json!({"extendedLoggingUntil": 0}),
+                serde_json::json!({"extendedLoggingUntil": 1_800_000_000_000_i64}),
+            ] {
+                assert!(
+                    validate_settings(valid.as_object().unwrap(), allow_secrets).is_ok(),
+                    "{valid}"
+                );
+            }
+            for invalid in [
+                serde_json::json!({"extendedLoggingUntil": -1}),
+                serde_json::json!({"extendedLoggingUntil": 1.5}),
+                serde_json::json!({"extendedLoggingUntil": "123"}),
+                serde_json::json!({"extendedLoggingUntil": {}}),
             ] {
                 assert!(
                     validate_settings(invalid.as_object().unwrap(), allow_secrets).is_err(),

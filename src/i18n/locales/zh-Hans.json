@@ -607,7 +607,9 @@
     "logToFile": "将日志写入文件",
     "logToFileHint": "即使日志面板已关闭，也会将日志追加到日志文件夹中按天划分的文件里。文件保留 14 天，总大小不超过 50 MB。",
     "extendedLogging": "写入详细诊断日志",
-    "extendedLoggingHint": "在应用日志中记录应用启动、窗口操作和退出阶段。请在尝试重现问题之前启用此选项。",
+    "extendedLoggingHint": "在应用日志中记录详细的窗口、协议和传输诊断信息。24 小时后自动关闭，磁盘占用不超过 3 MB。",
+    "extendedLoggingRemainingHours": "约 {{hours}} 小时后自动关闭。",
+    "extendedLoggingRemainingUnderHour": "不到 1 小时后自动关闭。",
     "logFolderLabel": "日志文件夹",
     "logFolderDefault": "默认",
     "chooseLogFolder": "选择日志文件夹…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "正在退出…",
     "upToDate": "已是最新版本",
     "cancelQuitLong": "取消退出",
-    "listSeparator": "、"
+    "listSeparator": "、",
+    "debugLoggingTooltip": "详细诊断日志已启用（点击打开日志记录设置）"
   },
   "viewToolbar": {
     "toggleLeftPane": "显示/隐藏左侧窗格",

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import Icon from '../components/Icon.tsx';
 import LineStylePulse from '../components/LineStylePulse.tsx';
 import NoticeText from '../components/NoticeText.tsx';
 import { useFitLevel } from '../hooks/useFitLevel.ts';
@@ -19,6 +20,8 @@ interface StatusBarProps {
   leftSelectedCount: number;
   rightSelectedCount: number;
   syncBrowsing: boolean;
+  extendedLogging?: boolean;
+  onOpenLoggingSettings?: (() => void) | undefined;
   connectionVisualState: ConnectionVisualState;
   logLineCount: number;
   hasActiveTransfers: boolean;
@@ -40,6 +43,8 @@ export default function StatusBar({
   leftSelectedCount,
   rightSelectedCount,
   syncBrowsing,
+  extendedLogging = false,
+  onOpenLoggingSettings,
   connectionVisualState,
   logLineCount,
   hasActiveTransfers,
@@ -78,6 +83,7 @@ export default function StatusBar({
       showingNotice,
       notice?.id,
       !!quitPending,
+      extendedLogging,
       syncBrowsing,
       leftCount,
       rightCount,
@@ -88,6 +94,8 @@ export default function StatusBar({
       paneOrientation,
     ].join('|'),
   );
+  const debugTooltip = t('statusBar.debugLoggingTooltip');
+  const showCounts = !(narrow && hasActiveTransfers);
   const syncLabel = t('menu.view.syncBrowsing');
   const quitLabel = t('statusBar.quitPending');
   return (
@@ -152,6 +160,24 @@ export default function StatusBar({
         )}
       </span>
       <span className="status-right">
+        {extendedLogging && !showingNotice && (
+          <>
+            <button
+              type="button"
+              className="status-debug-indicator notice-replaced"
+              data-tooltip={debugTooltip}
+              aria-label={debugTooltip}
+              onClick={onOpenLoggingSettings}
+            >
+              <Icon name="bug" size={12} />
+            </button>
+            {(syncBrowsing || showCounts) && (
+              <span className="status-debug-sep notice-replaced" aria-hidden="true">
+                ·
+              </span>
+            )}
+          </>
+        )}
         {syncBrowsing && !showingNotice && (
           <span
             className="sync-indicator notice-replaced fit-shrink"
@@ -162,7 +188,7 @@ export default function StatusBar({
             {fitLevel >= FIT.syncIcon ? '⇄' : `⇄ ${syncLabel}`}
           </span>
         )}
-        {!(narrow && hasActiveTransfers) && !showingNotice && (
+        {showCounts && !showingNotice && (
           <>
             <span className="status-count notice-replaced fit-shrink">
               {t(firstCountKey, { count: leftCount })}

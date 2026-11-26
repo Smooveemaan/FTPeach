@@ -610,7 +610,9 @@
     "logToFile": "Enregistrer le journal dans un fichier",
     "logToFileHint": "Ajoute le journal à un fichier quotidien dans le dossier des journaux, même lorsque le panneau du journal est fermé. Les fichiers sont conservés 14 jours, dans la limite de 50 Mo au total.",
     "extendedLogging": "Enregistrer un journal de diagnostic détaillé",
-    "extendedLoggingHint": "Consigne le démarrage de l'application, les actions sur la fenêtre et les étapes de fermeture dans le journal de l'application. Activez cette option avant de tenter de reproduire un problème.",
+    "extendedLoggingHint": "Consigne des diagnostics détaillés sur la fenêtre, les protocoles et les transferts dans le journal de l'application. Se désactive automatiquement au bout de 24 heures et reste dans la limite de 3 Mo sur le disque.",
+    "extendedLoggingRemainingHours": "Se désactive automatiquement dans ~{{hours}} h.",
+    "extendedLoggingRemainingUnderHour": "Se désactive automatiquement dans < 1 h.",
     "logFolderLabel": "Dossier des journaux",
     "logFolderDefault": "Par défaut",
     "chooseLogFolder": "Choisir le dossier des journaux…",
@@ -1018,7 +1020,8 @@
     "quitPendingShort": "Fermeture…",
     "upToDate": "À jour",
     "cancelQuitLong": "Annuler la fermeture",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Le journal de diagnostic détaillé est actif (cliquez pour ouvrir les paramètres de Journalisation)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Afficher/masquer le volet de gauche",

@@ -607,7 +607,9 @@
     "logToFile": "ログをファイルに書き込む",
     "logToFileHint": "ログパネルが閉じているときも、ログをログフォルダー内の日ごとのファイルに追記します。ファイルは 14 日間、合計 50 MB まで保存されます。",
     "extendedLogging": "詳細な診断ログを書き込む",
-    "extendedLoggingHint": "アプリの起動、ウィンドウ操作、終了処理の各段階をアプリのログに記録します。問題の再現を試す前に有効にしてください。",
+    "extendedLoggingHint": "ウィンドウ、プロトコル、転送の詳細な診断情報をアプリのログに記録します。24 時間後に自動でオフになり、ディスク使用量は 3 MB 以内に収まります。",
+    "extendedLoggingRemainingHours": "約 {{hours}} 時間後に自動でオフになります。",
+    "extendedLoggingRemainingUnderHour": "1 時間未満で自動でオフになります。",
     "logFolderLabel": "ログフォルダー",
     "logFolderDefault": "既定",
     "chooseLogFolder": "ログフォルダーを選択…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "終了中…",
     "upToDate": "最新の状態",
     "cancelQuitLong": "終了をキャンセル",
-    "listSeparator": "、"
+    "listSeparator": "、",
+    "debugLoggingTooltip": "詳細な診断ログが有効です（クリックしてログ記録の設定を開く）"
   },
   "viewToolbar": {
     "toggleLeftPane": "左ペインの表示／非表示",

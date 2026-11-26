@@ -53,6 +53,7 @@ function renderDialog(overrides: Partial<SettingsDialogProps> = {}) {
     logShowTimestamps: false,
     logToFile: false,
     extendedLogging: false,
+    extendedLoggingUntil: null,
     logFolder: '',
     vaultAutoLockMinutes: 0,
     showSecurityConfirmations: true,
@@ -429,21 +430,58 @@ describe('SettingsDialog unsaved-changes gate', () => {
   });
 
   test.each([false, true])(
-    'extended logging can change from %s independently of protocol logging',
+    'extended logging can change from %s independently of protocol logging and manages its 24h TTL',
     async (enabled) => {
       const user = userEvent.setup({ delay: null });
-      const { props } = renderDialog({ extendedLogging: enabled });
+      const before = Date.now();
+      const { props } = renderDialog({
+        extendedLogging: enabled,
+        extendedLoggingUntil: enabled ? before + 10 * 60 * 60 * 1000 : null,
+      });
       await user.click(screen.getByRole('button', { name: 'settings.categories.logging' }));
       const checkbox = screen.getByRole<HTMLInputElement>('checkbox', {
         name: 'settings.extendedLogging',
       });
       expect(checkbox.checked).toBe(enabled);
       expect(checkbox.disabled).toBe(false);
+      if (enabled) {
+        expect(screen.getByText(/settings\.extendedLoggingRemainingHours/)).toBeTruthy();
+      }
       await user.click(checkbox);
       await user.click(screen.getByRole('button', { name: 'common.save' }));
-      expect(props.onSave).toHaveBeenCalledWith({ extendedLogging: !enabled });
+      if (!enabled) {
+        const after = Date.now();
+        expect(props.onSave).toHaveBeenCalledOnce();
+        const saved = (props.onSave as ReturnType<typeof vi.fn>).mock.calls[0]![0] as Record<
+          string,
+          unknown
+        >;
+        expect(saved.extendedLogging).toBe(true);
+        expect(typeof saved.extendedLoggingUntil).toBe('number');
+        const expectedMin = before + 24 * 60 * 60 * 1000;
+        const expectedMax = after + 24 * 60 * 60 * 1000;
+        expect(saved.extendedLoggingUntil as number).toBeGreaterThanOrEqual(expectedMin);
+        expect(saved.extendedLoggingUntil as number).toBeLessThanOrEqual(expectedMax);
+      } else {
+        expect(props.onSave).toHaveBeenCalledWith({
+          extendedLogging: false,
+          extendedLoggingUntil: null,
+        });
+      }
     },
   );
+
+  test('initialCategory="logging" opens the Logging tab directly and shows under-hour TTL hint', () => {
+    renderDialog({
+      initialCategory: 'logging',
+      extendedLogging: true,
+      extendedLoggingUntil: Date.now() + 20 * 60 * 1000,
+    });
+    expect(
+      screen.getByRole<HTMLInputElement>('checkbox', { name: 'settings.extendedLogging' }).checked,
+    ).toBe(true);
+    expect(screen.getByText(/settings\.extendedLoggingRemainingUnderHour/)).toBeTruthy();
+  });
 
   test('a chosen log folder is saved, reset to the default, and opened', async () => {
     const user = userEvent.setup({ delay: null });

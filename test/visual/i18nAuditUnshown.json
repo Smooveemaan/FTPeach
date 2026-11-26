@@ -149,6 +149,7 @@
     "settings.dateFormatIso",
     "settings.exportDiagnosticsBusy",
     "settings.exportDiagnosticsFailed",
+    "settings.extendedLoggingRemainingUnderHour",
     "settings.ftpActiveModeDisabledByProxy",
     "settings.openWithAssociations.application",
     "settings.openWithAssociations.applicationPlaceholder",

@@ -45,6 +45,7 @@
   "logShowTimestamps": true,
   "logToFile": false,
   "extendedLogging": false,
+  "extendedLoggingUntil": null,
   "logFolder": "",
   "notifyOnTransferComplete": true,
   "overwriteAction": "ask",

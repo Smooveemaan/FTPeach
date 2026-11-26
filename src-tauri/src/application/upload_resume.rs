@@ -17,6 +17,7 @@
 mod tests;
 
 use crate::protocol::LogKind;
+use crate::runtime::app_log;
 use crate::session::Sessions;
 #[cfg(test)]
 pub(crate) use crate::transfer::upload_staging::remember;
@@ -119,10 +120,16 @@ pub async fn resolve(
         match verify_overlap(sessions, key, &entry, local_path, now.size()).await {
             Ok(Some(0)) => {
                 // Starting over is all there is to do; an empty staging file goes.
+                log::debug!("upload: staging file empty, restarting from offset=0");
                 remove_staging(sessions, &key.connection_id, &entry.staging_path).await;
                 return None;
             }
             Ok(Some(offset)) => {
+                log::debug!(
+                    "upload: resuming from offset={offset}; validation=tail-overlap-{}B",
+                    offset.min(VERIFY_WINDOW)
+                );
+                app_log::record_event("transfer", &format!("upload resumed: offset={offset}"));
                 log_event(
                     sessions,
                     &key.connection_id,
@@ -141,6 +148,10 @@ pub async fn resolve(
         "Restarting upload of {} from the beginning: {}",
         key.remote_path,
         restart.log_key()
+    );
+    app_log::record_event(
+        "transfer",
+        &format!("upload restarted: reason={}", restart.log_key()),
     );
     if let Some(session) = sessions
         .lookup_slot(&key.connection_id)

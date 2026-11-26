@@ -607,7 +607,9 @@
     "logToFile": "Ghi nhật ký vào tệp",
     "logToFileHint": "Ghi thêm nhật ký vào một tệp theo ngày trong thư mục nhật ký, kể cả khi bảng nhật ký đang đóng. Các tệp được giữ trong 14 ngày, tổng cộng tối đa 50 MB.",
     "extendedLogging": "Ghi nhật ký chẩn đoán chi tiết",
-    "extendedLoggingHint": "Ghi quá trình khởi động ứng dụng, thao tác cửa sổ và các giai đoạn thoát vào nhật ký ứng dụng. Bật tùy chọn này trước khi thử tái hiện sự cố.",
+    "extendedLoggingHint": "Ghi thông tin chẩn đoán chi tiết về cửa sổ, giao thức và lượt truyền vào nhật ký ứng dụng. Tự động tắt sau 24 giờ và giới hạn trong 3 MB trên ổ đĩa.",
+    "extendedLoggingRemainingHours": "Tự động tắt sau ~{{hours}} giờ.",
+    "extendedLoggingRemainingUnderHour": "Tự động tắt sau < 1 giờ.",
     "logFolderLabel": "Thư mục nhật ký",
     "logFolderDefault": "Mặc định",
     "chooseLogFolder": "Chọn thư mục nhật ký…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Đang thoát…",
     "upToDate": "Phiên bản mới nhất",
     "cancelQuitLong": "Hủy thoát",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Nhật ký chẩn đoán chi tiết đang bật (nhấp để mở cài đặt Ghi nhật ký)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Hiện/ẩn khung bên trái",

@@ -9,7 +9,12 @@ import { useSettingsDraft } from './hooks/useSettingsDraft.ts';
 import type { SaveSettings, SettingsDraftValues } from './hooks/useSettingsDraft.ts';
 import { useVaultSettings } from './hooks/useVaultSettings.ts';
 import { useProxyPasswordTest } from './hooks/useProxyPasswordTest.ts';
-import SettingsNav, { buildSettingsCategories } from './components/SettingsNav.tsx';
+import SettingsNav, {
+  buildSettingsCategories,
+  type CategoryKey,
+} from './components/SettingsNav.tsx';
+
+export type SettingsCategoryId = CategoryKey;
 import ConnectionSettings from './components/ConnectionSettings.tsx';
 import TransfersSettings from './components/TransfersSettings.tsx';
 import InterfaceSettings from './components/InterfaceSettings.tsx';
@@ -24,6 +29,7 @@ export interface SettingsDialogProps extends SettingsDraftValues {
   updateStatus: UpdaterStatus | null;
   checkForUpdates: () => unknown;
   onExportDiagnostics: () => Promise<{ ok?: boolean; canceled?: boolean }>;
+  initialCategory?: SettingsCategoryId | undefined;
   narrow: boolean;
   onPreview: (patch: SettingsPatch) => unknown;
   onSave: SaveSettings;
@@ -39,6 +45,7 @@ export default function SettingsDialog({
   updateStatus,
   checkForUpdates,
   onExportDiagnostics,
+  initialCategory,
   narrow,
   onPreview,
   onSave,
@@ -53,7 +60,11 @@ export default function SettingsDialog({
     () => buildSettingsCategories(t).filter((item) => !hideUpdates || item.key !== 'updates'),
     [t, hideUpdates],
   );
-  const [category, setCategory] = useState(CATEGORIES[0]!.key);
+  const [category, setCategory] = useState<CategoryKey>(() =>
+    initialCategory && CATEGORIES.some((item) => item.key === initialCategory)
+      ? initialCategory
+      : CATEGORIES[0]!.key,
+  );
   const panelRef = useRef<HTMLDivElement>(null);
   const focusPanel = () => {
     const panel = panelRef.current;
@@ -272,6 +283,7 @@ export default function SettingsDialog({
                 setLogToFileValue={draft.setLogToFileValue}
                 extendedLoggingValue={draft.extendedLoggingValue}
                 setExtendedLoggingValue={draft.setExtendedLoggingValue}
+                extendedLoggingUntil={draft.extendedLoggingUntil}
                 logFolderValue={draft.logFolderValue}
                 setLogFolderValue={draft.setLogFolderValue}
                 selectDirectory={() => api.fsLocal.selectDir()}

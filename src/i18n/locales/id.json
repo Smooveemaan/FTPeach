@@ -607,7 +607,9 @@
     "logToFile": "Tulis log ke file",
     "logToFileHint": "Menambahkan log ke file harian di folder log, bahkan saat panel log ditutup. File disimpan selama 14 hari, hingga total 50 MB.",
     "extendedLogging": "Tulis log diagnostik terperinci",
-    "extendedLoggingHint": "Mencatat proses mulai aplikasi, tindakan jendela, dan tahap penutupan ke log aplikasi. Aktifkan sebelum mencoba mengulangi masalah.",
+    "extendedLoggingHint": "Mencatat diagnostik terperinci untuk jendela, protokol, dan transfer ke log aplikasi. Otomatis nonaktif setelah 24 jam dan dibatasi hingga 3 MB di disk.",
+    "extendedLoggingRemainingHours": "Otomatis nonaktif dalam ~{{hours}} jam.",
+    "extendedLoggingRemainingUnderHour": "Otomatis nonaktif dalam < 1 jam.",
     "logFolderLabel": "Folder log",
     "logFolderDefault": "Default",
     "chooseLogFolder": "Pilih folder log…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Keluar…",
     "upToDate": "Versi terbaru",
     "cancelQuitLong": "Batalkan keluar",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Log diagnostik terperinci sedang aktif (klik untuk membuka pengaturan Pencatatan)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Tampilkan/sembunyikan panel kiri",

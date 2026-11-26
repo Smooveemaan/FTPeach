@@ -52,7 +52,6 @@ use security::sensitive::AuthorizationState;
 use security::{vault, vault_guard};
 use session::{ConnectingClients, Sessions};
 use store::Store;
-#[cfg(any(feature = "smoke-test", target_os = "linux"))]
 use tauri::Manager;
 
 pub fn run() {
@@ -93,7 +92,22 @@ pub fn run() {
         builder
     } else {
         builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let before_hidden = runtime::tray::is_hidden(app);
+            let before = app
+                .get_webview_window("main")
+                .map(|window| runtime::window_bounds::describe_window_state(&window))
+                .unwrap_or_else(|| "window=none".into());
             runtime::tray::restore(app);
+            let after_hidden = runtime::tray::is_hidden(app);
+            let after = app
+                .get_webview_window("main")
+                .map(|window| runtime::window_bounds::describe_window_state(&window))
+                .unwrap_or_else(|| "window=none".into());
+            let msg = format!(
+                "single-instance: activated; before=[{before} tray_hidden={before_hidden}]; after=[{after} tray_hidden={after_hidden}]"
+            );
+            log::info!("{msg}");
+            runtime::app_log::record_event("lifecycle", &msg);
         }))
     };
     #[cfg(not(debug_assertions))]

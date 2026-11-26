@@ -232,6 +232,10 @@ pub async fn prepare(
         if let Ok(file) = opened {
             let start = file.metadata()?.len();
             if source.size.is_some_and(|size| start <= size) {
+                log::debug!(
+                    "download: resuming from offset={start}; size={:?}; validation=source-identity",
+                    source.size
+                );
                 // A resumed artifact already carries the mark, but one
                 // written by a version that did not is caught up here
                 // rather than committed without it.
@@ -239,6 +243,13 @@ pub async fn prepare(
                 return Ok((path, start));
             }
         }
+    }
+    if resume {
+        log::debug!(
+            "download: starting fresh (offset=0); has_sidecar={has_sidecar}; size={:?}; has_version={}",
+            source.size,
+            source.version.is_some()
+        );
     }
     let artifact = uuid::Uuid::new_v4();
     let path = artifact_path(destination, artifact);
@@ -372,12 +383,12 @@ impl LocalDownload {
         if let Err(error) = &result {
             // Bytes of two versions or a taken destination when replacement was
             // refused: nothing to resume from, so clear the partial and sidecar.
-            if matches!(
-                crate::ipc::CommandError::from_anyhow(error).code,
-                ErrorCode::RemoteChanged | ErrorCode::AlreadyExists
-            ) && let Err(error) = remove_artifact(&self.partial)
-            {
-                log::warn!("A failed download left its partial: {error:#}");
+            let code = crate::ipc::CommandError::from_anyhow(error).code;
+            if matches!(code, ErrorCode::RemoteChanged | ErrorCode::AlreadyExists) {
+                log::debug!("download: removing local .part artifact after {code:?}");
+                if let Err(error) = remove_artifact(&self.partial) {
+                    log::warn!("A failed download left its partial: {error:#}");
+                }
             }
             remove_empty_new_partial(&self.partial, self.start).await;
             // Gone, the partial has nothing to resume; its record would only
@@ -541,8 +552,11 @@ fn held_by_another_program(error: std::io::Error, destination: &Path) -> std::io
 }
 
 pub async fn remove_empty_new_partial(path: &Path, started_at: u64) {
-    if started_at == 0 && tokio::fs::metadata(path).await.is_ok_and(|m| m.len() == 0) {
-        let _ = tokio::fs::remove_file(path).await;
+    if started_at == 0
+        && tokio::fs::metadata(path).await.is_ok_and(|m| m.len() == 0)
+        && tokio::fs::remove_file(path).await.is_ok()
+    {
+        log::debug!("download: removed empty local .part artifact");
     }
 }
 
@@ -644,7 +658,9 @@ pub async fn discard(destination: &Path) {
         // The record is what finds the partial again, so it goes only after
         // the partial; a retry after either step starts from the record.
         remove_artifact(&artifact_path(destination, record.artifact))?;
-        remove_artifact(metadata)
+        remove_artifact(metadata)?;
+        log::debug!("download: discarded stopped local .part artifact and sidecar");
+        Ok(())
     })
     .await;
     if let Err(error) = discarded {

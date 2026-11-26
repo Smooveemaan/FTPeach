@@ -185,6 +185,10 @@ pub struct OpenWithWatchers {
 }
 
 impl OpenWithWatchers {
+    pub fn watcher_count(&self) -> usize {
+        self.inner.lock().unwrap().polls.len()
+    }
+
     /// Read the files, rather than the last poll, so a save just before exit counts.
     pub fn unsynced_count(&self) -> usize {
         self.inner

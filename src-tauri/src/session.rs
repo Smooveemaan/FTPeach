@@ -375,6 +375,10 @@ pub struct ConnectingClients {
 }
 
 impl ConnectingClients {
+    pub fn count(&self) -> usize {
+        self.inner.lock().unwrap().len()
+    }
+
     pub fn start(&self, connection_id: &str) -> CancellationToken {
         let token = CancellationToken::new();
         self.inner

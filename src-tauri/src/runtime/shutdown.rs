@@ -1,13 +1,14 @@
 use crate::local_fs::open_with::OpenWithSession;
 use crate::local_fs::open_with::OpenWithWatchers;
+use crate::runtime::app_log;
 use crate::runtime::tray;
-use crate::runtime::window_bounds::BoundsPersister;
+use crate::runtime::window_bounds::{self, BoundsPersister};
 use crate::security::vault::Vault;
 use crate::session::{self, ConnectingClients, Sessions};
 use crate::store::Store;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(5);
@@ -136,9 +137,12 @@ pub async fn on_close_requested(app: AppHandle, window: WebviewWindow, store: St
     let active = tray::active_transfers(&app);
     let unsynced = app.state::<OpenWithWatchers>().unsynced_count();
     let action = close_action(cfg!(target_os = "macos"), close_to_tray, active, unsynced);
-    log::debug!(
-        "close: action={action:?}; closeToTray={close_to_tray}; active={active}; unsynced={unsynced}"
+    let win_state = window_bounds::describe_window_state(&window);
+    let msg = format!(
+        "close: action={action:?}; closeToTray={close_to_tray}; active={active}; unsynced={unsynced}; window=[{win_state}]"
     );
+    log::info!("{msg}");
+    app_log::record_event("lifecycle", &msg);
     match action {
         CloseAction::HideToTray => {
             tray::hide_to_tray(window);
@@ -178,6 +182,7 @@ pub fn quit(app: &AppHandle) {
 /// already asked.
 pub fn quit_now(app: &AppHandle) {
     log::debug!("shutdown: immediate quit requested");
+    app_log::record_event("lifecycle", "shutdown: immediate quit requested");
     match app.get_webview_window("main") {
         Some(window) => {
             if app.state::<ShutdownCoordinator>().begin() {
@@ -210,8 +215,12 @@ fn ask_window(app: &AppHandle) {
 
 pub async fn run(app: AppHandle, window: WebviewWindow) {
     log::debug!("shutdown: starting cleanup");
-    wind_down(app.clone(), window).await;
-    log::debug!("shutdown: requesting event-loop exit");
+    let (state_saved, completed, elapsed_ms) = wind_down_detailed(app.clone(), window).await;
+    let msg = format!(
+        "shutdown: finished; completed={completed}; state_saved={state_saved}; elapsed_ms={elapsed_ms}; requesting exit"
+    );
+    log::info!("{msg}");
+    app_log::record_event("lifecycle", &msg);
     app.exit(0);
     log::debug!("shutdown: event-loop exit queued");
 }
@@ -221,6 +230,18 @@ pub async fn run(app: AppHandle, window: WebviewWindow) {
 /// vault locked. Installing an update needs the same tidy state before it
 /// hands over to the installer.
 pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) -> bool {
+    let (state_saved, completed, elapsed_ms) = wind_down_detailed(app, window).await;
+    log::info!(
+        "shutdown: wind_down finished; completed={completed}; state_saved={state_saved}; elapsed_ms={elapsed_ms}"
+    );
+    state_saved
+}
+
+async fn wind_down_detailed<R: Runtime>(
+    app: AppHandle<R>,
+    window: WebviewWindow<R>,
+) -> (bool, bool, u128) {
+    let started = Instant::now();
     log::debug!("shutdown: flushing renderer state");
     let state_saved = flush_renderer(&app, SHUTDOWN_FLUSH_TIMEOUT).await;
     log::debug!("shutdown: renderer state flushed; saved={state_saved}");
@@ -247,11 +268,22 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
     watchers.stop_all();
     log::debug!("shutdown: file watchers stopped");
 
+    let persist_done = Arc::new(AtomicBool::new(false));
+    let disconnect_done = Arc::new(AtomicBool::new(false));
+    let open_with_done = Arc::new(AtomicBool::new(false));
+    let vault_done = Arc::new(AtomicBool::new(false));
+
+    let persist_flag = persist_done.clone();
+    let disconnect_flag = disconnect_done.clone();
+    let open_with_flag = open_with_done.clone();
+    let vault_flag = vault_done.clone();
+
     let cleanup = async move {
         let persister = BoundsPersister::new(store);
         let persist = async {
             log::debug!("shutdown: saving window bounds");
             persister.persist_now(&window).await;
+            persist_flag.store(true, Ordering::Release);
             log::debug!("shutdown: window bounds save finished");
         };
         let disconnect = async {
@@ -264,6 +296,7 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
                 });
             }
             while tasks.join_next().await.is_some() {}
+            disconnect_flag.store(true, Ordering::Release);
             log::debug!("shutdown: session disconnect finished");
         };
         // Copies with edits nobody uploaded move to the recovery folder; only
@@ -280,11 +313,13 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
                     log::warn!("kept the open-with session for recovery: {error}");
                 }
             }
+            open_with_flag.store(true, Ordering::Release);
             log::debug!("shutdown: edited-file recovery finished");
         };
         let lock_vault = async {
             log::debug!("shutdown: locking vault");
             vault.lock().await;
+            vault_flag.store(true, Ordering::Release);
             log::debug!("shutdown: vault locked");
         };
 
@@ -296,13 +331,37 @@ pub async fn wind_down<R: Runtime>(app: AppHandle<R>, window: WebviewWindow<R>) 
     let cleanup_finished = tokio::time::timeout(SHUTDOWN_TIMEOUT, cleanup)
         .await
         .is_ok();
-    log::debug!("shutdown: cleanup finished; completed={cleanup_finished}");
+    if !cleanup_finished {
+        let mut unfinished = Vec::new();
+        if !persist_done.load(Ordering::Acquire) {
+            unfinished.push("persist_bounds");
+        }
+        if !disconnect_done.load(Ordering::Acquire) {
+            unfinished.push("disconnect_sessions");
+        }
+        if !open_with_done.load(Ordering::Acquire) {
+            unfinished.push("open_with_recovery");
+        }
+        if !vault_done.load(Ordering::Acquire) {
+            unfinished.push("lock_vault");
+        }
+        let msg = format!(
+            "shutdown: cleanup timed out after {}ms; unfinished=[{}]",
+            SHUTDOWN_TIMEOUT.as_millis(),
+            unfinished.join(", ")
+        );
+        log::warn!("{msg}");
+        app_log::record_event("lifecycle", &msg);
+        app_log::dump_flight_recorder("shutdown-timeout");
+    } else {
+        log::debug!("shutdown: cleanup finished; completed=true");
+    }
     if let Some(emitter) = app.try_state::<crate::runtime::log_emitter::LogEmitter>() {
         log::debug!("shutdown: flushing protocol log");
         emitter.flush().await;
         log::debug!("shutdown: protocol log flush finished");
     }
-    state_saved
+    (state_saved, cleanup_finished, started.elapsed().as_millis())
 }
 
 async fn flush_renderer<R: Runtime>(app: &AppHandle<R>, deadline: Duration) -> bool {
@@ -341,7 +400,10 @@ async fn wait_for_flush(
             false
         }
         Err(_) => {
-            log::warn!("renderer state flush acknowledgement timed out after {deadline:?}");
+            let msg = format!("renderer state flush acknowledgement timed out after {deadline:?}");
+            log::warn!("{msg}");
+            app_log::record_event("lifecycle", &msg);
+            app_log::dump_flight_recorder("flush-renderer-timeout");
             false
         }
     }

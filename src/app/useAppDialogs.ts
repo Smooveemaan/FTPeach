@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 import type { MenuItem } from '../components/MenuItems.tsx';
 import type { FileEntry, PaneId } from '../shared/paneContracts.ts';
+import type { SettingsCategoryId } from '../features/settings/index.ts';
 import type { SiteForm } from '../features/sites/index.ts';
 import type { NameConflictDecision } from '../shared/paneContracts.ts';
 
@@ -33,7 +34,7 @@ export interface DriveMenu {
   items: MenuItem[];
 }
 export interface DialogState {
-  showSettings: boolean;
+  showSettings: boolean | SettingsCategoryId;
   showAbout: boolean;
   showSaveSite: SiteForm | false;
   showSiteManagerDialog: PaneId | true | false;

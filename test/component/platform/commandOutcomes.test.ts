@@ -331,6 +331,7 @@ function seen(value: unknown): unknown {
 function answer(target: Case, wire: Wire, authorize: Wire = resolve({ token: 'grant' })) {
   rawInvoke.mockImplementation(async (command) => {
     const reply = (next: Wire) => ('reject' in next ? Promise.reject(next.reject) : next.resolve);
+    if (command === 'plugin:log|log') return null;
     if (command === 'plugin:sensitive|authorize_sensitive') return reply(authorize);
     if (command === 'fs_is_executable') return target.command === 'fs_execute_path';
     const expected = target.sensitive ? `plugin:sensitive|${target.command}` : target.command;
@@ -471,6 +472,49 @@ test('only a failure nothing classified is logged, with its details', async () =
     [
       'sites_delete failed: invalid args `id` for command `sites_delete`',
       'invalid args `id` for command `sites_delete`',
+    ],
+  ]);
+});
+
+test('IPC diagnostics log errors and slow calls without args, and skip terminal commands', async () => {
+  const now = vi.spyOn(performance, 'now');
+  let clock = 100;
+  now.mockImplementation(() => clock);
+
+  rawInvoke.mockImplementation(async (command) => {
+    if (command === 'plugin:log|log') return null;
+    if (command === 'fs_list') {
+      clock += 650;
+      return { path: 'C:\\secret-dir', entries: [] };
+    }
+    if (command === 'session_delete') {
+      clock += 20;
+      return Promise.reject({
+        code: 'permissionDenied',
+        message: 'Denied for /private/secret.txt',
+      });
+    }
+    if (command === 'terminal_write') {
+      clock += 700;
+      return Promise.reject({ code: 'connectionLost', message: 'closed' });
+    }
+    return null;
+  });
+
+  await api.fsLocal.list('C:\\secret-dir');
+  await api.session.delete('c1', '/private/secret.txt', false);
+  await api.terminal.write('t1', 'sudo secret-pass');
+
+  const logCalls = rawInvoke.mock.calls.filter(([cmd]) => cmd === 'plugin:log|log');
+  expect(logCalls).toEqual([
+    ['plugin:log|log', { level: 2, message: 'cmd=fs_list dur_ms=650 ok=true', location: 'ipc' }],
+    [
+      'plugin:log|log',
+      {
+        level: 2,
+        message: 'cmd=session_delete errorCode=permissionDenied dur_ms=20 ok=false',
+        location: 'ipc',
+      },
     ],
   ]);
 });

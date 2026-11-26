@@ -182,6 +182,11 @@ impl FtpBackend {
                             data_stream.stream().read(&mut buf[..read_len]),
                         )
                         .await
+                        .inspect_err(|_| {
+                            log::debug!(
+                                "ftp: download stalled while reading at offset={transferred}"
+                            );
+                        })
                         .context("stalled while reading from server")?;
                         let n = read_result.context("reading from server")?;
                         if n == 0 {
@@ -210,6 +215,11 @@ impl FtpBackend {
                     file.flush().await.context("flushing local file")?;
                     tokio::time::timeout(TRANSFER_STALL_TIMEOUT, data_stream.settle_download(s))
                         .await
+                        .inspect_err(|_| {
+                            log::debug!(
+                                "ftp: download completion timed out at offset={transferred}"
+                            );
+                        })
                         .context("download completion timed out")??;
                     Ok(transferred)
                 })

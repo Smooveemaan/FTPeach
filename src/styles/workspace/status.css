@@ -19,6 +19,7 @@
   min-width: 0;
   white-space: nowrap;
   display: flex;
+  align-items: center;
   /* One spacing at every width, the bar's own gap: a tight bar shortens its
      texts (FIT in StatusBar.tsx) instead of squeezing the space between them. */
   gap: 12px;
@@ -124,21 +125,49 @@
   color: var(--accent-primary);
   text-decoration: underline;
 }
+
+.status-debug-indicator {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-faint);
+  font: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.status-debug-indicator:hover {
+  color: var(--text-primary);
+}
+.status-debug-indicator:focus-visible {
+  color: var(--text-primary);
+  outline: 1px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+.status-debug-sep {
+  margin-inline: -6px;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
 @container (max-width: 900px) {
   .status-bar .status-right { overflow: hidden; }
   .status-right > span { overflow: hidden; text-overflow: ellipsis; }
 }
 
 /* Reduced to its icon, sync browsing is as small as it gets: the right side
-   keeps it whole and the left side's status text gives way instead. */
-.status-bar:has(> .status-right > .sync-indicator[role='img']) > .status-left {
+   keeps it whole and the left side's status text gives way instead. The
+   icon-only debug indicator stays whole too. */
+.status-bar:has(> .status-right > :is(.sync-indicator[role='img'], .status-debug-indicator)) > .status-left {
   flex-shrink: 1;
 }
 .status-right:has(> .sync-indicator[role='img']) {
   flex-shrink: 0;
 }
-.status-right > .sync-indicator[role='img'] {
+.status-right > :is(.sync-indicator[role='img'], .status-debug-indicator, .status-debug-sep) {
   overflow: visible;
+  flex-shrink: 0;
 }
 
 :is(.status-text, .line-pulse).state-idle { color: var(--text-faint); }

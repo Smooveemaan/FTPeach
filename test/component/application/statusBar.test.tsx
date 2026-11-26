@@ -45,7 +45,11 @@ test('update actions download an available version and install only a downloaded
   expect(onInstall).toHaveBeenCalledOnce();
 });
 
-function barElement(narrow: boolean, notice: string) {
+function barElement(
+  narrow: boolean,
+  notice: string,
+  extra: { extendedLogging?: boolean; onOpenLoggingSettings?: () => void } = {},
+) {
   return (
     <StatusBar
       status={{} as never}
@@ -55,6 +59,8 @@ function barElement(narrow: boolean, notice: string) {
       leftSelectedCount={0}
       rightSelectedCount={0}
       syncBrowsing={false}
+      extendedLogging={extra.extendedLogging ?? false}
+      onOpenLoggingSettings={extra.onOpenLoggingSettings}
       connectionVisualState="idle"
       logLineCount={0}
       hasActiveTransfers={false}
@@ -133,4 +139,50 @@ test('quitPending separates its status label from the Cancel button with a bulle
   expect(sep?.textContent).toBe('·');
   fireEvent.click(screen.getByRole('button', { name: 'statusBar.cancelQuit' }));
   expect(onCancel).toHaveBeenCalledOnce();
+});
+
+test('extended diagnostic log indicator renders as a bug icon separated by a bullet and opens Logging settings', () => {
+  const onOpenLoggingSettings = vi.fn();
+  const view = render(barElement(false, '', { extendedLogging: false, onOpenLoggingSettings }));
+  expect(view.container.querySelector('.status-debug-indicator')).toBeNull();
+  expect(view.container.querySelector('.status-debug-sep')).toBeNull();
+
+  view.rerender(barElement(false, '', { extendedLogging: true, onOpenLoggingSettings }));
+  const button = screen.getByRole('button', { name: 'statusBar.debugLoggingTooltip' });
+  expect(button.getAttribute('data-tooltip')).toBe('statusBar.debugLoggingTooltip');
+  expect(button.textContent).toBe('');
+  expect(button.querySelector('svg')).not.toBeNull();
+  expect(view.container.querySelector('.status-debug-sep')?.textContent).toBe('·');
+  fireEvent.click(button);
+  expect(onOpenLoggingSettings).toHaveBeenCalledOnce();
+
+  // Hidden while a status notice owns the bar.
+  view.rerender(barElement(false, 'Imported', { extendedLogging: true, onOpenLoggingSettings }));
+  const statusText = screen.getByText('statusBar.status.disconnected');
+  fireEvent(statusText, new Event('webkitAnimationEnd', { bubbles: true }));
+  expect(view.container.querySelector('.status-debug-indicator')).toBeNull();
+  expect(view.container.querySelector('.status-debug-sep')).toBeNull();
+});
+
+test('extended diagnostic log bullet hides when no right-side counts or sync indicator follow it', () => {
+  const { container } = render(
+    <StatusBar
+      status={{} as never}
+      paneOrientation="horizontal"
+      leftCount={3}
+      rightCount={4}
+      leftSelectedCount={0}
+      rightSelectedCount={0}
+      syncBrowsing={false}
+      extendedLogging={true}
+      connectionVisualState="transferring"
+      logLineCount={0}
+      hasActiveTransfers={true}
+      activeTransfersCount={1}
+      hasPausedTransfers={false}
+      narrow={true}
+    />,
+  );
+  expect(container.querySelector('.status-debug-indicator')).not.toBeNull();
+  expect(container.querySelector('.status-debug-sep')).toBeNull();
 });

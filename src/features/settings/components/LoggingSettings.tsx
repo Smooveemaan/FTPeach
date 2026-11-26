@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { handler, reportRejection } from '../../../shared/asyncFailure.ts';
 import Icon from '../../../components/Icon.tsx';
 
+const HOUR_MS = 60 * 60 * 1000;
+
 interface LoggingSettingsProps {
   logEnabledValue: boolean;
   setLogEnabledValue: (value: boolean) => void;
@@ -12,6 +14,7 @@ interface LoggingSettingsProps {
   setLogToFileValue: (value: boolean) => void;
   extendedLoggingValue: boolean;
   setExtendedLoggingValue: (value: boolean) => void;
+  extendedLoggingUntil: number | null;
   /** Empty is FTPeach's own logs folder. */
   logFolderValue: string;
   setLogFolderValue: (value: string) => void;
@@ -29,6 +32,7 @@ export default function LoggingSettings({
   setLogToFileValue,
   extendedLoggingValue,
   setExtendedLoggingValue,
+  extendedLoggingUntil,
   logFolderValue,
   setLogFolderValue,
   selectDirectory,
@@ -38,6 +42,16 @@ export default function LoggingSettings({
   const { t } = useTranslation();
   const [exportingDiagnostics, setExportingDiagnostics] = useState(false);
   const [diagnosticsExportFailed, setDiagnosticsExportFailed] = useState(false);
+  const [openedAt] = useState(() => Date.now());
+
+  const remainingLabel = (() => {
+    if (!extendedLoggingValue || extendedLoggingUntil === null) return null;
+    const remainingMs = extendedLoggingUntil - openedAt;
+    if (remainingMs <= 0) return null;
+    if (remainingMs < HOUR_MS) return t('settings.extendedLoggingRemainingUnderHour');
+    const hours = Math.max(1, Math.min(24, Math.round(remainingMs / HOUR_MS)));
+    return t('settings.extendedLoggingRemainingHours', { hours });
+  })();
 
   const handleExportDiagnostics = async () => {
     setExportingDiagnostics(true);
@@ -98,6 +112,7 @@ export default function LoggingSettings({
         </label>
         <p id="extended-logging-hint" className="settings-hint">
           {t('settings.extendedLoggingHint')}
+          {remainingLabel ? ` ${remainingLabel}` : ''}
         </p>
       </div>
       <div className="settings-option-group">

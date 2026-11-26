@@ -1,3 +1,4 @@
+use crate::runtime::app_log;
 use crate::store::{JsonMap, Store};
 use serde_json::Value;
 use std::sync::Arc;
@@ -8,6 +9,49 @@ use tauri::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize, Webvie
 const MIN_WIDTH: f64 = 480.0;
 const MIN_HEIGHT: f64 = 520.0;
 const DEBOUNCE_MS: u64 = 400;
+
+/// Concise single-line summary of a window's geometry, visibility flags, and monitor.
+pub(crate) fn describe_window_state<R: tauri::Runtime>(window: &WebviewWindow<R>) -> String {
+    let visible = window
+        .is_visible()
+        .map_or_else(|_| "err".into(), |v| v.to_string());
+    let minimized = window
+        .is_minimized()
+        .map_or_else(|_| "err".into(), |v| v.to_string());
+    let maximized = window
+        .is_maximized()
+        .map_or_else(|_| "err".into(), |v| v.to_string());
+    let pos = window
+        .outer_position()
+        .map_or_else(|_| "err".into(), |p| format!("{},{}", p.x, p.y));
+    let inner = window
+        .inner_size()
+        .map_or_else(|_| "err".into(), |s| format!("{}x{}", s.width, s.height));
+    let sf = window
+        .scale_factor()
+        .map_or_else(|_| "err".into(), |s| format!("{s:.2}"));
+    let monitor = match window.current_monitor() {
+        Ok(Some(m)) => {
+            let size = m.size();
+            let wa = m.work_area();
+            format!(
+                "{}x{}(wa={}x{}+{},{})@{:.2}",
+                size.width,
+                size.height,
+                wa.size.width,
+                wa.size.height,
+                wa.position.x,
+                wa.position.y,
+                m.scale_factor()
+            )
+        }
+        Ok(None) => "none".into(),
+        Err(_) => "err".into(),
+    };
+    format!(
+        "inner={inner} pos={pos} sf={sf} maximized={maximized} minimized={minimized} visible={visible} monitor={monitor}"
+    )
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Bounds {
@@ -154,7 +198,11 @@ pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
     // Test runs keep the saved size; their helper decides whether to show on the native desktop.
     #[cfg(feature = "smoke-test")]
     if super::e2e_browser::active() {
-        return super::e2e_browser::show_in_background(&window);
+        super::e2e_browser::show_in_background(&window);
+        let state = describe_window_state(&window);
+        log::debug!("window: applied saved bounds (smoke); {state}");
+        app_log::record_event("window", &format!("applied saved bounds; {state}"));
+        return;
     }
     if let Some(Bounds {
         x: Some(x),
@@ -168,6 +216,9 @@ pub async fn apply_saved_and_show(window: WebviewWindow, store: Store) {
         let _ = window.maximize();
     }
     let _ = window.show();
+    let state = describe_window_state(&window);
+    log::debug!("window: applied saved bounds; {state}");
+    app_log::record_event("window", &format!("applied saved bounds; {state}"));
 }
 
 fn build_persist_patch(
@@ -237,6 +288,9 @@ impl BoundsPersister {
                 _ => None,
             }
         };
+        let state = describe_window_state(window);
+        log::debug!("window: bounds settled; {state}");
+        app_log::record_event("window", &format!("bounds settled; {state}"));
         if let Some(patch) = build_persist_patch(minimized, maximized, geometry) {
             let _ = self.store.set_settings(patch).await;
         }

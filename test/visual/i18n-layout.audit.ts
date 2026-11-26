@@ -669,6 +669,16 @@ const SCREENS: Record<
     search: 'update=downloaded',
     run: ({ snap }) => snap('update/downloaded'),
   },
+  'debug-logging': {
+    search: 'extendedLogging=1',
+    run: async ({ page, snap }) => {
+      await expect(page.locator('.status-debug-indicator')).toBeVisible();
+      await snap('debug-logging/status-bar');
+      await page.locator('.status-debug-indicator').click();
+      await expect(dialog(page)).toBeVisible();
+      await snap('debug-logging/settings');
+    },
+  },
   'quit-requested': {
     search: 'tray=quitRequested',
     run: async ({ page, snap }) => {

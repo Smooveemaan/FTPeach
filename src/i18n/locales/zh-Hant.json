@@ -607,7 +607,9 @@
     "logToFile": "將日誌寫入檔案",
     "logToFileHint": "即使日誌面板已關閉，也會將日誌附加到日誌資料夾中的每日檔案。檔案保留 14 天，總計最多 50 MB。",
     "extendedLogging": "寫入詳細診斷日誌",
-    "extendedLoggingHint": "在應用程式日誌中記錄應用程式啟動、視窗操作及結束階段。請在嘗試重現問題前啟用此選項。",
+    "extendedLoggingHint": "在應用程式日誌中記錄詳細的視窗、通訊協定與傳輸診斷資訊。24 小時後自動關閉，磁碟空間不超過 3 MB。",
+    "extendedLoggingRemainingHours": "約 {{hours}} 小時後自動關閉。",
+    "extendedLoggingRemainingUnderHour": "不到 1 小時後自動關閉。",
     "logFolderLabel": "日誌資料夾",
     "logFolderDefault": "預設",
     "chooseLogFolder": "選擇日誌資料夾…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "正在結束…",
     "upToDate": "已是最新版本",
     "cancelQuitLong": "取消結束",
-    "listSeparator": "、"
+    "listSeparator": "、",
+    "debugLoggingTooltip": "詳細診斷日誌已啟用（按一下開啟日誌記錄設定）"
   },
   "viewToolbar": {
     "toggleLeftPane": "顯示/隱藏左窗格",

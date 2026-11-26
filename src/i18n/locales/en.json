@@ -607,7 +607,9 @@
     "logToFile": "Write log to file",
     "logToFileHint": "Appends the log to a daily file in the log folder, even while the log panel is closed. Files are kept for 14 days, up to 50 MB in total.",
     "extendedLogging": "Write extended diagnostic log",
-    "extendedLoggingHint": "Records application startup, window actions and shutdown stages in the application log. Enable this before reproducing a problem.",
+    "extendedLoggingHint": "Records detailed window, protocol and transfer diagnostics in the application log. Turns off automatically after 24 hours and stays within 3 MB on disk.",
+    "extendedLoggingRemainingHours": "Turns off automatically in ~{{hours}} h.",
+    "extendedLoggingRemainingUnderHour": "Turns off automatically in < 1 h.",
     "logFolderLabel": "Log folder",
     "logFolderDefault": "Default",
     "chooseLogFolder": "Choose log folder…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Quitting…",
     "upToDate": "Up to date",
     "cancelQuitLong": "Cancel quit",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Extended diagnostic log is active (click to open Logging settings)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Show/hide left pane",

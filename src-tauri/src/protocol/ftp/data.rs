@@ -15,7 +15,10 @@ pub(super) async fn read_list_data(
     loop {
         let n = tokio::time::timeout(idle, reader.read(&mut buf))
             .await
-            .map_err(|_| crate::protocol::fail(ErrorCode::TimedOut, "FTP LIST data stalled"))??;
+            .map_err(|_| {
+                log::debug!("ftp: LIST data stalled after {}s", idle.as_secs());
+                crate::protocol::fail(ErrorCode::TimedOut, "FTP LIST data stalled")
+            })??;
         if n == 0 {
             return Ok(raw);
         }
@@ -54,6 +57,7 @@ impl UploadData {
     pub(super) async fn finish(mut self, control: &mut AsyncRustlsFtpStream) -> BackendResult<()> {
         let shut = tokio::time::timeout(TRANSFER_STALL_TIMEOUT, self.stream().shutdown())
             .await
+            .inspect_err(|_| log::debug!("ftp: upload shutdown stalled"))
             .context("upload shutdown timed out")
             .and_then(|shut| shut.context("closing the upload data connection"));
         if let Err(error) = shut {
@@ -70,6 +74,7 @@ impl UploadData {
         };
         tokio::time::timeout(TRANSFER_STALL_TIMEOUT, verdict)
             .await
+            .inspect_err(|_| log::debug!("ftp: upload completion verdict stalled"))
             .context("upload completion timed out")??;
         // The server has the whole file, so closing takes nothing back now.
         self.0 = None;
@@ -304,6 +309,12 @@ impl DataChannel {
                 .context("FTP data TLS handshake timed out")?,
         }
         .context("TLS handshake failed on the FTP data connection")?;
+        let (_, conn) = tls.get_ref();
+        log::debug!(
+            "ftps: data TLS negotiated; version={:?}; cipher={:?}",
+            conn.protocol_version(),
+            conn.negotiated_cipher_suite().map(|suite| suite.suite())
+        );
         let mut tls = tls;
         if upload {
             self.tickets.replenish(&mut tls).await;
@@ -325,7 +336,11 @@ impl DataChannel {
         loop {
             attempts_left -= 1;
             match self.ask_passive_port(control).await {
-                Err(error) if attempts_left > 0 && passive_port_busy(&error) => {}
+                Err(error) if attempts_left > 0 && passive_port_busy(&error) => {
+                    log::debug!(
+                        "ftp: passive port busy (425); retrying (attempts_left={attempts_left})"
+                    );
+                }
                 answer => return answer,
             }
         }
@@ -347,6 +362,7 @@ impl DataChannel {
                         return Err(error);
                     }
                     // Some servers only speak EPSV, which works over IPv4 too.
+                    log::debug!("ftp: PASV refused, switching to EPSV");
                     self.extended.store(true, Ordering::SeqCst);
                 }
             }

@@ -66,6 +66,7 @@ type SettingsValues = Omit<
   | 'updateStatus'
   | 'checkForUpdates'
   | 'onExportDiagnostics'
+  | 'initialCategory'
   | 'narrow'
   | 'onPreview'
   | 'onSave'
@@ -215,6 +216,9 @@ export default function AppDialogs({ model }: AppDialogsProps) {
           updateStatus={updater.status}
           checkForUpdates={updater.check}
           onExportDiagnostics={settings.exportDiagnostics}
+          initialCategory={
+            typeof dialogs.showSettings === 'string' ? dialogs.showSettings : undefined
+          }
           narrow={model.windowNarrow}
           onPreview={settings.preview}
           onSave={settings.save}

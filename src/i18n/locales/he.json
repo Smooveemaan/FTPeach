@@ -610,7 +610,9 @@
     "logToFile": "כתיבת יומן לקובץ",
     "logToFileHint": "מוסיף את היומן לקובץ יומי בתיקיית היומנים, גם כשלוח היומן סגור. הקבצים נשמרים 14 יום, עד 50 MB בסך הכול.",
     "extendedLogging": "כתוב יומן אבחון מורחב",
-    "extendedLoggingHint": "מתעד את הפעלת האפליקציה, פעולות החלון ושלבי הסגירה ביומן האפליקציה. הפעל אפשרות זו לפני ניסיון לשחזר בעיה.",
+    "extendedLoggingHint": "מתעד אבחון מפורט של חלון, פרוטוקול והעברות ביומן האפליקציה. נכבה אוטומטית לאחר 24 שעות ונשאר במסגרת 3 MB בדיסק.",
+    "extendedLoggingRemainingHours": "ייכבה אוטומטית בעוד ~{{hours}} שע׳.",
+    "extendedLoggingRemainingUnderHour": "ייכבה אוטומטית בעוד פחות משעה.",
     "logFolderLabel": "תיקיית יומנים",
     "logFolderDefault": "ברירת מחדל",
     "chooseLogFolder": "בחר תיקיית יומנים…",
@@ -1018,7 +1020,8 @@
     "quitPendingShort": "יציאה…",
     "upToDate": "מעודכן",
     "cancelQuitLong": "בטל את היציאה",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "יומן אבחון מורחב פעיל (לחץ לפתיחת הגדרות הרישום)"
   },
   "viewToolbar": {
     "toggleLeftPane": "הצג/הסתר את החלונית השמאלית",

@@ -74,6 +74,10 @@ impl SftpBackend {
                 } else {
                     None
                 };
+                log::debug!(
+                    "sftp: authenticating with publickey; algorithm={}; rsa_hash={hash:?}",
+                    key.algorithm()
+                );
                 let auth = session
                     .authenticate_publickey(
                         user.as_str(),
@@ -88,6 +92,7 @@ impl SftpBackend {
                     ));
                 }
             } else {
+                log::debug!("sftp: authenticating with password");
                 let auth = session
                     .authenticate_password(user.as_str(), password.expose())
                     .await
@@ -99,6 +104,9 @@ impl SftpBackend {
                     russh::client::AuthResult::Failure {
                         remaining_methods, ..
                     } if remaining_methods.contains(&russh::MethodKind::KeyboardInteractive) => {
+                        log::debug!(
+                            "sftp: password auth rejected, falling back to keyboard-interactive"
+                        );
                         keyboard_interactive(&mut session, &user, password.expose())
                             .await
                             .context("keyboard-interactive auth failed")?
@@ -134,6 +142,10 @@ impl SftpBackend {
                 .extensions
                 .get(POSIX_RENAME)
                 .is_some_and(|revision| revision == "1");
+            log::debug!(
+                "sftp: subsystem ready; version={}; posix_rename={posix_rename}",
+                version.version
+            );
 
             Ok::<_, anyhow::Error>((session, raw, posix_rename))
         };

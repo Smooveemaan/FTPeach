@@ -46,6 +46,7 @@ export type SettingsDraftValues = Pick<
   | 'logShowTimestamps'
   | 'logToFile'
   | 'extendedLogging'
+  | 'extendedLoggingUntil'
   | 'logFolder'
   | 'vaultAutoLockMinutes'
   | 'showSecurityConfirmations'
@@ -131,6 +132,20 @@ type DraftAction =
       };
     }[keyof SettingsDraft];
 
+export const EXTENDED_LOGGING_TTL_MS = 24 * 60 * 60 * 1000;
+
+function nextExtendedLoggingUntil(
+  changedExtendedLogging: unknown,
+  extendedLoggingValue: boolean,
+  previousUntil: number | null,
+): number | null | undefined {
+  if (changedExtendedLogging === true) return Date.now() + EXTENDED_LOGGING_TTL_MS;
+  if (changedExtendedLogging === false) return null;
+  if (extendedLoggingValue && previousUntil !== null && previousUntil <= Date.now()) {
+    return Date.now() + EXTENDED_LOGGING_TTL_MS;
+  }
+  return undefined;
+}
 const MIN_TIMEOUT_SEC = 5;
 export const MAX_TIMEOUT_SEC = 120;
 
@@ -287,6 +302,7 @@ type SettingsDraftSetters = {
 };
 
 export interface SettingsDraftModel extends SettingsDraft, SettingsDraftSetters {
+  extendedLoggingUntil: number | null;
   saving: boolean;
   saveError: string | undefined;
   hasUnsavedChanges: boolean;
@@ -405,10 +421,23 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     try {
       const patch = buildPatch(draft);
       const changes = changedSettings(patch, baseline.patch);
-      const result = await onSave({
+      const savePatch: SettingsPatch = {
         ...changes,
         ...proxyPasswordPatch,
-      });
+      };
+      const previousUntil =
+        typeof baseline.rawPatch.extendedLoggingUntil === 'number'
+          ? baseline.rawPatch.extendedLoggingUntil
+          : null;
+      const untilUpdate = nextExtendedLoggingUntil(
+        changes.extendedLogging,
+        draft.extendedLoggingValue,
+        previousUntil,
+      );
+      if (untilUpdate !== undefined) {
+        savePatch.extendedLoggingUntil = untilUpdate;
+      }
+      const result = await onSave(savePatch);
       if (result && typeof result === 'object' && 'ok' in result && result.ok === false) {
         if ('errorCode' in result && result.errorCode === 'cancelled') return;
         if ('errorCode' in result && result.errorCode === 'vaultLocked') {
@@ -421,7 +450,7 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
           { code: 'errorCode' in result ? result.errorCode : undefined },
         );
       }
-      const nextRawPatch = { ...baseline.rawPatch, ...changes };
+      const nextRawPatch = { ...baseline.rawPatch, ...savePatch };
       const savedDraft = createDraft({
         ...baseline.rawPatch,
         ...patch,
@@ -514,6 +543,10 @@ export function useSettingsDraft(options: UseSettingsDraftOptions): SettingsDraf
     setShowSecurityConfirmationsValue: setter('showSecurityConfirmationsValue'),
     setStrictHostKeyCheckValue: setter('strictHostKeyCheckValue'),
     changeStrictHostKeyCheckValue,
+    extendedLoggingUntil:
+      typeof baseline.rawPatch.extendedLoggingUntil === 'number'
+        ? baseline.rawPatch.extendedLoggingUntil
+        : null,
     saving,
     saveError,
     hasUnsavedChanges,

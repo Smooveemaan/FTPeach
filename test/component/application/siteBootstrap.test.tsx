@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
 import { useAppBootstrap } from '../../../src/app/useAppBootstrap.ts';
+import { readyUnsubscribe } from '../../../src/platform/ipcContracts.ts';
 import type { ManagedSite } from '../../../src/shared/siteContracts.ts';
 
 type BootstrapOptions = Parameters<typeof useAppBootstrap>[0];
@@ -33,6 +34,7 @@ describe('saved sites refresh', () => {
       confirmSecurityChange: vi.fn(async () => ({ ok: true })),
       releaseSecurityChange: vi.fn(),
       revealProxyPassword: vi.fn(async () => null),
+      onExtendedLoggingExpired: vi.fn(() => readyUnsubscribe(() => {})),
     };
     const { result } = renderHook(() =>
       useAppBootstrap({ applySettings: vi.fn(), settingsApi, sitesApi }),

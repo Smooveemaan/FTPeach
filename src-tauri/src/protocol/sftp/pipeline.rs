@@ -91,6 +91,9 @@ pub(super) async fn read_pipelined(
                     .await;
                 tokio::time::timeout(TRANSFER_STALL_TIMEOUT, writer.write_all(&bytes))
                     .await
+                    .inspect_err(|_| {
+                        log::debug!("sftp: download destination stalled at offset={offset}");
+                    })
                     .context("SFTP download destination stalled")??;
                 offset = next;
                 progress(ProgressInfo::Progress {
@@ -128,6 +131,7 @@ pub(super) async fn write_pipelined(
             match tokio::time::timeout(TRANSFER_STALL_TIMEOUT, reader.read(&mut buf[..capacity]))
                 .await
                 .unwrap_or_else(|_| {
+                    log::debug!("sftp: upload source stalled at offset={offset}");
                     Err(std::io::Error::new(
                         std::io::ErrorKind::TimedOut,
                         "SFTP upload source stalled",

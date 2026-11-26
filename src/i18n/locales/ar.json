@@ -619,7 +619,9 @@
     "logToFile": "كتابة السجل في ملف",
     "logToFileHint": "يضيف السجل إلى ملف يومي في مجلد السجلات، حتى عندما تكون لوحة السجل مغلقة. تُحفظ الملفات لمدة 14 يومًا، وبحد أقصى 50 MB إجمالًا.",
     "extendedLogging": "كتابة سجل تشخيصي موسّع",
-    "extendedLoggingHint": "يسجّل بدء تشغيل التطبيق وإجراءات النافذة ومراحل الإغلاق في سجل التطبيق. فعّل هذا الخيار قبل إعادة إحداث المشكلة.",
+    "extendedLoggingHint": "يسجّل تفاصيل تشخيصية للنافذة والبروتوكول وعمليات النقل في سجل التطبيق. يتوقف تلقائيًا بعد 24 ساعة ويبقى ضمن حد 3 MB على القرص.",
+    "extendedLoggingRemainingHours": "يتوقف تلقائيًا خلال ~{{hours}} س.",
+    "extendedLoggingRemainingUnderHour": "يتوقف تلقائيًا خلال أقل من ساعة.",
     "logFolderLabel": "مجلد السجلات",
     "logFolderDefault": "المجلد الافتراضي",
     "chooseLogFolder": "اختيار مجلد السجلات…",
@@ -1036,7 +1038,8 @@
     "quitPendingShort": "جارٍ الخروج…",
     "upToDate": "محدَّث",
     "cancelQuitLong": "إلغاء الخروج",
-    "listSeparator": "، "
+    "listSeparator": "، ",
+    "debugLoggingTooltip": "سجل التشخيص الموسّع نشط (انقر لفتح إعدادات التسجيل)"
   },
   "viewToolbar": {
     "toggleLeftPane": "إظهار/إخفاء الجزء الأيسر",

@@ -5,8 +5,15 @@ import {
   isCommandRecord,
   isStringArray,
   normalizeCommandError,
+  readyUnsubscribe,
 } from '../ipcContracts.ts';
-import type { CommandErrorCode, CommandResult, InvokeFn } from '../ipcContracts.ts';
+import type {
+  CommandErrorCode,
+  CommandResult,
+  EventRegistrar,
+  EventSubscription,
+  InvokeFn,
+} from '../ipcContracts.ts';
 import { reportAsyncFailure } from '../../shared/asyncFailure.ts';
 import { isStorageWarnings, storageWarningText } from '../../shared/errorMessages.ts';
 
@@ -133,7 +140,11 @@ function isSettingsSetResult(value: unknown): value is SettingsSetResult {
   );
 }
 
-export function createSettingsApi(invoke: InvokeFn, authorize?: AuthorizeSensitive) {
+export function createSettingsApi(
+  invoke: InvokeFn,
+  authorize?: AuthorizeSensitive,
+  onEvent?: EventRegistrar,
+) {
   /**
    * The settings dialog asks for the confirmation at the switch the user
    * flips, not when they press Save, so the grant it comes back with waits
@@ -240,5 +251,8 @@ export function createSettingsApi(invoke: InvokeFn, authorize?: AuthorizeSensiti
         (value): value is string | null => value === null || typeof value === 'string',
         (raw) => commandFailure('settings_reveal_proxy_password', raw),
       ),
+    onExtendedLoggingExpired: onEvent
+      ? onEvent<unknown>('settings:extended-logging-expired', (_value): _value is unknown => true)
+      : ((() => readyUnsubscribe(() => {})) as EventSubscription<unknown>),
   };
 }

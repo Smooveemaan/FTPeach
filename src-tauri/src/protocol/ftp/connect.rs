@@ -231,6 +231,10 @@ impl FtpBackend {
         self.logger
             .event("connected", serde_json::json!({}), LogKind::Response);
         self.mlsd = feat_offers_mlsd(&feat);
+        log::debug!(
+            "ftp: connected; secure={secure}; active={active_mode}; listing={}",
+            if self.mlsd { "MLSD" } else { "LIST" }
+        );
         self.data = Some(data);
         *self.stream.lock().await = Some(stream);
         self.connected.store(true, Ordering::SeqCst);

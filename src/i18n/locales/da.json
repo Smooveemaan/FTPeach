@@ -607,7 +607,9 @@
     "logToFile": "Skriv log til fil",
     "logToFileHint": "Føjer loggen til en daglig fil i logmappen, også når logpanelet er lukket. Filerne gemmes i 14 dage og fylder højst 50 MB i alt.",
     "extendedLogging": "Skriv udvidet diagnosticeringslog",
-    "extendedLoggingHint": "Registrerer appens opstart, vindueshandlinger og afslutningsfaser i appens log. Aktivér dette, før du forsøger at genskabe et problem.",
+    "extendedLoggingHint": "Registrerer detaljeret diagnostik for vindue, protokol og overførsler i apploggen. Slår automatisk fra efter 24 timer og fylder højst 3 MB på disken.",
+    "extendedLoggingRemainingHours": "Slår automatisk fra om ~{{hours}} t.",
+    "extendedLoggingRemainingUnderHour": "Slår automatisk fra om < 1 t.",
     "logFolderLabel": "Logmappe",
     "logFolderDefault": "Standard",
     "chooseLogFolder": "Vælg logmappe…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Afslutter…",
     "upToDate": "Opdateret",
     "cancelQuitLong": "Annuller afslutning",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "Udvidet diagnosticeringslog er aktiv (klik for at åbne indstillinger for Logføring)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Vis/skjul venstre rude",

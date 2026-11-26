@@ -228,10 +228,19 @@ impl TransferPool {
                     // ask them out and try once more before giving up.
                     if failure.code == ErrorCode::ResourceLimit && !asked_idle_out {
                         asked_idle_out = true;
+                        log::debug!(
+                            "transfer_pool: worker login hit {:?}; asking idle pools to log out and retrying",
+                            failure.code
+                        );
                         IDLE_WANTED.notify_waiters();
                         tokio::time::sleep(IDLE_LOGOUT_WAIT).await;
                         continue;
                     }
+                    log::debug!(
+                        "transfer_pool: worker login failed with {:?}; backing off {}s",
+                        failure.code,
+                        GROWTH_RETRY_DELAY.as_secs()
+                    );
                     let mut state = self.state.lock().unwrap();
                     state.retry_growth_after =
                         Some(tokio::time::Instant::now() + GROWTH_RETRY_DELAY);

@@ -12,6 +12,7 @@ use tauri::State;
 #[tauri::command]
 pub async fn settings_get(store: State<'_, Store>) -> CommandResult<AppSettings> {
     let mut settings = strip_proxy_secret(store.get_settings().await);
+    crate::runtime::app_log::normalize_expired_in_snapshot(&mut settings);
     settings.insert(
         "storageWarnings".into(),
         serde_json::json!(store.storage_warnings()),
@@ -75,7 +76,7 @@ pub async fn settings_set(
         *folder = crate::local_fs::portable::stored_path(folder, crate::local_fs::portable::root());
     }
     let next = store.set_settings_with_vault(patch, &vault).await?;
-    crate::runtime::settings_apply::apply(&next, &store, &log_emitter);
+    crate::runtime::settings_apply::apply(&next, &store, &log_emitter, Some(&app));
     crate::runtime::tray::apply_menu_bar_setting(&app, &next);
     Ok(AppSettings(strip_proxy_secret(next)))
 }

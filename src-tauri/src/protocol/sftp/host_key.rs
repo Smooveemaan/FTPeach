@@ -73,6 +73,11 @@ impl client::Handler for TofuHandler {
             .context("pinning host key to known_hosts.json")?
         {
             HostKeyPinOutcome::Pinned | HostKeyPinOutcome::Matched => {
+                log::debug!(
+                    "sftp: host key accepted; algorithm={}; port={}",
+                    server_public_key.public_key().algorithm(),
+                    self.port
+                );
                 *self.fingerprint.lock().unwrap() = Some(fingerprint);
                 Ok(true)
             }

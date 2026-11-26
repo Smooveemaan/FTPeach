@@ -59,6 +59,32 @@ import { flushShutdownState } from './shutdownPersistence.ts';
 import { hostPlatform } from './os.ts';
 import './persistSetting.ts';
 
+const SLOW_IPC_THRESHOLD_MS = 500;
+// tauri-plugin-log Debug level.
+const IPC_DEBUG_LEVEL = 2;
+
+function reportIpcDiagnostic(command: string, durMs: number, errorCode?: string): void {
+  // Never log log-plugin calls or interactive SSH terminal commands.
+  if (command.startsWith('plugin:log') || command.startsWith('terminal_')) return;
+  if (errorCode === undefined && durMs <= SLOW_IPC_THRESHOLD_MS) return;
+  const rounded = Math.max(0, Math.round(durMs));
+  const message =
+    errorCode !== undefined
+      ? `cmd=${command} errorCode=${errorCode} dur_ms=${rounded} ok=false`
+      : `cmd=${command} dur_ms=${rounded} ok=true`;
+  try {
+    void Promise.resolve(
+      rawInvoke('plugin:log|log', {
+        level: IPC_DEBUG_LEVEL,
+        message,
+        location: 'ipc',
+      }),
+    ).catch(() => {});
+  } catch {
+    // Diagnostic reporting must never disrupt command execution.
+  }
+}
+
 interface VaultStatus {
   configured: boolean;
   locked: boolean;
@@ -155,6 +181,7 @@ async function authorizeSensitive(operation: string, target: string): Promise<st
 }
 
 async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<InvokeResult<T>> {
+  let startedAt = performance.now();
   try {
     const sensitiveTarget = (() => {
       switch (command) {
@@ -222,11 +249,21 @@ async function invoke<T = unknown>(command: string, args?: InvokeArgs): Promise<
         typeof args?.authorizationToken === 'string'
           ? args.authorizationToken
           : await authorizeSensitive(command, sensitiveTarget);
-      return await rawInvoke<T>(`plugin:sensitive|${command}`, { ...args, authorizationToken });
+      // Exclude interactive confirmation wait time from command duration.
+      startedAt = performance.now();
+      const value = await rawInvoke<T>(`plugin:sensitive|${command}`, {
+        ...args,
+        authorizationToken,
+      });
+      reportIpcDiagnostic(command, performance.now() - startedAt);
+      return value;
     }
-    return await rawInvoke<T>(command, args);
+    const value = await rawInvoke<T>(command, args);
+    reportIpcDiagnostic(command, performance.now() - startedAt);
+    return value;
   } catch (rawError) {
     const error = normalizeCommandError(rawError);
+    reportIpcDiagnostic(command, performance.now() - startedAt, error.code);
     // A failure with a code is an answer the caller shows where it happened: a
     // wrong password, a missing file, a declined confirmation. Only one nothing
     // classified is worth a line in the application log, with the detail that
@@ -291,7 +328,7 @@ export const tauriApi: Window['api'] = {
   sites: createSitesApi(invoke),
   tabs: createTabsApi(invoke),
   terminal: createTerminalApi(invoke, () => new Channel<TerminalEvent>()),
-  settings: createSettingsApi(invoke, authorizeSensitive),
+  settings: createSettingsApi(invoke, authorizeSensitive, onEvent),
   proxy: createProxyApi(invoke),
   updater: createUpdaterApi(invoke, onEvent),
   openWith: {

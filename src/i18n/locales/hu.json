@@ -607,7 +607,9 @@
     "logToFile": "Napló írása fájlba",
     "logToFileHint": "A naplót napi fájlokba írja a naplómappában, akkor is, ha a naplópanel zárva van. A fájlokat 14 napig őrzi meg, összesen legfeljebb 50 MB-ig.",
     "extendedLogging": "Részletes diagnosztikai napló írása",
-    "extendedLoggingHint": "Rögzíti az alkalmazás indítását, az ablakműveleteket és a leállítás szakaszait az alkalmazás naplójában. Kapcsolja be ezt a lehetőséget, mielőtt megpróbálja újra előidézni a problémát.",
+    "extendedLoggingHint": "Részletes ablak-, protokoll- és átviteli diagnosztikát rögzít az alkalmazás naplójában. 24 óra elteltével automatikusan kikapcsol, és legfeljebb 3 MB helyet foglal a lemezen.",
+    "extendedLoggingRemainingHours": "Automatikusan kikapcsol ~{{hours}} óra múlva.",
+    "extendedLoggingRemainingUnderHour": "Automatikusan kikapcsol < 1 óra múlva.",
     "logFolderLabel": "Naplómappa",
     "logFolderDefault": "Alapértelmezett",
     "chooseLogFolder": "Naplómappa kiválasztása…",
@@ -1012,7 +1014,8 @@
     "quitPendingShort": "Kilépés…",
     "upToDate": "Naprakész",
     "cancelQuitLong": "Kilépés megszakítása",
-    "listSeparator": ", "
+    "listSeparator": ", ",
+    "debugLoggingTooltip": "A részletes diagnosztikai napló aktív (kattintson a Naplózás beállításainak megnyitásához)"
   },
   "viewToolbar": {
     "toggleLeftPane": "Bal oldali panel megjelenítése/elrejtése",

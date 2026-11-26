@@ -1,5 +1,6 @@
 //! Keep Windows WebView rasterization integral while preserving the requested UI size.
 
+use crate::runtime::app_log;
 use anyhow::Result;
 use std::sync::Mutex;
 use tauri::{Manager, WebviewWindow};
@@ -97,7 +98,13 @@ fn fit_min_size(window: &WebviewWindow) -> Result<()> {
     // floating window. Defer while maximized, minimized, or fullscreen and
     // skip no-op updates.
     if !window_accepts_min_size(window)? {
-        scale_state.defer_min_size();
+        if !scale_state.has_pending_min_size() {
+            scale_state.defer_min_size();
+            log::debug!(
+                "window_scale: deferred min_size update while maximized/minimized/fullscreen"
+            );
+            app_log::record_event("window", "min_size update deferred");
+        }
         return Ok(());
     }
     let work = match window.current_monitor().map_err(scale_error)? {
@@ -110,13 +117,17 @@ fn fit_min_size(window: &WebviewWindow) -> Result<()> {
         }
         None => (f64::INFINITY, f64::INFINITY),
     };
-    let desired = scaled_min_size(scale_state.get(), work);
+    let scale = scale_state.get();
+    let desired = scaled_min_size(scale, work);
     let (width, height) = desired;
     if scale_state.needs_min_size_update(desired) {
         window
             .set_min_size(Some(tauri::LogicalSize::new(width, height)))
             .map_err(scale_error)?;
         scale_state.record_min_size(desired);
+        let msg = format!("set_min_size={width:.0}x{height:.0} scale={scale:.2}");
+        log::debug!("window_scale: {msg}");
+        app_log::record_event("window", &msg);
     } else {
         scale_state.clear_pending_min_size();
     }
@@ -125,12 +136,17 @@ fn fit_min_size(window: &WebviewWindow) -> Result<()> {
         .map_err(scale_error)?
         .to_logical::<f64>(window.scale_factor().map_err(scale_error)?);
     if size.width < width || size.height < height {
+        let next_w = size.width.max(width);
+        let next_h = size.height.max(height);
         window
-            .set_size(tauri::LogicalSize::new(
-                size.width.max(width),
-                size.height.max(height),
-            ))
+            .set_size(tauri::LogicalSize::new(next_w, next_h))
             .map_err(scale_error)?;
+        let msg = format!(
+            "set_size={next_w:.0}x{next_h:.0} from {:.0}x{:.0}",
+            size.width, size.height
+        );
+        log::debug!("window_scale: {msg}");
+        app_log::record_event("window", &msg);
     }
     Ok(())
 }

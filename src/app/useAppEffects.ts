@@ -14,6 +14,7 @@ import { installVaultActivityReporting } from './vaultAutoLock.ts';
 
 interface AppEffectsOptions {
   interface: SettingsState['interface'];
+  onExtendedLoggingExpired?: (() => void) | undefined;
 }
 
 export function useAppEffects({
@@ -26,6 +27,7 @@ export function useAppEffects({
     terminalFontSize,
     dateFormat,
   },
+  onExtendedLoggingExpired,
 }: AppEffectsOptions): void {
   useEffect(() => {
     void api.app.doubleClickTime().then(setDoubleClickMs, reportAsyncFailure);
@@ -79,4 +81,11 @@ export function useAppEffects({
     // when the user was last seen.
     return installVaultActivityReporting({ vault: api.vault });
   }, []);
+
+  useEffect(() => {
+    if (!onExtendedLoggingExpired) return undefined;
+    return api.settings.onExtendedLoggingExpired(() => {
+      onExtendedLoggingExpired();
+    });
+  }, [onExtendedLoggingExpired]);
 }

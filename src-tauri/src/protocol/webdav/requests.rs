@@ -160,7 +160,13 @@ impl WebDavBackend {
                         return Ok(response);
                     },
                     _ = activity.notified() => {},
-                    _ = tokio::time::sleep(self.idle_timeout) => return Err(crate::protocol::fail(ErrorCode::TimedOut, "WebDAV upload stalled")),
+                    _ = tokio::time::sleep(self.idle_timeout) => {
+                        log::debug!(
+                            "webdav: upload stalled after {}s",
+                            self.idle_timeout.as_secs()
+                        );
+                        return Err(crate::protocol::fail(ErrorCode::TimedOut, "WebDAV upload stalled"));
+                    },
                 }
             }
         };

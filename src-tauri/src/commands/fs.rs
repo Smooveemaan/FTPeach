@@ -357,6 +357,64 @@ mod tests {
             .unwrap_err();
         assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
     }
+
+    #[cfg(windows)]
+    #[test]
+    fn explorer_selection_confirmation_waits_for_selection_to_stick_after_reset() {
+        use std::time::Duration;
+
+        let poll = Duration::from_millis(100);
+        let confirm = Duration::from_millis(300);
+        let timeout = Duration::from_secs(2);
+
+        // Cold Explorer populates, briefly shows selection, resets it, then holds selection.
+        let mut ticks = [
+            ExplorerSelectionTick::NotReady,
+            ExplorerSelectionTick::Selected,
+            ExplorerSelectionTick::Selected,
+            ExplorerSelectionTick::Reselected,
+            ExplorerSelectionTick::Selected,
+            ExplorerSelectionTick::Selected,
+            ExplorerSelectionTick::Selected,
+            ExplorerSelectionTick::Selected,
+        ]
+        .into_iter();
+        let mut sleeps = 0usize;
+        let stuck = confirm_explorer_selection(
+            timeout,
+            confirm,
+            poll,
+            || ticks.next().unwrap_or(ExplorerSelectionTick::Selected),
+            |d| {
+                assert_eq!(d, poll);
+                sleeps += 1;
+            },
+        );
+        assert!(stuck);
+        // Must not succeed before the post-reset selection has held for `confirm`.
+        assert_eq!(sleeps, 7);
+
+        let mut timeout_sleeps = 0usize;
+        let timed_out = confirm_explorer_selection(
+            Duration::from_millis(300),
+            confirm,
+            poll,
+            || ExplorerSelectionTick::NotReady,
+            |_| timeout_sleeps += 1,
+        );
+        assert!(!timed_out);
+        assert_eq!(timeout_sleeps, 3);
+
+        assert_eq!(
+            reveal_parent_dir(r"C:\work\shown.txt"),
+            Some(Path::new(r"C:\work"))
+        );
+        assert_eq!(
+            reveal_parent_dir(r"C:\work\shown-folder"),
+            Some(Path::new(r"C:\work"))
+        );
+        assert_eq!(reveal_parent_dir(r"C:\"), None);
+    }
     #[test]
     fn explorer_and_programs_get_the_path_without_the_verbatim_prefix() {
         assert_eq!(
@@ -618,11 +676,58 @@ pub async fn fs_is_dir(
         .unwrap_or(Ok(false))
 }
 
+#[cfg(windows)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ExplorerSelectionTick {
+    /// Matching Explorer window is not ready or has no enumerated items yet.
+    NotReady,
+    /// Target item is currently selected in the matching Explorer window.
+    Selected,
+    /// Target item was unselected and `SelectItem` was re-applied.
+    Reselected,
+}
+
+#[cfg(windows)]
+fn reveal_parent_dir(shell: &str) -> Option<&Path> {
+    Path::new(shell)
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+}
+
+#[cfg(windows)]
+fn confirm_explorer_selection(
+    timeout: std::time::Duration,
+    confirm_window: std::time::Duration,
+    poll_interval: std::time::Duration,
+    mut step: impl FnMut() -> ExplorerSelectionTick,
+    mut sleep: impl FnMut(std::time::Duration),
+) -> bool {
+    let mut elapsed = std::time::Duration::ZERO;
+    let mut confirmed_for: Option<std::time::Duration> = None;
+    while elapsed < timeout {
+        match step() {
+            ExplorerSelectionTick::Selected => {
+                let held = confirmed_for.map_or(std::time::Duration::ZERO, |d| d + poll_interval);
+                if held >= confirm_window {
+                    return true;
+                }
+                confirmed_for = Some(held);
+            }
+            ExplorerSelectionTick::Reselected | ExplorerSelectionTick::NotReady => {
+                confirmed_for = None;
+            }
+        }
+        sleep(poll_interval);
+        elapsed += poll_interval;
+    }
+    false
+}
+
 /// Reveals a canonical shell path in Windows File Explorer via the Shell API
 /// and confirms the target item remains selected after cold Explorer startup.
 #[cfg(windows)]
 fn reveal_in_explorer_shell(shell: &str) -> std::io::Result<()> {
-    use std::time::{Duration, Instant};
+    use std::time::Duration;
     use windows::{
         Win32::{
             System::{
@@ -733,26 +838,23 @@ fn reveal_in_explorer_shell(shell: &str) -> std::io::Result<()> {
             | SVSI_ENSUREVISIBLE.0
             | SVSI_FOCUSED.0
             | SVSI_SELECTIONMARK.0) as u32;
-        let deadline = Instant::now() + Duration::from_secs(4);
-        let mut confirmed_since: Option<Instant> = None;
-        while Instant::now() < deadline {
-            if let Some((shell_view, folder_view)) = find_folder_view(parent_pidl)
-                && unsafe { folder_view.ItemCount(SVGIO_ALLVIEW) }.unwrap_or(0) > 0
-            {
-                if is_item_selected(&folder_view, parent_pidl, item_pidl) {
-                    let since = *confirmed_since.get_or_insert_with(Instant::now);
-                    if since.elapsed() >= Duration::from_millis(500) {
-                        return;
+        confirm_explorer_selection(
+            Duration::from_secs(4),
+            Duration::from_millis(800),
+            Duration::from_millis(100),
+            || match find_folder_view(parent_pidl) {
+                Some((sv, fv)) if unsafe { fv.ItemCount(SVGIO_ALLVIEW) }.unwrap_or(0) > 0 => {
+                    if is_item_selected(&fv, parent_pidl, item_pidl) {
+                        ExplorerSelectionTick::Selected
+                    } else {
+                        let _ = unsafe { sv.SelectItem(child_pidl, select_flags) };
+                        ExplorerSelectionTick::Reselected
                     }
-                } else {
-                    confirmed_since = None;
-                    let _ = unsafe { shell_view.SelectItem(child_pidl, select_flags) };
                 }
-            } else {
-                confirmed_since = None;
-            }
-            std::thread::sleep(Duration::from_millis(100));
-        }
+                _ => ExplorerSelectionTick::NotReady,
+            },
+            std::thread::sleep,
+        );
     }
 
     let path = HSTRING::from(shell);
@@ -769,9 +871,7 @@ fn reveal_in_explorer_shell(shell: &str) -> std::io::Result<()> {
         ));
     }
 
-    let parent_pidl = Path::new(shell)
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
+    let parent_pidl = reveal_parent_dir(shell)
         .map(|parent| {
             let parent_path = HSTRING::from(parent.as_os_str());
             PidlGuard(unsafe { ILCreateFromPathW(&parent_path) })

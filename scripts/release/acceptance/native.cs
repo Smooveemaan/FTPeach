@@ -1044,19 +1044,21 @@ static class Native
             {
                 Send(Key(0x1B, false));
                 Thread.Sleep(100);
-                Send(Key(0x1B, true));
-                // Moves after it, as a hand keeps moving, so the drag loop looks at the keys.
+                // Keep Escape held across pointer moves so DoDragDrop observes both WM_KEYDOWN and key state.
                 for (int i = 0; i < 5; i++)
                 {
                     Send(Mouse(toX + (i % 2 == 0 ? 3 : -3), toY, 0));
                     Thread.Sleep(150);
                 }
+                Send(Key(0x1B, true));
+                Thread.Sleep(100);
             }
             Send(Mouse(toX, toY, 0x0004)); // LEFTUP
             Thread.Sleep(300);
         }
         finally
         {
+            if (cancel) Send(Key(0x1B, true));
             foreach (var key in keys) Send(Key(key, true));
             Send(Mouse(toX, toY, 0x0004));
         }

@@ -101,12 +101,12 @@ try {
   Start-Candidate
   Show-Local $local
   Invoke-Native @('click', $app.Id, 'Button', 'Acceptance FTP*') | Out-Null
-  $source = Invoke-Native @('click', $app.Id, 'ListItem', "$remoteFile, File")
   $area = Invoke-Native @('work-area')
   $targetX = $area.x + $area.width - 80
   $targetY = $area.y + $area.height - 80
   $explorerPid = (Get-Process explorer | Select-Object -First 1).Id
   Invoke-Native @('desktop-focus', $app.Id) | Out-Null
+  $source = Invoke-Native @('click', $app.Id, 'ListItem', "$remoteFile, File")
   $target = Wait-Until {
     $candidateTarget = Invoke-Native @('window-at', $targetX, $targetY)
     if ($candidateTarget.class -in 'SHELLDLL_DefView', 'SysListView32' -and $candidateTarget.pid -eq $explorerPid) { $candidateTarget }

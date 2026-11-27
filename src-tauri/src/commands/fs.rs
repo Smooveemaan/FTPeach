@@ -619,17 +619,28 @@ pub async fn fs_is_dir(
 }
 
 /// Reveals a canonical shell path in Windows File Explorer via the Shell API
-/// so cold Explorer windows reliably select the target item.
+/// and confirms the target item remains selected after cold Explorer startup.
 #[cfg(windows)]
 fn reveal_in_explorer_shell(shell: &str) -> std::io::Result<()> {
+    use std::time::{Duration, Instant};
     use windows::{
         Win32::{
-            System::Com::{COINIT_APARTMENTTHREADED, CoInitializeEx, CoUninitialize},
+            System::{
+                Com::{
+                    CLSCTX_ALL, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx,
+                    CoUninitialize, IServiceProvider,
+                },
+                Variant::VARIANT,
+            },
             UI::Shell::{
-                Common::ITEMIDLIST, ILCreateFromPathW, ILFree, SHOpenFolderAndSelectItems,
+                Common::ITEMIDLIST, IEnumIDList, IFolderView, ILCombine, ILCreateFromPathW,
+                ILFindLastID, ILFree, ILIsEqual, IPersistFolder2, IShellBrowser, IShellView,
+                IShellWindows, SHOpenFolderAndSelectItems, SID_STopLevelBrowser, SVGIO_ALLVIEW,
+                SVGIO_SELECTION, SVSI_DESELECTOTHERS, SVSI_ENSUREVISIBLE, SVSI_FOCUSED,
+                SVSI_SELECT, SVSI_SELECTIONMARK, ShellWindows,
             },
         },
-        core::HSTRING,
+        core::{HSTRING, Interface},
     };
 
     struct ComGuard;
@@ -648,22 +659,135 @@ fn reveal_in_explorer_shell(shell: &str) -> std::io::Result<()> {
         }
     }
 
+    fn is_item_selected(
+        folder_view: &IFolderView,
+        parent_pidl: *const ITEMIDLIST,
+        item_pidl: *const ITEMIDLIST,
+    ) -> bool {
+        let Ok(enum_sel) = (unsafe { folder_view.Items::<IEnumIDList>(SVGIO_SELECTION) }) else {
+            return false;
+        };
+        let mut buf = [std::ptr::null_mut(); 1];
+        loop {
+            buf[0] = std::ptr::null_mut();
+            let mut fetched = 0u32;
+            let hr = unsafe { enum_sel.Next(&mut buf, Some(&mut fetched)) };
+            if hr.is_err() || fetched == 0 || buf[0].is_null() {
+                return false;
+            }
+            let rel = PidlGuard(buf[0]);
+            let combined = PidlGuard(unsafe { ILCombine(Some(parent_pidl), Some(rel.0)) });
+            if !combined.0.is_null() && unsafe { ILIsEqual(combined.0, item_pidl) }.as_bool() {
+                return true;
+            }
+        }
+    }
+
+    fn find_folder_view(parent_pidl: *const ITEMIDLIST) -> Option<(IShellView, IFolderView)> {
+        let windows: IShellWindows =
+            unsafe { CoCreateInstance(&ShellWindows, None, CLSCTX_ALL) }.ok()?;
+        let count = unsafe { windows.Count() }.ok()?;
+        for i in (0..count).rev() {
+            let index = VARIANT::from(i);
+            let Ok(disp) = (unsafe { windows.Item(&index) }) else {
+                continue;
+            };
+            let Ok(sp) = disp.cast::<IServiceProvider>() else {
+                continue;
+            };
+            let Ok(browser) = (unsafe { sp.QueryService::<IShellBrowser>(&SID_STopLevelBrowser) })
+            else {
+                continue;
+            };
+            let Ok(shell_view) = (unsafe { browser.QueryActiveShellView() }) else {
+                continue;
+            };
+            let Ok(folder_view) = shell_view.cast::<IFolderView>() else {
+                continue;
+            };
+            let Ok(persist) = (unsafe { folder_view.GetFolder::<IPersistFolder2>() }) else {
+                continue;
+            };
+            let Ok(cur_folder) = (unsafe { persist.GetCurFolder() }) else {
+                continue;
+            };
+            let cur_folder = PidlGuard(cur_folder);
+            if !cur_folder.0.is_null() && unsafe { ILIsEqual(cur_folder.0, parent_pidl) }.as_bool()
+            {
+                return Some((shell_view, folder_view));
+            }
+        }
+        None
+    }
+
+    fn ensure_explorer_selection(
+        parent_pidl: *const ITEMIDLIST,
+        child_pidl: *const ITEMIDLIST,
+        item_pidl: *const ITEMIDLIST,
+    ) {
+        // Cold WinUI 3 Explorer windows can finish initializing their navigation
+        // pane after SHOpenFolderAndSelectItems returns and clear the initial
+        // selection; re-apply SelectItem until the selection sticks.
+        let select_flags = (SVSI_SELECT.0
+            | SVSI_DESELECTOTHERS.0
+            | SVSI_ENSUREVISIBLE.0
+            | SVSI_FOCUSED.0
+            | SVSI_SELECTIONMARK.0) as u32;
+        let deadline = Instant::now() + Duration::from_secs(4);
+        let mut confirmed_since: Option<Instant> = None;
+        while Instant::now() < deadline {
+            if let Some((shell_view, folder_view)) = find_folder_view(parent_pidl)
+                && unsafe { folder_view.ItemCount(SVGIO_ALLVIEW) }.unwrap_or(0) > 0
+            {
+                if is_item_selected(&folder_view, parent_pidl, item_pidl) {
+                    let since = *confirmed_since.get_or_insert_with(Instant::now);
+                    if since.elapsed() >= Duration::from_millis(500) {
+                        return;
+                    }
+                } else {
+                    confirmed_since = None;
+                    let _ = unsafe { shell_view.SelectItem(child_pidl, select_flags) };
+                }
+            } else {
+                confirmed_since = None;
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+    }
+
     let path = HSTRING::from(shell);
     unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }
         .ok()
         .map_err(|error| std::io::Error::other(error.to_string()))?;
     let _com = ComGuard;
 
-    let pidl = PidlGuard(unsafe { ILCreateFromPathW(&path) });
-    if pidl.0.is_null() {
+    let item_pidl = PidlGuard(unsafe { ILCreateFromPathW(&path) });
+    if item_pidl.0.is_null() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::NotFound,
             "could not create shell item ID list for path",
         ));
     }
 
-    unsafe { SHOpenFolderAndSelectItems(pidl.0, None, 0) }
-        .map_err(|error| std::io::Error::other(error.to_string()))
+    let parent_pidl = Path::new(shell)
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .map(|parent| {
+            let parent_path = HSTRING::from(parent.as_os_str());
+            PidlGuard(unsafe { ILCreateFromPathW(&parent_path) })
+        })
+        .filter(|guard| !guard.0.is_null());
+
+    if let Some(parent_pidl) = parent_pidl {
+        let child_pidl = unsafe { ILFindLastID(item_pidl.0) } as *const ITEMIDLIST;
+        unsafe { SHOpenFolderAndSelectItems(parent_pidl.0, Some(&[child_pidl]), 0) }
+            .map_err(|error| std::io::Error::other(error.to_string()))?;
+        ensure_explorer_selection(parent_pidl.0, child_pidl, item_pidl.0);
+        Ok(())
+    } else {
+        unsafe { SHOpenFolderAndSelectItems(item_pidl.0, None, 0) }
+            .map_err(|error| std::io::Error::other(error.to_string()))
+    }
 }
 
 #[cfg(windows)]

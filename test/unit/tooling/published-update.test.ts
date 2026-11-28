@@ -2,17 +2,25 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { sha256 } from '../../../scripts/release/candidate.ts';
 import {
+  candidateAssetName,
+  downloadPrevious,
+  expectedRunnerPlatform,
+  previousAssetName,
+  previousPackage,
+  previousStableRelease,
+  profileData,
   requirePublishedRunner,
+  stagedInstallerName,
   updateMode,
   verifyPending,
-  previousPackage,
-  downloadPrevious,
-  profileData,
+  type UpdateMode,
 } from '../../../scripts/release/published-update.ts';
 
 const hosted = { GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted' };
-test('published update automation refuses local/self-hosted/non-Windows and modified transport', () => {
+test('published update automation refuses local/self-hosted/wrong-OS and modified transport', () => {
   requirePublishedRunner(hosted, 'win32');
+  requirePublishedRunner(hosted, 'darwin', 'darwin');
+  requirePublishedRunner(hosted, 'linux', 'linux');
   for (const env of [
     {},
     { ...hosted, RUNNER_ENVIRONMENT: 'self-hosted' },
@@ -28,23 +36,29 @@ test('published update automation refuses local/self-hosted/non-Windows and modi
     assert.throws(() => requirePublishedRunner(env, 'win32'));
   }
   assert.throws(() => requirePublishedRunner(hosted, 'linux'));
-  assert.equal(updateMode('installed'), 'installed');
-  assert.equal(updateMode('portable'), 'portable');
+  assert.throws(() => requirePublishedRunner(hosted, 'win32', 'darwin'));
+  for (const mode of ['installed', 'portable', 'macos', 'appimage', 'deb'] as const) {
+    assert.equal(updateMode(mode), mode);
+  }
+  assert.equal(expectedRunnerPlatform('installed'), 'win32');
+  assert.equal(expectedRunnerPlatform('portable'), 'win32');
+  assert.equal(expectedRunnerPlatform('macos'), 'darwin');
+  assert.equal(expectedRunnerPlatform('appimage'), 'linux');
+  assert.equal(expectedRunnerPlatform('deb'), 'linux');
   assert.throws(() => updateMode(undefined));
   assert.throws(() => updateMode('../portable'));
 });
 
-for (const mode of ['installed', 'portable'] as const) {
+for (const mode of ['installed', 'portable', 'macos', 'appimage', 'deb'] as const) {
   test(`${mode} staging rejects wrong version, attempted install, unsafe name, signature and bytes`, () => {
-    const suffix = mode === 'installed' ? 'setup.exe' : 'portable.zip';
     const bytes = Buffer.from('mock package boundary, not a real updater');
     const pending = {
       version: '1.2.3',
       attempted: false,
-      installer: `FTPeach-1.2.3-${suffix}`,
+      installer: stagedInstallerName('1.2.3', mode),
       signature: 'signed',
     };
-    const hashes = { [`FTPeach_1.2.3_x64-${suffix}`]: sha256(bytes) };
+    const hashes = { [candidateAssetName('1.2.3', mode)]: sha256(bytes) };
     const verify = (value = pending, body = bytes) =>
       verifyPending(value, body, '1.2.3', mode, hashes, 'signed\n');
     verify();
@@ -62,15 +76,19 @@ for (const mode of ['installed', 'portable'] as const) {
 }
 
 const oldBytes = Buffer.from('mock previous published package');
-const release = (version = '0.6.0') => ({
+const allModes: readonly UpdateMode[] = ['installed', 'portable', 'macos', 'appimage', 'deb'];
+const release = (version = '0.6.0', modes: readonly UpdateMode[] = ['installed', 'portable']) => ({
   tag_name: `v${version}`,
   draft: false,
   prerelease: false,
-  assets: ['setup.exe', 'portable.zip'].map((suffix) => ({
-    name: `FTPeach_${version}_x64-${suffix}`,
-    digest: `sha256:${sha256(oldBytes)}`,
-    browser_download_url: `https://github.com/Smooveemaan/FTPeach/releases/download/v${version}/FTPeach_${version}_x64-${suffix}`,
-  })),
+  assets: modes.map((mode) => {
+    const name = previousAssetName(version, mode);
+    return {
+      name,
+      digest: `sha256:${sha256(oldBytes)}`,
+      browser_download_url: `https://github.com/Smooveemaan/FTPeach/releases/download/v${version}/${name}`,
+    };
+  }),
 });
 
 test('selects the newest older stable release across version lines; missing evidence fails without falling back', () => {
@@ -82,11 +100,21 @@ test('selects the newest older stable release across version lines; missing evid
     { ...release('0.6.12'), draft: true },
     { ...release('0.6.13'), prerelease: true },
   ];
+  assert.equal(previousStableRelease(releases, '0.6.11')?.tag_name, 'v0.6.10');
   assert.equal(previousPackage(releases, '0.6.11', 'portable').version, '0.6.10');
   assert.equal(
-    previousPackage([release('0.6.11'), release('0.7.0')], '0.7.1', 'portable').version,
-    '0.7.0',
+    previousPackage([release('0.6.11'), release('0.7.0', allModes)], '0.7.1', 'macos').name,
+    'FTPeach_0.7.0_universal.dmg',
   );
+  assert.equal(
+    previousPackage([release('0.6.11'), release('0.7.0', allModes)], '0.7.1', 'appimage').name,
+    'FTPeach_0.7.0_amd64.AppImage',
+  );
+  assert.equal(
+    previousPackage([release('0.6.11'), release('0.7.0', allModes)], '0.7.1', 'deb').name,
+    'FTPeach_0.7.0_amd64.deb',
+  );
+  assert.throws(() => previousPackage([release('0.6.1')], '0.7.0', 'macos'));
   for (const broken of [
     { ...release(), assets: [] },
     { ...release(), assets: release().assets.map((asset) => ({ ...asset, digest: null })) },
@@ -106,17 +134,19 @@ test('selects the newest older stable release across version lines; missing evid
   );
 });
 
-for (const mode of ['installed', 'portable'] as const) {
+for (const mode of allModes) {
   test(`${mode} previous download requires authenticated metadata and matching bytes (mock network only)`, async () => {
+    const sample = release('0.7.0', allModes);
     for (const fault of ['none', 'metadata-http', 'asset-http', 'corrupt']) {
       const request: typeof fetch = async (url, options) => {
         assert.ok(options?.signal);
         if (String(url).startsWith('https://api.github.com/')) {
-          return Response.json([release()], { status: fault === 'metadata-http' ? 503 : 200 });
+          return Response.json([sample], { status: fault === 'metadata-http' ? 503 : 200 });
         }
         assert.equal(
           String(url),
-          release().assets[mode === 'installed' ? 0 : 1]!.browser_download_url,
+          sample.assets.find((asset) => asset.name === previousAssetName('0.7.0', mode))!
+            .browser_download_url,
         );
         assert.equal(
           options?.headers,
@@ -127,7 +157,7 @@ for (const mode of ['installed', 'portable'] as const) {
           status: fault === 'asset-http' ? 404 : 200,
         });
       };
-      const result = downloadPrevious('0.6.1', mode, request);
+      const result = downloadPrevious('0.7.1', mode, request);
       if (fault === 'none') assert.deepEqual((await result).bytes, oldBytes);
       else await assert.rejects(result);
     }

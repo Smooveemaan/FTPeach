@@ -36,10 +36,19 @@ import {
 const run = promisify(execFile);
 const framework = 'C:/Windows/Microsoft.NET/Framework64/v4.0.30319';
 
+const safeFileVersion = (exe: string) => {
+  try {
+    return existsSync(exe) ? fileVersion(exe) : '';
+  } catch {
+    return '';
+  }
+};
+
 // eslint-disable-next-line no-empty-pattern
 test('previous published copy updates through Help using the unchanged public feed', async ({}, testInfo) => {
   requirePublishedRunner();
   const mode = updateMode(process.env.FTPEACH_UPDATE_MODE);
+  assert.ok(mode === 'installed' || mode === 'portable', `Expected Windows mode, got ${mode}`);
   const manifest = readFileSync('published-release/candidate.json');
   const candidate = JSON.parse(manifest.toString()) as Candidate;
   const toolsSha = execFileSync('git', ['rev-parse', 'HEAD'], {
@@ -203,9 +212,7 @@ test('previous published copy updates through Help using the unchanged public fe
       'invoke',
       'Restart now to install. Otherwise the update installs the next time FTPeach starts.',
     );
-    await expect
-      .poll(() => existsSync(targetExe) && fileVersion(targetExe), { timeout: 180_000 })
-      .toBe(version);
+    await expect.poll(() => safeFileVersion(targetExe), { timeout: 180_000 }).toBe(version);
     await expect
       .poll(() => runningFrom(targetExe).filter((pid) => pid !== updating), { timeout: 60_000 })
       .toHaveLength(1);

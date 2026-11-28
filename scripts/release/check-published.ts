@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import {
   candidateNames,
   githubApi,
+  isMultiPlatformVersion,
   releaseAssetNames,
   sha256,
   updaterFeedTargets,
@@ -15,6 +16,7 @@ import {
   type PublicRun,
 } from './candidate.ts';
 import { validateTag, verifyAttestations } from './finalize.ts';
+import { previousStableRelease, type PublishedRelease } from './published-update.ts';
 import { downloadArtifact, validateOrigin, type Artifact } from './validate-candidate.ts';
 
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
@@ -238,9 +240,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
     const page = await fetch('https://ftpeach.com/', { signal: AbortSignal.timeout(60_000) });
     assert.ok(page.ok, `Public Pages: HTTP ${page.status}`);
+    const releases = (await githubApi('releases?per_page=50')) as PublishedRelease[];
+    const previous = previousStableRelease(releases, candidate.readiness.version);
+    const unixPrevious = Boolean(previous && isMultiPlatformVersion(previous.tag_name.slice(1)));
+    if (process.env.GITHUB_OUTPUT) {
+      await appendFile(process.env.GITHUB_OUTPUT, `unix-previous=${unixPrevious}\n`);
+    }
     await appendFile(
       process.env.GITHUB_STEP_SUMMARY!,
-      `Published ${release.tag_name}: public packages, manifest, updater signatures, feed and Pages availability passed. Real installed/portable updates from this public feed still require the owner's verification.\n`,
+      `Published ${release.tag_name}: public packages, manifest, updater signatures, feed and Pages availability passed (previous multi-platform release available: ${unixPrevious}).\n`,
     );
   }
 }

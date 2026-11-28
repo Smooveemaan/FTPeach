@@ -1,23 +1,70 @@
 import assert from 'node:assert/strict';
 import { sha256 } from './candidate.ts';
 
-export type UpdateMode = 'installed' | 'portable';
+export type UpdateMode = 'installed' | 'portable' | 'macos' | 'appimage' | 'deb';
 
-interface PublishedRelease {
+export interface PublishedRelease {
   tag_name: string;
   draft: boolean;
   prerelease: boolean;
   assets: { name: string; digest: string | null; browser_download_url: string }[];
 }
 
-export function previousPackage(releases: PublishedRelease[], version: string, mode: UpdateMode) {
+const MODES: readonly UpdateMode[] = ['installed', 'portable', 'macos', 'appimage', 'deb'];
+
+export function previousAssetName(version: string, mode: UpdateMode): string {
+  switch (mode) {
+    case 'installed':
+      return `FTPeach_${version}_x64-setup.exe`;
+    case 'portable':
+      return `FTPeach_${version}_x64-portable.zip`;
+    case 'macos':
+      return `FTPeach_${version}_universal.dmg`;
+    case 'appimage':
+      return `FTPeach_${version}_amd64.AppImage`;
+    case 'deb':
+      return `FTPeach_${version}_amd64.deb`;
+  }
+}
+
+export function candidateAssetName(version: string, mode: UpdateMode): string {
+  return mode === 'macos'
+    ? `FTPeach_${version}_universal.app.tar.gz`
+    : previousAssetName(version, mode);
+}
+
+export function stagedInstallerName(version: string, mode: UpdateMode): string {
+  switch (mode) {
+    case 'installed':
+      return `FTPeach-${version}-setup.exe`;
+    case 'portable':
+      return `FTPeach-${version}-portable.zip`;
+    case 'macos':
+      return `FTPeach-${version}.app.tar.gz`;
+    case 'appimage':
+      return `FTPeach-${version}.AppImage`;
+    case 'deb':
+      return `FTPeach-${version}.deb`;
+  }
+}
+
+export function expectedRunnerPlatform(mode: UpdateMode): 'win32' | 'darwin' | 'linux' {
+  if (mode === 'macos') return 'darwin';
+  if (mode === 'appimage' || mode === 'deb') return 'linux';
+  return 'win32';
+}
+
+export function previousStableRelease(
+  releases: PublishedRelease[],
+  version: string,
+): PublishedRelease | undefined {
   assert.match(version, /^\d+\.\d+\.\d+$/);
   const compare = (a: string, b: string) => {
     const x = a.split('.').map(Number),
       y = b.split('.').map(Number);
     return x[0]! - y[0]! || x[1]! - y[1]! || x[2]! - y[2]!;
   };
-  const previous = releases
+  return releases
     .filter(
       (release) =>
         !release.draft &&
@@ -26,9 +73,13 @@ export function previousPackage(releases: PublishedRelease[], version: string, m
         compare(release.tag_name.slice(1), version) < 0,
     )
     .sort((a, b) => compare(b.tag_name.slice(1), a.tag_name.slice(1)))[0];
+}
+
+export function previousPackage(releases: PublishedRelease[], version: string, mode: UpdateMode) {
+  const previous = previousStableRelease(releases, version);
   assert.ok(previous, 'No previous stable published release in the latest 50 releases');
   const old = previous.tag_name.slice(1);
-  const name = `FTPeach_${old}_x64-${mode === 'portable' ? 'portable.zip' : 'setup.exe'}`;
+  const name = previousAssetName(old, mode);
   const asset = previous.assets.find((entry) => entry.name === name);
   assert.ok(asset, `Previous release ${old} has no ${name}; do not substitute another release`);
   assert.match(
@@ -71,8 +122,12 @@ export function profileData(files: Record<string, string | Buffer>) {
   );
 }
 
-export function requirePublishedRunner(env = process.env, platform = process.platform) {
-  assert.equal(platform, 'win32', 'Published updates require Windows');
+export function requirePublishedRunner(
+  env = process.env,
+  platform: string = process.platform,
+  expectedPlatform: 'win32' | 'darwin' | 'linux' = 'win32',
+) {
+  assert.equal(platform, expectedPlatform, `Published updates require ${expectedPlatform}`);
   assert.equal(env.GITHUB_ACTIONS, 'true');
   assert.equal(
     env.RUNNER_ENVIRONMENT,
@@ -91,8 +146,11 @@ export function requirePublishedRunner(env = process.env, platform = process.pla
 }
 
 export function updateMode(value: string | undefined): UpdateMode {
-  assert.ok(value === 'installed' || value === 'portable', 'Expected installed or portable mode');
-  return value;
+  assert.ok(
+    value && (MODES as readonly string[]).includes(value),
+    `Expected update mode (${MODES.join(', ')})`,
+  );
+  return value as UpdateMode;
 }
 
 export function verifyPending(
@@ -103,14 +161,13 @@ export function verifyPending(
   hashes: Record<string, string>,
   signature: string,
 ) {
-  const suffix = mode === 'portable' ? 'portable.zip' : 'setup.exe';
   assert.equal(pending.version, version);
   assert.equal(pending.attempted, false);
-  assert.equal(pending.installer, `FTPeach-${version}-${suffix}`);
+  assert.equal(pending.installer, stagedInstallerName(version, mode));
   assert.equal(pending.signature.trim(), signature.trim());
   assert.equal(
     sha256(bytes),
-    hashes[`FTPeach_${version}_x64-${suffix}`],
+    hashes[candidateAssetName(version, mode)],
     'Downloaded update bytes changed',
   );
 }

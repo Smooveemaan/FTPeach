@@ -163,7 +163,9 @@ release with clean `release-notes.md` text, uploads only user-facing assets and
 and leaves the draft ready for publication. After the owner publishes the draft,
 `release-published.yml` verifies the public assets, `latest.json`, Ed25519
 updater signatures and Pages on `ubuntu-latest`, and runs real public-feed
-updates on `windows-latest`.
+updates on `windows-latest` (`installed`, `portable`), plus `macos-15` and
+`ubuntu-22.04` (`appimage`, `deb`) whenever the previous published release is
+multi-platform (`>= 0.7.0`).
 
 For an interrupted candidate, dispatch `release.yml` on trusted `master` with
 operation `resume` and its `candidate-id` to rerun missing automatic acceptance

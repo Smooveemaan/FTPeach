@@ -19,11 +19,13 @@ import {
   candidateAssetName,
   downloadPrevious,
   expectedRunnerPlatform,
+  feedSignature,
   profileData,
   requirePublishedRunner,
   stagedInstallerName,
   updateMode,
   verifyPending,
+  type PublicUpdateFeed,
   type UpdateMode,
 } from './published-update.ts';
 import {
@@ -54,11 +56,21 @@ async function pollUntil(check: () => boolean, timeoutMs: number, description: s
   assert.fail(`Timed out after ${timeoutMs}ms waiting for: ${description}`);
 }
 
+function processGroupAlive(pid: number): boolean {
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function stopProcessGroup(child: ChildProcess) {
-  if (!child.pid) return;
+  const pid = child.pid;
+  if (!pid) return;
   const signalGroup = (signal: 'SIGTERM' | 'SIGKILL') => {
     try {
-      process.kill(-child.pid!, signal);
+      process.kill(-pid, signal);
     } catch {
       try {
         child.kill(signal);
@@ -69,12 +81,18 @@ async function stopProcessGroup(child: ChildProcess) {
   };
   signalGroup('SIGTERM');
   const deadline = Date.now() + 10_000;
-  while (child.exitCode === null && child.signalCode === null && Date.now() < deadline) {
+  while (
+    (processGroupAlive(pid) || (child.exitCode === null && child.signalCode === null)) &&
+    Date.now() < deadline
+  ) {
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
-  if (child.exitCode === null && child.signalCode === null) {
+  if (processGroupAlive(pid) || (child.exitCode === null && child.signalCode === null)) {
     signalGroup('SIGKILL');
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const killDeadline = Date.now() + 2_000;
+    while (processGroupAlive(pid) && Date.now() < killDeadline) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
   }
 }
 
@@ -181,6 +199,9 @@ export async function runUnixPublishedUpdate(mode: UpdateMode) {
   requirePublishedRunner(process.env, process.platform, expectedRunnerPlatform(mode));
   const manifest = readFileSync('published-release/candidate.json');
   const candidate = JSON.parse(manifest.toString()) as Candidate;
+  const feed = JSON.parse(
+    readFileSync('published-release/latest.json', 'utf8'),
+  ) as PublicUpdateFeed;
   const toolsSha = execFileSync('git', ['rev-parse', 'HEAD'], {
     encoding: 'utf8',
     timeout: 10_000,
@@ -206,6 +227,7 @@ export async function runUnixPublishedUpdate(mode: UpdateMode) {
         : path.join(env.XDG_DATA_HOME!, 'com.smooveemaan.ftpeach');
     const updatesDir = path.join(dataDir, 'updates');
     const pendingPath = path.join(updatesDir, 'pending.json');
+    const failedPath = path.join(dataDir, 'update-failed');
     const packagePath = path.join(work, previous.name);
     writeFileSync(packagePath, previous.bytes);
 
@@ -310,7 +332,7 @@ export async function runUnixPublishedUpdate(mode: UpdateMode) {
       version,
       mode,
       candidate.files,
-      readFileSync(path.join('published-release', `${assetName}.sig`), 'utf8'),
+      feedSignature(feed, version, mode, candidate.files),
     );
     await stopProcessGroup(launch1.child);
     running = undefined;
@@ -330,7 +352,14 @@ export async function runUnixPublishedUpdate(mode: UpdateMode) {
       return versionMatchesDeb(debInstalledVersion(debPackageName), version);
     };
     await pollUntil(
-      () => isInstalledUpdated() && !existsSync(updatesDir),
+      () => {
+        if (existsSync(failedPath)) {
+          assert.fail(
+            `Staged ${mode} update failed (${readFileSync(failedPath, 'utf8').trim()}): ${launch2.getStderr()}`,
+          );
+        }
+        return isInstalledUpdated() && !existsSync(updatesDir);
+      },
       180_000,
       `updated ${mode} package (${version}) and cleaned staging directory`,
     );

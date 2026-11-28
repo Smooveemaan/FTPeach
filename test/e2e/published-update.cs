@@ -97,6 +97,8 @@ static class PublishedUpdate
                             lastMatches = string.Join("; ", matches);
                     }
                     catch (ElementNotAvailableException) { }
+                    catch (ElementNotEnabledException) { }
+                    catch (InvalidOperationException) { }
                 }
                 Thread.Sleep(200);
             }

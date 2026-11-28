@@ -10,6 +10,11 @@ export interface PublishedRelease {
   assets: { name: string; digest: string | null; browser_download_url: string }[];
 }
 
+export interface PublicUpdateFeed {
+  version: string;
+  platforms: Record<string, { url: string; signature: string }>;
+}
+
 const MODES: readonly UpdateMode[] = ['installed', 'portable', 'macos', 'appimage', 'deb'];
 
 export function previousAssetName(version: string, mode: UpdateMode): string {
@@ -46,6 +51,49 @@ export function stagedInstallerName(version: string, mode: UpdateMode): string {
     case 'deb':
       return `FTPeach-${version}.deb`;
   }
+}
+
+export function feedPlatforms(mode: UpdateMode): readonly string[] {
+  switch (mode) {
+    case 'installed':
+      return ['windows-x86_64'];
+    case 'portable':
+      return ['windows-x86_64-portable'];
+    case 'macos':
+      return ['darwin-aarch64', 'darwin-x86_64'];
+    case 'appimage':
+      return ['linux-x86_64'];
+    case 'deb':
+      return ['linux-x86_64-deb'];
+  }
+}
+
+export function feedSignature(
+  feed: PublicUpdateFeed,
+  version: string,
+  mode: UpdateMode,
+  hashes: Record<string, string>,
+): string {
+  assert.equal(feed.version, version);
+  const sigName = `${candidateAssetName(version, mode)}.sig`;
+  const expectedHash = hashes[sigName];
+  assert.ok(expectedHash, `Missing candidate signature hash for ${sigName}`);
+  let signature: string | undefined;
+  for (const platform of feedPlatforms(mode)) {
+    const entry = feed.platforms[platform];
+    assert.ok(entry, `Missing public feed entry for ${platform}`);
+    assert.ok(entry.signature.trim(), `Missing public feed signature for ${platform}`);
+    assert.ok(
+      [entry.signature, `${entry.signature}\n`, `${entry.signature}\r\n`].some(
+        (text) => sha256(text) === expectedHash,
+      ),
+      `Public feed signature for ${platform} differs from accepted candidate`,
+    );
+    if (signature === undefined) signature = entry.signature;
+    else assert.equal(entry.signature.trim(), signature.trim());
+  }
+  assert.ok(signature);
+  return signature;
 }
 
 export function expectedRunnerPlatform(mode: UpdateMode): 'win32' | 'darwin' | 'linux' {

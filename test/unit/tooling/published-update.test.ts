@@ -5,6 +5,8 @@ import {
   candidateAssetName,
   downloadPrevious,
   expectedRunnerPlatform,
+  feedPlatforms,
+  feedSignature,
   previousAssetName,
   previousPackage,
   previousStableRelease,
@@ -13,6 +15,7 @@ import {
   stagedInstallerName,
   updateMode,
   verifyPending,
+  type PublicUpdateFeed,
   type UpdateMode,
 } from '../../../scripts/release/published-update.ts';
 
@@ -75,8 +78,31 @@ for (const mode of ['installed', 'portable', 'macos', 'appimage', 'deb'] as cons
   });
 }
 
-const oldBytes = Buffer.from('mock previous published package');
 const allModes: readonly UpdateMode[] = ['installed', 'portable', 'macos', 'appimage', 'deb'];
+
+for (const mode of allModes) {
+  test(`${mode} feed signature is verified against accepted candidate signature hash`, () => {
+    const version = '1.2.3';
+    const sig = `sig-${mode}`;
+    const sigName = `${candidateAssetName(version, mode)}.sig`;
+    const hashes = { [sigName]: sha256(`${sig}\n`) };
+    const platforms: PublicUpdateFeed['platforms'] = {};
+    for (const platform of feedPlatforms(mode)) {
+      platforms[platform] = { url: `https://example.invalid/${platform}`, signature: sig };
+    }
+    assert.equal(feedSignature({ version, platforms }, version, mode, hashes), sig);
+    assert.throws(() => feedSignature({ version: '1.2.4', platforms }, version, mode, hashes));
+    assert.throws(() => feedSignature({ version, platforms: {} }, version, mode, hashes));
+    assert.throws(() => feedSignature({ version, platforms }, version, mode, {}));
+    const tampered = {
+      ...platforms,
+      [feedPlatforms(mode)[0]!]: { url: 'https://example.invalid/x', signature: 'tampered' },
+    };
+    assert.throws(() => feedSignature({ version, platforms: tampered }, version, mode, hashes));
+  });
+}
+
+const oldBytes = Buffer.from('mock previous published package');
 const release = (version = '0.6.0', modes: readonly UpdateMode[] = ['installed', 'portable']) => ({
   tag_name: `v${version}`,
   draft: false,

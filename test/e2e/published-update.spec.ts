@@ -7,11 +7,13 @@ import { promisify } from 'node:util';
 import { expect, test } from '@playwright/test';
 import { sha256, type Candidate } from '../../scripts/release/candidate.ts';
 import {
-  requirePublishedRunner,
   downloadPrevious,
+  feedSignature,
   profileData,
+  requirePublishedRunner,
   updateMode,
   verifyPending,
+  type PublicUpdateFeed,
 } from '../../scripts/release/published-update.ts';
 import {
   closeOnceShown,
@@ -51,6 +53,9 @@ test('previous published copy updates through Help using the unchanged public fe
   assert.ok(mode === 'installed' || mode === 'portable', `Expected Windows mode, got ${mode}`);
   const manifest = readFileSync('published-release/candidate.json');
   const candidate = JSON.parse(manifest.toString()) as Candidate;
+  const feed = JSON.parse(
+    readFileSync('published-release/latest.json', 'utf8'),
+  ) as PublicUpdateFeed;
   const toolsSha = execFileSync('git', ['rev-parse', 'HEAD'], {
     encoding: 'utf8',
     timeout: 10_000,
@@ -136,8 +141,8 @@ test('previous published copy updates through Help using the unchanged public fe
     writeProfile(files, settings, data);
     keepEdit(local);
     const edits = recoveredEdits(path.join(local, 'recovered-edits'));
-    const start = async () => {
-      const child = spawn(previousExe, [], { stdio: 'ignore' });
+    const start = async (exe = previousExe) => {
+      const child = spawn(exe, [], { stdio: 'ignore' });
       await once(child, 'spawn');
       assert.ok(child.pid);
       return child.pid;
@@ -205,7 +210,7 @@ test('previous published copy updates through Help using the unchanged public fe
       version,
       mode,
       candidate.files,
-      readFileSync(path.join('published-release', `${name}.sig`), 'utf8'),
+      feedSignature(feed, version, mode, candidate.files),
     );
     await ui(
       updating,
@@ -222,6 +227,11 @@ test('previous published copy updates through Help using the unchanged public fe
     expect(observedNew).toBe(version);
     newAbout = await about(updated, version);
     await closeOnceShown(updated);
+    // NSIS can still hold its own installer handle on the first startup discard; the next start clears it.
+    if (existsSync(updates)) {
+      const cleanup = await start(targetExe);
+      await closeOnceShown(cleanup);
+    }
     expect(readProfile()).toEqual(before);
     expect(JSON.parse(readFileSync(path.join(data, 'settings.json'), 'utf8')).data).toMatchObject(
       settings,

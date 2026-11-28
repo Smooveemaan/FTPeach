@@ -40,15 +40,10 @@ jobs:
             published-release/candidate.json
             published-release/latest.json
             published-release/FTPeach_*_x64-setup.exe
-            published-release/FTPeach_*_x64-setup.exe.sig
             published-release/FTPeach_*_x64-portable.zip
-            published-release/FTPeach_*_x64-portable.zip.sig
             published-release/FTPeach_*.app.tar.gz
-            published-release/FTPeach_*.app.tar.gz.sig
             published-release/FTPeach_*.AppImage
-            published-release/FTPeach_*.AppImage.sig
             published-release/FTPeach_*.deb
-            published-release/FTPeach_*.deb.sig
           retention-days: 1
           if-no-files-found: error
 

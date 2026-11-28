@@ -30,6 +30,14 @@ function Invoke-Native([string[]]$Arguments) {
   return ($result | ConvertFrom-Json)
 }
 
+function Ensure-NotificationService {
+  foreach ($svc in @(Get-Service WpnService, 'WpnUserService*' -ErrorAction SilentlyContinue)) {
+    if ($svc.Status -ne 'Running' -and $svc.StartType -ne 'Disabled') {
+      Start-Service -Name $svc.Name -ErrorAction SilentlyContinue
+    }
+  }
+}
+
 function Get-Toasts {
   [void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
   return @([Windows.UI.Notifications.ToastNotificationManager]::History.GetHistory('com.smooveemaan.ftpeach') | ForEach-Object { $_.Content.InnerText })
@@ -82,6 +90,7 @@ function Test-Transfer([string]$Mode) {
     $bytes = New-Object byte[] (1024 * 1024 + 17)
     [IO.File]::WriteAllBytes((Join-Path $local $name), $bytes)
   }
+  Ensure-NotificationService
   [Windows.UI.Notifications.ToastNotificationManager]::History.Clear('com.smooveemaan.ftpeach')
   Invoke-Native @('click', $app.Id, 'Button', 'Choose folder*', 'invoke') | Out-Null
   Invoke-Native @('dialog', $app.Id, 'pick', $local) | Out-Null
@@ -137,6 +146,7 @@ try {
   & "$framework\csc.exe" /nologo /target:exe /platform:x64 "/out:$native" "/r:$framework\WPF\UIAutomationClient.dll" "/r:$framework\WPF\UIAutomationTypes.dll" "/r:$framework\WPF\WindowsBase.dll" /r:Microsoft.CSharp.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll (Join-Path $root 'native.cs') | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Could not compile the native control adapter' }
   $previousGlobalNotifications = (Get-ItemProperty $notificationPolicy -ErrorAction SilentlyContinue).NOC_GLOBAL_SETTING_TOASTS_ENABLED
+  New-Item $notificationPolicy -Force | Out-Null
   New-ItemProperty $notificationPolicy 'NOC_GLOBAL_SETTING_TOASTS_ENABLED' -PropertyType DWord -Value 1 -Force | Out-Null
   $policyKey = Join-Path $notificationPolicy 'com.smooveemaan.ftpeach'
   New-Item $policyKey -Force | Out-Null
@@ -153,14 +163,23 @@ try {
   $stage = 'notification policy'
   Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
   $settingsCondition = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::NameProperty), 'Settings'
+  Ensure-NotificationService
   [void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
   Start-Process 'ms-settings:notifications'
   Set-NotificationToggle 'SystemSettings_Notifications_ShowAppNotifications_ToggleSwitch' $true | Out-Null
-  $automaticRules = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst(
-    [System.Windows.Automation.TreeScope]::Descendants,
-    (New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::NameProperty), 'Turn on do not disturb automatically'))
-  $automaticRules.FindFirst([System.Windows.Automation.TreeScope]::Descendants,
-    (New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::NameProperty), 'Show more settings')).GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+  $stage = 'expand automatic do not disturb'
+  $automaticRulesName = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::NameProperty), 'Turn on do not disturb automatically'
+  $showMoreName = New-Object System.Windows.Automation.PropertyCondition ([System.Windows.Automation.AutomationElement]::NameProperty), 'Show more settings'
+  $expandButton = Wait-Until {
+    try {
+      $rules = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $automaticRulesName)
+      if ($rules) { $rules.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $showMoreName) }
+    } catch [System.Windows.Automation.ElementNotAvailableException] { }
+  } 'automatic do not disturb settings'
+  $expandPattern = $expandButton.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)
+  if ($expandPattern.Current.ExpandCollapseState -ne [System.Windows.Automation.ExpandCollapseState]::Expanded) {
+    $expandPattern.Expand()
+  }
   foreach ($rule in @('Scheduled_Checkbox', 'On_Presentation_Enabled', 'On_Game_Enabled', 'On_FullScreen_Enabled', 'On_OOBE_Enabled')) {
     Set-NotificationToggle "SystemSettings_QuietMoments_${rule}_CheckBox" $false | Out-Null
   }
@@ -179,15 +198,22 @@ try {
     minimizedToast = $minimizedResult
   } | ConvertTo-Json -Depth 5 | Set-Content $output
 } catch {
-  "Stage: $stage`n$_`n$($_.ScriptStackTrace)`nHistory: $((Get-Toasts) -join ' | ')" | Out-File $output
-  Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-  $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
-  $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
-  $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-  $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
-  $bitmap.Save((Join-Path $root "notification-$RunId.png"))
-  $graphics.Dispose()
-  $bitmap.Dispose()
+  $failure = $_
+  $historyText = try { (Get-Toasts) -join ' | ' } catch { "unavailable: $($_.Exception.Message)" }
+  $wpnServices = try {
+    @(Get-Service WpnService, 'WpnUserService*' -ErrorAction SilentlyContinue | ForEach-Object { "$($_.Name)=$($_.Status)/$($_.StartType)" }) -join ', '
+  } catch { "query failed: $($_.Exception.Message)" }
+  "Stage: $stage`n$failure`n$($failure.ScriptStackTrace)`nWpnServices: $wpnServices`nHistory: $historyText" | Out-File $output
+  try {
+    Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+    $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
+    $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+    $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+    $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+    $bitmap.Save((Join-Path $root "notification-$RunId.png"))
+    $graphics.Dispose()
+    $bitmap.Dispose()
+  } catch {}
   throw
 } finally {
   if ($app -and -not $app.HasExited) {

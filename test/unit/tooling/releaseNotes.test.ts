@@ -6,7 +6,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-function runReleaseNotes(version: string, changelog: string, sha = 'a'.repeat(40)) {
+function runReleaseNotes(version: string, changelog: string) {
   const directory = mkdtempSync(path.join(tmpdir(), 'release-notes-test-'));
   writeFileSync(path.join(directory, 'package.json'), JSON.stringify({ version }));
   writeFileSync(path.join(directory, 'CHANGELOG.md'), changelog);
@@ -19,8 +19,6 @@ function runReleaseNotes(version: string, changelog: string, sha = 'a'.repeat(40
     env: {
       ...process.env,
       GITHUB_REPOSITORY: 'owner/app',
-      GITHUB_REF_NAME: 'master',
-      RELEASE_SOURCE_SHA: sha,
       GITHUB_OUTPUT: path.join(directory, 'output.txt'),
     },
   });
@@ -28,27 +26,28 @@ function runReleaseNotes(version: string, changelog: string, sha = 'a'.repeat(40
   return readFileSync(path.join(directory, 'release/release-notes.md'), 'utf8');
 }
 
-test('manual packaging release notes link to the pinned source, not the advancing master ref', () => {
-  const sha = 'a'.repeat(40);
+test('Windows-only release notes link images to master and include only Windows downloads', () => {
   const notes = runReleaseNotes(
     '0.6.1',
     '## [0.6.1]\n\nFixed a problem.\n\n## [0.6.0]\nOld notes.',
-    sha,
   );
-  assert.match(notes, new RegExp(`owner/app/${sha}/assets/images`));
-  assert.match(notes, new RegExp(`owner/app/${sha}/assets/images/platforms/windows-dark\\.png`));
+  assert.ok(notes.includes('owner/app/master/assets/images/kofi-dark.png'));
+  assert.ok(notes.includes('owner/app/master/assets/images/platforms/windows-dark.png'));
+  assert.ok(
+    notes.includes(
+      '### Support\n\nFTPeach is free to use with no paid version.\nIf it saves you time, a donation helps keep it going.',
+    ),
+  );
   assert.ok(notes.includes('FTPeach_0.6.1_x64-setup.exe'));
   assert.ok(!notes.includes('FTPeach_0.6.1_universal.dmg'));
-  assert.ok(!notes.includes('/master/'));
   assert.ok(!notes.includes('Old notes'));
 });
 
 test('multi-platform release notes include Windows, macOS and Linux download links and platform icons', () => {
-  const sha = 'b'.repeat(40);
-  const notes = runReleaseNotes('0.7.1', '## [0.7.1]\n\nAdded something.\n', sha);
+  const notes = runReleaseNotes('0.7.1', '## [0.7.1]\n\nAdded something.\n');
   for (const platform of ['windows', 'macos', 'linux']) {
-    assert.ok(notes.includes(`owner/app/${sha}/assets/images/platforms/${platform}-dark.png`));
-    assert.ok(notes.includes(`owner/app/${sha}/assets/images/platforms/${platform}-light.png`));
+    assert.ok(notes.includes(`owner/app/master/assets/images/platforms/${platform}-dark.png`));
+    assert.ok(notes.includes(`owner/app/master/assets/images/platforms/${platform}-light.png`));
   }
   for (const asset of [
     'FTPeach_0.7.1_x64-setup.exe',
